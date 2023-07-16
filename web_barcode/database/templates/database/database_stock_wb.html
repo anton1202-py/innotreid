@@ -1,0 +1,88 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title %}Работа с базой данных{% endblock %}
+
+{% block content %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() { // событие загрузки страницы
+
+        // выбираем на странице все элементы типа textarea и input
+        document.querySelectorAll('textarea, input').forEach(function(e) {
+            // если данные значения уже записаны в sessionStorage, то вставляем их в поля формы
+            // путём этого мы как раз берём данные из памяти браузера, если страница была случайно перезагружена
+            if(e.value === '') e.value = window.sessionStorage.getItem(e.name, e.value);
+            // на событие ввода данных (включая вставку с помощью мыши) вешаем обработчик
+            e.addEventListener('input', function() {
+                // и записываем в sessionStorage данные, в качестве имени используя атрибут name поля элемента ввода
+                window.sessionStorage.setItem(e.name, e.value);
+            })
+        })
+    
+    }); 
+</script>
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>База данных Склада</h1>
+            <div class="add-data">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p>Загрузить остатки в Базу Данных</p>
+                    <div class="alert-warning">
+                        <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
+                        <input type="file" id="myfile" name="myfile" class="input-file">
+                        <button type="submit" class="custom-button-delete-add">
+                            Загрузить
+                        </button> 
+                    </div>
+                </form>
+            </div>
+        </div>
+	<div class='filter-data'>
+            <form action="" class="filter-form" method="POST" id="ytr">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <p>От</p>
+                    <input type="date" name="datestart" class="choose-date" required="" id="datestart">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>До</p>
+                    <input type="date" name="datefinish" class="choose-date" required="" id="datefinish">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>Артикул для фильтра</p>
+                    <input type="text"  name="article_filter" class="choose-date" id="article_filter">
+                </div><br>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="submit" value="Фильтровать" class="custom-button-change"/>
+                </div>
+            </form>
+        </div>
+        {% if messages %}
+            <script>
+                {% for msg in messages %}
+                    alert('{{ msg.message }}');
+                {% endfor %}
+            </script>
+        {% endif %}
+        <table>
+            <tr>
+                <th>Дата</th>
+                <th>Артикул продавца на Wildberries</th>
+                <th>Артикул Wildberries</th>
+                <th>Склад</th>
+                <th>Количество</th>
+            </tr>
+            {% for el in data %}   
+            <tr>
+                <td>{{ el.pub_date }}</td>
+                <td>{{ el.seller_article_wb }}</td>
+                <td><a href="{% url 'stock_detail' el.article_wb %}">{{ el.article_wb }}</a></td>
+                <td>{{ el.code_stock }}</td>
+                <td>{{ el.amount }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

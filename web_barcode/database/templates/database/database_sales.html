@@ -1,0 +1,112 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title %}Работа с базой данных{% endblock %}
+
+{% block content %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() { // событие загрузки страницы
+
+        // выбираем на странице все элементы типа textarea и input
+        document.querySelectorAll('textarea, input').forEach(function(e) {
+            // если данные значения уже записаны в sessionStorage, то вставляем их в поля формы
+            // путём этого мы как раз берём данные из памяти браузера, если страница была случайно перезагружена
+            if(e.value === '') e.value = window.sessionStorage.getItem(e.name, e.value);
+            // на событие ввода данных (включая вставку с помощью мыши) вешаем обработчик
+            e.addEventListener('input', function() {
+                // и записываем в sessionStorage данные, в качестве имени используя атрибут name поля элемента ввода
+                window.sessionStorage.setItem(e.name, e.value);
+            })
+        })
+    
+    }); 
+</script>
+    <div class="features">
+         <div class="top-befor-header">
+            <h1>База данных Продаж</h1>
+            <div class="alert alert-warninng">
+                <a href="{% url 'createsales' %}">
+                    <button class="custom-button">
+                        Добавить запись в базу
+                    </button>
+                </a>
+            </div>
+        </div>
+        <div class='filter-data'>
+            <form action="" class="filter-form" method="POST" id="ytr">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <p>От</p>
+                    <input type="date"  name="datestart" class="choose-date" required="" id="datestart">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>До</p>
+                    <input type="date"  name="datefinish" class="choose-date" required="" id="datefinish">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>Артикул для фильтра</p>
+                    <input type="text"  name="article_filter" class="choose-date" id="article_filter">
+                </div><br>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="submit" value="Фильтровать" class="custom-button-change"/>
+                </div>
+            </form>
+        </div>
+        <div class='import-excel'>
+            <br>
+            <form action="" id="export" name="export_xls" method="GET">
+                {% csrf_token %}
+                <button type="submit" name="export" class="custom-button-change">
+                    Импортировать в Excel
+                </button>
+            </form>
+        </div>
+        <td>{{ data_sum }}</td>
+            <table>
+                <tr>
+                    <th>Артикул продавца</th>
+                    <th>Артикул маркетплейса</th>
+                    <th>Количество</th>
+                    <th>Средняя цена</th>
+                    <th>Сумма продажи</th>
+                    <th>Сумма выплат</th>
+                    <th>Код маркетплейса</th>
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    {% if el.5 == y %}
+                    {% endif %}
+                    {% for dat in seller_articles %}
+                        {% if el.5 == 1 %}
+                            {% if dat.article_wb == el.0 %}
+                            <td>{{ dat.seller_article }}</td>
+                            {% endif %}
+                        {% endif %}
+                        {% if el.5 == 2 %}
+                            {% if dat.article_ozon == el.0 %}
+                            <td>{{ dat.seller_article }}</td>
+                            {% endif %}
+                        {% endif %}
+                        {% if el.5 == 3 %}
+                            {% if dat.article_yandex == el.0 %}
+                            <td>{{ dat.seller_article }}</td>
+                            {% endif %}
+                        {% endif %}
+                        {% if el.5 == 4 %}
+                            {% if dat.article_sber == el.0 %}
+                            <td>{{ dat.seller_article }}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <td><a href="{% url 'sales_detail' el.0 %}">{{ el.0 }}</a></td>
+                    <td>{{ el.1 }}</td>
+                    <td>{{ el.4 }}</td>
+                    <td>{{ el.2 }}</td>
+                    <td>{{ el.3 }}</td>
+                    <td>{{ el.5 }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+    </div>    
+{% endblock %}

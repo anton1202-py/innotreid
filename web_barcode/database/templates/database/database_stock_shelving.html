@@ -1,0 +1,95 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title %}Задание на изготовление{% endblock %}
+
+{% block content %}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Задание на изготовление</h1>
+            <div class="add-data">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p>Загрузить остатки в Базу Данных</p>
+                    <div class="alert-warning">
+                        <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
+                        <input type="file" id="myfile" name="myfile" class="input-file">
+                        <button type="submit" class="custom-button-delete-add">
+                            Загрузить
+                        </button> 
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if messages %}
+            <script>
+                {% for msg in messages %}
+                    alert('{{ msg.message }}');
+                {% endfor %}
+            </script>
+        {% endif %}
+        <table>
+            <tr>
+                <th>Артикул на Wildberries</th>
+                <th>Артикул</th>
+                <th>Ячейка</th>
+                <th>Остаток в ячейке</th>
+                <th>Новый остаток</th>
+                <th>Кнопка</th>
+            </tr>
+            {% for el in data %}   
+            <tr>
+                {% if el.amount <= 3 %}
+                <td>{{ el.seller_article_wb }}</td>
+                <td>{{ el.seller_article }}</td>
+                <td>{{ el.shelf_number }}</td>
+                
+                <td>{{ el.amount }}</td>
+                
+                <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <td>
+                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date"/>
+                    </td>
+                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button"> Загрузить
+                    </button> </td>
+                   {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change"/></td>#}
+                </form>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+        <h1>Новая таблица с полными ячейками</h1>
+        <table>
+            <tr>
+                <th>Артикул на Wildberries</th>
+                <th>Артикул</th>
+                <th>Ячейка</th>
+                <th>Остаток в ячейке</th>
+                <th>Новый остаток</th>
+                <th>Кнопка</th>
+            </tr>
+            {% for el in data %}   
+            <tr>
+                {% if el.amount > 3 %}
+                <td>{{ el.seller_article_wb }}</td>
+                <td><a href="{% url 'stock-shelving-update' el.id  %}">{{ el.seller_article }}</a></td>
+                <td>{{ el.shelf_number }}</td>
+                
+                <td>{{ el.amount }}</td>
+                
+                <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <td>
+                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date"/>
+                    </td>
+                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button"> Загрузить
+                    </button> </td>
+                   {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change"/></td>#}
+                </form>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>           
+{% endblock %}

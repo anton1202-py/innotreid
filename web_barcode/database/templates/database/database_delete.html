@@ -1,0 +1,14 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Удаление записи из таблицы Артикулы{% endblock %}
+{% block content%}
+    <div class="features">
+        <h1>Удаление записи из базы</h1>
+        <form method="post">
+            {% csrf_token %} <br>
+            <button class="custom-button-delete" type="submit">Удалить данные</button>
+        </form>
+    </div>    
+        
+{% endblock %} 

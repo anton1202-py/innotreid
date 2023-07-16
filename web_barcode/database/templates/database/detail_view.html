@@ -1,0 +1,51 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Работа с базой данных{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <div class="alert alert-warninng">
+            <table>
+                <tr><th>Артикул продаца</th>
+                    <th>Наименование</th>
+                    <th>Артикул WB</th>
+                    <th>Артикул OZON</th>
+                    <th>Артикул YANDEX</th>
+                    <th>Артикул SBER</th>
+                    <th>Баркод WB</th>
+                    <th>Баркод OZON</th>
+                    <th>Баркод YANDEX</th>
+                    <th>Баркод SBER</th>
+                    <th>Кратность</th>
+                </tr>
+                <tr>
+                    <td>{{ article.seller_article }}</td>
+                    <td>{{ article.title }}</td>
+                    <td>{{ article.article_wb }}</td>
+                    <td>{{ article.article_ozon }}</td>
+                    <td>{{ article.article_yandex }}</td>
+                    <td>{{ article.article_sber }}</td>
+                    <td>{{ article.barcode_wb }}</td>
+                    <td>{{ article.barcode_ozon }}</td>
+                    <td>{{ article.barcode_yandex }}</td>
+                    <td>{{ article.barcode_sber }}</td>
+                    <td>{{ article.multiplicity }}</td>
+                </tr>
+            </table>
+            <div class="reduct-buttons">
+                <a href="{% url 'database_delete' article.id %}">
+                    <button class="custom-button-delete">
+                        Удалить
+                    </button>
+                </a>
+                <a href="{% url 'database_update' article.id %}">
+                    <button class="custom-button-change">
+                        Редактировать
+                    </button>
+                </a>
+            </div>
+        </div>
+    </div> 
+        
+{% endblock %}

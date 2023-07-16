@@ -1,0 +1,124 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Работа с базой данных{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <div class="alert alert-warninng">
+            <div class="charts">
+                <div class='chart'>
+                    <canvas id="acquisitions" width="600" height="100"></canvas>
+                    <script>
+                        (async function() {
+                          new Chart(
+                            document.getElementById('acquisitions'),
+                            {
+                              type: 'line',
+                              data: {
+                                labels: [{% for article in articles %} '{{ article.pub_date }}', {% endfor %}],
+                                datasets: [
+                                  {
+                                    label: 'Количество продаж {{ articles.0.article_marketplace }}',
+                                    data: [{% for article in articles %} {{ article.amount }}, {% endfor %}],
+                                    borderColor: '#7380ec',
+                                  }
+                                ]
+                              },
+                              options: {
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            // This more specific font property overrides the global property
+                                            font: {
+                                                size: 14,
+                                                family: "'Open Sans', 'Arial', 'sans-serif'"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            }
+                          );
+                        })();
+                    </script>
+                </div>
+                <div class='chart'>
+                    <canvas id="acquisitions2" width="600" height="100"></canvas>
+                    <script>
+                        (async function() {
+                          new Chart(
+                            document.getElementById('acquisitions2'),
+                            {
+                              type: 'line',
+                              data: {
+                                labels: [{% for article in articles %} '{{ article.pub_date }}', {% endfor %}],
+                                datasets: [
+                                  {
+                                    label: 'Сумма продаж {{ articles.0.article_marketplace }}',
+                                    data: [{% for article in articles %} {{ article.sum_sale }}, {% endfor %}],
+                                    borderColor: '#7380ec',
+                                  }
+                                ]
+                              },
+                              options: {
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            // This more specific font property overrides the global property
+                                            font: {
+                                                size: 14,
+                                                family: "'Open Sans', 'Arial', 'sans-serif'"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            }
+                          );
+                        })();
+                    </script>
+                </div>
+            </div>
+        </div>    
+        <div class="alert alert-warninng">
+            <table>
+                <tr>
+                    <th>Дата</th>
+                    {#<th>Артикул продавца</th>#}
+                    <th>Артикул маркетплейса</th>
+                    <th>Количество</th>
+                    <th>Средняя цена</th>
+                    <th>Сумма продажи</th>
+                    <th>Сумма выплат</th>
+                    <th>Код маркетплейса</th>
+                </tr>
+                {% for article in articles %}
+                    <tr>
+                        <td>{{ article.pub_date }}</td>
+                        {# <td>{{ article.seller_article }}</td>#}
+                        <td>{{ article.article_marketplace }}</td>
+                        <td>{{ article.amount }}</td>
+                        <td>{{ article.avg_price_sale }}</td>
+                        <td>{{ article.sum_sale }}</td>
+                        <td>{{ article.sum_pay }}</td>
+                        <td>{{ article.code_marketplace }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <div class="reduct-buttons">
+                {#<a href="{% url 'sales_delete' article.id %}">#}
+                    {# <button class="custom-button-delete">#}
+                       {#  Удалить #}
+                    {# </button> #}
+                {# </a> #}
+                {#<a href="{% url 'sales_update' article.id %}">#}
+                    {# <button class="custom-button-change"> #}
+                        {# Редактировать #}
+                    {# </button> #}
+                {# </a> #}
+            </div>
+        </div>
+    </div> 
+        
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Добавление записи в базу данных{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <h1>Добавление записи в базу</h1>
+        <div class="table">
+            <form method="post">
+                {% csrf_token %} <br>
+                {{ form.article_marketplace }} <br>
+                {{ form.amount }} <br>
+                {{ form.avg_price_sale }} <br>
+                {{ form.sum_sale }} <br>
+                {{ form.sum_pay }} <br>
+                {{ form.code_marketplace }} <br>
+                <span>{{ error }}</span>
+                <button class="custom-button" type="submit">Добавить данные</button>
+            </form>
+        </div>
+        
+    </div>    
+        
+{% endblock %} 
