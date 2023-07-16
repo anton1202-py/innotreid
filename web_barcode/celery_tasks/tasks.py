@@ -1,11 +1,14 @@
-from celery_tasks.celery import app
-from datetime import date, timedelta
-import requests
 import json
+import os
+from datetime import date, timedelta
+from time import sleep
+
 import psycopg2
+import requests
+from celery_tasks.celery import app
+from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from time import sleep
 
 
 @app.task
@@ -17,8 +20,7 @@ def add_database_data():
     url_sales = f"https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom={control_date_sales}&flag=1"
 
     # Заголовок и сам ключ
-    APIKEY = {"Authorization":
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6Ijk0NTkwZjcwLTAxNzEtNGI5YS05ZjU0LTc4MDVkNDJjZjRiNiJ9.es_8LgoQ1WOKAjmx6NSV6y2Ue2rUnrEVPdlwbz96GwI"}
+    APIKEY = {"Authorization": os.getenv('API_KEY_WB')}
     response_stock = requests.get(url_stock, headers=APIKEY)
     data_stock = json.loads(response_stock.text)
 
@@ -97,11 +99,11 @@ def add_database_data():
         print('УРА!!!')
         try:
             # Подключение к существующей базе данных
-            connection = psycopg2.connect(user="databaseadmin",
-                                          dbname="innotrade",
-                                          password="Up3psv8x",
-                                          host="127.0.0.1",
-                                          port="5432")
+            connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
+                                          dbname=os.getenv('DB_NAME'),
+                                          password=os.getenv('POSTGRES_PASSWORD'),
+                                          host=os.getenv('DB_HOST'),
+                                          port=os.getenv('DB_PORT'))
             connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             # Курсор для выполнения операций с базой данных
             cursor = connection.cursor()
