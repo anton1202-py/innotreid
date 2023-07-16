@@ -18,11 +18,11 @@ from .models import (Articles, CodingMarketplaces, Sales, ShelvingStocks,
                      Stocks, WildberriesStocks)
 
 DICT_FOR_STOCKS_WB = {
-    "Товары_в_пути_до_клиента": 1,
-    "Товары_в_пути_от_клиента": 2,
-    "Итого_по_складам": 3,
+    "Товары в пути до клиента": 1,
+    "Товары в пути от клиента": 2,
+    "Итого по складам": 3,
     "Подольск": 4,
-    "Подольск_3": 5,
+    "Подольск 3": 5,
     "Коледино": 6,
     "Казань": 7,
     "Электросталь": 8,
@@ -34,13 +34,13 @@ DICT_FOR_STOCKS_WB = {
     "Тула": 14,
     "Астана": 15,
     "Чехов": 16,
-    "Белая_Дача": 17,
+    "Белая Дача": 17,
     "Невинномысск": 18,
     "Домодедово": 19,
     "Вёшки": 20,
     "Минск": 21,
     "Пушкино": 22,
-    "Внуково_КБТ": 23,
+    "Внуково КБТ": 23,
     "Обухово": 24,
     "Остальные": 25
 }
@@ -49,11 +49,11 @@ START_LIST = [
     "Артикул_продавца",
     "Артикул_WB",
     "Баркод",
-    "Товары_в_пути_до_клиента",
-    "Товары_в_пути_от_клиента",
-    "Итого_по_складам",
+    "Товары в пути до клиента",
+    "Товары в пути от клиента",
+    "Итого по складам",
     "Подольск",
-    "Подольск_3",
+    "Подольск 3",
     "Коледино",
     "Казань",
     "Электросталь",
@@ -65,13 +65,13 @@ START_LIST = [
     "Тула",
     "Астана",
     "Чехов",
-    "Белая_Дача",
+    "Белая Дача",
     "Невинномысск",
     "Домодедово",
     "Вёшки",
     "Минск",
     "Пушкино",
-    "Внуково_КБТ",
+    "Внуково КБТ",
     "Обухово",
     "Остальные"
 ]
@@ -257,7 +257,7 @@ def database_sales(request):
         return redirect('login')
     control_date_stock = date.today() - timedelta(days=1)
     seller_articles = Articles.objects.all()
-    y = CodingMarketplaces.objects.all()
+    coding_marketplace = CodingMarketplaces.objects.all()
     data = Sales.objects.all()
     summa1 = Sales.objects.values('article_marketplace').annotate(
         Sum('amount'),
@@ -293,7 +293,7 @@ def database_sales(request):
         'form_date': str(control_date_stock),
         'lenght': len(seller_articles.all().values()),
         'seller_articles': seller_articles.all().values(),
-        'y': y.values()[0]['id']
+        'coding_marketplace': coding_marketplace.values()[0]['id']
     }
 
     if request.method == 'GET' and ('export' in request.GET.keys()):
