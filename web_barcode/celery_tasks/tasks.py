@@ -5,13 +5,13 @@ from time import sleep
 
 import psycopg2
 import requests
-#from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 load_dotenv()
-#@app.task
+@app.task
 def add_database_data():
     control_date_stock = date.today() - timedelta(days=1)
     control_date_sales = date.today() - timedelta(days=1)
@@ -124,24 +124,3 @@ def add_database_data():
                 print("Соединение с PostgreSQL закрыто")
     else:
         sleep(10)
-
-
-control_date_stock = date.today() - timedelta(days=1)
-control_date_sales = date.today() - timedelta(days=1)
-
-url_sales = f"https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom={control_date_sales}&flag=1"
-# Заголовок и сам ключ
-APIKEY = {"Authorization": os.getenv('API_KEY_WB')}
-
-
-response_sale = requests.get(url_sales, headers=APIKEY)
-data_sale = json.loads(response_sale.text)
-# Список со сводными данными для БД
-common_data_stock = []
-# Список с артикулуми с остатками со всех складов (с повторением)
-common_article_stock = []
-# Список со всеми артикулами без повторения
-new_list_stock = []
-check_data_stock = []
-
-print(data_sale)
