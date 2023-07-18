@@ -28,4 +28,10 @@ INSERT INTO database_codingwbstock VALUES(25, 'Остальные');"""
 """
 CREATE TABLE database_codingwbstock (
 	id PRIMARY KEY
-	wb_stock CHARACTER VARYING(40));"""
+	wb_stock CHARACTER VARYING(40));
+    
+INSERT INTO database_codingmarketplaces VALUES(1, 'Wildberries');
+INSERT INTO database_codingmarketplaces VALUES(2, 'Ozon');
+INSERT INTO database_codingmarketplaces VALUES(3, 'Yandex Market');
+INSERT INTO database_codingmarketplaces VALUES(4, 'Sber');
+    """

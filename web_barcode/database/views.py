@@ -46,9 +46,13 @@ DICT_FOR_STOCKS_WB = {
 }
 
 START_LIST = [
-    "Артикул_продавца",
-    "Артикул_WB",
+    "Бренд",
+    "Предмет",
+    "Артикул продавца",
+    "Артикул WB",
+    "Объем, л",
     "Баркод",
+    "Размер вещи",
     "Товары в пути до клиента",
     "Товары в пути от клиента",
     "Итого по складам",
@@ -171,6 +175,10 @@ def database_stock_wb(request):
         MUST_BE_EMPTY = []
         myfile = request.FILES['myfile']
         empexceldata = pd.read_excel(myfile)
+        load_excel_data_wb_stock = pd.DataFrame(
+            empexceldata, columns=['Артикул продавца', 'Артикул WB'])
+        list_name_seller_article = load_excel_data_wb_stock['Артикул продавца'].to_list()
+        list_name_wb_article = load_excel_data_wb_stock['Артикул WB'].to_list()
         for i in empexceldata.columns.ravel():
             if i not in START_LIST:
                 MUST_BE_EMPTY.append(i)
@@ -180,14 +188,14 @@ def database_stock_wb(request):
                 for i in range(len(empexceldata.columns.ravel())):
                     for j in DICT_FOR_STOCKS_WB.keys():
                         if empexceldata.columns.ravel()[i] == j:
-                            if 'school' not in dbframe.Артикул_продавца and (
-                                    'diplom' not in dbframe.Артикул_продавца):
+                            if 'school' not in list_name_seller_article[i] and (
+                                    'diplom' not in list_name_seller_article[i]):
                                 if str(dbframe[i+1]) == 'nan':
                                     continue
                                 else:
                                     obj = WildberriesStocks.objects.create(
-                                        seller_article_wb=dbframe.Артикул_продавца,
-                                        article_wb=dbframe.Артикул_WB,
+                                        seller_article_wb=list_name_seller_article[i],
+                                        article_wb=list_name_wb_article[i],
                                         code_stock_id=int(DICT_FOR_STOCKS_WB[j]),
                                         amount=dbframe[i+1],
                                         )
