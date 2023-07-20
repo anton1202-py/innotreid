@@ -29,7 +29,7 @@
 * {
     margin: 0;
     padding: 0;
-    oupline: 0;
+    outline: 0;
     appearance: 0;
     border: 0;
     text-decoration: none;
@@ -294,6 +294,17 @@ ul.mainmenu li a:hover {
     transition: all 500ms ease;
 }
 
+.custom-button-small {
+    padding: 5px;
+    
+    margin: 0;
+    border-radius: 8px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-primary);
+    font-weight: 600;
+}
+
 .custom-button-delete {
     padding: 15px;
     border-radius: 8px;
@@ -436,6 +447,18 @@ form {
     outline: none;
     border-radius: 8px;
 }
+
+.choose-date-small {
+    padding: 5px;
+    font-family: poppins, sans-serif;
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 14px;
+    border: 1px solid var(--color-primary);
+    outline: none;
+    border-radius: 8px;
+}
+
 .inner-form-data p {
     margin: 0;
     padding: 0;
