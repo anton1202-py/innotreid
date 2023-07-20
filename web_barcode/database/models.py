@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 
 
@@ -136,9 +138,13 @@ class WildberriesStocks(models.Model):
 
 
 class ShelvingStocks(models.Model):
-    pub_date = models.DateField(
-        verbose_name='Дата',
-        auto_now_add=True
+    task_start_date = models.DateTimeField(
+        verbose_name='Дата постановки задания',
+        null=True
+    )
+    task_finish_date = models.DateTimeField(
+        verbose_name='Дата выполнения задания',
+        null=True
     )
     seller_article_wb = models.CharField(
         verbose_name='Артикул продавца на WB',
@@ -157,8 +163,17 @@ class ShelvingStocks(models.Model):
         verbose_name='Остаток на полке',
     )
 
+    def save(self, *args, **kwargs):
+        if self.amount <= 3:
+            now = datetime.now()
+            time_now = now.strftime("%Y-%m-%d %H:%M:%S")
+            self.task_start_date = time_now
+            self.task_finish_date = None
+        super(ShelvingStocks, self).save(*args, **kwargs)
+
     def __str__(self):
-        return self.seller_article, self.shelf_number, self.amount
+        return (f'{self.task_start_date} - {self.seller_article}'
+                f' - {self.shelf_number} - {self.amount}')
 
     class Meta:
         verbose_name = 'Склад на стеллажах'

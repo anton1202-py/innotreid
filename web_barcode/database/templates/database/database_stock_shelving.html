@@ -28,41 +28,47 @@
                 {% endfor %}
             </script>
         {% endif %}
+        <form method="GET" enctype="multipart/form-data">
+            <div class="alert-warning">
+                <button type="submit" id="to-pdf" name="to-my-pdf" class="custom-button-delete-add">
+                    Выгрузить в PDF файл
+                </button> 
+            </div>
+        </form>
         <table>
             <tr>
-                <th>Артикул на Wildberries</th>
+                <th>Дата начала задания</th>
+                <th>Дата выполнения задания</th>
                 <th>Артикул</th>
                 <th>Ячейка</th>
                 <th>Остаток в ячейке</th>
                 <th>Новый остаток</th>
                 <th>Кнопка</th>
             </tr>
-            {% for el in data %}   
+            {% for el in task_data %}   
             <tr>
-                {% if el.amount <= 3 %}
-                <td>{{ el.seller_article_wb }}</td>
+                <td>{{ el.task_start_date }}</td>
+                <td>{{ el.task_finish_date }}</td>
                 <td>{{ el.seller_article }}</td>
                 <td>{{ el.shelf_number }}</td>
-                
                 <td>{{ el.amount }}</td>
-                
                 <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <td>
-                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date"/>
+                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date-small"/>
                     </td>
-                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button"> Загрузить
+                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button-small"> Загрузить
                     </button> </td>
-                   {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change"/></td>#}
+                   {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change-small"/></td>#}
                 </form>
-                {% endif %}
             </tr>
             {% endfor %}
         </table>
         <h1>Новая таблица с полными ячейками</h1>
         <table>
             <tr>
-                <th>Артикул на Wildberries</th>
+                <th>Дата начала задания</th>
+                <th>Дата выполнения задания</th>
                 <th>Артикул</th>
                 <th>Ячейка</th>
                 <th>Остаток в ячейке</th>
@@ -71,23 +77,21 @@
             </tr>
             {% for el in data %}   
             <tr>
-                {% if el.amount > 3 %}
-                <td>{{ el.seller_article_wb }}</td>
+                <td>{{ el.task_start_date }}</td>
+                <td>{{ el.task_finish_date }}</td>
                 <td><a href="{% url 'stock-shelving-update' el.id  %}">{{ el.seller_article }}</a></td>
                 <td>{{ el.shelf_number }}</td>
-                
                 <td>{{ el.amount }}</td>
                 
                 <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <td>
-                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date"/>
+                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date-small"/>
                     </td>
-                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button"> Загрузить
+                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button-small"> Загрузить
                     </button> </td>
                    {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change"/></td>#}
                 </form>
-                {% endif %}
             </tr>
             {% endfor %}
         </table>

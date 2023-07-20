@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import xlwt
@@ -11,6 +11,10 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
                     ShelvingForm, StocksForm)
@@ -211,7 +215,6 @@ def database_stock_wb(request):
         if article_filter == '':
             data = WildberriesStocks.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]))
-
         else:
             data = WildberriesStocks.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
@@ -225,17 +228,62 @@ def database_stock_wb(request):
 
 
 def database_stock_shelving(request):
+    """Функция отвечает за страницу склада стеллажей"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     innotreid_articles = Articles.objects.all()
     data = ShelvingStocks.objects.all()
+    two_days_ago = datetime.now() - timedelta(days=2)
+    # ========== Выдает таблицу, отфильтрованную по количеству от 0 до 3
+    task_data = ShelvingStocks.objects.filter(
+        amount__range=(0, 3)).order_by('task_start_date')
+    # ========== Выдает таблицу, отфильтрованную по количеству больше 4
+    # и время завершения задания не равно None и запись младше 2 дней
+    task_data_finish = ShelvingStocks.objects.filter(
+        amount__gte=4).exclude(
+        task_finish_date=None).exclude(
+        task_finish_date__lte=two_days_ago).order_by('-task_finish_date')
+
+    # ========== Печать PDF файла ========== #
+    if request.method == 'GET' and 'to-my-pdf' in request.GET.keys():
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="my_table.pdf"'
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        data = []
+        data.append(['task_start_date', 'Article', 'Shelf number', 'Amount', 'New amount'])
+        for item in task_data:
+            data.append([item.task_start_date,
+                         item.seller_article,
+                         item.shelf_number,
+                         item.amount,])
+        styles = getSampleStyleSheet()
+        style_table = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ])
+        table = Table(data)
+        table.setStyle(style_table)
+        doc.build([table])
+        return response
+    # ========== Конец печати PDF файла ========== #
 
     if request.method == 'POST' and (len(request.POST.keys()) == 1):
-        myfile = request.FILES['myfile']    
+        myfile = request.FILES['myfile']
         empexceldata = pd.read_excel(myfile)
         dbframe = empexceldata
         for dbframe in dbframe.itertuples():
-            obj = ShelvingStocks.objects.create(
+            obj = ShelvingStocks(
                 seller_article_wb=dbframe.Артикул_ВБ,
                 seller_article=dbframe.Артикул,
                 shelf_number=dbframe.Ячейка,
@@ -243,17 +291,21 @@ def database_stock_shelving(request):
                 )
             obj.save()
     elif request.method == 'POST':
-          for i in range(len(data.values())):
-             if int(list(request.POST.keys())[1]) in data.values()[i].values():
+        quantity = int(list(request.POST.values())[1])
+        for i in range(len(data.values())):
+            if int(list(request.POST.keys())[1]) in data.values()[i].values():
                 id_data = ShelvingStocks.objects.get(
                     id=list(request.POST.keys())[1]).pk
                 article_data = ShelvingStocks.objects.get(
                     id=list(request.POST.keys())[1]).seller_article_wb
-                new_data = ShelvingStocks.objects.filter(
-                    id=id_data).update(
-                    amount=list(request.POST.values())[1])
+                new_data = ShelvingStocks.objects.get(
+                    id=id_data)
+                new_data.amount = int(list(request.POST.values())[1])
+                new_data.task_finish_date = datetime.now()
+                new_data.save()
     context = {
-        'data': data,
+        'task_data': task_data,
+        'data': task_data_finish,
         'lenght': len(innotreid_articles.all().values()),
         'x': innotreid_articles.all().values(),
     }
