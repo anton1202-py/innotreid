@@ -17,12 +17,14 @@ def index(request):
 
     return render(request, 'main/index.html', {'form': form})
 
+
 def barcode(request):
     return render(request, 'main/barcode.html')
 
-def qrcode(request): 
+
+def qrcode(request):
     return render(request, 'main/qrcode.html')
+
 
 def barcodebox(request):
     return render(request, 'main/barcodebox.html')
-
