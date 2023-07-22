@@ -1,0 +1,585 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+
+:root{
+    --color-primary: #7380ec;
+    --color-danger: #ff7782;
+    --color-success: #41f1b6;
+    --color-warning: #ffbb55;
+    --color-white: #fff;
+    --color-info-dark: #7d8da1;
+    --color-info-light: #dce1eb;
+    --color-dark: #363949;
+    --color-light: rgba(132, 139, 200, 0.18);
+    --color-primary-variant: #111e88;
+    --color-dark-variant: #677483;
+    --color-background: #f6f6f9;
+
+    --card-border-radius: 8  --card-padding: 1.8rem;
+    --border-radius-1: 0.4rem;
+    --border-radius-2: 0.8rem;
+    --border-radius-3: 1.2rem;
+
+    --card-padding: 1.8rem;
+    --padding-1: 1.2rem;
+    
+    --box-shadow: 0 2rem 3rem var(--color-light);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    appearance: 0;
+    border: 0;
+    text-decoration: none;
+    list-style: none;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 14px;
+}
+body {
+    width: 100vw;
+    height: 100vh;
+    font-family: poppins, sans-serif;
+    font-size: 1rem;
+    user-select: none;
+    overflow-x: hidden;
+    background: var(--color-background);
+    color: var(--color-dark);
+}
+
+.container {
+    display: grid;
+    width: 96%;
+    margin: 0 auto;
+    gap: 1.8rem;
+    grid-template-columns: 14rem auto 23rem;
+}
+
+a {
+    color: var(--color-dark);
+}
+
+img {
+    display: block;
+    width: 100%;
+}
+
+h1 {
+   font-weight: 800;
+    font-size: 1.8rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+h3 {
+    font-size: 0.87rem;
+}
+
+h4 {
+    font-size: 0.8rem;
+}
+
+h5 {
+    font-size: 0.77rem;
+}
+
+small {
+    font-size: 0.75rem;
+}
+
+.text-muted {
+    color: var(--color-info-dark);
+}
+
+p {
+    color: var(--color-dark-variant);
+}
+
+b {
+    color: var(--color-dark);
+}
+
+.primary {
+    color: var(--color-primary);
+}
+
+.danger {
+    color: var(--color-danger);
+}
+
+.success {
+    color: var(--color-success);
+}
+
+.warning {
+    color: var(--color-warning);
+}
+
+/* ----------------- БОКОВОЕ МЕНЮ ----------------- */
+aside {
+    height: 100vh;
+    float: left;
+    width: 18%;
+    padding-top: 2%;
+    padding-left: 1.5%;
+}
+aside .logo {
+    display: flex;
+    gap: 0.8rem;
+}
+aside .logo img {
+    width: 2rem;
+    height: 2rem;
+}
+
+aside h3 {
+    font-weight: 700;
+}
+
+aside .sidebar a {
+    text-decoration: none;
+    display: flex;
+    color: var(--color-info-dark);
+    margin-left: 0px;
+    gap: 1rem;
+    vertical-align: center;
+    align-items: center;
+    position: relative;
+    height: 3.7rem;
+    transition: all 300ms ease;
+}
+
+aside .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 86vh;
+    position: relative;
+    top: 3rem;
+}
+
+aside .sidebar a span {
+    font-size: 1.6rem;
+    transition: all 300ms ease
+}
+
+aside .sidebar a h3 {
+    margin-top: 8px;
+}
+
+aside .sidebar a.active {
+    background: var(--color-light);
+    color: var(--color-primary);
+    margin-left: 0;
+}
+
+aside .sidebar a.active {
+    color: var(--color-primary);
+    margin-left: 0;
+}
+
+aside .sidebar a.active:before {
+    content: '';
+    width: 6px;
+    height: 100%;
+    background: var(--color-primary);
+}
+
+aside .sidebar a.active span {
+    color: var(--color-primary);
+    margin-left: calc(1rem-3px);
+}
+
+aside .sidebar a:hover {
+    color: var(--color-primary);
+}
+
+aside .sidebar a:hover span{
+    margin-left: 0.5rem;
+}
+
+aside .sidebar .message-count {
+    background: var(--color-danger);
+    color: var(--color-white);
+    padding: 2px 10px;
+    font-size: 11px;
+    border-radius: var(--border-radius-1);
+}
+
+/* ----------------- ВЕРХНЕЕ МЕНЮ ----------------- */
+
+main .features {
+    float: left;
+    text-align: left;
+    width: 80%;
+}
+
+main .features h1{
+    margin-left: 15px;
+}
+
+menu {
+    float: right;
+    margin-top: 25px;
+}
+
+ul.mainmenu {
+    vertical-align: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	color: #cccccc;
+	font-size: 14px;
+	overflow: hidden;
+}
+
+.logout {
+    align-items: center;
+    display: flex;
+    gap: 2rem;
+}
+
+.logout a{
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    gap: 2rem;
+}
+
+menu ul li {
+    align-items: center;
+	float: right;
+	margin: 0 40px 0 30px;
+}
+ul.mainmenu li.logo {margin: 0;}
+
+ul.mainmenu li{
+    align-items: center;
+}
+
+ul.mainmenu li a {
+    margin-right: 15px;
+    display: flex;
+    gap: 0.5rem;
+	color: var(--color-info-dark);
+	text-decoration: none;
+}
+ul.mainmenu li a:hover {
+
+	color: var(--color-danger);
+}
+
+.custom-button {
+    padding: 15px;
+    margin: 0;
+    border-radius: 8px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-primary);
+    font-weight: 600;
+}
+
+.custom-button:hover {
+    padding: 15px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-info-dark);
+    font-weight: 600;
+    transition: all 500ms ease;
+}
+
+.custom-button-small {
+    padding: 5px;
+    
+    margin: 0;
+    border-radius: 8px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-primary);
+    font-weight: 600;
+}
+
+.custom-button-delete {
+    padding: 15px;
+    border-radius: 8px;
+    white-space: nowrap;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-danger);
+    font-weight: 600;
+}
+
+.custom-button-delete:hover {
+    padding: 15px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-dark);
+    font-weight: 600;
+    transition: all 500ms ease;
+}
+
+.custom-button-change {
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-warning);
+    font-weight: 600;
+}
+
+.custom-button-change:hover {
+    padding: 15px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-dark);
+    font-weight: 600;
+    transition: all 500ms ease;
+}
+.custom-button-choose {
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--color-primary);
+    color: var(--color-dark);
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.custom-button-choose:hover {
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-white);
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.custom-button-delete-add {
+    padding: 15px;
+    border-radius: 8px;
+    white-space: nowrap;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-danger);
+    font-weight: 600;
+}
+
+.custom-button-delete-add:hover {
+    padding: 15px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-dark);
+    font-weight: 600;
+    transition: all 500ms ease;
+}
+
+.reduct-buttons {
+    display: flex;
+    gap: 2rem;
+}
+
+.top-befor-header {
+    display: flex;
+    align-items: center;
+    margin-top: 35px;
+    justify-content: space-between;
+    
+
+}
+.alert-warning {
+    display: flex;
+    
+}
+.add-data form {
+    width: 60%;
+    margin-left: auto; 
+    margin-right: 0;
+    margin-bottom: 40px;
+
+}
+.alert-warninng {
+    padding-right: 0;
+    margin-right: 0;
+}
+
+form {
+    margin-left: 32%;
+    width: 500px;
+    margin-top: 50px;
+}
+
+.top-befor-header p {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* ========= ФИЛЬТР =========*/
+
+.filter-data {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    float: left;
+
+}
+
+.filter-form {
+    margin: 0 0 20px 0;
+    padding: 0;
+    float: left;
+    display: flex;
+    gap: 1rem;
+}
+
+.choose-date {
+    padding: 15px;
+    font-family: poppins, sans-serif;
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 14px;
+    border: 1px solid var(--color-primary);
+    outline: none;
+    border-radius: 8px;
+}
+
+.choose-date-small {
+    padding: 5px;
+    font-family: poppins, sans-serif;
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 14px;
+    border: 1px solid var(--color-primary);
+    outline: none;
+    border-radius: 8px;
+}
+
+.inner-form-data p {
+    margin: 0;
+    padding: 0;
+}
+/* ========= КОНЕЦ ФИЛЬТРА =========*/
+
+/* ==========ЗАГРУЗКА ИЗ EXCEL ========= */
+
+.input-file {
+    visibility: hidden;
+}
+/* ==========ИМПОРТ В EXCEL ==========*/
+.import-excel {
+    float: right;
+    margin: 0;
+    padding: 0px;
+}
+.import-excel form {
+    margin: 0;
+}
+
+.import-excel form button{
+    float: right;
+    margin: 0;
+}
+
+/* ========== ГРАФИКИ =========*/
+
+.charts {
+    display: flex;
+    gap: 0.5rem;
+    margin-right: 0px;
+    align-items: center;
+    margin-top: 35px;
+    justify-content: space-between;
+}
+
+.chart {
+
+    background: var(--color-white);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+    display: flex;
+    margin-right: 0px;
+    align-items: center;
+    margin-top: 35px;
+    justify-content: space-between;
+}
+.chart:hover {
+    box-shadow: none;
+}
+
+
+/* ========== КОНЕЦ ГРАФИКОВ =========*/
+
+/* ========== ТАБЛИЦА =========*/
+
+main .recent-orders table {
+    background: var(--color-white);
+    width: 100%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+main .recent-orders table:hover {
+    box-shadow: none;
+}
+
+table {
+    text-align: center;
+    border-collapse: separate;
+    border-spacing: 0px;
+    width: 100%;
+    margin-bottom: 20px;
+ }
+ /* границы ячеек первого ряда таблицы */
+table th {
+    text-align: center;
+    font-weight: bold;
+	padding: 10px 15px;
+	background: #ededed;
+ }
+
+table tr th:first-child {
+	border-radius: 8px 0 0 8px;
+}
+
+table tr th:last-child {
+	border-radius: 0 8px 8px 0;
+}
+ /* границы ячеек тела таблицы */
+table td {
+	padding: 10px 15px;
+    text-align: center;
+    vertical-align: center;
+    border: none;
+}
+table tr a {
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+table tr:hover {
+	transform: scale(1.02);
+    transition: transform .6s;	
+}
+
+table tr:nth-child(odd){
+	background: #ededed;
+}
+
+table tr td:first-child {
+	border-radius: 8px 0 0 8px;
+}
+
+table tr td:last-child {
+	border-radius: 0 8px 8px 0;
+}
+

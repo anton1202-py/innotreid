@@ -95,6 +95,8 @@ def add_database_data():
              pay,
              1)
         common_data_sale.append(x)
+    print(common_data_stock)
+    
     if str("<class 'str'>") not in check_data_sales:
         print('УРА!!!')
         try:
