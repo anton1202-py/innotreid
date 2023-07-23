@@ -275,14 +275,14 @@ def database_stock_shelving(request):
         amount__gte=4).exclude(
         task_finish_date=None).exclude(
         task_finish_date__lte=two_days_ago).order_by('-task_finish_date')
-    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    #pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
     # ========== Печать PDF файла ========== #
     if request.method == 'GET' and 'to-my-pdf' in request.GET.keys():
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="my_table.pdf"'
         doc = SimpleDocTemplate(response, pagesize=letter)
         data = []
-        data.append(['task_start_date', 'Артикул', 'Shelf number', 'Amount', 'New amount'])
+        data.append(['task_start_date', 'Article', 'Shelf number', 'Amount', 'New amount'])
         for item in task_data:
             item.task_start_date = item.task_start_date + timedelta(hours=3)
             table_time = item.task_start_date.strftime("%Y-%m-%d %H:%M:%S")
