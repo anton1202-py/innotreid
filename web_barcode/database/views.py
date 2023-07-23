@@ -14,6 +14,8 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
@@ -102,20 +104,44 @@ def database_home(request):
     if request.method == 'POST' and request.FILES['myarticles']:
         myfile = request.FILES['myarticles']
         empexceldata = pd.read_excel(myfile)
+        load_excel_data_wb_stock = pd.DataFrame(
+            empexceldata, columns=['Общий артикул', 'Наш Артикул на WB (артикул поставщика)',
+                                   'Barcode WB', 'Артикул WB (номенклатура)',
+                                   'Наш Артикул на OZON (артикул поставщика)',
+                                   'OZON Product ID', 'FBO OZON SKU ID',
+                                   'FBS OZON SKU ID', 'Barcode OZON',
+                                   'Наш Артикул на Яндекс (артикул поставщика)',
+                                   'Barcode YANDEX', 'SKU на YANDEX'])
+        common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
+        article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на WB (артикул поставщика)'].to_list()
+        article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
+        barcode_wb_list = load_excel_data_wb_stock['Barcode WB'].to_list()
+        article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на OZON (артикул поставщика)'].to_list()
+        ozon_product_id_list = load_excel_data_wb_stock['OZON Product ID'].to_list()
+        fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
+        fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
+        barcode_ozon_list = load_excel_data_wb_stock['Barcode OZON'].to_list()
+        article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
+        barcode_yandex_list = load_excel_data_wb_stock['Barcode YANDEX'].to_list()
+        sku_yandex_list = load_excel_data_wb_stock['SKU на YANDEX'].to_list()
         dbframe = empexceldata
-        for dbframe in dbframe.itertuples():
-            print(dbframe.seller_article)
+
+        for i in range(len(common_article_list)):
             obj = Articles.objects.create(
-                seller_article=dbframe.seller_article,
-                nomenclature=dbframe.nomenclature,
-                article_wb=dbframe.article_wb,
-                article_ozon=dbframe.article_ozon,
-                article_yandex=dbframe.article_yandex,
-                barcode_wb=dbframe.barcode_wb,
-                barcode_ozon=dbframe.barcode_ozon,
-                barcode_yandex=dbframe.barcode_yandex
+                common_article=common_article_list[i],
+                article_seller_wb=article_seller_wb_list[i],
+                article_wb_nomenclature=article_wb_nomenclature_list[i],
+                barcode_wb=barcode_wb_list[i],
+                article_seller_ozon=article_seller_ozon_list[i],
+                ozon_product_id=ozon_product_id_list[i],
+                fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
+                fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
+                barcode_ozon=barcode_ozon_list[i],
+                article_seller_yandex=article_seller_yandex_list[i],
+                barcode_yandex=barcode_yandex_list[i],
+                sku_yandex=sku_yandex_list[i],
                 )
-            obj.save()
+        obj.save()
     return render(request, 'database/database_home.html', context)
 
 
@@ -249,16 +275,18 @@ def database_stock_shelving(request):
         amount__gte=4).exclude(
         task_finish_date=None).exclude(
         task_finish_date__lte=two_days_ago).order_by('-task_finish_date')
-
+    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
     # ========== Печать PDF файла ========== #
     if request.method == 'GET' and 'to-my-pdf' in request.GET.keys():
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="my_table.pdf"'
         doc = SimpleDocTemplate(response, pagesize=letter)
         data = []
-        data.append(['task_start_date', 'Article', 'Shelf number', 'Amount', 'New amount'])
+        data.append(['task_start_date', 'Артикул', 'Shelf number', 'Amount', 'New amount'])
         for item in task_data:
-            data.append([item.task_start_date,
+            item.task_start_date = item.task_start_date + timedelta(hours=3)
+            table_time = item.task_start_date.strftime("%Y-%m-%d %H:%M:%S")
+            data.append([table_time,
                          item.seller_article,
                          item.shelf_number,
                          item.amount,])
@@ -319,6 +347,7 @@ def database_stock_shelving(request):
 
 
 def database_sales(request):
+    """Отображение страницы База данных продаж"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     control_date_stock = date.today() - timedelta(days=1)

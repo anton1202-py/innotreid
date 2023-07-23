@@ -8,54 +8,62 @@ from .models import Articles, Sales, ShelvingStocks, Stocks
 class ArticlesForm(ModelForm):
     class Meta:
         model = Articles
-        fields = ['seller_article', 'title', 'nomenclature', 'article_wb',
-                  'article_ozon', 'article_yandex', 'article_sber',
-                  'barcode_wb', 'barcode_ozon', 'barcode_yandex',
-                  'barcode_sber', 'multiplicity']
+        fields = ['common_article', 'title', 'article_seller_wb', 'article_wb_nomenclature',
+                  'barcode_wb', 'article_seller_ozon', 'ozon_product_id', 'fbo_ozon_sku_id',
+                  'fbs_ozon_sku_id', 'barcode_ozon', 'article_seller_yandex', 'barcode_yandex',
+                  'sku_yandex', 'multiplicity']
         widgets = {
-            'seller_article': TextInput(attrs={
+            'common_article': TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Артикул продавца'
+                'placeholder': 'Общий артикул'
             }),
             'title': TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Наименование'
             }),
-            'nomenclature': TextInput(attrs={
+            'article_seller_wb': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Артикул постащика на WB'
+            }),
+            'article_wb_nomenclature': TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Номенклатура WB'
-            }),
-            'article_wb': TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Артикул WB'
-            }),
-            'article_ozon': TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Артикул OZON'
-            }),
-            'article_yandex': TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Артикул YANDEX'
-            }),
-            'article_sber': TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Артикул SBER'
             }),
             'barcode_wb': TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Баркод WB'
             }),
+            'article_seller_ozon': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Артикул поставщика на OZON'
+            }),
+            'ozon_product_id': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'OZON Product ID'
+            }),
+            'fbo_ozon_sku_id': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'FBO OZON SKU ID'
+            }),
+            'fbs_ozon_sku_id': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'FBS OZON SKU ID'
+            }),
             'barcode_ozon': TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Баркод OZON'
+            }),
+            'article_seller_yandex': TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Артикул поставщика на YANDEX'
             }),
             'barcode_yandex': TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Баркод YANDEX'
             }),
-            'barcode_sber': TextInput(attrs={
+            'sku_yandex': TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Баркод SBER'
+                'placeholder': 'SKU YANDEX'
             }),
             'multiplicity': TextInput(attrs={
                 'class': 'form-control',

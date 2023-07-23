@@ -7,29 +7,33 @@
     <div class="features">
         <div class="alert alert-warninng">
             <table>
-                <tr><th>Артикул продаца</th>
-                    <th>Наименование</th>
-                    <th>Артикул WB</th>
-                    <th>Артикул OZON</th>
-                    <th>Артикул YANDEX</th>
-                    <th>Артикул SBER</th>
+                <tr><th>Общий артикул</th>
+                    <th>Артикул постащика на WB</th>
+                    <th>Номенклатура WB</th>
                     <th>Баркод WB</th>
+                    <th>Артикул поставщика на OZON</th>
+                    <th>OZON Product ID</th>
+                    <th>FBO OZON SKU ID</th>
+                    <th>FBS OZON SKU ID</th>
                     <th>Баркод OZON</th>
+                    <th>Артикул поставщика на YANDEX</th>
                     <th>Баркод YANDEX</th>
-                    <th>Баркод SBER</th>
-                    <th>Кратность</th>
+                    <th>SKU YANDEX</th>
                 </tr>
                 <tr>
-                    <td>{{ article.seller_article }}</td>
+                    <td>{{ article.common_article }}</td>
                     <td>{{ article.title }}</td>
-                    <td>{{ article.article_wb }}</td>
-                    <td>{{ article.article_ozon }}</td>
-                    <td>{{ article.article_yandex }}</td>
-                    <td>{{ article.article_sber }}</td>
+                    <td>{{ article.article_seller_wb }}</td>
+                    <td>{{ article.article_wb_nomenclature }}</td>
                     <td>{{ article.barcode_wb }}</td>
+                    <td>{{ article.article_seller_ozon }}</td>
+                    <td>{{ article.ozon_product_id }}</td>
+                    <td>{{ article.fbo_ozon_sku_id }}</td>
+                    <td>{{ article.fbs_ozon_sku_id }}</td>
                     <td>{{ article.barcode_ozon }}</td>
+                    <td>{{ article.article_seller_yandex }}</td>
                     <td>{{ article.barcode_yandex }}</td>
-                    <td>{{ article.barcode_sber }}</td>
+                    <td>{{ article.sku_yandex }}</td>
                     <td>{{ article.multiplicity }}</td>
                 </tr>
             </table>

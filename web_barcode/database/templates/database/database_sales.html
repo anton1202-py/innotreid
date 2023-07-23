@@ -79,23 +79,23 @@
                     {% endif %}
                     {% for dat in seller_articles %}
                         {% if el.5 == 1 %}
-                            {% if dat.article_wb == el.0 %}
-                            <td>{{ dat.seller_article }}</td>
+                            {% if dat.article_seller_wb == el.0 %}
+                            <td>{{ dat.common_article }}</td>
                             {% endif %}
                         {% endif %}
                         {% if el.5 == 2 %}
-                            {% if dat.article_ozon == el.0 %}
-                            <td>{{ dat.seller_article }}</td>
+                            {% if dat.article_seller_ozon == el.0 %}
+                            <td>{{ dat.common_article }}</td>
                             {% endif %}
                         {% endif %}
                         {% if el.5 == 3 %}
-                            {% if dat.article_yandex == el.0 %}
-                            <td>{{ dat.seller_article }}</td>
+                            {% if dat.article_seller_yandex == el.0 %}
+                            <td>{{ dat.common_article }}</td>
                             {% endif %}
                         {% endif %}
                         {% if el.5 == 4 %}
                             {% if dat.article_sber == el.0 %}
-                            <td>{{ dat.seller_article }}</td>
+                            <td>{{ dat.common_article }}</td>
                             {% endif %}
                         {% endif %}
                     {% endfor %}

@@ -1,65 +1,62 @@
 from datetime import datetime
 
 from django.db import models
+from django.urls import reverse
 
 
 class Articles(models.Model):
-    seller_article = models.CharField(
-        verbose_name='Артикул продавца',
+    common_article = models.CharField(
+        verbose_name='Общий артикул',
         max_length=50,
+        unique=True
     )
     title = models.CharField(
-        verbose_name='Наименование',
+        verbose_name='Название',
         max_length=100,
         null=True,
     )
-    nomenclature = models.CharField(
+    article_seller_wb = models.CharField(
+        verbose_name='Артикул постащика на WB',
+        null=True,
+    )
+    article_wb_nomenclature = models.PositiveBigIntegerField(
         verbose_name='Номенклатура WB',
-        max_length=20,
         null=True,
     )
-    article_wb = models.CharField(
-        verbose_name='Артикул WB',
-        max_length=50,
-        null=True,
-    )
-    article_ozon = models.CharField(
-        verbose_name='Артикул OZON',
-        max_length=50,
-        null=True,
-    )
-    article_yandex = models.CharField(
-        verbose_name='Артикул YANDEX',
-        max_length=50,
-        null=True,
-    )
-    article_sber = models.CharField(
-        verbose_name='Артикул SBER',
-        max_length=50,
-        null=True,
-    )
-    barcode_wb = models.CharField(
+    barcode_wb = models.PositiveBigIntegerField(
         verbose_name='Баркод WB',
-        max_length=13,
         null=True,
     )
-    barcode_ozon = models.CharField(
+    article_seller_ozon = models.CharField(
+        verbose_name='Артикул поставщика на OZON',
+        null=True,
+    )
+    ozon_product_id = models.PositiveBigIntegerField(
+        verbose_name='OZON Product ID',
+        null=True,
+    )
+    fbo_ozon_sku_id = models.PositiveBigIntegerField(
+        verbose_name='FBO OZON SKU ID',
+        null=True,
+    )
+    fbs_ozon_sku_id = models.PositiveBigIntegerField(
+        verbose_name='FBS OZON SKU ID',
+        null=True,
+    )
+    barcode_ozon = models.PositiveBigIntegerField(
         verbose_name='Баркод OZON',
-        max_length=13,
         null=True,
     )
-    barcode_yandex = models.CharField(
+    article_seller_yandex = models.CharField(
+        verbose_name='Артикул поставщика на YANDEX',
+        null=True,
+    )
+    barcode_yandex = models.PositiveBigIntegerField(
         verbose_name='Баркод YANDEX',
-        max_length=13,
         null=True,
     )
-    barcode_sber = models.CharField(
-        verbose_name='Баркод SBER',
-        max_length=13,
-        null=True,
-    )
-    multiplicity = models.PositiveSmallIntegerField(
-        verbose_name='Кратность',
+    sku_yandex = models.PositiveBigIntegerField(
+        verbose_name='SKU YANDEX',
         null=True,
     )
     multiplicity = models.PositiveSmallIntegerField(
@@ -170,6 +167,9 @@ class ShelvingStocks(models.Model):
             self.task_start_date = time_now
             self.task_finish_date = None
         super(ShelvingStocks, self).save(*args, **kwargs)
+
+    def get_absolute_url(self): # new
+        return reverse('stock-shelving')
 
     def __str__(self):
         return (f'{self.task_start_date} - {self.seller_article}'

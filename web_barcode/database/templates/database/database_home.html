@@ -34,35 +34,37 @@
         </div>
             <table>
                 <tr>
-                    <th>Артикул продаца</th>
-                    <th>Наименование</th>
-                    <th>Артикул WB</th>
-                    <th>Артикул OZON</th>
-                    <th>Артикул YANDEX</th>
-                    <th>Артикул SBER</th>
+                    <th>Общий артикул</th>
+                    <th>Артикул постащика на WB</th>
+                    <th>Номенклатура WB</th>
                     <th>Баркод WB</th>
+                    <th>Артикул поставщика на OZON</th>
+                    <th>OZON Product ID</th>
+                    <th>FBO OZON SKU ID</th>
+                    <th>FBS OZON SKU ID</th>
                     <th>Баркод OZON</th>
+                    <th>Артикул поставщика на YANDEX</th>
                     <th>Баркод YANDEX</th>
-                    <th>Баркод SBER</th>
-                    <th>Кратность</th>
+                    <th>SKU YANDEX</th>
                 </tr>
                 {% for el in data %}   
                 <tr>
                     {% if request.user.is_authenticated %}
-                        <td><a href="{% url 'database_detail' el.id %}">{{ el.seller_article }}</a></td>
+                        <td><a href="{% url 'database_detail' el.id %}">{{ el.common_article }}</a></td>
                     {% else %}
-                        <td>{{ el.seller_article }}</td>
+                        <td>{{ el.common_article }}</td>
                     {% endif %}
-                    <td>{{ el.title|truncatechars:13 }}</td>
-                    <td>{{ el.article_wb }}</td>
-                    <td>{{ el.article_ozon }}</td>
-                    <td>{{ el.article_yandex }}</td>
-                    <td>{{ el.article_sber }}</td>
+                    <td>{{ el.article_seller_wb }}</td>
+                    <td>{{ el.article_wb_nomenclature }}</td>
                     <td>{{ el.barcode_wb }}</td>
+                    <td>{{ el.article_seller_ozon }}</td>
+                    <td>{{ el.ozon_product_id }}</td>
+                    <td>{{ el.fbo_ozon_sku_id }}</td>
+                    <td>{{ el.fbs_ozon_sku_id }}</td>
                     <td>{{ el.barcode_ozon }}</td>
+                    <td>{{ el.article_seller_yandex }}</td>
                     <td>{{ el.barcode_yandex }}</td>
-                    <td>{{ el.barcode_sber }}</td>
-                    <td>{{ el.multiplicity }}</td>
+                    <td>{{ el.sku_yandex }}</td>
                 </tr>
                 {% endfor %}
             </table>

@@ -9,17 +9,19 @@
         <div class="table">
             <form method="post">
                 {% csrf_token %} <br>
-                {{ form.seller_article }} <br>
+                {{ form.common_article }} <br>
                 {{ form.title }} <br>
-                {{ form.nomenclature }} <br>
-                {{ form.article_wb }} <br>
-                {{ form.article_ozon }} <br>
-                {{ form.article_yandex }} <br>
-                {{ form.article_sber }} <br>
+                {{ form.article_seller_wb }} <br>
+                {{ form.article_wb_nomenclature }} <br>
                 {{ form.barcode_wb }} <br>
+                {{ form.article_seller_ozon }} <br>
+                {{ form.ozon_product_id }} <br>
+                {{ form.fbo_ozon_sku_id }} <br>
+                {{ form.fbs_ozon_sku_id }} <br>
                 {{ form.barcode_ozon }} <br>
+                {{ form.article_seller_yandex }} <br>
                 {{ form.barcode_yandex }} <br>
-                {{ form.barcode_sber }} <br>
+                {{ form.sku_yandex }} <br>
                 {{ form.multiplicity }} <br>
                 <span>{{ error }}</span>
                 <button class="custom-button" type="submit">Добавить данные</button>

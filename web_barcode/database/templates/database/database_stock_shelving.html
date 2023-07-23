@@ -10,12 +10,12 @@
             <div class="add-data">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <p>Загрузить остатки в Базу Данных</p>
+                    <p>Загрузить новые данные в Базу Данных</p>
                     <div class="alert-warning">
                         <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
                         <input type="file" id="myfile" name="myfile" class="input-file">
                         <button type="submit" class="custom-button-delete-add">
-                            Загрузить
+                            Загрузить из файла
                         </button> 
                     </div>
                 </form>
