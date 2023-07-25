@@ -8,8 +8,30 @@
         <div class="alert alert-warninng">
             <div class="charts">
                 <div class='chart'>
-                    <canvas id="acquisitions" width="600" height="100"></canvas>
+                    <canvas id="acquisitions" width="580" height="300"></canvas>
                     <script>
+                        function getGradient(ctx, chartArea) {
+                            let gradient = ctx.createLinearGradient(
+                              0,
+                              chartArea.bottom,
+                              0,
+                              chartArea.top
+                            );
+                            gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                            gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                            return gradient;
+                                        }
+                        function getGradient2(ctx, chartArea) {
+                            let gradient = ctx.createLinearGradient(
+                              0,
+                              chartArea.bottom,
+                              0,
+                              chartArea.top
+                            );
+                            gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+                            gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+                            return gradient;
+                                        }
                         (async function() {
                           new Chart(
                             document.getElementById('acquisitions'),
@@ -21,7 +43,30 @@
                                   {
                                     label: 'Количество продаж {{ articles.0.article_marketplace }}',
                                     data: [{% for article in articles %} {{ article.amount }}, {% endfor %}],
-                                    borderColor: '#7380ec',
+                                    lineTension: 0.3,
+                                    fill: true,
+                                    backgroundColor: function (context) {
+                                        const chart = context.chart;
+                                        const { ctx, chartArea } = chart;
+                                    
+                                       // This case happens on initial chart load
+                                       if (!chartArea) return;
+                                       return getGradient2(ctx, chartArea);
+                                    }
+                                  },
+                                  {
+                                    label: 'Количество на складе {{ articles.0.article_marketplace }}',
+                                    data: [{% for wbstock in wbstocks %} {{ wbstock.amount }}, {% endfor %}],
+                                    lineTension: 0.3,
+                                    fill: true,
+                                    backgroundColor: function (context) {
+                                        const chart = context.chart;
+                                        const { ctx, chartArea } = chart;
+                                    
+                                       // This case happens on initial chart load
+                                       if (!chartArea) return;
+                                       return getGradient(ctx, chartArea);
+                                    }
                                   }
                                 ]
                               },
@@ -44,7 +89,7 @@
                     </script>
                 </div>
                 <div class='chart'>
-                    <canvas id="acquisitions2" width="600" height="100"></canvas>
+                    <canvas id="acquisitions2" width="500" height="300"></canvas>
                     <script>
                         (async function() {
                           new Chart(
@@ -57,7 +102,16 @@
                                   {
                                     label: 'Сумма продаж {{ articles.0.article_marketplace }}',
                                     data: [{% for article in articles %} {{ article.sum_sale }}, {% endfor %}],
-                                    borderColor: '#7380ec',
+                                    lineTension: 0.3,
+                                    fill: true,
+                                    backgroundColor: function (context) {
+                                        const chart = context.chart;
+                                        const { ctx, chartArea } = chart;
+                                    
+                                       // This case happens on initial chart load
+                                       if (!chartArea) return;
+                                       return getGradient(ctx, chartArea);
+                                    }
                                   }
                                 ]
                               },
@@ -80,7 +134,12 @@
                     </script>
                 </div>
             </div>
-        </div>    
+        </div>
+        {% for wbstock in wbstocks %}
+        {% if articles.0.article_marketplace ==  wbstock.seller_article_wb and wbstock.code_stock_id == 3 %} 
+        <p>{{ wbstock.amount }}</p> 
+        {% endif %}
+        {% endfor %}  
         <div class="alert alert-warninng">
             <table>
                 <tr>

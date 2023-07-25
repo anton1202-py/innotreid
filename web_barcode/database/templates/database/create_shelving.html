@@ -1,0 +1,23 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Добавить артикул в таблицу{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <h1>Добавить артикул в таблицу</h1>
+        <div class="table">
+            <form method="post">
+                {% csrf_token %} <br>
+                {{ form.seller_article_wb }} <br>
+                {{ form.seller_article }} <br>
+                {{ form.shelf_number }} <br>
+                {{ form.amount }} <br>
+                <span>{{ error }}</span>
+                <button class="custom-button" type="submit">Сохранить</button>
+            </form>
+        </div>
+        
+    </div>    
+        
+{% endblock %} 

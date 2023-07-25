@@ -24,19 +24,6 @@
     <div class="features">
         <div class="top-befor-header">
             <h1>База данных Склада</h1>
-            <div class="add-data">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <p>Загрузить остатки в Базу Данных</p>
-                    <div class="alert-warning">
-                        <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
-                        <input type="file" id="myfile" name="myfile" class="input-file">
-                        <button type="submit" class="custom-button-delete-add">
-                            Загрузить
-                        </button> 
-                    </div>
-                </form>
-            </div>
                 {# <a href="{% url 'createstock' %}"> #}
                 {#    <button class="custom-button"> #}
                 {#        Добавить запись в базу #}

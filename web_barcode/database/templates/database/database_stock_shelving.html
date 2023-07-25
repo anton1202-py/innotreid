@@ -6,19 +6,42 @@
 {% block content %}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Задание на изготовление</h1>
+            <div class="main-add-download-articles">
+                <h1>Задание на изготовление</h1>
+                <div class="add-download-articles">
+                    <a href="{% url 'createshelving' %}">
+                        <button class="custom-button-change">
+                            Добавить артикул
+                        </button>
+                    </a>
+                    <form method="GET" enctype="multipart/form-data">
+                        <div class="alert-warning">
+                            <button type="submit" id="to-pdf" name="to-my-pdf" class="custom-button-delete-add">
+                                Выгрузить в PDF файл
+                            </button> 
+                        </div>
+                    </form>
+                </div>
+            </div>
             <div class="add-data">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
+                {% if request.user.is_staff %}
                     <p>Загрузить новые данные в Базу Данных</p>
-                    <div class="alert-warning">
-                        <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
-                        <input type="file" id="myfile" name="myfile" class="input-file">
-                        <button type="submit" class="custom-button-delete-add">
-                            Загрузить из файла
-                        </button> 
-                    </div>
-                </form>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="alert-warning">
+                            <div class="label-button">
+                                <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
+                                <input type="file" id="myfile" name="myfile" class="input-file">
+                            </div>
+                            <div class="label-button">
+                                <button type="submit" class="custom-button-delete-add">
+                                    Загрузить из файла
+                                </button> 
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
             </div>
         </div>
         {% if messages %}
@@ -28,13 +51,7 @@
                 {% endfor %}
             </script>
         {% endif %}
-        <form method="GET" enctype="multipart/form-data">
-            <div class="alert-warning">
-                <button type="submit" id="to-pdf" name="to-my-pdf" class="custom-button-delete-add">
-                    Выгрузить в PDF файл
-                </button> 
-            </div>
-        </form>
+        
         <table>
             <tr>
                 <th>Дата начала задания</th>
@@ -72,8 +89,6 @@
                 <th>Артикул</th>
                 <th>Ячейка</th>
                 <th>Остаток в ячейке</th>
-                <th>Новый остаток</th>
-                <th>Кнопка</th>
             </tr>
             {% for el in data %}   
             <tr>
@@ -82,16 +97,6 @@
                 <td><a href="{% url 'stock-shelving-update' el.id  %}">{{ el.seller_article }}</a></td>
                 <td>{{ el.shelf_number }}</td>
                 <td>{{ el.amount }}</td>
-                
-                <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <td>
-                        <input type="number" id="{{ el.seller_article }}" name="{{ el.id }}" class="choose-date-small"/>
-                    </td>
-                    <td><button type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article_wb }}" method="POST" class="custom-button-small"> Загрузить
-                    </button> </td>
-                   {# <td><input type="Submit" id="{{ el.seller_article }}" name="{{ el.seller_article }}" value="OK" class="custom-button-change"/></td>#}
-                </form>
             </tr>
             {% endfor %}
         </table>

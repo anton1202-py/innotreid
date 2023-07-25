@@ -127,9 +127,6 @@ class WildberriesStocks(models.Model):
         verbose_name='Количество',
     )
 
-    def __str__(self):
-        return self.pub_date, self.article_wb, self.amount
-
     class Meta:
         verbose_name = 'Склады Wildberries'
         verbose_name_plural = 'Склады Wildberries'

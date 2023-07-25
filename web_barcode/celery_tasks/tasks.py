@@ -126,4 +126,3 @@ def add_database_data():
                 print("Соединение с PostgreSQL закрыто")
     else:
         sleep(10)
-

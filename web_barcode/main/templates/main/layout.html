@@ -49,31 +49,37 @@
         </a>
         
         <div class="sidebar">
-            {% url 'database_home' as url %}
-            <a href="{{ url }}" {% if request.path == url %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">receipt_long</span>
-                <h3>База данных Артикулов</h3>
-            </a>
-            {% url 'database_stock' as url_stock %}
-            <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">inventory</span>
-                <h3>База данных Склада</h3>
-            </a>
-	    {% url 'stock-wb' as url_stock %}
-            <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">inventory_2</span>
-                <h3>База данных Склада Wildberries</h3>
-            </a>
+            {% if request.user.is_staff %}
+                {% url 'database_home' as url %}
+                <a href="{{ url }}" {% if request.path == url %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">receipt_long</span>
+                    <h3>База данных Артикулов</h3>
+                </a>
+            
+                {% url 'database_stock' as url_stock %}
+                <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">inventory</span>
+                    <h3>База данных Склада</h3>
+                </a>
+            
+	            {% url 'stock-wb' as url_stock %}
+                <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">inventory_2</span>
+                    <h3>База данных Склада Wildberries</h3>
+                </a>
+            {% endif %}
             {% url 'stock-shelving' as url_stock %}
             <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">shelves</span>
                 <h3>Склад стеллажей</h3>
             </a>
+            {% if request.user.is_staff %}
             {% url 'database_sales' as url_sales %}
-            <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">trending_up</span>
-                <h3>База данных Продаж</h3>
-            </a>
+                <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">trending_up</span>
+                    <h3>База данных Продаж</h3>
+                </a>
+            {% endif %}
         </div>
     </aside>
     <main>

@@ -214,7 +214,7 @@ aside .sidebar .message-count {
 
 /* ----------------- ВЕРХНЕЕ МЕНЮ ----------------- */
 
-main .features {
+.features {
     float: left;
     text-align: left;
     width: 80%;
@@ -271,8 +271,20 @@ ul.mainmenu li a {
 	text-decoration: none;
 }
 ul.mainmenu li a:hover {
-
 	color: var(--color-danger);
+}
+
+.add-download-articles {
+    display: flex;
+    gap: 2rem;
+    float: left;
+    margin: 0;
+    padding: o;
+}
+
+.add-download-articles form{
+    margin: 0;
+    padding: o;
 }
 
 .custom-button {
@@ -296,7 +308,6 @@ ul.mainmenu li a:hover {
 
 .custom-button-small {
     padding: 5px;
-    
     margin: 0;
     border-radius: 8px;
     border: none;
@@ -328,6 +339,7 @@ ul.mainmenu li a:hover {
     padding: 15px;
     border-radius: 8px;
     border: none;
+    white-space: nowrap;
     color: var(--color-white);
     background: var(--color-warning);
     font-weight: 600;
@@ -389,23 +401,39 @@ ul.mainmenu li a:hover {
     align-items: center;
     margin-top: 35px;
     justify-content: space-between;
-    
-
 }
+
 .alert-warning {
     display: flex;
-    
+    gap: 2rem;
+    margin: 0;
+    padding: o;
 }
+
+.add-data {
+    text-align: right;
+    margin: 0;
+    padding: o;
+}
+
 .add-data form {
-    width: 60%;
-    margin-left: auto; 
-    margin-right: 0;
-    margin-bottom: 40px;
+    margin: 0;
+}
+
+.label-button {
+    margin: 0px;
+    margin-bottom: -20px;
+    padding-bottom: 0px;
 
 }
+
+.label-button button {
+    margin: 0px;
+}
+
 .alert-warninng {
-    padding-right: 0;
-    margin-right: 0;
+    padding: 0;
+    margin: 0;
 }
 
 form {
@@ -490,10 +518,9 @@ form {
 .charts {
     display: flex;
     gap: 0.5rem;
-    margin-right: 0px;
     align-items: center;
     margin-top: 35px;
-    justify-content: space-between;
+
 }
 
 .chart {

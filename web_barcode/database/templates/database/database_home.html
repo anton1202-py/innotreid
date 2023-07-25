@@ -13,11 +13,15 @@
                     {% csrf_token %}
                     <p>Загрузить артикулы в Базу Данных</p>
                     <div class="alert-warning">
-                        <label for="myarticles" class="custom-button-choose">Выберете Excel файл</label>
-                        <input type="file" id="myarticles" name="myarticles" class="input-file">
-                        <button type="submit" class="custom-button-delete-add">
-                            Загрузить
-                        </button> 
+                        <div class="label-button">
+                            <label for="myarticles" class="custom-button-choose">Выберете Excel файл</label>
+                            <input type="file" id="myarticles" name="myarticles" class="input-file">
+                        </div>
+                        <div class="label-button">
+                            <button type="submit" class="custom-button-delete-add">
+                                Загрузить
+                            </button> 
+                        </div>
                     </div>
                 </form>
             </div>

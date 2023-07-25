@@ -96,53 +96,57 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    data = Articles.objects.all()
-    context = {
-        'data': data,
-    }
+    if request.user.is_staff == True:
+        print(request.user.is_staff)
+        data = Articles.objects.all()
+        context = {
+            'data': data,
+        }
 
-    if request.method == 'POST' and request.FILES['myarticles']:
-        myfile = request.FILES['myarticles']
-        empexceldata = pd.read_excel(myfile)
-        load_excel_data_wb_stock = pd.DataFrame(
-            empexceldata, columns=['Общий артикул', 'Наш Артикул на WB (артикул поставщика)',
-                                   'Barcode WB', 'Артикул WB (номенклатура)',
-                                   'Наш Артикул на OZON (артикул поставщика)',
-                                   'OZON Product ID', 'FBO OZON SKU ID',
-                                   'FBS OZON SKU ID', 'Barcode OZON',
-                                   'Наш Артикул на Яндекс (артикул поставщика)',
-                                   'Barcode YANDEX', 'SKU на YANDEX'])
-        common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
-        article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на WB (артикул поставщика)'].to_list()
-        article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
-        barcode_wb_list = load_excel_data_wb_stock['Barcode WB'].to_list()
-        article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на OZON (артикул поставщика)'].to_list()
-        ozon_product_id_list = load_excel_data_wb_stock['OZON Product ID'].to_list()
-        fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
-        fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
-        barcode_ozon_list = load_excel_data_wb_stock['Barcode OZON'].to_list()
-        article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
-        barcode_yandex_list = load_excel_data_wb_stock['Barcode YANDEX'].to_list()
-        sku_yandex_list = load_excel_data_wb_stock['SKU на YANDEX'].to_list()
-        dbframe = empexceldata
+        if request.method == 'POST' and request.FILES['myarticles']:
+            myfile = request.FILES['myarticles']
+            empexceldata = pd.read_excel(myfile)
+            load_excel_data_wb_stock = pd.DataFrame(
+                empexceldata, columns=['Общий артикул', 'Наш Артикул на WB (артикул поставщика)',
+                                       'Barcode WB', 'Артикул WB (номенклатура)',
+                                       'Наш Артикул на OZON (артикул поставщика)',
+                                       'OZON Product ID', 'FBO OZON SKU ID',
+                                       'FBS OZON SKU ID', 'Barcode OZON',
+                                       'Наш Артикул на Яндекс (артикул поставщика)',
+                                       'Barcode YANDEX', 'SKU на YANDEX'])
+            common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
+            article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на WB (артикул поставщика)'].to_list()
+            article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
+            barcode_wb_list = load_excel_data_wb_stock['Barcode WB'].to_list()
+            article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на OZON (артикул поставщика)'].to_list()
+            ozon_product_id_list = load_excel_data_wb_stock['OZON Product ID'].to_list()
+            fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
+            fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
+            barcode_ozon_list = load_excel_data_wb_stock['Barcode OZON'].to_list()
+            article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
+            barcode_yandex_list = load_excel_data_wb_stock['Barcode YANDEX'].to_list()
+            sku_yandex_list = load_excel_data_wb_stock['SKU на YANDEX'].to_list()
+            dbframe = empexceldata
 
-        for i in range(len(common_article_list)):
-            obj = Articles.objects.create(
-                common_article=common_article_list[i],
-                article_seller_wb=article_seller_wb_list[i],
-                article_wb_nomenclature=article_wb_nomenclature_list[i],
-                barcode_wb=barcode_wb_list[i],
-                article_seller_ozon=article_seller_ozon_list[i],
-                ozon_product_id=ozon_product_id_list[i],
-                fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
-                fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
-                barcode_ozon=barcode_ozon_list[i],
-                article_seller_yandex=article_seller_yandex_list[i],
-                barcode_yandex=barcode_yandex_list[i],
-                sku_yandex=sku_yandex_list[i],
-                )
-        obj.save()
-    return render(request, 'database/database_home.html', context)
+            for i in range(len(common_article_list)):
+                obj = Articles.objects.create(
+                    common_article=common_article_list[i],
+                    article_seller_wb=article_seller_wb_list[i],
+                    article_wb_nomenclature=article_wb_nomenclature_list[i],
+                    barcode_wb=barcode_wb_list[i],
+                    article_seller_ozon=article_seller_ozon_list[i],
+                    ozon_product_id=ozon_product_id_list[i],
+                    fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
+                    fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
+                    barcode_ozon=barcode_ozon_list[i],
+                    article_seller_yandex=article_seller_yandex_list[i],
+                    barcode_yandex=barcode_yandex_list[i],
+                    sku_yandex=sku_yandex_list[i],
+                    )
+            obj.save()
+        return render(request, 'database/database_home.html', context)
+    else:
+        return redirect('home')
 
 
 def database_stock(request):
@@ -505,7 +509,19 @@ class DatabaseSalesDetailView(ListView):
     template_name = 'database/sales_detail.html'
     context_object_name = 'articles'
 
+    def get_context_data(self, **kwargs):
+        context = super(DatabaseSalesDetailView, self).get_context_data(**kwargs)
+        context.update({
+            'wbstocks': Stocks.objects.filter(
+            article_marketplace=self.kwargs['article_marketplace']).values()
+        })
+        #print(Stocks.objects.filter(
+        #    article_marketplace=self.kwargs['article_marketplace']).values())
+        return context
+
     def get_queryset(self):
+        #print(Sales.objects.filter(
+        #    article_marketplace=self.kwargs['article_marketplace']).values())
         return Sales.objects.filter(
             article_marketplace=self.kwargs['article_marketplace'])
 
@@ -589,6 +605,24 @@ def create_stock(request):
 
 
 @login_required
+def create_shelving_stocks(request):
+    error = ''
+    if request.method == 'POST':
+        form = ShelvingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('stock-shelving')
+        else:
+            error = 'Форма была не верной'
+    form = ShelvingForm()
+    data = {
+        'form': form,
+        'error': error
+    }
+    return render(request, 'database/create_shelving.html', data)
+
+
+@login_required
 def create_sales(request):
     error = ''
     if request.method == 'POST':
@@ -615,7 +649,7 @@ class LoginUser(LoginView):
         return dict(list(context.items()))
 
     def get_success_url(self):
-        return reverse_lazy('database_home')
+        return reverse_lazy('home')
 
 
 def logout_user(request):

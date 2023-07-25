@@ -29,11 +29,15 @@
                     {% csrf_token %}
                     <p>Загрузить остатки в Базу Данных</p>
                     <div class="alert-warning">
-                        <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
-                        <input type="file" id="myfile" name="myfile" class="input-file">
-                        <button type="submit" class="custom-button-delete-add">
-                            Загрузить
-                        </button> 
+                        <div class="label-button">
+                            <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
+                            <input type="file" id="myfile" name="myfile" class="input-file">
+                        </div>
+                        <div class="label-button">
+                            <button type="submit" class="custom-button-delete-add">
+                                Загрузить
+                            </button>
+                        </div> 
                     </div>
                 </form>
             </div>
