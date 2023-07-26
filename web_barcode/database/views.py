@@ -283,10 +283,11 @@ def database_stock_shelving(request):
     # ========== Печать PDF файла ========== #
     if request.method == 'GET' and 'to-my-pdf' in request.GET.keys():
         response = HttpResponse(content_type='application/pdf')
+        pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
         response['Content-Disposition'] = 'attachment; filename="my_table.pdf"'
         doc = SimpleDocTemplate(response, pagesize=letter)
         data = []
-        data.append(['task_start_date', 'Article', 'Shelf number', 'Amount', 'New amount'])
+        data.append(['Дата начала задачи', 'Артикул', 'Номер полки', 'Количество', 'Новое количество'])
         for item in task_data:
             item.task_start_date = item.task_start_date + timedelta(hours=3)
             table_time = item.task_start_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -299,13 +300,13 @@ def database_stock_shelving(request):
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Arial'),
             ('FONTSIZE', (0, 0), (-1, 0), 14),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             ('BACKGROUND', (0, 1), (-1, -1), colors.white),
             ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
             ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Arial'),
             ('FONTSIZE', (0, 1), (-1, -1), 12),
             ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
             ('BOTTOMPADDING', (0, 1), (-1, -1), 6),

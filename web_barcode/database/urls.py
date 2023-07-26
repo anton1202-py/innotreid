@@ -79,8 +79,6 @@ urlpatterns = [
           views.export_movies_to_xlsx,
           name='export'
           ),
-
      path('login/', views.LoginUser.as_view(), name='login'),
      path('logout/', views.logout_user, name='logout'),
-
 ]
