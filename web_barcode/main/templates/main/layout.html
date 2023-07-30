@@ -71,7 +71,7 @@
             {% url 'stock-shelving' as url_stock %}
             <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">shelves</span>
-                <h3>Склад стеллажей</h3>
+                <h3>Задание на изготовление</h3>
             </a>
             {% if request.user.is_staff %}
             {% url 'database_sales' as url_sales %}

@@ -97,7 +97,6 @@ def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     if request.user.is_staff == True:
-        print(request.user.is_staff)
         data = Articles.objects.all()
         context = {
             'data': data,
@@ -129,7 +128,7 @@ def database_home(request):
             dbframe = empexceldata
 
             for i in range(len(common_article_list)):
-                obj = Articles.objects.create(
+                obj = Articles.objects.update(
                     common_article=common_article_list[i],
                     article_seller_wb=article_seller_wb_list[i],
                     article_wb_nomenclature=article_wb_nomenclature_list[i],
