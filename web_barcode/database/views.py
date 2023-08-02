@@ -145,7 +145,7 @@ def database_home(request):
             obj.save()
         return render(request, 'database/database_home.html', context)
     else:
-        return redirect('home')
+        return redirect('database_home')
 
 
 def database_stock(request):
@@ -649,7 +649,7 @@ class LoginUser(LoginView):
         return dict(list(context.items()))
 
     def get_success_url(self):
-        return reverse_lazy('home')
+        return reverse_lazy('database_home')
 
 
 def logout_user(request):
