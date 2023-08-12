@@ -57,6 +57,7 @@
                 <th>Дата начала задания</th>
                 <th>Дата выполнения задания</th>
                 <th>Артикул</th>
+                <th>Артикул WB</th>
                 <th>Ячейка</th>
                 <th>Остаток в ячейке</th>
                 <th>Новый остаток</th>
@@ -67,6 +68,7 @@
                 <td>{{ el.task_start_date }}</td>
                 <td>{{ el.task_finish_date }}</td>
                 <td>{{ el.seller_article }}</td>
+                <td>{{ el.seller_article_wb }}</td>
                 <td>{{ el.shelf_number }}</td>
                 <td>{{ el.amount }}</td>
                 <form method="post" id="{{ el.seller_article }}" name="{{ el.seller_article }}" enctype="multipart/form-data">

@@ -1,41 +1,48 @@
-from datetime import date, datetime, timedelta
-import glob
+import requests
+import json
 import pandas as pd
 
 
-import pandas
+data_file = r'web_barcode\database\2023_08_10_yandex_sku.xlsx'
+excel_data = pd.read_excel(data_file)
+data = pd.DataFrame(
+            excel_data, columns=['Ваш SKU'])
 
+article_list = data['Ваш SKU'].to_list()
+url = "https://api.partner.market.yandex.ru/campaigns/42494921/stats/skus"
 
-df = pd.read_excel('../innotreid/web_barcode/database/test.xlsx')
-print(df)
-# print whole sheet data
+headers = {
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer y0_AgAEA7qjt7KxAApPWwAAAADpxzharlAhWWWhR-CN6aC7F0W9cZImPgo',
+  'Cookie': '_yasc=0pnD6PcW7xKIeoHhn1cC8dXbLz8mZL4kfI3BdNrRo5LQsXYW0qa+OvGuRwKRRtM=; i=rCGjEcoavotQC8BusElWmTIvxgUDMWQxQYgBUJSkh0SZnNVS3noWuJVqx//ZgXQtL7wHkrdun3HUWMvcJmIgqug1wZk=; yandexuid=4089427681691529915'
+}
+rand_list=article_list
+m = len(rand_list)%400 # остаток
+n = len(rand_list)//400
 
+fby_common_data_storage = {}
+x = 0
+for i in range(1):
+    start = i*400
+    finish = (i+1)*400
+    new_list = rand_list[start:finish]
 
+    payload = json.dumps({"shopSkus": new_list})
 
-myfile = '../innotreid/web_barcode/database/test.xlsx'
-empexceldata = pd.read_excel(myfile)
-load_excel_data_wb_stock = pd.DataFrame(
-    empexceldata, columns=['Общий артикул', 'Наш Артикул на WB (артикул поставщика)',
-                           'Barcode WB', 'Артикул WB (номенклатура)',
-                           'Наш Артикул на OZON (артикул поставщика)',
-                           'OZON Product ID', 'FBO OZON SKU ID',
-                           'FBS OZON SKU ID', 'Barcode OZON',
-                           'Наш Артикул на Яндекс (артикул поставщика)',
-                           'Barcode YANDEX', 'SKU на YANDEX'])
-common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
-article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на WB (артикул поставщика)'].to_list()
-article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
-barcode_wb_list = load_excel_data_wb_stock['Barcode WB'].to_list()
-article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на OZON (артикул поставщика)'].to_list()
-ozon_product_id_list = load_excel_data_wb_stock['OZON Product ID'].to_list()
-fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
-fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
-barcode_ozon_list = load_excel_data_wb_stock['Barcode OZON'].to_list()
-article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
-barcode_yandex_list = load_excel_data_wb_stock['Barcode YANDEX'].to_list()
-sku_yandex_list = load_excel_data_wb_stock['SKU на YANDEX'].to_list()
-dbframe = empexceldata
-
-for i in ozon_product_id_list:
-    print(type(i), i)
-print(ozon_product_id_list)
+    response = requests.request("POST", url, headers=headers, data=payload)
+    data = json.loads(response.text)
+    result = data['result']
+    dict_res = result['shopSkus']
+    for res in dict_res:
+        stocks_data = res['warehouses']
+        stock_article = res['shopSku']
+        #print(stock_article, stocks_data)
+        stocks = stocks_data[0]
+        if len(stocks['stocks']) > 0:
+            for sum in stocks['stocks']:
+                if sum['type'] == 'AVAILABLE':
+                    fby_common_data_storage[stock_article] = sum['count']
+        else:
+            fby_common_data_storage[stock_article] = 0
+#for i in fby_common_data_storage.items():
+#    print(i)

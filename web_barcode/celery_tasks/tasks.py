@@ -11,6 +11,7 @@ from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 load_dotenv()
+
 @app.task
 def add_database_data():
     control_date_stock = date.today() - timedelta(days=1)
@@ -95,7 +96,6 @@ def add_database_data():
              pay,
              1)
         common_data_sale.append(x)
-    print(common_data_stock)
     
     if str("<class 'str'>") not in check_data_sales:
         print('УРА!!!')

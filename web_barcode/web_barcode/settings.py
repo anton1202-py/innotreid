@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'main',
     'database',
+    'database_yandex',
     'import_export',
 ]
 
