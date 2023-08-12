@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import psycopg2
 import requests
-#from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -13,7 +13,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 # Адрес, где лежит файл с артикулами
-ARTICLE_DATA_FILE = r'D:\Projects\innotreid\web_barcode\database\2023_08_10_yandex_sku.xlsx'
+ARTICLE_DATA_FILE = r'web_barcode\celery_tasks\2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS
@@ -24,7 +24,7 @@ headers = {
   'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
-#@app.task
+@app.task
 def change_fbs_amount():
     """
     Функция смотрит остаток артикулов на складе FBY, если остаток не равен 0,
@@ -87,7 +87,7 @@ def change_fbs_amount():
         response = requests.request("PUT", URL_FBS, headers=headers, data=payload)
         #print(response.text)
 
-
+@app.task
 def add_fby_amount_to_database():
     """
     Функция складывает остаток со склада FBY в базу данных
@@ -153,4 +153,30 @@ def add_fby_amount_to_database():
             connection.close()
             print("Соединение с PostgreSQL закрыто")
 
-add_fby_amount_to_database()
+
+def send_message():
+    connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
+    # пароль, который указали при установке PostgreSQL
+    password=os.getenv('POSTGRES_PASSWORD'),
+    host=os.getenv('DB_HOST'),
+    port=os.getenv('DB_PORT'),
+    database=os.getenv('DB_NAME'))
+    cursor = connection.cursor()
+
+    postgreSQL_select_Query = '''SELECT article_marketplace, 
+           SUM(CASE WHEN date_trunc('day', pub_date) = CURRENT_DATE THEN amount ELSE 0 END) AS today_quantity,
+           SUM(CASE WHEN date_trunc('day', pub_date) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day') THEN amount ELSE 0 END) AS yesterday_quantity
+    FROM database_yandex_stocks_innotreid
+    WHERE date_trunc('day', pub_date) IN (CURRENT_DATE, date_trunc('day', CURRENT_DATE - INTERVAL '1 day'))
+    GROUP BY article_marketplace
+    HAVING SUM(CASE WHEN date_trunc('day', pub_date) = CURRENT_DATE THEN amount ELSE 0 END) = 0
+       AND SUM(CASE WHEN date_trunc('day', pub_date) = date_trunc('day', CURRENT_DATE - INTERVAL '1 day') THEN amount ELSE 0 END) > 0;'''
+    cursor.execute(postgreSQL_select_Query)
+
+    sender_data = cursor.fetchall()
+
+    for article, current_amount, yesterday_amount in sender_data:
+        print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
+    
+    return sender_data
+#send_message()

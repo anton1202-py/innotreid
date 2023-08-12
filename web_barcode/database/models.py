@@ -18,6 +18,7 @@ class Articles(models.Model):
     )
     article_seller_wb = models.CharField(
         verbose_name='Артикул постащика на WB',
+        max_length=100,
         null=True,
     )
     article_wb_nomenclature = models.PositiveBigIntegerField(
@@ -30,6 +31,7 @@ class Articles(models.Model):
     )
     article_seller_ozon = models.CharField(
         verbose_name='Артикул поставщика на OZON',
+        max_length=100,
         null=True,
     )
     ozon_product_id = models.PositiveBigIntegerField(
@@ -50,6 +52,7 @@ class Articles(models.Model):
     )
     article_seller_yandex = models.CharField(
         verbose_name='Артикул поставщика на YANDEX',
+        max_length=100,
         null=True,
     )
     barcode_yandex = models.PositiveBigIntegerField(

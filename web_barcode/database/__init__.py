@@ -23,7 +23,10 @@ INSERT INTO database_codingwbstock VALUES(21, 'Минск');
 INSERT INTO database_codingwbstock VALUES(22, 'Пушкино');
 INSERT INTO database_codingwbstock VALUES(23, 'Внуково КБТ');
 INSERT INTO database_codingwbstock VALUES(24, 'Обухово');
-INSERT INTO database_codingwbstock VALUES(25, 'Остальные');"""
+INSERT INTO database_codingwbstock VALUES(25, 'Остальные');
+INSERT INTO database_codingwbstock VALUES(26, 'Атакент');
+INSERT INTO database_codingwbstock VALUES(27, 'Белые Столбы');
+INSERT INTO database_codingwbstock VALUES(28, 'Иваново');"""
 
 """
 CREATE TABLE database_codingwbstock (

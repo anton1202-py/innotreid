@@ -90,7 +90,7 @@
                             {% endif %}
                         {% endif %}
                     {% endfor %}
-                    <td><a href="{% url 'stock_detail' el.article_marketplace %}">{{ el.article_marketplace }}</a></td>
+                    <td><a href="{% url 'stock_article_yandex_detail' el.article_marketplace %}">{{ el.article_marketplace }}</a></td>
                     <td>{{ el.code_marketplace }}</td>
                     <td>{{ el.amount }}</td>
                 </tr>
