@@ -14,7 +14,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 # Адрес, где лежит файл с артикулами
-ARTICLE_DATA_FILE = 'celery_tasks/2023_08_10_yandex_sku.xlsx'
+ARTICLE_DATA_FILE = 'web_barcode/celery_tasks/2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS
@@ -97,23 +97,28 @@ def add_fby_amount_to_database():
     excel_data = pd.read_excel(ARTICLE_DATA_FILE)
     data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
     article_list = data['Ваш SKU'].to_list()
+    print(len(article_list))
 
-    # ограничения по передачи количества артикулов в одном запросе - 500 штук. 
-    residue = len(article_list) % 400 # остаток
+    # ограничения по передачи количества артикулов в одном запросе - 500 штук.
     iter_amount = len(article_list) // 400
     # Словарь для данных по артикулу и его остатку на складе, если он != 0.
     fby_common_data_storage = {}
 
-    for i in range(1):
+    for i in range(iter_amount+1):
         start_point = i*400
-        finish_point = (i+1)*400
+        if (i+1)*400 <= len(article_list):
+            finish_point = (i+1)*400
+        else:
+            finish_point = len(article_list)
         articke_info_list = article_list[start_point:finish_point]
         # ПОСТ запрос для получения данных по артикулу
-        payload = json.dumps({"shopSkus": ['S440', 'S980']})
+        payload = json.dumps({"shopSkus": articke_info_list})
 
         response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
+        
         result = data['result']
+
         dict_res = result['shopSkus']
         
         for res in dict_res:
@@ -202,8 +207,9 @@ def sender_zero_balance():
     data_for_send = sender_message()
 
     # Отправка сообщения всем подписавшимся на бота
-    for i in sender_data[0]:
-        if len(data_for_send) > 0:
-            for article, current_amount, yesterday_amount in data_for_send:
-                message = f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}'
-                bot.send_message(chat_id=i, text=message)
+    for set_id in sender_data:
+        for id in set_id:
+            if len(data_for_send) > 0:
+                for article, current_amount, yesterday_amount in data_for_send:
+                    message = f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}'
+                    bot.send_message(chat_id=id, text=message)
