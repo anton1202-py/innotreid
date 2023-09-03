@@ -14,7 +14,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 # Адрес, где лежит файл с артикулами
-ARTICLE_DATA_FILE = 'web_barcode/celery_tasks/2023_08_10_yandex_sku.xlsx'
+ARTICLE_DATA_FILE = 'celery_tasks/2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS
@@ -97,7 +97,6 @@ def add_fby_amount_to_database():
     excel_data = pd.read_excel(ARTICLE_DATA_FILE)
     data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
     article_list = data['Ваш SKU'].to_list()
-    print(len(article_list))
 
     # ограничения по передачи количества артикулов в одном запросе - 500 штук.
     iter_amount = len(article_list) // 400
@@ -116,24 +115,22 @@ def add_fby_amount_to_database():
 
         response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
-        
         result = data['result']
-
         dict_res = result['shopSkus']
-        
+
         for res in dict_res:
             stocks_data = res['warehouses']
             stock_article = res['shopSku']
-            stocks = stocks_data[0]
-            if len(stocks['stocks']) > 0:
-                for sum in stocks['stocks']:
-                    #print(sum)
-                    if sum['type'] == 'AVAILABLE':
-                        #print(fby_common_data_storage, sum['count'])
-                        fby_common_data_storage[stock_article] = sum['count']
-            else:
-                fby_common_data_storage[stock_article] = 0
+            article_amount = 0
+            
+            for sum in stocks_data:
+                for amount in sum['stocks']:
+                    if amount['type'] == 'AVAILABLE':
+                        article_amount += amount['count']
+            fby_common_data_storage[stock_article] = article_amount
+
     common_data_for_database = []
+  
     for article, amount in fby_common_data_storage.items():
         add_data = (add_date_stock, article, 3, amount)
         common_data_for_database.append(add_data)
