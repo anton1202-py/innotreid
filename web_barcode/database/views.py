@@ -354,7 +354,6 @@ def stock_frontend(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     control_date_stock = date.today()# - timedelta(days=1)
-    articles = Articles.objects.all()
     data = Stocks_wb_frontend.objects.filter(Q(pub_date__range=[
         control_date_stock,
         control_date_stock]))
@@ -387,7 +386,6 @@ def stock_frontend(request):
         'form': form,
         'data': data,
         'datestart': str(datestart),
-        'x': articles.all().values(),
     }
     return render(request, 'database/stock_frontend.html', context)
 
