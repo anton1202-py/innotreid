@@ -182,3 +182,25 @@ class SelectDateForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
         }))
+
+class SelectDateStocksForm(forms.Form):
+    datestart = forms.DateField(
+        input_formats=['%Y-%m-%d'],
+        widget=forms.DateInput(attrs={
+            'class': 'choose-date',
+        }))
+    datefinish = forms.DateField(
+        input_formats=['%Y-%m-%d'],
+        widget=forms.DateInput(attrs={
+            'class': 'choose-date',
+        }))
+    article_filter = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }))
+    stock_filter = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }))

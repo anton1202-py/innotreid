@@ -14,7 +14,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 # Адрес, где лежит файл с артикулами
-ARTICLE_DATA_FILE = 'celery_tasks/2023_08_10_yandex_sku.xlsx'
+ARTICLE_DATA_FILE = 'web_barcode/celery_tasks/2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS

@@ -19,9 +19,9 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
-                    ShelvingForm, StocksForm)
+                    SelectDateStocksForm, ShelvingForm, StocksForm)
 from .models import (Articles, CodingMarketplaces, Sales, ShelvingStocks,
-                     Stocks, WildberriesStocks)
+                     Stocks, Stocks_wb_frontend, WildberriesStocks)
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -253,7 +253,7 @@ def database_stock_wb(request):
         else:
             data = WildberriesStocks.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
-                Q(article_marketplace=article_filter))
+                Q(seller_article_wb=article_filter))
     context = {
         'data': data,
         'lenght': len(x.all().values()),
@@ -348,6 +348,48 @@ def database_stock_shelving(request):
         'x': innotreid_articles.all().values(),
     }
     return render(request, 'database/database_stock_shelving.html', context)
+
+
+def stock_frontend(request):
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    control_date_stock = date.today()# - timedelta(days=1)
+    articles = Articles.objects.all()
+    data = Stocks_wb_frontend.objects.filter(Q(pub_date__range=[
+        control_date_stock,
+        control_date_stock]))
+    form = SelectDateStocksForm(request.POST or None)
+    datestart = control_date_stock
+    datefinish = control_date_stock
+    
+    if form.is_valid():
+        datestart = form.cleaned_data.get("datestart")
+        datefinish = form.cleaned_data.get("datefinish")
+        article_filter = form.cleaned_data.get("article_filter")
+        stock_filter = form.cleaned_data.get("stock_filter")
+        if article_filter == '' and stock_filter == '':
+            data = Stocks_wb_frontend.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]))
+        elif article_filter != '' and stock_filter == '':
+            data = Stocks_wb_frontend.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(seller_article_wb=article_filter))
+        elif article_filter == '' and stock_filter != '':
+            data = Stocks_wb_frontend.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(stock_name=stock_filter))
+        else:
+            data = Stocks_wb_frontend.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(seller_article_wb=article_filter),
+                Q(stock_name=stock_filter))
+    context = {
+        'form': form,
+        'data': data,
+        'datestart': str(datestart),
+        'x': articles.all().values(),
+    }
+    return render(request, 'database/stock_frontend.html', context)
 
 
 def database_sales(request):

@@ -54,7 +54,10 @@ urlpatterns = [
           views.DatabaseShelvingUpdateView.as_view(),
           name='stock-shelving-update'
           ),
-
+     path('stock_frontend/',
+          views.stock_frontend,
+          name='stock_frontend'
+          ),
      path('sales/',
           views.database_sales,
           name='database_sales'

@@ -263,3 +263,30 @@ class Sales(models.Model):
     class Meta:
         verbose_name = 'Продажи'
         verbose_name_plural = 'Продажи'
+
+
+class Stocks_wb_frontend(models.Model):
+    pub_date = models.DateField(
+        verbose_name='Дата',
+        auto_now_add=True
+    )
+    seller_article_wb = models.CharField(
+        verbose_name='Артикул продавца на WB',
+        max_length=50,
+        null=True
+    )
+    article_wb = models.CharField(
+        verbose_name='Артикул WB',
+        max_length=50,
+    )
+    stock_name = models.CharField(
+        verbose_name='Название склада WB',
+        max_length=100,
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+    )
+
+    class Meta:
+        verbose_name = 'Остатки на складах WB c фронтенда'
+        verbose_name_plural = 'Остатки на складах WB c фронтенда'
