@@ -12,6 +12,10 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.tasks.add_database_data",
         "schedule": crontab(hour=22, minute=40)
     },
+    "everyday-task": {
+        "task": "celery_tasks.tasks.add_stock_data_from_frontend",
+        "schedule": crontab(hour=7, minute=0)
+    },
    # "change-fbs": {
     #    "task": "celery_tasks.tasks_yandex_fby_fbs.change_fbs_amount",
      #   "schedule": crontab(hour=20, minute=40)
