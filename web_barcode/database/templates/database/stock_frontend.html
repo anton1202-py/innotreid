@@ -66,7 +66,7 @@
                 {% for el in data %}   
                 <tr>
                     <td>{{ el.pub_date }}</td>
-                    <td><a href="">{{ el.seller_article_wb }}</a></td>
+                    <td><a href="{% url 'stock_frontend_detail' el.seller_article_wb %}">{{ el.seller_article_wb }}</a></td>
                     <td>{{ el.article_wb }}</td>
                     <td>{{ el.stock_name }}</td>
                     <td>{{ el.amount }}</td>

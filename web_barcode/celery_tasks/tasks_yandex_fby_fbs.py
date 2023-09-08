@@ -6,7 +6,7 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-from celery_tasks.celery import app
+#from celery_tasks.celery import app
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -87,7 +87,7 @@ def change_fbs_amount():
         response = requests.request("PUT", URL_FBS, headers=headers, data=payload)
 
 
-@app.task
+#@app.task
 def add_fby_amount_to_database():
     """
     Функция складывает остаток со склада FBY в базу данных
@@ -178,13 +178,13 @@ def sender_message():
 
     sender_data = cursor.fetchall()
 
-    #for article, current_amount, yesterday_amount in sender_data:
-    #    print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
+    for article, current_amount, yesterday_amount in sender_data:
+        print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
     
     return sender_data
 
 
-@app.task
+#@app.task
 def sender_zero_balance():
     # Получаем список всех пользователей бота
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
@@ -210,3 +210,4 @@ def sender_zero_balance():
                 for article, current_amount, yesterday_amount in data_for_send:
                     message = f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}'
                     bot.send_message(chat_id=id, text=message)
+

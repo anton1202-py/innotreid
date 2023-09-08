@@ -327,7 +327,7 @@ def add_stock_data_from_frontend():
 
             raw_data_for_database = (date_stock, art, j['id'], 'Итого по складам', amount)
             data_for_database.append(raw_data_for_database)
-            sleep(10)
+            sleep(1)
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),

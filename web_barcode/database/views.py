@@ -536,12 +536,22 @@ class DatabaseDetailView(DetailView):
 
 class DatabaseStockDetailView(ListView):
     model = Stocks
-    template_name = 'database/stock_detail.html'
+    template_name = 'database/stock_frontend_detail.html'
     context_object_name = 'articles'
 
     def get_queryset(self):
         return Stocks.objects.filter(
             article_marketplace=self.kwargs['article_marketplace'])
+
+
+class DatabaseStockFrontendDetailView(ListView):
+    model = Stocks_wb_frontend
+    template_name = 'database/stock_frontend_detail.html'
+    context_object_name = 'articles'
+
+    def get_queryset(self):
+        return Stocks_wb_frontend.objects.filter(
+            seller_article_wb=self.kwargs['seller_article_wb'])
 
 
 class DatabaseSalesDetailView(ListView):

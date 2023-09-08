@@ -58,6 +58,10 @@ urlpatterns = [
           views.stock_frontend,
           name='stock_frontend'
           ),
+     path('stock_frontend//<str:seller_article_wb>',
+          views.DatabaseStockFrontendDetailView.as_view(),
+          name='stock_frontend_detail'
+          ),
      path('sales/',
           views.database_sales,
           name='database_sales'

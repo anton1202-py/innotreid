@@ -83,7 +83,7 @@
             {% if request.user.is_staff %}
             {% url 'database_sales' as url_sales %}
                 <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">trending_up</span>
+                    <span class="material-symbols-sharp">stockpot</span>
                     <h3>База данных Продаж</h3>
                 </a>
             {% url 'innotreid_stock_yandex' as url_stock_yandex %}
