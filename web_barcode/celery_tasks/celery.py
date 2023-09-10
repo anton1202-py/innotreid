@@ -21,7 +21,7 @@ app.conf.beat_schedule = {
      #   "schedule": crontab(hour=20, minute=40)
    # },
     "add_fby_amount": {
-        "task": "celery_tasks.tasks_yandex_fby_fbs.add_fby_amount_to_database",
+        "task": "celery_tasks.tasks_yandex_fby_fbs.add_fby_amount_to_database", 
         "schedule": crontab(hour=6, minute=0)
     },
     "send_tg_message": {

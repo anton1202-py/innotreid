@@ -15,7 +15,7 @@
                         {
                           type: 'line',
                           data: {
-                            labels: [{% for article in articles %} '{{ article.pub_date }}', {% endfor %}],
+                            labels: [{% for article in articles %}{% if article.stock_name == 'Итого по складам' %} '{{ article.pub_date }}', {% endif %}{% endfor %}],
                             datasets: [
                               {
                                 label: 'Количество остатков {{ articles.0.article_marketplace }}',
