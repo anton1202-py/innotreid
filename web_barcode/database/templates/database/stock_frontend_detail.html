@@ -18,7 +18,7 @@
                             labels: [{% for article in articles %}{% if article.stock_name == 'Итого по складам' %} '{{ article.pub_date }}', {% endif %}{% endfor %}],
                             datasets: [
                               {
-                                label: 'Количество остатков {{ articles.0.article_marketplace }}',
+                                label: 'Итого по складам {{ articles.0.seller_article_wb }}',
                                 data: [{% for article in articles %}{% if article.stock_name == 'Итого по складам' %} {{ article.amount }},{% endif %} {% endfor %}],
                                 
                                 borderColor: '#7380ec',
