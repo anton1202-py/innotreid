@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db.models import Q, Sum
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from reportlab.lib import colors
@@ -19,7 +19,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
-                    SelectDateStocksForm, ShelvingForm, StocksForm)
+                    SelectDateStocksForm, ShelvingForm, SelectArticlesForm, StocksForm)
 from .models import (Articles, CodingMarketplaces, Sales, ShelvingStocks,
                      Stocks, Stocks_wb_frontend, WildberriesStocks)
 
@@ -106,29 +106,44 @@ def database_home(request):
             myfile = request.FILES['myarticles']
             empexceldata = pd.read_excel(myfile)
             load_excel_data_wb_stock = pd.DataFrame(
-                empexceldata, columns=['Общий артикул', 'Наш Артикул на WB (артикул поставщика)',
-                                       'Barcode WB', 'Артикул WB (номенклатура)',
-                                       'Наш Артикул на OZON (артикул поставщика)',
-                                       'OZON Product ID', 'FBO OZON SKU ID',
-                                       'FBS OZON SKU ID', 'Barcode OZON',
+                empexceldata, columns=['Общий артикул', 'Наш Артикул на ВБ (артикул поставщика)',
+                                       'ШК ВБ', 'Артикул WB (номенклатура)',
+                                       'Наш Артикул на ОЗОН (артикул поставщика)',
+                                       'Ozon Product ID', 'FBO OZON SKU ID',
+                                       'FBS OZON SKU ID', 'Barcode',
                                        'Наш Артикул на Яндекс (артикул поставщика)',
-                                       'Barcode YANDEX', 'SKU на YANDEX'])
+                                       'ШК Яндекс', 'SKU на Маркете'])
             common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
-            article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на WB (артикул поставщика)'].to_list()
+            article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на ВБ (артикул поставщика)'].to_list()
             article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
-            barcode_wb_list = load_excel_data_wb_stock['Barcode WB'].to_list()
-            article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на OZON (артикул поставщика)'].to_list()
-            ozon_product_id_list = load_excel_data_wb_stock['OZON Product ID'].to_list()
+            barcode_wb_list = load_excel_data_wb_stock['ШК ВБ'].to_list()
+            article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на ОЗОН (артикул поставщика)'].to_list()
+            ozon_product_id_list = load_excel_data_wb_stock['Ozon Product ID'].to_list()
             fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
             fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
-            barcode_ozon_list = load_excel_data_wb_stock['Barcode OZON'].to_list()
+            barcode_ozon_list = load_excel_data_wb_stock['Barcode'].to_list()
             article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
-            barcode_yandex_list = load_excel_data_wb_stock['Barcode YANDEX'].to_list()
-            sku_yandex_list = load_excel_data_wb_stock['SKU на YANDEX'].to_list()
+            barcode_yandex_list = load_excel_data_wb_stock['ШК Яндекс'].to_list()
+            sku_yandex_list = load_excel_data_wb_stock['SKU на Маркете'].to_list()
             dbframe = empexceldata
 
             for i in range(len(common_article_list)):
-                obj = Articles.objects.update(
+                if Articles.objects.filter(Q(common_article=common_article_list[i])):
+                    Articles.objects.filter(common_article=common_article_list[i]).update(
+                    article_seller_wb=article_seller_wb_list[i],
+                    article_wb_nomenclature=article_wb_nomenclature_list[i],
+                    barcode_wb=barcode_wb_list[i],
+                    article_seller_ozon=article_seller_ozon_list[i],
+                    ozon_product_id=ozon_product_id_list[i],
+                    fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
+                    fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
+                    barcode_ozon=barcode_ozon_list[i],
+                    article_seller_yandex=article_seller_yandex_list[i],
+                    barcode_yandex=barcode_yandex_list[i],
+                    sku_yandex=sku_yandex_list[i],
+                    )
+                else:
+                    obj = Articles(
                     common_article=common_article_list[i],
                     article_seller_wb=article_seller_wb_list[i],
                     article_wb_nomenclature=article_wb_nomenclature_list[i],
@@ -142,10 +157,29 @@ def database_home(request):
                     barcode_yandex=barcode_yandex_list[i],
                     sku_yandex=sku_yandex_list[i],
                     )
-            obj.save()
+                    obj.save()
         return render(request, 'database/database_home.html', context)
     else:
         return redirect('database_home')
+
+
+def article_compare(request):
+    data = Articles.objects.all()
+    form = SelectArticlesForm(request.POST or None)
+    article_data = []
+    if request.method == 'POST'and form.is_valid():
+        articles_filter = form.cleaned_data.get("article_filter")
+        articles_list = articles_filter.split()
+        print(articles_list)
+        for article in articles_list:
+            filtered_article = Articles.objects.filter(
+                Q(common_article=article))
+            article_data.append(filtered_article)
+    context = {
+        'article_data':article_data,
+        'data': data.all().values(),
+    }
+    return render(request, 'database/article_compare.html', context)
 
 
 def database_stock(request):
@@ -254,7 +288,9 @@ def database_stock_wb(request):
             data = WildberriesStocks.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(seller_article_wb=article_filter))
+    stocks_names = WildberriesStocks.objects.values_list('code_stock', flat=True).distinct()
     context = {
+        'stocks_names': stocks_names,
         'data': data,
         'lenght': len(x.all().values()),
         'x': x.all().values(),

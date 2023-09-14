@@ -204,3 +204,11 @@ class SelectDateStocksForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
         }))
+
+
+class SelectArticlesForm(forms.Form):
+    article_filter = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }))

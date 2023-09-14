@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
      #path('', views.database_home, name='database_home'),
+     path('article_compare', views.article_compare, name='database_article_compare'),
      path('create', views.create, name='create'),
      path('<int:pk>',
           views.DatabaseDetailView.as_view(),

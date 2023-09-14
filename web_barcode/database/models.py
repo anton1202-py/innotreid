@@ -69,7 +69,7 @@ class Articles(models.Model):
     )
 
     def __str__(self):
-        return self.seller_article
+        return self.common_article
 
     def get_absolute_url(self):
         return f'/database/{self.id}'

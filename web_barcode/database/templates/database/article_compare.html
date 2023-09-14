@@ -1,0 +1,49 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title %}Работа с базой данных{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Обновление базы данных Артикулов</h1>
+        </div>
+        <div class='filter-data'>
+            <form action="" class="filter-form" method="POST" id="form_data_compare">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <p>Введите основной артикул или несколько артикулов через пробел</p>
+                    <input type="text"  name="article_filter" class="choose-date" id="article_filter">
+                </div><br>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="submit" value="Фильтровать" class="custom-button-change"/>
+                </div>
+                
+            </form>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <th>Основной артикул</th>
+                    <th>Баркод Wildberries</th>
+                    <th>Баркод OZON</th>
+                </tr>
+                
+                    {% for data in article_data %}
+                        {% for el in data %}
+                        <tr>
+                            <td> {{ el.common_article }} </td>
+                            <td> {{ el.barcode_wb }}</td>
+                            <td> {{ el.barcode_ozon }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                
+            </table>
+        </div> 
+    </div>
+    
+        
+{% endblock %}
