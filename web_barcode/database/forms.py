@@ -15,7 +15,7 @@ class ArticlesForm(ModelForm):
         widgets = {
             'common_article': TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Общий артикул'
+                'placeholder': 'Общий артикул',
             }),
             'title': TextInput(attrs={
                 'class': 'form-control',
