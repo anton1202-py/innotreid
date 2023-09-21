@@ -18,8 +18,8 @@ load_dotenv()
 
 @app.task
 def add_database_data():
-    control_date_stock = date.today() - timedelta(days=1)
-    control_date_sales = date.today() - timedelta(days=1)
+    control_date_stock = date.today()
+    control_date_sales = date.today()
 
     url_stock = f"https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={control_date_stock}"
     url_sales = f"https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom={control_date_sales}&flag=1"
