@@ -167,15 +167,16 @@ def article_compare(request):
     data = Articles.objects.all()
     form = SelectArticlesForm(request.POST or None)
     article_data = []
+    
     if request.method == 'POST'and form.is_valid():
         articles_filter = form.cleaned_data.get("article_filter")
         articles_list = articles_filter.split()
-        print(articles_list)
         for article in articles_list:
             filtered_article = Articles.objects.filter(
                 Q(common_article=article))
             article_data.append(filtered_article)
     context = {
+        
         'article_data':article_data,
         'data': data.all().values(),
     }
@@ -252,24 +253,29 @@ def database_stock_wb(request):
             empexceldata, columns=['Артикул продавца', 'Артикул WB'])
         list_name_seller_article = load_excel_data_wb_stock['Артикул продавца'].to_list()
         list_name_wb_article = load_excel_data_wb_stock['Артикул WB'].to_list()
+
         for i in empexceldata.columns.ravel():
             if i not in START_LIST:
                 MUST_BE_EMPTY.append(i)
         if len(MUST_BE_EMPTY) == 0:
             dbframe = empexceldata
             for dbframe in dbframe.itertuples():
+                print(dbframe)
                 for i in range(len(empexceldata.columns.ravel())):
+
                     for j in DICT_FOR_STOCKS_WB.keys():
+                        # empexceldata.columns.ravel()[i] - название столбцов в excel файле
                         if empexceldata.columns.ravel()[i] == j:
-                            if 'school' not in list_name_seller_article[i] and (
-                                    'diplom' not in list_name_seller_article[i]):
+                            if 'school' not in dbframe[3] and (
+                                    'diplom' not in dbframe[3]):
                                 if str(dbframe[i+1]) == 'nan':
                                     continue
                                 else:
+                                    
                                     obj = WildberriesStocks.objects.create(
-                                        seller_article_wb=list_name_seller_article[i],
-                                        article_wb=list_name_wb_article[i],
-                                        code_stock_id=int(DICT_FOR_STOCKS_WB[j]),
+                                        seller_article_wb=dbframe[3],
+                                        article_wb=dbframe[4],
+                                        code_stock_id=int(DICT_FOR_STOCKS_WB[empexceldata.columns.ravel()[i]]),
                                         amount=dbframe[i+1],
                                         )
                                     obj.save()
@@ -290,7 +296,9 @@ def database_stock_wb(request):
                 Q(seller_article_wb=article_filter))
     stocks_names = WildberriesStocks.objects.values_list('code_stock', flat=True).distinct()
     context = {
+        'stocks_list': DICT_FOR_STOCKS_WB.keys(),
         'stocks_names': stocks_names,
+        'range': range(len(data)),
         'data': data,
         'lenght': len(x.all().values()),
         'x': x.all().values(),
@@ -572,7 +580,7 @@ class DatabaseDetailView(DetailView):
 
 class DatabaseStockDetailView(ListView):
     model = Stocks
-    template_name = 'database/stock_frontend_detail.html'
+    template_name = 'database/stock_detail.html'
     context_object_name = 'articles'
 
     def get_queryset(self):

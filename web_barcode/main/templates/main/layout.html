@@ -57,7 +57,7 @@
                 </a>
                 {% url 'database_article_compare' as url_article_compare %}
                 <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">inventory</span>
+                    <span class="material-symbols-sharp">filter_list</span>
                     <h3>Сопоставить артикулы</h3>
                 </a>
                 {% url 'database_stock' as url_stock %}

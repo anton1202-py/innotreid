@@ -70,21 +70,30 @@
                 {% endfor %}
             </script>
         {% endif %}
-        <table>
+        <p>{{ data|length }}</p>
+        <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Дата</th>
                 <th>Артикул продавца на Wildberries</th>
                 <th>Артикул Wildberries</th>
-                <th>Склад</th>
+                {% for stock in stocks_list %}
+                    <th>{{ stock }}</th>
+                {% endfor %}
                 <th>Количество</th>
             </tr>
+            
             {% for el in data %}   
             <tr>
                 <td>{{ el.pub_date }}</td>
                 <td>{{ el.seller_article_wb }}</td>
                 <td><a href="{% url 'stock_detail' el.article_wb %}">{{ el.article_wb }}</a></td>
-                <td>{{ el.code_stock }}</td>
-                <td>{{ el.amount }}</td>
+                {% for stock in stocks_list %}
+                    {% if stock == el.code_stock.wb_stock %}
+                        <td>{{ el.amount }}</td>
+                    {% else %}
+                        <td>0</td>
+                    {% endif %}
+                {% endfor %}
             </tr>
             {% endfor %}
         </table>

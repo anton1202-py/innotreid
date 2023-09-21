@@ -47,15 +47,13 @@
             <table>
                 <tr>
                     <th>Дата</th>
-                    <th>Артикул продавца</th>
                     <th>Артикул маркетплейса</th>
-                    <th>Код маркетплейса</th>
+                    <th>Название маркетплейса</th>
                     <th>Количество</th>
                 </tr>
                 {% for article in articles %}
                     <tr>
                         <td>{{ article.pub_date }}</td>
-                        <td>{{ article.seller_article }}</td>
                         <td>{{ article.article_marketplace }}</td>
                         <td>{{ article.code_marketplace }}</td>
                         <td>{{ article.amount }}</td>

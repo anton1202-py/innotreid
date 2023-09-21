@@ -2,7 +2,7 @@ import io
 import json
 import os
 from contextlib import closing
-from datetime import date, timedelta
+from datetime import date
 from time import sleep
 
 import dropbox
