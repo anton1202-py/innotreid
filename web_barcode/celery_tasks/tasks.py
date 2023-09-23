@@ -2,7 +2,7 @@ import io
 import json
 import os
 from contextlib import closing
-from datetime import date
+from datetime import date, timedelta
 from time import sleep
 
 import dropbox
@@ -18,8 +18,8 @@ load_dotenv()
 
 @app.task
 def add_database_data():
-    control_date_stock = date.today()
-    control_date_sales = date.today()
+    control_date_stock = date.today() - timedelta(1)
+    control_date_sales = date.today() - timedelta(1)
 
     url_stock = f"https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={control_date_stock}"
     url_sales = f"https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom={control_date_sales}&flag=1"
@@ -100,7 +100,7 @@ def add_database_data():
              pay,
              1)
         common_data_sale.append(x)
-    
+
     if str("<class 'str'>") not in check_data_sales:
         print('УРА!!!')
         try:
@@ -115,12 +115,12 @@ def add_database_data():
             cursor = connection.cursor()
             # cursor.execute("DELETE FROM database_sales;")
             # cursor.execute("DELETE FROM database_stocks;")
-            cursor.executemany(
-                "INSERT INTO database_sales (pub_date, article_marketplace, amount, avg_price_sale, sum_sale, sum_pay, code_marketplace_id) VALUES(%s, %s, %s, %s, %s, %s, %s);",
-                common_data_sale)
-            cursor.executemany(
-                "INSERT INTO database_stocks (pub_date, article_marketplace, code_marketplace_id, amount) VALUES(%s, %s, %s, %s);",
-                common_data_stock)
+            #cursor.executemany(
+            #    "INSERT INTO database_sales (pub_date, article_marketplace, amount, avg_price_sale, sum_sale, sum_pay, code_marketplace_id) VALUES(%s, %s, %s, %s, %s, %s, %s);",
+            #    common_data_sale)
+            #cursor.executemany(
+            #    "INSERT INTO database_stocks (pub_date, article_marketplace, code_marketplace_id, amount) VALUES(%s, %s, %s, %s);",
+            #    common_data_stock)
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
         finally:
