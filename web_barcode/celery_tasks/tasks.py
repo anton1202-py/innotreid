@@ -115,12 +115,12 @@ def add_database_data():
             cursor = connection.cursor()
             # cursor.execute("DELETE FROM database_sales;")
             # cursor.execute("DELETE FROM database_stocks;")
-            #cursor.executemany(
-            #    "INSERT INTO database_sales (pub_date, article_marketplace, amount, avg_price_sale, sum_sale, sum_pay, code_marketplace_id) VALUES(%s, %s, %s, %s, %s, %s, %s);",
-            #    common_data_sale)
-            #cursor.executemany(
-            #    "INSERT INTO database_stocks (pub_date, article_marketplace, code_marketplace_id, amount) VALUES(%s, %s, %s, %s);",
-            #    common_data_stock)
+            cursor.executemany(
+                "INSERT INTO database_sales (pub_date, article_marketplace, amount, avg_price_sale, sum_sale, sum_pay, code_marketplace_id) VALUES(%s, %s, %s, %s, %s, %s, %s);",
+                common_data_sale)
+            cursor.executemany(
+                "INSERT INTO database_stocks (pub_date, article_marketplace, code_marketplace_id, amount) VALUES(%s, %s, %s, %s);",
+                common_data_stock)
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
         finally:

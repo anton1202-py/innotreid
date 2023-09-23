@@ -10,7 +10,7 @@ app.config_from_object('celery_tasks.celeryconfig')
 app.conf.beat_schedule = {
     "everyday-task1": {
         "task": "celery_tasks.tasks.add_database_data",
-        "schedule": crontab(hour=7, minute=40)
+        "schedule": crontab(hour=7, minute=20)
     },
     "everyday-task": {
         "task": "celery_tasks.tasks.add_stock_data_from_frontend",
