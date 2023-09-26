@@ -21,7 +21,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
                     SelectDateStocksForm, ShelvingForm, SelectArticlesForm, StocksForm)
 from .models import (Articles, CodingMarketplaces, Sales, ShelvingStocks,
-                     Stocks, Stocks_wb_frontend, WildberriesStocks)
+                     Stocks, Stocks_wb_frontend, WildberriesStocks, OrdersFbsInfo)
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -438,26 +438,18 @@ def database_sales(request):
     """Отображение страницы База данных продаж"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    control_date_stock = date.today() - timedelta(days=1)
-    seller_articles = Articles.objects.all()
-    coding_marketplace = CodingMarketplaces.objects.all()
-    data = Sales.objects.all()
-    summa1 = Sales.objects.values('article_marketplace').annotate(
-        Sum('amount'),
-        Sum('sum_sale'),
-        Sum('sum_pay'),
-
-        avg=Sum('sum_sale')/Sum('amount')
-        ).order_by('article_marketplace')
-    summa = []
-    for i in summa1:
-        x = list(i.values())
-        x.append(1)
-        summa.append(x)
+    datestart = date.today() - timedelta(days=7)
+    datefinish = date.today() - timedelta(days=1)
+    data = Sales.objects.filter(
+        Q(pub_date__range=[datestart, datefinish])
+        ).values('article_marketplace').annotate(
+        summ_sale=Sum('sum_sale'),
+        summ_pay=Sum('sum_pay'),
+        avg=Sum('sum_pay')/Sum('amount'),
+        total=Sum('amount')
+        ).order_by('-total')
 
     form = SelectDateForm(request.POST or None)
-    datestart = control_date_stock
-    datefinish = control_date_stock
 
     if form.is_valid():
         datestart = form.cleaned_data.get("datestart")
@@ -465,111 +457,72 @@ def database_sales(request):
         article_filter = form.cleaned_data.get("article_filter")
         if article_filter == '':
             data = Sales.objects.filter(
-                Q(pub_date__range=[datestart, datefinish]))
+                Q(pub_date__range=[datestart, datefinish])
+                ).values('article_marketplace').annotate(
+                summ_sale=Sum('sum_sale'),
+                summ_pay=Sum('sum_pay'),
+                avg=Sum('sum_sale')/Sum('amount'),
+                total=Sum('amount')
+                ).order_by('-total')
         else:
             data = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
-                Q(article_marketplace=article_filter))
+                Q(article_marketplace=article_filter)
+                ).values('article_marketplace').annotate(
+                summ_sale=Sum('sum_sale'),
+                summ_pay=Sum('sum_pay'),
+                avg=Sum('sum_sale')/Sum('amount'),
+                total=Sum('amount')
+                ).order_by('-total')
     context = {
         'form': form,
-        'data': summa,
-        'form_date': str(control_date_stock),
-        'lenght': len(seller_articles.all().values()),
-        'seller_articles': seller_articles.all().values(),
-        'coding_marketplace': coding_marketplace.values()[0]['id']
+        'data': data,
+        'form_date': str(datestart),
+        'date_finish': str(datefinish)
     }
-
-    if request.method == 'GET' and ('export' in request.GET.keys()):
-        response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = 'attachment; filename="users.xls"'
-
-        wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet('Users')
-        row_num = 0
-
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        # Define the titles for columns
-        columns = [
-            'Дата',
-            'Артикул маркетплейса',
-            'Количество',
-            'Средняя цена',
-            'Сумма продажи',
-            'Сумма выплат',
-            'Маркетплейс',
-        ]
-        # Assign the titles for each cell of the header
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        # Iterate through all movies
-        font_style = xlwt.XFStyle()
-
-        rows = data.values_list('pub_date',
-                                'article_marketplace',
-                                'amount', 'avg_price_sale',
-                                'sum_sale',
-                                'sum_pay',
-                                'code_marketplace')
-
-        # Define the data for each cell in the row
-        for row in rows:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-
-        wb.save(response)
-        return response
     return render(request, 'database/database_sales.html', context)
 
 
-def export_movies_to_xlsx(request):
-    """
-    Downloads all movies as Excel file with a single worksheet
-    """
-    if request.method == 'POST':
-        response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = 'attachment; filename="users.xls"'
+def database_orders_fbs(request):
+    """Отображение страницы База данных продаж"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    
 
-        wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet('Users')
-        row_num = 0
+    # Вычисляем сумму заказанных артикулов
+    form = SelectDateForm(request.POST or None)
+    datestart = date.today() - timedelta(days=7)
+    datefinish = date.today() - timedelta(days=1)
 
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        # Define the titles for columns
-        columns = [
-            'Дата',
-            'Артикул маркетплейса',
-            'Количество',
-            'Средняя цена',
-            'Сумма продажи',
-            'Сумма выплат',
-            'Маркетплейс',
-        ]
-        # Assign the titles for each cell of the header
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        # Iterate through all movies
-        font_style = xlwt.XFStyle()
+    data = OrdersFbsInfo.objects.filter(
+        Q(pub_date__range=[datestart, datefinish])
+        ).values('article_marketplace').annotate(total=Sum('amount')
+                                                 ).order_by('-total')
+  
+    if form.is_valid():
+        datestart = form.cleaned_data.get("datestart")
+        datefinish = form.cleaned_data.get("datefinish")
+        article_filter = form.cleaned_data.get("article_filter")
+        if article_filter == '':
+            raw_data = OrdersFbsInfo.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]))
+            data = raw_data.values('article_marketplace').annotate(
+                total=Sum('amount')).order_by('-total')
+        else:
+            data = OrdersFbsInfo.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(article_marketplace=article_filter)
+                ).values('article_marketplace').annotate(total=Sum('amount')
+                                                         ).order_by('-total')
+    context = {
+        'form': form,
+        'data': data,
+        'form_date': str(datestart),
+        'date_finish':str(datefinish)
+    }
 
-        rows = Sales.objects.all().values_list('pub_date',
-                                               'article_marketplace',
-                                               'amount',
-                                               'avg_price_sale',
-                                               'sum_sale',
-                                               'sum_pay',
-                                               'code_marketplace')
+    return render(request, 'database/database_orders_fbs.html', context)
 
-        # Define the data for each cell in the row
-        for row in rows:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, row[col_num], font_style)
-
-        wb.save(response)
-        return response
-    return render(request, 'database/database_sales.html')
 
 
 class DatabaseDetailView(DetailView):

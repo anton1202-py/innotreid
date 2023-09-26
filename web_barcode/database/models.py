@@ -290,3 +290,28 @@ class Stocks_wb_frontend(models.Model):
     class Meta:
         verbose_name = 'Остатки на складах WB c фронтенда'
         verbose_name_plural = 'Остатки на складах WB c фронтенда'
+
+
+class OrdersFbsInfo(models.Model):
+    pub_date = models.DateField(
+        verbose_name='Дата',
+    )
+    article_marketplace = models.CharField(
+        verbose_name='Артикул маркетплейса',
+        max_length=50,
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+    )
+    nomenclature_id = models.CharField(
+        verbose_name='Номенклатура WB',
+        max_length=50,
+    )
+    rid = models.CharField(
+        verbose_name='rid',
+        max_length=50,
+    )
+
+    class Meta:
+        verbose_name = 'Заказы со склада FBS'
+        verbose_name_plural = 'Заказы со склада FBS'

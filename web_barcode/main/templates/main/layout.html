@@ -90,6 +90,11 @@
                     <span class="material-symbols-sharp">stockpot</span>
                     <h3>База данных Продаж</h3>
                 </a>
+            {% url 'orders_fbs' as url_orders_fbs %}
+            <a href="{{ url_orders_fbs }}" {% if request.path == url_orders_fbs %}class="active"{% endif %}>
+                <span class="material-symbols-sharp">stockpot</span>
+                <h3>Статистика со склада FBS</h3>
+            </a>
             {% url 'innotreid_stock_yandex' as url_stock_yandex %}
                 <a href="{{ url_stock_yandex }}" {% if request.path == url_stock_yandex %}class="active"{% endif %}>
                     <span class="material-symbols-sharp">database</span>
