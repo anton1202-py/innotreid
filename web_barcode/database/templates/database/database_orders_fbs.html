@@ -24,7 +24,6 @@
     <div class="features">
          <div class="top-befor-header">
             <h1>Заказы со склада FBS за 7 дней</h1>
-            
         </div>
         <div class='filter-data'>
             <form action="" class="filter-form" method="POST" id="ytr">
@@ -48,18 +47,18 @@
             </form>
         </div>
         <p>Данные по заказам от {{ form_date }} до {{ date_finish }}</p>
-            <table>
-                <tr>
-                    <th>Артикул продавца</th>
-                    <th>Количество</th>
-                </tr>
-                {% for el in data %}   
-                <tr>
-                    {#<td><a href="{% url 'sales_detail' el.0 %}">{{ el.0 }}</a></td>#}
-                    <td><a href="">{{ el.article_marketplace }}</a></td>
-                    <td>{{ el.total }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+        <table>
+            <tr>
+                <th>Артикул продавца</th>
+                <th>Количество</th>
+            </tr>
+            {% for el in data %}   
+            <tr>
+                {#<td><a href="{% url 'sales_detail' el.0 %}">{{ el.0 }}</a></td>#}
+                <td><a href="">{{ el.article_marketplace }}</a></td>
+                <td>{{ el.total }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>    
 {% endblock %}
