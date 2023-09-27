@@ -7,7 +7,8 @@
 {% block content%}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Обновление базы данных Артикулов</h1>
+            <h1>База данных Артикулов</h1>
+            {% if request.user.is_staff %}
             <div class="add-data">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -25,6 +26,7 @@
                     </div>
                 </form>
             </div>
+            {% endif %}
 
             {#<div class="alert alert-warninng">#}
             {#    {% if request.user.is_authenticated %}#}
