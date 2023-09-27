@@ -448,7 +448,9 @@ def database_sales(request):
         avg=Sum('sum_pay')/Sum('amount'),
         total=Sum('amount')
         ).order_by('-total')
-
+    orders_count = Sales.objects.filter(
+        Q(pub_date__range=[datestart, datefinish])
+        ).values('article_marketplace').aggregate(total=Sum('amount'))
     form = SelectDateForm(request.POST or None)
 
     if form.is_valid():
@@ -464,6 +466,9 @@ def database_sales(request):
                 avg=Sum('sum_sale')/Sum('amount'),
                 total=Sum('amount')
                 ).order_by('-total')
+            orders_count = Sales.objects.filter(
+                Q(pub_date__range=[datestart, datefinish])
+                ).values('article_marketplace').aggregate(total=Sum('amount'))
         else:
             data = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
@@ -474,11 +479,16 @@ def database_sales(request):
                 avg=Sum('sum_sale')/Sum('amount'),
                 total=Sum('amount')
                 ).order_by('-total')
+            orders_count = Sales.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(article_marketplace=article_filter)
+                ).values('article_marketplace').aggregate(total=Sum('amount'))
     context = {
         'form': form,
         'data': data,
         'form_date': str(datestart),
-        'date_finish': str(datefinish)
+        'date_finish': str(datefinish),
+        'orders_count': orders_count
     }
     return render(request, 'database/database_sales.html', context)
 
@@ -498,7 +508,9 @@ def database_orders_fbs(request):
         Q(pub_date__range=[datestart, datefinish])
         ).values('article_marketplace').annotate(total=Sum('amount')
                                                  ).order_by('-total')
-  
+    orders_count = OrdersFbsInfo.objects.filter(
+        Q(pub_date__range=[datestart, datefinish])
+        ).values('article_marketplace').aggregate(total=Sum('amount'))
     if form.is_valid():
         datestart = form.cleaned_data.get("datestart")
         datefinish = form.cleaned_data.get("datefinish")
@@ -508,17 +520,26 @@ def database_orders_fbs(request):
                 Q(pub_date__range=[datestart, datefinish]))
             data = raw_data.values('article_marketplace').annotate(
                 total=Sum('amount')).order_by('-total')
+            orders_count = OrdersFbsInfo.objects.filter(
+                Q(pub_date__range=[datestart, datefinish])
+                ).values('article_marketplace').aggregate(total=Sum('amount'))
         else:
             data = OrdersFbsInfo.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(article_marketplace=article_filter)
                 ).values('article_marketplace').annotate(total=Sum('amount')
                                                          ).order_by('-total')
+            orders_count = OrdersFbsInfo.objects.filter(
+                Q(pub_date__range=[datestart, datefinish]),
+                Q(article_marketplace=article_filter)
+                ).values('article_marketplace').aggregate(total=Sum('amount'))
+    print(orders_count)
     context = {
         'form': form,
         'data': data,
         'form_date': str(datestart),
-        'date_finish':str(datefinish)
+        'date_finish':str(datefinish),
+        'orders_count': orders_count
     }
 
     return render(request, 'database/database_orders_fbs.html', context)

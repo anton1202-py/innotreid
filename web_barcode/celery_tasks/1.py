@@ -61,4 +61,5 @@ def orders_fbs_statistic():
             cursor.close()
             connection.close()
             print("Соединение с PostgreSQL закрыто")
-        
+
+orders_fbs_statistic()
