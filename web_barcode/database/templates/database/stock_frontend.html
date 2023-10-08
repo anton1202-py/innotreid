@@ -1,4 +1,4 @@
-{% extends 'main/layout.html' %}
+ {% extends 'main/layout.html' %}
 
 
 {% block title %}Работа с базой данных{% endblock %}
@@ -23,26 +23,14 @@
 </script>
     <div class="features">
         <div class="top-befor-header">
-            <h1>База данных Склада</h1>
-            <div class="add-data">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <p>Загрузить остатки в Базу Данных</p>
-                    <div class="alert-warning">
-                        <div class="label-button">
-                            <label for="myfile" class="custom-button-choose">Выберете Excel файл</label>
-                            <input type="file" id="myfile" name="myfile" class="input-file">
-                        </div>
-                        <div class="label-button">
-                            <button type="submit" class="custom-button-delete-add">
-                                Загрузить
-                            </button>
-                        </div> 
-                    </div>
-                </form>
-            </div>
+            <h1>База данных Склада c Фронтенда</h1>
+                {# <a href="{% url 'createstock' %}"> #}
+                {#    <button class="custom-button"> #}
+                {#        Добавить запись в базу #}
+                {#    </button> #}
+                {# </a> #}
         </div>
-	<div class='filter-data'>
+        <div class='filter-data'>
             <form action="" class="filter-form" method="POST" id="ytr">
                 {% csrf_token %}
                 <div class="inner-form-data">
@@ -54,8 +42,12 @@
                     <input type="date" name="datefinish" class="choose-date" required="" id="datefinish">
                 </div><br>
                 <div class="inner-form-data">
-                    <p>Артикул для фильтра</p>
+                    <p>Фильтр по Артикулу</p>
                     <input type="text"  name="article_filter" class="choose-date" id="article_filter">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>Фильтр по складу</p>
+                    <input type="text"  name="stock_filter" class="choose-date" id="stock_filter">
                 </div><br>
                 <div class="inner-form-data">
                     <br>
@@ -63,39 +55,23 @@
                 </div>
             </form>
         </div>
-        {% if messages %}
-            <script>
-                {% for msg in messages %}
-                    alert('{{ msg.message }}');
+            <table>
+                <tr>
+                    <th>Дата</th>
+                    <th>Артикул продавца</th>
+                    <th>Артикул WB</th>
+                    <th>Склад</th>
+                    <th>Количество</th>
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    <td>{{ el.pub_date }}</td>
+                    <td><a href="{% url 'stock_frontend_detail' el.seller_article_wb %}">{{ el.seller_article_wb }}</a></td>
+                    <td>{{ el.article_wb }}</td>
+                    <td>{{ el.stock_name }}</td>
+                    <td>{{ el.amount }}</td>
+                </tr>
                 {% endfor %}
-            </script>
-        {% endif %}
-        <p>{{ data|length }}</p>
-        <table style="overflow-x: scroll; display: block; width: 100%;">
-            <tr>
-                <th>Дата</th>
-                <th>Артикул продавца на Wildberries</th>
-                <th>Артикул Wildberries</th>
-                {% for stock in stocks_list %}
-                    <th>{{ stock }}</th>
-                {% endfor %}
-                <th>Количество</th>
-            </tr>
-            
-            {% for el in data %}   
-            <tr>
-                <td>{{ el.pub_date }}</td>
-                <td>{{ el.seller_article_wb }}</td>
-                <td><a href="{% url 'stock_detail' el.article_wb %}">{{ el.article_wb }}</a></td>
-                {% for stock in stocks_list %}
-                    {% if stock == el.code_stock.wb_stock %}
-                        <td>{{ el.amount }}</td>
-                    {% else %}
-                        <td>0</td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
+            </table>
+	</div>           
 {% endblock %}

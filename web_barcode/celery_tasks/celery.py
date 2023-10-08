@@ -8,9 +8,17 @@ app.config_from_object('celery_tasks.celeryconfig')
 
 
 app.conf.beat_schedule = {
-    "everyday-task": {
+    "everyday-task1": {
         "task": "celery_tasks.tasks.add_database_data",
-        "schedule": crontab(hour=22, minute=40)
+        "schedule": crontab(hour=7, minute=20)
+    },
+    "everyday-task": {
+        "task": "celery_tasks.tasks.add_stock_data_from_frontend",
+        "schedule": crontab(hour=7, minute=0)
+    },
+    "order_fbs_stat": {
+        "task": "celery_tasks.tasks.orders_fbs_statistic",
+        "schedule": crontab(hour=6, minute=30)
     },
    # "change-fbs": {
     #    "task": "celery_tasks.tasks_yandex_fby_fbs.change_fbs_amount",

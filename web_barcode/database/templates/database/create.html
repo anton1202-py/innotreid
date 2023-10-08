@@ -8,21 +8,21 @@
         <h1>Добавление записи в базу</h1>
         <div class="table">
             <form method="post">
-                {% csrf_token %} <br>
-                {{ form.common_article }} <br>
-                {{ form.title }} <br>
-                {{ form.article_seller_wb }} <br>
-                {{ form.article_wb_nomenclature }} <br>
-                {{ form.barcode_wb }} <br>
-                {{ form.article_seller_ozon }} <br>
-                {{ form.ozon_product_id }} <br>
-                {{ form.fbo_ozon_sku_id }} <br>
-                {{ form.fbs_ozon_sku_id }} <br>
-                {{ form.barcode_ozon }} <br>
-                {{ form.article_seller_yandex }} <br>
-                {{ form.barcode_yandex }} <br>
-                {{ form.sku_yandex }} <br>
-                {{ form.multiplicity }} <br>
+                {% csrf_token %} 
+                <p>{{form.common_article.label}}</p>{{ form.common_article }} <br>
+                <p>{{form.title.label}}</p>{{ form.title }} <br>
+                <p>{{form.article_seller_wb.label}}</p>{{ form.article_seller_wb }} <br>
+                <p>{{form.article_wb_nomenclature.label}}</p>{{ form.article_wb_nomenclature }} <br>
+                <p>{{form.barcode_wb.label}}</p>{{ form.barcode_wb }} <br>
+                <p>{{form.article_seller_ozon.label}}</p>{{ form.article_seller_ozon }} <br>
+                <p>{{form.ozon_product_id.label}}</p>{{ form.ozon_product_id }} <br>
+                <p>{{form.fbo_ozon_sku_id.label}}</p>{{ form.fbo_ozon_sku_id }} <br>
+                <p>{{form.fbs_ozon_sku_id.label}}</p>{{ form.fbs_ozon_sku_id }} <br>
+                <p>{{form.barcode_ozon.label}}</p>{{ form.barcode_ozon }} <br>
+                <p>{{form.article_seller_yandex.label}}</p>{{ form.article_seller_yandex }} <br>
+                <p>{{form.barcode_yandex.label}}</p>{{ form.barcode_yandex }} <br>
+                <p>{{form.sku_yandex.label}}</p>{{ form.sku_yandex }} <br>
+                <p>{{form.multiplicity.label}}</p>{{ form.multiplicity }} <br>
                 <span>{{ error }}</span>
                 <button class="custom-button" type="submit">Добавить данные</button>
             </form>

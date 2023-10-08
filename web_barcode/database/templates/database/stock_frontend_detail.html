@@ -15,11 +15,12 @@
                         {
                           type: 'line',
                           data: {
-                            labels: [{% for article in articles %} '{{ article.pub_date }}', {% endfor %}],
+                            labels: [{% for article in articles %}{% if article.stock_name == 'Итого по складам' %} '{{ article.pub_date }}', {% endif %}{% endfor %}],
                             datasets: [
                               {
-                                label: 'Количество остатков {{ articles.0.article_marketplace }}',
-                                data: [{% for article in articles %} {{ article.amount }}, {% endfor %}],
+                                label: 'Итого по складам {{ articles.0.seller_article_wb }}',
+                                data: [{% for article in articles %}{% if article.stock_name == 'Итого по складам' %} {{ article.amount }},{% endif %} {% endfor %}],
+                                
                                 borderColor: '#7380ec',
                               }
                             ]
@@ -42,20 +43,22 @@
                     })();
                 </script>
             </div>
-        </div>    
+        </div>
         <div class="alert alert-warninng">
             <table>
                 <tr>
                     <th>Дата</th>
+                    <th>Артикул продавца</th>
                     <th>Артикул маркетплейса</th>
-                    <th>Название маркетплейса</th>
+                    <th>Название склада</th>
                     <th>Количество</th>
                 </tr>
                 {% for article in articles %}
                     <tr>
                         <td>{{ article.pub_date }}</td>
-                        <td>{{ article.article_marketplace }}</td>
-                        <td>{{ article.code_marketplace }}</td>
+                        <td>{{ article.seller_article_wb }}</td>
+                        <td>{{ article.article_wb }}</td>
+                        <td>{{ article.stock_name }}</td>
                         <td>{{ article.amount }}</td>
                     </tr>
                 {% endfor %}

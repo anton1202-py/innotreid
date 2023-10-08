@@ -1,7 +1,7 @@
 {% extends 'main/layout.html' %}
 
 
-{% block title %}Работа с базой данных{% endblock %}
+{% block title %}Заказы со склада FBS{% endblock %}
 
 {% block content %}
 <script>
@@ -23,7 +23,7 @@
 </script>
     <div class="features">
          <div class="top-befor-header">
-            <h1>База данных Продаж</h1>
+            <h1>Заказы со склада FBS за 7 дней</h1>
         </div>
         <div class='filter-data'>
             <form action="" class="filter-form" method="POST" id="ytr">
@@ -47,22 +47,17 @@
             </form>
         </div>
         <p>Данные по заказам от <b>{{ form_date }}</b> до <b>{{ date_finish }}</b></p>
-        <p>Всего продаж с <b>{{ form_date }}</b> по <b>{{ date_finish }}</b> - <b>{{ orders_count.total }}</b> шт.</p>
+        <p>Всего заказов с <b>{{ form_date }}</b> по <b>{{ date_finish }}</b> - <b>{{ orders_count.total }}</b> шт.</p>
         <table>
             <tr>
-                <th>Артикул маркетплейса</th>
+                <th>Артикул продавца</th>
                 <th>Количество</th>
-                <th>Средняя цена</th>
-                <th>Сумма продажи</th>
-                <th>Сумма выплат</th>
             </tr>
             {% for el in data %}   
             <tr>
-                <td><a href="{% url 'sales_detail' el.article_marketplace %}">{{ el.article_marketplace }}</a></td>
+                {#<td><a href="{% url 'sales_detail' el.0 %}">{{ el.0 }}</a></td>#}
+                <td><a href="">{{ el.article_marketplace }}</a></td>
                 <td>{{ el.total }}</td>
-                <td>{{ el.avg }}</td>
-                <td>{{ el.summ_pay }}</td>
-                <td>{{ el.summ_sale }}</td>
             </tr>
             {% endfor %}
         </table>

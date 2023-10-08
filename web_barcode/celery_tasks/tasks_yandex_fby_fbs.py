@@ -16,6 +16,7 @@ load_dotenv()
 # Адрес, где лежит файл с артикулами
 ARTICLE_DATA_FILE = 'web_barcode/celery_tasks/2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
+#https://api.partner.market.yandex.ru/campaigns/{campaignId}/stats/skus
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS
 URL_FBS = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBS_COMPAIGNID')}/offers/stocks"
@@ -26,7 +27,7 @@ headers = {
   'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
-#@app.task
+@app.task
 def change_fbs_amount():
     """
     Функция смотрит остаток артикулов на складе FBY, если остаток не равен 0,
@@ -115,25 +116,32 @@ def add_fby_amount_to_database():
 
         response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
+        
         result = data['result']
         dict_res = result['shopSkus']
-
+        
         for res in dict_res:
-            stocks_data = res['warehouses']
             stock_article = res['shopSku']
-            article_amount = 0
+            if 'warehouses' in res.keys():
+        
+                stocks_data = res['warehouses']
+                
+                article_amount = 0
             
-            for sum in stocks_data:
-                for amount in sum['stocks']:
-                    if amount['type'] == 'AVAILABLE':
-                        article_amount += amount['count']
-            fby_common_data_storage[stock_article] = article_amount
+                for sum in stocks_data:
+                    for amount in sum['stocks']:
+                        if amount['type'] == 'AVAILABLE':
+                            article_amount += amount['count']
+                fby_common_data_storage[stock_article] = article_amount
+            else:
+                fby_common_data_storage[stock_article] = 0
 
     common_data_for_database = []
   
     for article, amount in fby_common_data_storage.items():
         add_data = (add_date_stock, article, 3, amount)
         common_data_for_database.append(add_data)
+
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
@@ -178,8 +186,8 @@ def sender_message():
 
     sender_data = cursor.fetchall()
 
-    #for article, current_amount, yesterday_amount in sender_data:
-    #    print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
+    for article, current_amount, yesterday_amount in sender_data:
+        print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
     
     return sender_data
 

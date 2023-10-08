@@ -49,13 +49,20 @@
         </a>
         
         <div class="sidebar">
-            {% if request.user.is_staff %}
+            {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
                 {% url 'database_home' as url %}
                 <a href="{{ url }}" {% if request.path == url %}class="active"{% endif %}>
                     <span class="material-symbols-sharp">receipt_long</span>
                     <h3>База данных Артикулов</h3>
                 </a>
             
+                {% url 'database_article_compare' as url_article_compare %}
+                <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">filter_list</span>
+                    <h3>Сопоставить артикулы</h3>
+                </a>
+            {% endif %}
+            {% if request.user.is_staff %}
                 {% url 'database_stock' as url_stock %}
                 <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
                     <span class="material-symbols-sharp">inventory</span>
@@ -67,23 +74,38 @@
                     <span class="material-symbols-sharp">inventory_2</span>
                     <h3>База данных Склада Wildberries</h3>
                 </a>
-            {% endif %}
+
             {% url 'stock-shelving' as url_stock %}
             <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">shelves</span>
                 <h3>Задание на изготовление</h3>
             </a>
-            {% if request.user.is_staff %}
+
+            {% url 'stock_frontend' as url_stock_frontend %}
+                <a href="{{ url_stock_frontend }}" {% if request.path == url_stock_frontend %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">trending_up</span>
+                    <h3>Остатки WB с Фронтенда</h3>
+                </a>
+
             {% url 'database_sales' as url_sales %}
                 <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">trending_up</span>
+                    <span class="material-symbols-sharp">stockpot</span>
                     <h3>База данных Продаж</h3>
                 </a>
+
             {% url 'innotreid_stock_yandex' as url_stock_yandex %}
                 <a href="{{ url_stock_yandex }}" {% if request.path == url_stock_yandex %}class="active"{% endif %}>
                     <span class="material-symbols-sharp">database</span>
                     <h3>Склад FBY Иннотрейд</h3>
                 </a>
+            {% endif %}
+            
+            {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
+            {% url 'orders_fbs' as url_orders_fbs %}
+            <a href="{{ url_orders_fbs }}" {% if request.path == url_orders_fbs %}class="active"{% endif %}>
+                <span class="material-symbols-sharp">stockpot</span>
+                <h3>Статистика со склада FBS</h3>
+            </a>
             {% endif %}
         </div>
     </aside>

@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
      #path('', views.database_home, name='database_home'),
+     path('article_compare', views.article_compare, name='database_article_compare'),
      path('create', views.create, name='create'),
      path('<int:pk>',
           views.DatabaseDetailView.as_view(),
@@ -54,7 +55,14 @@ urlpatterns = [
           views.DatabaseShelvingUpdateView.as_view(),
           name='stock-shelving-update'
           ),
-
+     path('stock_frontend/',
+          views.stock_frontend,
+          name='stock_frontend'
+          ),
+     path('stock_frontend//<str:seller_article_wb>',
+          views.DatabaseStockFrontendDetailView.as_view(),
+          name='stock_frontend_detail'
+          ),
      path('sales/',
           views.database_sales,
           name='database_sales'
@@ -75,9 +83,9 @@ urlpatterns = [
           views.DatabaseSalesDeleteView.as_view(),
           name='sales_delete'
           ),
-     path('export/',
-          views.export_movies_to_xlsx,
-          name='export'
+     path('orders_fbs/',
+          views.database_orders_fbs,
+          name='orders_fbs'
           ),
      path('login/', views.LoginUser.as_view(), name='login'),
      path('logout/', views.logout_user, name='logout'),

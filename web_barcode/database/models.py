@@ -69,7 +69,7 @@ class Articles(models.Model):
     )
 
     def __str__(self):
-        return self.seller_article
+        return self.common_article
 
     def get_absolute_url(self):
         return f'/database/{self.id}'
@@ -263,3 +263,55 @@ class Sales(models.Model):
     class Meta:
         verbose_name = 'Продажи'
         verbose_name_plural = 'Продажи'
+
+
+class Stocks_wb_frontend(models.Model):
+    pub_date = models.DateField(
+        verbose_name='Дата',
+        auto_now_add=True
+    )
+    seller_article_wb = models.CharField(
+        verbose_name='Артикул продавца на WB',
+        max_length=50,
+        null=True
+    )
+    article_wb = models.CharField(
+        verbose_name='Артикул WB',
+        max_length=50,
+    )
+    stock_name = models.CharField(
+        verbose_name='Название склада WB',
+        max_length=100,
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+    )
+
+    class Meta:
+        verbose_name = 'Остатки на складах WB c фронтенда'
+        verbose_name_plural = 'Остатки на складах WB c фронтенда'
+
+
+class OrdersFbsInfo(models.Model):
+    pub_date = models.DateField(
+        verbose_name='Дата',
+    )
+    article_marketplace = models.CharField(
+        verbose_name='Артикул маркетплейса',
+        max_length=50,
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+    )
+    nomenclature_id = models.CharField(
+        verbose_name='Номенклатура WB',
+        max_length=50,
+    )
+    rid = models.CharField(
+        verbose_name='rid',
+        max_length=50,
+    )
+
+    class Meta:
+        verbose_name = 'Заказы со склада FBS'
+        verbose_name_plural = 'Заказы со склада FBS'
