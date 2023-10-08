@@ -1,0 +1,74 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Номер поставки{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Поставка</h1>
+            {% if request.user.is_staff %}
+            <div class="add-data">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p>Загрузить артикулы в Базу Данных</p>
+                    <div class="alert-warning">
+                        <div class="label-button">
+                            <label for="myarticles" class="custom-button-choose">Выберете Excel файл</label>
+                            <input type="file" id="myarticles" name="myarticles" class="input-file">
+                        </div>
+                        <div class="label-button">
+                            <button type="submit" class="custom-button-delete-add">
+                                Загрузить
+                            </button> 
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            {#<div class="alert alert-warninng">#}
+            {#    {% if request.user.is_authenticated %}#}
+            {#        <a href="{% url 'create' %}">#}
+            {#            <button class="custom-button">#}
+            {#                Добавить запись в базу#}
+            {#            </button>#}
+            {#        </a>#}
+            {#    {% endif %}#}
+            {#</div>#}
+        </div>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th rowspan="2">Предмет</th>
+                    <th rowspan="2">Артикул постащика</th>
+                    <th rowspan="2">Со склада</th>
+                    <th colspan="2" >{{today}}</th>
+
+                </tr>
+                <tr>
+                    <th>День</th>
+                    <th>Ночь</th>
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    <td>{{ el.subject }}</td>
+                    <td>{{ el.supplier_article }}</td>
+                    <td>{{ el.from_stock }}</td>
+                    <form method="post" id="{{ el.supplier_article }}" name="{{ el.supplier_article }}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <td>
+                            <input type="number" value="{{ el.day_production_amount }}" id="day {{ el.supplier_article }}" name="day {{ el.supplier_article }}"/>
+                        </td>
+                        <td>
+                            <input type="number" value="{{ el.night_production_amount }}" id="night {{ el.supplier_article }}" name="night {{ el.supplier_article }}"/>
+                        </td>
+                        <td><button type="Submit" id="{{ el.id }}" name="{{ el.id }}" method="POST"> Загрузить
+                        </button> </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </table>
+    </div>    
+        
+{% endblock %}

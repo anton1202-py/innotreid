@@ -610,3 +610,8 @@ table tr td:last-child {
 	border-radius: 0 8px 8px 0;
 }
 
+.first {
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+  }

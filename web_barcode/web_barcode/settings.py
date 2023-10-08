@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'database',
     'database_yandex',
     'import_export',
+    'production'
 ]
 
 MIDDLEWARE = [
