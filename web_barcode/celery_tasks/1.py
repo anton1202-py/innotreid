@@ -24,7 +24,7 @@ def orders_fbs_statistic():
     unixtime_from = int(time.mktime(date_from.timetuple()))
 
 
-    url_articles = f'https://suppliers-api.wildberries.ru/api/v3/orders?limit=1000&next=0&dateFrom={unixtime_from}&dateTo={unixtime_to}&flag=1'
+    url_articles = f'https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list'
 
     APIKEY = {"Authorization": os.getenv('API_KEY_WB_USUAL')}
 
