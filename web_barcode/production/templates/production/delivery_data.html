@@ -63,9 +63,9 @@
                         <td>{{ prom.total_production }}/{{ el.amount }}</td>
                         {% endif %}
                     {% endfor %}
-                    {% for prod in production_amount %}
-                        {% for date in production_date %}
-                            {% if el.id == prod.articles.id and date == prod.production_date|stringformat:"s" %}
+                    {% for date in production_date %}
+                        {% for prod in production_amount %}
+                            {% if date == prod.production_date|stringformat:"s" and el.id == prod.articles.id %}
                                 <form method="post" id="{{ el.supplier_article }}" name="{{ el.supplier_article }}" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <td class="table_times_amount">
