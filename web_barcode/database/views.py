@@ -18,10 +18,12 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
-from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectDateForm,
-                    SelectDateStocksForm, ShelvingForm, SelectArticlesForm, StocksForm)
-from .models import (Articles, CodingMarketplaces, Sales, ShelvingStocks,
-                     Stocks, Stocks_wb_frontend, WildberriesStocks, OrdersFbsInfo)
+from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
+                    SelectDateForm, SelectDateStocksForm, ShelvingForm,
+                    StocksForm)
+from .models import (Articles, CodingMarketplaces, OrdersFbsInfo, Sales,
+                     ShelvingStocks, Stocks, Stocks_wb_frontend,
+                     WildberriesStocks)
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -157,8 +159,6 @@ def database_home(request):
                 )
                 obj.save()
     return render(request, 'database/database_home.html', context)
-    #else:
-    #    return redirect('database_home')
 
 
 def article_compare(request):
@@ -580,13 +580,9 @@ class DatabaseSalesDetailView(ListView):
             'wbstocks': Stocks.objects.filter(
             article_marketplace=self.kwargs['article_marketplace']).values()
         })
-        #print(Stocks.objects.filter(
-        #    article_marketplace=self.kwargs['article_marketplace']).values())
         return context
 
     def get_queryset(self):
-        #print(Sales.objects.filter(
-        #    article_marketplace=self.kwargs['article_marketplace']).values())
         return Sales.objects.filter(
             article_marketplace=self.kwargs['article_marketplace'])
 

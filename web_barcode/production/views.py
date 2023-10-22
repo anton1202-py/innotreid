@@ -1,13 +1,13 @@
+import datetime
 from datetime import date, timedelta
+
 import pandas as pd
 from database.forms import SelectDateForm
 from django.db.models import Q
-import datetime
 from django.shortcuts import redirect, render
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 
 from .models import ArticlesDelivery, Delivery, ProductionDelivery
-
 
 
 def product_detail(request):
@@ -16,9 +16,7 @@ def product_detail(request):
     data_id = ArticlesDelivery.objects.values_list('id', flat=True)
     production_amount = ProductionDelivery.objects.all()
 
-    production_test = []
-    for j in data_id:
-        production_test.append(ProductionDelivery.objects.filter(articles=j)[0])
+    
 
     today = datetime.datetime.today().strftime("%d-%m-%Y")
 
@@ -50,6 +48,10 @@ def product_detail(request):
             formatted_date_new = date_object.strftime('%d-%m-%Y')
             production_date_raw.append(str(formatted_date_new))
     production_date = sorted(str(datetime.datetime.strptime(x, '%d-%m-%Y').strftime('%Y-%m-%d')) for x in production_date_raw)
+
+    production_test = []
+    for j in data_id:
+        production_test.append(ProductionDelivery.objects.filter(articles=j)[0])
 
     if request.method == 'POST' and request.FILES:
         myfile = request.FILES['myarticles']

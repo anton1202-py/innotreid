@@ -1,7 +1,6 @@
 from celery import Celery
 from celery.schedules import crontab
 
-
 app = Celery('celery_tasks',
              include=['celery_tasks.tasks', 'celery_tasks.tasks_yandex_fby_fbs'])
 app.config_from_object('celery_tasks.celeryconfig')
@@ -32,5 +31,12 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.tasks_yandex_fby_fbs.sender_zero_balance",
         "schedule": crontab(hour=10, minute=0)
     },
+    "add_article_price_info_to_database": {
+        "task": "celery_tasks.tasks.add_article_price_info_to_database",
+        "schedule": crontab(hour=9, minute=0)
+    },
+    "sender_change_price_info": {
+        "task": "celery_tasks.tasks.sender_change_price_info",
+        "schedule": crontab(hour=9, minute=5)
+    },
 }
-

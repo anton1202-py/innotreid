@@ -6,7 +6,7 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-#from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT

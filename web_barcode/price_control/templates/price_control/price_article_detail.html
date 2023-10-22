@@ -1,0 +1,101 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Цены на артикул {{ articles.0.seller_article }}{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <div class="alert alert-warninng">
+            <div class="charts">
+                <div class='chart_price'>
+                    <canvas id="acquisitions"></canvas>
+                    <script>
+                        function getGradient(ctx, chartArea) {
+                            let gradient = ctx.createLinearGradient(
+                              0,
+                              chartArea.bottom,
+                              0,
+                              chartArea.top
+                            );
+                            gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                            gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                            return gradient;
+                                        }
+                        function getGradient2(ctx, chartArea) {
+                            let gradient = ctx.createLinearGradient(
+                              0,
+                              chartArea.bottom,
+                              0,
+                              chartArea.top
+                            );
+                            gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+                            gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+                            return gradient;
+                                        }
+                        (async function() {
+                          new Chart(
+                            document.getElementById('acquisitions'),
+                            {
+                              type: 'line',
+                              data: {
+                                labels: [{% for article in articles %} '{{ article.price_date }}', {% endfor %}],
+                                datasets: [
+                                  {
+                                    label: 'Изменение стоимости артикула {{ articles.0.seller_article }}',
+                                    data: [{% for article in articles %} {{ article.price  }}, {% endfor %}],
+                                    lineTension: 0.3,
+                                    fill: true,
+                                    backgroundColor: function (context) {
+                                        const chart = context.chart;
+                                        const { ctx, chartArea } = chart;
+                                    
+                                       // This case happens on initial chart load
+                                       if (!chartArea) return;
+                                       return getGradient2(ctx, chartArea);
+                                    }
+                                  },
+                                ]
+                              },
+                              options: {
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            // This more specific font property overrides the global property
+                                            font: {
+                                                size: 14,
+                                                family: "'Open Sans', 'Arial', 'sans-serif'"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            }
+                          );
+                        })();
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-warninng">
+            <table>
+                <tr>
+                    <th>Дата</th>
+                    <th>Артикул продавца</th>
+                    <th>Артикул Wildberries</th>
+                    <th>Цена</th>
+                </tr>
+                {% for article in articles %}
+                    <tr>
+                        <td>{{ article.price_date }}</td>
+                        <td>{{ article.seller_article }}</td>
+                        <td>{{ article.wb_article }}</td>
+                        <td>{{ article.price }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div> 
+        
+{% endblock %}

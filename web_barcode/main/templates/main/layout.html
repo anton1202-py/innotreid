@@ -10,6 +10,7 @@
     <link rel='stylesheet' href="{% static 'main/css/main.css' %}">
     <link rel='shortcut icon' href="{% static 'main/img/icon.ico' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Chartjs CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
     <script src="/static/main/js/main.js" defer></script>
@@ -111,6 +112,11 @@
             <a href="{{ url_delivery_number }}" {% if request.path == url_delivery_number %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">stockpot</span>
                 <h3>Номер поставки</h3>
+            </a>
+            {% url 'add_article' as url_add_article %}
+            <a href="{{ url_add_article }}" {% if request.path == url_add_article %}class="active"{% endif %}>
+                <span class="material-symbols-sharp">sell</span>
+                <h3>Контроль цен</h3>
             </a>
         </div>
     </aside>

@@ -9,5 +9,6 @@ urlpatterns = [
     path('database/', include('database.urls')),
     path('database_ya/', include('database_yandex.urls')),
     path('production/', include('production.urls')),
+    path('price_control/', include('price_control.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
