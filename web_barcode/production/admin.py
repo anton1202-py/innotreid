@@ -1,3 +1,9 @@
 from django.contrib import admin
+from import_export import fields, resources
+from import_export.widgets import ForeignKeyWidget
 
-# Register your models here.
+from .models import TaskCreator
+
+admin.site.register(TaskCreator)
+
+

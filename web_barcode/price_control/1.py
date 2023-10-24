@@ -10,6 +10,7 @@ import pandas as pd
 import psycopg2
 import requests
 #from celery_tasks.celery import app
+import telegram
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -60,11 +61,13 @@ def add_article_price_info_to_database():
             # Обход ошибки не существующиего артикула
             if data['data']['products']:
                 price = int(data['data']['products'][0]['extended']['clientPriceU'])//100
-                set_with_price = (article_dict[i], i, today_data, price)
+                spp = data['data']['products'][0]['extended']['clientSale']
+                basic_sale = data['data']['products'][0]['extended']['basicSale']
+                set_with_price = (article_dict[i], i, today_data, price, spp, basic_sale)
                 data_for_database.append(set_with_price)
 
         cursor.executemany(
-                "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price) VALUES(%s, %s, %s, %s);",
+                "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
                 data_for_database)
 
     except (Exception, Error) as error:
@@ -92,11 +95,16 @@ def change_price_info():
     cursor = connection.cursor()
 
     postgreSQL_select_Query = '''SELECT seller_article, 
-       price AS today_price, 
+       price AS today_price,
+       spp AS today_spp,
        (SELECT price 
         FROM price_control_dataforanalysis 
         WHERE seller_article = t.seller_article 
-          AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_price 
+          AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_price,
+          (SELECT spp 
+        FROM price_control_dataforanalysis 
+        WHERE seller_article = t.seller_article 
+          AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_spp
     FROM price_control_dataforanalysis t 
     WHERE price_date = CURRENT_DATE 
       AND price <> (SELECT price 
@@ -107,9 +115,10 @@ def change_price_info():
     cursor.execute(postgreSQL_select_Query)
 
     sender_data = cursor.fetchall()
-
-    for article, current_price, yesterday_price in sender_data:
-        print(f'Цена артикула {article} со скидкой покупателя сегодня {current_price}, вчера была {yesterday_price}')
+    
+    print(sender_data)
+    for article, current_price, current_spp, yesterday_price, yesterday_spp  in sender_data:
+        print(f'Цена артикула {article} со скидкой покупателя {current_spp}% сегодня {current_price}, вчера была {yesterday_price} со скидкой {yesterday_spp}%')
     
     return sender_data
 
@@ -144,4 +153,5 @@ def sender_change_price_info():
                     message = f'Цена артикула {article} со скидкой покупателя сегодня {current_price}, вчера была {yesterday_price}'
                     bot.send_message(chat_id=id, text=message)
 
-add_article_price_info_to_database()
+#add_article_price_info_to_database()
+change_price_info()

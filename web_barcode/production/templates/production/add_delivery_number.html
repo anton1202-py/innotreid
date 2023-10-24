@@ -1,0 +1,90 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Поставки{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Поставки</h1>
+        </div>
+        <div class="table_wrapper">
+            <table>
+                <tr>
+                    <th rowspan="2">Задание</th>
+                    <th rowspan="2">Маркетплейс</th>
+                    <th colspan="2">Изготовление пластин</th>
+                    <th colspan="2">Наклейки</th>
+                    <th rowspan="2">Статус отгрузки</th>
+                    <th rowspan="2">Дата отгрузки</th>
+                </tr>
+
+                <tr>
+                    <th>Прогресс</th>
+                    <th>Остаток/Общее количество</th>
+                    <th>В печати</th>
+                    <th>Отпечатаны</th>
+                </tr>
+                
+                {% for el in data %}   
+                <tr>
+                    <td><a href="{% url 'delivery_data' el.id %}">{{ el.task_name }}</a></td>
+                    <td>{{ el.market_name }}</td>
+                    <!-- <td>{{ el.from_stock }}</td> -->
+                    <td>{{ el.progress }}</td>
+                    <td>{{ el.remainder }}</td>
+
+                    <!-- <td>{{ el.stickers }}</td> -->
+                    <form method="post" id="add_delivery" name="form_task_id" enctype="multipart/form-data">
+                        {% csrf_token %}
+                    <td>
+                        {% if el.printing == True %}
+                        <input class="form-check-input" type="checkbox" value="1" name="printing" checked/>
+                        {% else %}
+                        <input class="form-check-input" type="checkbox" value="1" name="printing"/>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if el.printed == True %}
+                        <input class="form-check-input" type="checkbox" value="1" name="printed" checked/>
+                        {% else %}
+                        <input class="form-check-input" type="checkbox" value="1" name="printed"/>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if el.shipment_status == True %}
+                        <input class="form-check-input" type="checkbox" value="1" name="shipment_status" checked/>
+                        {% else %}
+                        <input class="form-check-input" type="checkbox" value="1" name="shipment_status"/>
+                        {% endif %}
+                    </td>
+                    <button style="display: none;" class="custom-button" type="Submit"  name="button_task_id" value="{{ el.id }}" method="POST"> Загрузить
+                    </form>
+                    <td>{{ el.shipping_date }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                <form method="post" id="add_delivery" name="add_delivery" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <td class="table_times_amount">
+                        {{ form.task_name }}
+                    </td>
+                    <td class="table_times_amount">
+                        <p name="task_name" class="form-control">{{ form.market_name }}</p>
+                    </td>
+                    <td class="table_times_amount"></td>
+                    <td class="table_times_amount"></td>
+                    <td class="table_times_amount"></td>
+                    <td class="table_times_amount"></td>
+                    <td class="table_times_amount"></td>
+                    <td class="table_times_amount"></td>
+                </tr>
+            </table>
+            <button class="custom-button" type="Submit"  name="add_delivery_button" method="POST"> Загрузить
+            </button> 
+            </form>
+        </div>
+    </div>    
+        
+{% endblock %}

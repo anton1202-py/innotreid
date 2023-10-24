@@ -41,7 +41,15 @@ class DataForAnalysis(models.Model):
     )
     price = models.PositiveSmallIntegerField(
         verbose_name='Цена',
-    ) 
+    )
+    spp = models.CharField(
+        verbose_name='Скидка постоянного покупателя',
+        max_length=30,
+    )
+    basic_sale = models.CharField(
+        verbose_name='Базовая скидка',
+        max_length=30,
+    )
 
     class Meta:
         verbose_name = 'Данные для анализа цен'

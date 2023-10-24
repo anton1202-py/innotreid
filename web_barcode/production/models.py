@@ -1,11 +1,82 @@
 from datetime import datetime
-from django.db.models import Sum
+from decimal import Decimal
+
+from database.models import CodingMarketplaces
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q, Sum
 from django.urls import reverse
+
+PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
+
+class TaskCreator(models.Model):
+    """Модель описывает создание задачи для производства"""
+    task_name = models.CharField(
+        verbose_name='Название задачи',
+        max_length=100,
+    )
+    market_name = models.ForeignKey(
+        CodingMarketplaces,
+        verbose_name='Маркетплейс',
+        on_delete=models.PROTECT,
+    )
+    plate_production = models.CharField(
+        verbose_name='Изготовление пластин',
+        max_length=50,
+        blank = True,
+        null=True,
+    )
+    progress = models.DecimalField(
+        verbose_name='Прогресс',
+        max_digits=3,
+        decimal_places=0, 
+        default=Decimal(0), 
+        validators=PERCENTAGE_VALIDATOR)
+
+    remainder = models.CharField(
+        verbose_name='Остаток/Общее количество',
+        blank = True,
+        null=True,
+        max_length=50,
+    )
+    stickers = models.CharField(
+        verbose_name='Наклейки',
+        blank = True,
+        null=True,
+        max_length=50,
+    )
+    printing = models.BooleanField(
+        verbose_name='В печати',
+        blank = True,
+        null=True,
+    )
+    printed = models.BooleanField(
+        verbose_name='Напечатаны',
+        blank = True,
+        null=True,
+    )
+    shipment_status = models.BooleanField(
+        verbose_name='Статус отгрузки',
+        blank = True,
+        null=True,
+
+    )
+    shipping_date = models.DateField(
+        verbose_name='Дата отгрузки',
+        blank=True,
+        null=True,
+    )
 
 
 class ArticlesDelivery(models.Model):
     """Модель описывает артикулы и их количество, которое нужно произвести"""
+    task = models.ForeignKey(
+        TaskCreator,
+        default=1,
+        verbose_name='Номер задания',
+        on_delete=models.PROTECT,
+    )
     subject = models.CharField(
         verbose_name='Предмет',
         max_length=250,
@@ -28,6 +99,7 @@ class ArticlesDelivery(models.Model):
 
 class ProductionDelivery(models.Model):
     """Модель описывает ежедневное производство артикулов"""
+    task =  models.ForeignKey(TaskCreator, on_delete=models.CASCADE)
     articles = models.ForeignKey(ArticlesDelivery, on_delete=models.CASCADE)
     
     fact_amount = models.CharField(
@@ -53,7 +125,7 @@ class ProductionDelivery(models.Model):
 
     def total_production(self):
         total = 0
-        productions = ProductionDelivery.objects.filter(articles=self.articles)
+        productions = ProductionDelivery.objects.filter(Q(articles=self.articles))
         for production in productions:
             total += production.day_quantity + production.night_quantity
         amount = total + self.articles.from_stock

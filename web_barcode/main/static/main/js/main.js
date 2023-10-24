@@ -59,7 +59,18 @@ const elements = document.getElementsByTagName("th");
 const values = document.getElementsByTagName("td");
 const table = document.querySelector('table')
 
+var rows = table.getElementsByTagName('tr')
+
+for (var i = 0; i < rows.length; i++) {
+  var cells = rows[i].getElementsByTagName("td");
+  var cell_value = cells[4]; // получаем значение ячейки в пятом столбце
+  console.log(cell_value);
+}
 var amount_table = document.querySelectorAll('td:nth-of-type(4)');
+// console.log(amount_table)
+// for (i in amount_table) {
+//   console.log(i)
+//}
 
 var produced_table = document.querySelectorAll('td:nth-of-type(5)');
 

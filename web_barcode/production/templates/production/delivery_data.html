@@ -58,6 +58,7 @@
                     <td>{{ el.amount }}</td>
                     
                     {% for prom in production_test %}
+                        
                         {% if el.id == prom.articles.id %}
                         <td style="display: none;">{{ prom.total_production }}</td>
                         <td>{{ prom.total_production }}/{{ el.amount }}</td>

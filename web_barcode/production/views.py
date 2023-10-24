@@ -4,23 +4,100 @@ from datetime import date, timedelta
 import pandas as pd
 from database.forms import SelectDateForm
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 
-from .models import ArticlesDelivery, Delivery, ProductionDelivery
+from .forms import TaskCreatorForm
+from .models import ArticlesDelivery, ProductionDelivery, TaskCreator
 
 
-def product_detail(request):
+def task_creation(request):
+    """Описывает страницу создания заявок для производства"""
+    data = TaskCreator.objects.all().order_by('id')
+    form = TaskCreatorForm(request.POST or None)
+
+    if request.method == 'POST' and 'button_task_id' in request.POST.keys():
+        if 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=True,
+                printed=True,
+                shipment_status=True
+                )
+        elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=False,
+                printed=False,
+                shipment_status=False
+                )
+        elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=True,
+                printed=False,
+                shipment_status=False
+                )
+        elif 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=True,
+                printed=True,
+                shipment_status=False
+                )
+        elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=True,
+                printed=False,
+                shipment_status=True
+                )
+        elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=False,
+                printed=True,
+                shipment_status=False
+                )
+        elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=False,
+                printed=True,
+                shipment_status=True
+                )
+        elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+                printing=False,
+                printed=False,
+                shipment_status=True
+                )
+        
     
-    data = ArticlesDelivery.objects.all()
-    data_id = ArticlesDelivery.objects.values_list('id', flat=True)
-    production_amount = ProductionDelivery.objects.all()
-
+    if request.method == 'POST' and form.is_valid():
+        task_name = form.cleaned_data.get("task_name")
+        market_name = form.cleaned_data.get("market_name")
+        obj = TaskCreator(
+            task_name=task_name,
+            market_name=market_name,
+            )
+        obj.save()
+        print(request.POST)
+        return redirect('task_creation')
     
+    context = {
+        'data': data,
+        'form': form
+    }
+
+    return render(request, 'production/add_delivery_number.html', context)
+
+
+def product_detail(request, task_id):
+    """Описывает страницу с артикулами в поставке. Их пополнение операторами."""
+    
+    task = get_object_or_404(TaskCreator, id=task_id)
+
+    data = ArticlesDelivery.objects.filter(task=task)
+    data_id = data.values_list('id', flat=True)
+    production_amount = ProductionDelivery.objects.filter(task=task)
 
     today = datetime.datetime.today().strftime("%d-%m-%Y")
 
-    description = ProductionDelivery.objects.values('production_date').distinct()
+    description = production_amount.values('production_date').distinct()
     production_date_raw = []
     for i in description:
         if i['production_date'] != None:
@@ -33,6 +110,7 @@ def product_detail(request):
         for i in data_id:
             article_id = ArticlesDelivery.objects.get(id=i)
             obj = ProductionDelivery(
+            task=task,
             articles=article_id,
             production_date=datetime.datetime.today().strftime("%Y-%m-%d"),
             day_quantity=0,
@@ -40,7 +118,7 @@ def product_detail(request):
             )
             obj.save()
 
-        description = ProductionDelivery.objects.values('production_date').distinct()
+        description = production_amount.values('production_date').distinct()
     production_date_raw = []
     for i in description:
         if i['production_date'] != None:
@@ -66,19 +144,21 @@ def product_detail(request):
         dbframe = empexceldata
 
         for i in range(len(subject_list)):
-            if ArticlesDelivery.objects.filter(Q(subject=subject_list[i])):
-                ArticlesDelivery.objects.filter(supplier_article=supplier_article_list[i]).update(
+            if data.filter(Q(task=task,), Q(subject=subject_list[i])):
+                data.filter(supplier_article=supplier_article_list[i]).update(
                 from_stock=from_stock_list[i],
                 amount=amount_list[i],
                 )
             else:
                 obj = ArticlesDelivery(
+                task=task,
                 subject=subject_list[i],
                 supplier_article=supplier_article_list[i],
                 from_stock=from_stock_list[i],
                 amount=amount_list[i],
                 )
                 obj.save()
+        return redirect(f'delivery_data', task_id)
     elif request.method == 'POST':
         #article_id = ArticlesDelivery.objects.get(id=list(request.POST.keys())[3])
         article_id = list(request.POST.keys())[3]
@@ -88,16 +168,16 @@ def product_detail(request):
         article = list(request.POST.keys())[1]
         
         for_data = article.split(", ")
-        for_data_id = ArticlesDelivery.objects.get(supplier_article=for_data[2])
-        if ProductionDelivery.objects.filter(Q(id=article_id)):
-            ProductionDelivery.objects.filter(id=article_id).update(
-            #articles = for_data_id,
+        for_data_id = data.get(supplier_article=for_data[2])
+        if production_amount.filter(Q(id=article_id)):
+            production_amount.filter(id=article_id).update(
             day_quantity=list(request.POST.values())[1],
             night_quantity=list(request.POST.values())[2],
             )
             
         else:
             obj = ProductionDelivery(
+            task=task,
             id=article_id,
             articles = for_data_id,
             production_date=formatted_date,
@@ -105,6 +185,7 @@ def product_detail(request):
             night_quantity=list(request.POST.values())[2],
             )
             obj.save()
+        return redirect(f'delivery_data', task_id)
 
     context = {
         'data': data,
@@ -114,77 +195,3 @@ def product_detail(request):
         'production_amount': production_amount
     }
     return render(request, 'production/delivery_data.html', context)
-
-
-
-def delivery_number(request):
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    #if request.user.is_staff == True:
-    data = Delivery.objects.all().order_by('supplier_article')
-    today_raw = datetime.datetime.today()
-    today = today_raw.strftime("%d-%m-%Y")
-    description = Delivery.objects.values('production_date').distinct()
-
-    production_date = []
-    for i in description:
-        if i['production_date'] != None:
-            production_date.append(i['production_date'])
-
-    context = {
-        'production_date': production_date,
-        'data': data,
-        'today': today
-    }
-    if request.method == 'POST' and request.FILES:
-        myfile = request.FILES['myarticles']
-        empexceldata = pd.read_excel(myfile)
-        load_excel_data_wb_stock = pd.DataFrame(
-            empexceldata, columns=['Предмет', 'Артикул поставщика',
-                                   'Со склада', 'Количество', 'Фактическое количество'])
-        subject_list = load_excel_data_wb_stock['Предмет'].to_list()
-        supplier_article_list = load_excel_data_wb_stock['Артикул поставщика'].to_list()
-        from_stock_list = load_excel_data_wb_stock['Со склада'].to_list()
-        amount_list = load_excel_data_wb_stock['Количество'].to_list()
-        fact_amount_list = load_excel_data_wb_stock['Фактическое количество'].to_list()
-        dbframe = empexceldata
-
-        for i in range(len(subject_list)):
-
-            if str(fact_amount_list[i]) == 'nan':
-                fact_amount_list[i] = ''
-            if Delivery.objects.filter(Q(subject=subject_list[i])):
-                Delivery.objects.filter(supplier_article=supplier_article_list[i]).update(
-                from_stock=from_stock_list[i],
-                amount=amount_list[i],
-                fact_amount=fact_amount_list[i],
-                )
-            else:
-                obj = Delivery(
-                subject=subject_list[i],
-                supplier_article=supplier_article_list[i],
-                from_stock=from_stock_list[i],
-                amount=amount_list[i],
-                fact_amount=fact_amount_list[i],
-                )
-                obj.save()
-    elif request.method == 'POST':
-        delivery_id = Delivery.objects.get(id=list(request.POST.keys())[3]).pk
-        new_data = Delivery.objects.get(id=list(request.POST.keys())[3])
-        new_data.production_date = today_raw
-        for i in request.POST.keys():
-            if 'day' in i:
-                if request.POST[i]:
-                    new_data.day_production_amount = request.POST[i]
-            elif 'night' in i:
-                if request.POST[i]:
-                    new_data.night_production_amount = request.POST[i]
-        if new_data.night_production_amount and new_data.day_production_amount:
-            new_data.fact_amount = f'{str(int(new_data.night_production_amount) + int(new_data.day_production_amount))}/{new_data.amount}'
-        elif new_data.night_production_amount and not new_data.day_production_amount:
-            new_data.fact_amount = f'{int(new_data.night_production_amount)}/{new_data.amount}'
-        elif not new_data.night_production_amount and new_data.day_production_amount:
-            new_data.fact_amount = f'{int(new_data.day_production_amount)}/{new_data.amount}'
-        new_data.save()
-    
-    return render(request, 'production/delivery_amount.html', context)
