@@ -85,6 +85,9 @@
                     <th>Артикул продавца</th>
                     <th>Артикул Wildberries</th>
                     <th>Цена</th>
+                    <th>СПП</th>
+                    <th>Базовая скидка</th>
+
                 </tr>
                 {% for article in articles %}
                     <tr>
@@ -92,6 +95,8 @@
                         <td>{{ article.seller_article }}</td>
                         <td>{{ article.wb_article }}</td>
                         <td>{{ article.price }}</td>
+                        <td>{{ article.spp }}</td>
+                        <td>{{ article.basic_sale }}</td>
                     </tr>
                 {% endfor %}
             </table>
