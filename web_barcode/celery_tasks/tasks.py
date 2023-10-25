@@ -573,6 +573,6 @@ def sender_change_price_info():
     for set_id in sender_data:
         for id in set_id:
             if len(data_for_send) > 0:
-                for article, current_price, current_spp, yesterday_price, yesterday_spp  in sender_data:
+                for article, current_price, current_spp, yesterday_price, yesterday_spp  in data_for_send:
                     message = f'Цена артикула {article} со скидкой покупателя {current_spp}% сегодня {current_price}, вчера была {yesterday_price} со скидкой {yesterday_spp}%'
                     bot.send_message(chat_id=id, text=message)
