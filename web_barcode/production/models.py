@@ -27,12 +27,9 @@ class TaskCreator(models.Model):
         blank = True,
         null=True,
     )
-    progress = models.DecimalField(
+    progress = models.CharField(
         verbose_name='Прогресс',
-        max_digits=3,
-        decimal_places=0, 
-        default=Decimal(0), 
-        validators=PERCENTAGE_VALIDATOR)
+        max_length=10)
 
     remainder = models.CharField(
         verbose_name='Остаток/Общее количество',
@@ -92,6 +89,12 @@ class ArticlesDelivery(models.Model):
         verbose_name='Количество',
     )
 
+    @property
+    def amount_delivery(self):
+        amount_delivery = ArticlesDelivery.objects.filter(Q(task=self.task)).aggregate(
+        total_amount=Sum('amount'))['total_amount']
+        return amount_delivery
+
     class Meta:
         verbose_name = 'Артикулы поставки'
         verbose_name_plural = 'Артикулы поставки'
@@ -118,11 +121,9 @@ class ProductionDelivery(models.Model):
     night_quantity =  models.PositiveSmallIntegerField(
         default=0,
         verbose_name='Ночь',
-
     )
     
     @property
-
     def total_production(self):
         total = 0
         productions = ProductionDelivery.objects.filter(Q(articles=self.articles))
@@ -130,8 +131,16 @@ class ProductionDelivery(models.Model):
             total += production.day_quantity + production.night_quantity
         amount = total + self.articles.from_stock
         return amount
-
     
+    @property
+    def total_delivery_production(self):
+        production_delivery = ProductionDelivery.objects.filter(Q(task=self.task)).aggregate(
+        total_sum=Sum('day_quantity') + Sum('night_quantity')
+        )['total_sum']
+        total_delivery = production_delivery + self.articles.from_stock
+        return total_delivery
+
+
     def __str__(self):
         return self.articles.supplier_article
 

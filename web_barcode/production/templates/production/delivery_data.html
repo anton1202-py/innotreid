@@ -7,7 +7,7 @@
 {% block content%}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Поставка</h1>
+            <h1>{{ task.task_name }}</h1>
             {% if request.user.is_staff %}
             <div class="add-data">
                 <form method="POST" enctype="multipart/form-data">
@@ -29,7 +29,7 @@
             {% endif %}
         </div>
         <div class="table_wrapper">
-            <table>
+            <table class="production_delivery_data">
                 <tr>
                     <th rowspan="2">Предмет</th>
                     <th rowspan="2">Артикул постащика</th>

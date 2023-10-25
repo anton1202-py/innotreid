@@ -94,28 +94,18 @@ def change_price_info():
     database=os.getenv('DB_NAME'))
     cursor = connection.cursor()
 
-    postgreSQL_select_Query = '''SELECT seller_article, 
-       price AS today_price,
-       spp AS today_spp,
-       (SELECT price 
-        FROM price_control_dataforanalysis 
-        WHERE seller_article = t.seller_article 
-          AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_price,
-          (SELECT spp 
-        FROM price_control_dataforanalysis 
-        WHERE seller_article = t.seller_article 
-          AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_spp
-    FROM price_control_dataforanalysis t 
-    WHERE price_date = CURRENT_DATE 
-      AND price <> (SELECT price 
-                    FROM price_control_dataforanalysis
-                    WHERE seller_article = t.seller_article 
-                      AND price_date = CURRENT_DATE - INTERVAL '1 day')
-    '''
+    postgreSQL_select_Query = '''SELECT seller_article, price AS today_price, spp AS today_spp,
+       (SELECT price FROM price_control_dataforanalysis WHERE seller_article = t.seller_article 
+        AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_price,
+        (SELECT spp FROM price_control_dataforanalysis WHERE seller_article = t.seller_article 
+        AND price_date = CURRENT_DATE - INTERVAL '1 day') AS yesterday_spp
+        FROM price_control_dataforanalysis t WHERE price_date = CURRENT_DATE 
+        AND price <> (SELECT price FROM price_control_dataforanalysis
+        WHERE seller_article = t.seller_article AND price_date = CURRENT_DATE - INTERVAL '1 day')
+        '''
     cursor.execute(postgreSQL_select_Query)
 
     sender_data = cursor.fetchall()
-    
     print(sender_data)
     for article, current_price, current_spp, yesterday_price, yesterday_spp  in sender_data:
         print(f'Цена артикула {article} со скидкой покупателя {current_spp}% сегодня {current_price}, вчера была {yesterday_price} со скидкой {yesterday_spp}%')
@@ -149,8 +139,8 @@ def sender_change_price_info():
     for set_id in sender_data:
         for id in set_id:
             if len(data_for_send) > 0:
-                for article, current_price, yesterday_price in data_for_send:
-                    message = f'Цена артикула {article} со скидкой покупателя сегодня {current_price}, вчера была {yesterday_price}'
+                for article, current_price, current_spp, yesterday_price, yesterday_spp  in sender_data:
+                    message = f'Цена артикула {article} со скидкой покупателя {current_spp}% сегодня {current_price}, вчера была {yesterday_price} со скидкой {yesterday_spp}%'
                     bot.send_message(chat_id=id, text=message)
 
 #add_article_price_info_to_database()

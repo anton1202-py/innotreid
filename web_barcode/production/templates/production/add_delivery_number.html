@@ -17,7 +17,7 @@
                     <th colspan="2">Изготовление пластин</th>
                     <th colspan="2">Наклейки</th>
                     <th rowspan="2">Статус отгрузки</th>
-                    <th rowspan="2">Дата отгрузки</th>
+                    <th rowspan="2" colspan="2">Дата отгрузки</th>
                 </tr>
 
                 <tr>
@@ -61,7 +61,21 @@
                     </td>
                     <button style="display: none;" class="custom-button" type="Submit"  name="button_task_id" value="{{ el.id }}" method="POST"> Загрузить
                     </form>
-                    <td>{{ el.shipping_date }}</td>
+                    <form method="post" id="add_shipment_date_id" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <td><input value="{{ el.shipping_date|stringformat:'s' }}" type="date" class="form-control" id="shipment_date" name="add_shipment_date_name"></td>
+                        <button style="display: none;" class="custom-button" type="Submit"  name="button_add_shipment_date" value="{{ el.id }}" method="POST"> Загрузить
+                    </form>
+                    <td class="td_with_del_button">
+                        <form method="post" class="del_delivery" name="del_delivery" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <button type="Submit" class="del_delivery_button" name="del_delivery_button" method="POST" value="{{ el.id }}">
+                            <span id="del_icons_in_article_table" class="material-symbols-outlined">
+                                delete
+                            </span>
+                        </button>
+                    </form></td>
                 </tr>
                 {% endfor %}
                 <tr>

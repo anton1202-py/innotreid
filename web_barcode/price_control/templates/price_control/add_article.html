@@ -34,10 +34,10 @@
                     <form method="post" name="add_article" enctype="multipart/form-data" action="{% url 'add_article' %}">
                         {% csrf_token %}
                         <td class="table_times_amount">
-                            <input type="text" name="seller_article" required/>
+                            <input class="form-control" type="text" name="seller_article" required/>
                         </td>
                         <td class="table_times_amount">
-                            <input type="text" name="wildberries_article" required/>
+                            <input class="form-control" type="text" name="wildberries_article" required/>
                         </td>
                 </tr>
             </table>

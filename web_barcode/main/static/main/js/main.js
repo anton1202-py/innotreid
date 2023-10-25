@@ -57,8 +57,8 @@ let xhttp = new XMLHttpRequest();
 //  =========== ВЫДЕЛЕНИЕ  ЗЕЛЕНЫМ ЦВЕТОМ ВЫПОЛНЕННОГО ОБЪЕМА ПРОИЗВОДСТВА =========
 const elements = document.getElementsByTagName("th");
 const values = document.getElementsByTagName("td");
-const table = document.querySelector('table')
-
+const table = document.querySelector('table.production_delivery_data')
+console.log(table);
 var rows = table.getElementsByTagName('tr')
 
 for (var i = 0; i < rows.length; i++) {
@@ -82,8 +82,12 @@ if (elements && values && table) {
       // console.log(amount_table[element].textContent)
       // console.log(element)
       // console.log(produced_table[element].textContent)
-      table.rows[element+2].style.background = '#eaffe8'
-          }}
+      table.rows[element+2].style.background = '#eaffe8';
+          } else if (Number(produced_table[element].textContent) > 0 && Number(produced_table[element].textContent) < Number(amount_table[element].textContent)) {
+      table.rows[element+2].style.background = '#ffffe8';
+          } else if (Number(produced_table[element].textContent) == 0) {
+            table.rows[element+2].style.background = '#ffe8e8';
+                }}
       } else {
   console.error('Элементы th, td и table не найдены на странице');
 }

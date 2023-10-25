@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 from database.forms import SelectDateForm
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 
@@ -14,7 +14,30 @@ from .models import ArticlesDelivery, ProductionDelivery, TaskCreator
 def task_creation(request):
     """Описывает страницу создания заявок для производства"""
     data = TaskCreator.objects.all().order_by('id')
+
     form = TaskCreatorForm(request.POST or None)
+
+    data_ids = data.values_list('id', flat=True)
+
+    for i in data_ids:
+        task_id = TaskCreator.objects.get(id=i)
+        if ArticlesDelivery.objects.filter(task=task_id) and ProductionDelivery.objects.filter(task=task_id):
+            production_amount = task_id.productiondelivery_set.all()
+            articles_amount = task_id.articlesdelivery_set.all()
+            article_total = articles_amount.aggregate(
+                    sum=Sum('amount'))['sum']
+            total_production = production_amount.aggregate(
+                    sum=Sum('night_quantity')+Sum('day_quantity'))['sum'] + articles_amount.aggregate(
+                    sum=Sum('from_stock'))['sum']
+            data.filter(id=i).update(
+                    remainder=f'{total_production}/{article_total}',
+                    progress=f'{100*total_production//article_total}%'
+                    )
+        else:
+            data.filter(id=i).update(
+                    remainder='0/0',
+                    progress='0%'
+                    )
 
     if request.method == 'POST' and 'button_task_id' in request.POST.keys():
         if 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
@@ -65,8 +88,7 @@ def task_creation(request):
                 printed=False,
                 shipment_status=True
                 )
-        
-    
+
     if request.method == 'POST' and form.is_valid():
         task_name = form.cleaned_data.get("task_name")
         market_name = form.cleaned_data.get("market_name")
@@ -75,7 +97,17 @@ def task_creation(request):
             market_name=market_name,
             )
         obj.save()
-        print(request.POST)
+        return redirect('task_creation')
+    
+    if request.method == 'POST' and 'button_add_shipment_date' in request.POST.keys():
+        id_d = request.POST['button_add_shipment_date']
+        data.filter(id=request.POST['button_add_shipment_date']).update(
+                    shipping_date=request.POST['add_shipment_date_name']
+                    )
+    elif request.method == 'POST' and 'del_delivery_button' in request.POST.keys():
+        ProductionDelivery.objects.filter(task=request.POST['del_delivery_button']).delete()
+        ArticlesDelivery.objects.filter(task=request.POST['del_delivery_button']).delete()
+        TaskCreator.objects.filter(id=request.POST['del_delivery_button']).delete()
         return redirect('task_creation')
     
     context = {
@@ -185,9 +217,11 @@ def product_detail(request, task_id):
             night_quantity=list(request.POST.values())[2],
             )
             obj.save()
+
         return redirect(f'delivery_data', task_id)
 
     context = {
+        'task':task,
         'data': data,
         'production_test':production_test,
         'production_date': production_date,
