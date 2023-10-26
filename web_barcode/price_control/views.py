@@ -1,5 +1,6 @@
 import datetime
 
+from celery_tasks.tasks import add_article_price_info_to_database
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
@@ -27,6 +28,7 @@ def add_article(request):
             seller_article = request_data['seller_article'],
             wb_article=request_data['wildberries_article'],
             )
+            add_article_price_info_to_database()
         return redirect('add_article')
     elif request.method == 'POST' and 'del-button' in request.POST.keys():
         ArticleWriter.objects.get(wb_article=request.POST['del-button']).delete()

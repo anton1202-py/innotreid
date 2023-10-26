@@ -130,6 +130,7 @@ class ProductionDelivery(models.Model):
         for production in productions:
             total += production.day_quantity + production.night_quantity
         amount = total + self.articles.from_stock
+        fact_amount = amount
         return amount
     
     @property
@@ -140,6 +141,9 @@ class ProductionDelivery(models.Model):
         total_delivery = production_delivery + self.articles.from_stock
         return total_delivery
 
+    def save(self, *args, **kwargs):
+        self.fact_amount = self.total_production
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.articles.supplier_article

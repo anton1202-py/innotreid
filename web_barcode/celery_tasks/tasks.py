@@ -454,15 +454,13 @@ def orders_fbs_statistic():
 @app.task
 def add_article_price_info_to_database():
     """
-    Добавляет  при вызове информацию о цене артикула на сайте
+    Добавляет при вызове информацию о цене артикула на сайте
     со скидкой покупателя за текущий день.
     """
-
     today_data = datetime.today().strftime('%Y-%m-%d')
     ARTICLE_DATA_FILE = 'web_barcode\database\Ночники ИП.xlsx'
     path = '/DATABASE/Ночники ООО.xlsx'
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-    
 
     try:
     # Подключение к существующей базе данных
@@ -478,12 +476,10 @@ def add_article_price_info_to_database():
             "SELECT * FROM price_control_articlewriter")
 
         articles_datas = cursor.fetchall()
-        
         article_dict = {}
 
         for i in range(len(articles_datas)):
              article_dict[articles_datas[i][2]] = articles_datas[i][1]
-
 
         data_for_database = []
         for i in article_dict.keys():

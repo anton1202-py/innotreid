@@ -21,7 +21,6 @@ headers = {
   'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
-
 excel_data = pd.read_excel(ARTICLE_DATA_FILE)
 data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
 article_list = data['Ваш SKU'].to_list()

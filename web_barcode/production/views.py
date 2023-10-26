@@ -23,7 +23,17 @@ def task_creation(request):
         task_id = TaskCreator.objects.get(id=i)
         if ArticlesDelivery.objects.filter(task=task_id) and ProductionDelivery.objects.filter(task=task_id):
             production_amount = task_id.productiondelivery_set.all()
+            
             articles_amount = task_id.articlesdelivery_set.all()
+            articles_data = ArticlesDelivery.objects.filter(task=task_id)
+            production_data = ProductionDelivery.objects.filter(task=task_id)
+
+            percent_counter = 0
+            data_id = ArticlesDelivery.objects.filter(task=task_id).values_list('id', flat=True)
+            for j in data_id:
+                if articles_data.get(id=j).amount <= production_data.filter(articles=j)[0].total_production:
+                    percent_counter += 1
+
             article_total = articles_amount.aggregate(
                     sum=Sum('amount'))['sum']
             total_production = production_amount.aggregate(
@@ -31,7 +41,7 @@ def task_creation(request):
                     sum=Sum('from_stock'))['sum']
             data.filter(id=i).update(
                     remainder=f'{total_production}/{article_total}',
-                    progress=f'{100*total_production//article_total}%'
+                    progress=f'{100*percent_counter//len(articles_amount)}%'
                     )
         else:
             data.filter(id=i).update(
@@ -138,7 +148,15 @@ def product_detail(request, task_id):
             production_date_raw.append(str(formatted_date_new))
     production_date = sorted(str(datetime.datetime.strptime(x, '%d-%m-%Y').strftime('%d-%m-%Y')) for x in production_date_raw)
 
-    if str(today) not in production_date:
+    compare_necessary_amount_and_production_amount = []
+    for i in data_id:
+        if production_amount.filter(articles=i):
+            if data.get(id=i).amount > production_amount.filter(articles=i)[0].total_production:
+                compare_necessary_amount_and_production_amount.append(False)
+        else:
+            compare_necessary_amount_and_production_amount.append(False)
+    # Условие добавления нового дня в таблицу
+    if str(today) not in production_date and False in compare_necessary_amount_and_production_amount:
         for i in data_id:
             article_id = ArticlesDelivery.objects.get(id=i)
             obj = ProductionDelivery(
@@ -161,7 +179,8 @@ def product_detail(request, task_id):
 
     production_test = []
     for j in data_id:
-        production_test.append(ProductionDelivery.objects.filter(articles=j)[0])
+        if ProductionDelivery.objects.filter(articles=j):
+            production_test.append(ProductionDelivery.objects.filter(articles=j)[0])
 
     if request.method == 'POST' and request.FILES:
         myfile = request.FILES['myarticles']

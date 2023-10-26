@@ -52,7 +52,7 @@
                 
                 {% for el in data %}   
                 <tr>
-                    <td>{{ el.subject }}</td>
+                    <td class="left-align">{{ el.subject }}</td>
                     <td>{{ el.supplier_article }}</td>
                     <td>{{ el.from_stock }}</td>
                     <td>{{ el.amount }}</td>
@@ -69,18 +69,18 @@
                             {% if date == prod.production_date|stringformat:"s" and el.id == prod.articles.id %}
                                 <form method="post" id="{{ el.supplier_article }}" name="{{ el.supplier_article }}" enctype="multipart/form-data">
                                     {% csrf_token %}
-                                    <td class="table_times_amount">
+                                    <td class="table_times_amount" style="background: #fff;">
                                         {% if prod.day_quantity != 0 %}
                                             <input type="number" class="table_times_amount" value="{{ prod.day_quantity }}" id="{{date}} day {{ el.supplier_article }}" name="{{date}}, day, {{ el.supplier_article }}"/>
                                         {% else %}
                                             <input type="number" class="table_times_amount" value="{{ prod.day_quantity }}" id="{{date}} day {{ el.supplier_article }}" name="{{date}}, day, {{ el.supplier_article }}" style="color: #d6d6d6;"/>
                                         {% endif %}
                                         </td>
-                                    <td class="table_times_amount">
+                                    <td class="table_times_amount" style="background: #ededff;">
                                         {% if prod.night_quantity != 0 %}
-                                            <input type="number" class="table_times_amount" value="{{ prod.night_quantity }}" id="{{date}} night {{ el.supplier_article }}" name="{{date}}, night, {{ el.supplier_article }}"/>
+                                            <input type="number" class="table_times_amount" value="{{ prod.night_quantity }}" id="{{date}} night {{ el.supplier_article }}" name="{{date}}, night, {{ el.supplier_article }}" style="background: #ededff;"/>
                                         {% else %}
-                                            <input type="number" class="table_times_amount" value="{{ prod.night_quantity }}" id="{{date}} night {{ el.supplier_article }}" name="{{date}}, night, {{ el.supplier_article }}" style="color: #d6d6d6;"/>
+                                            <input type="number" class="table_times_amount" value="{{ prod.night_quantity }}" id="{{date}} night {{ el.supplier_article }}" name="{{date}}, night, {{ el.supplier_article }}" style="color: #d6d6d6; background: #ededff;"/>
                                         {% endif %}
                                         </td>
                                     <td style="display: none;"><button type="Submit" id="{{ prod.id }}" name="{{ prod.id }}" method="POST"> Загрузить

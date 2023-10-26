@@ -10,7 +10,7 @@
             <h1>Поставки</h1>
         </div>
         <div class="table_wrapper">
-            <table>
+            <table class="delivery_number">
                 <tr>
                     <th rowspan="2">Задание</th>
                     <th rowspan="2">Маркетплейс</th>
@@ -32,39 +32,54 @@
                     <td><a href="{% url 'delivery_data' el.id %}">{{ el.task_name }}</a></td>
                     <td>{{ el.market_name }}</td>
                     <!-- <td>{{ el.from_stock }}</td> -->
-                    <td>{{ el.progress }}</td>
+                    <td id="progress-col">{{ el.progress }}</td>
                     <td>{{ el.remainder }}</td>
 
                     <!-- <td>{{ el.stickers }}</td> -->
                     <form method="post" id="add_delivery" name="form_task_id" enctype="multipart/form-data">
                         {% csrf_token %}
-                    <td>
+             
                         {% if el.printing == True %}
-                        <input class="form-check-input" type="checkbox" value="1" name="printing" checked/>
+                        <td style="background: #c2ffbd;">
+                            <input class="form-check-input" type="checkbox" value="1" name="printing" onchange="changeColor(this)" checked/>
+                        </td>
                         {% else %}
-                        <input class="form-check-input" type="checkbox" value="1" name="printing"/>
+                        <td style="background: #fff;">
+                            <input class="form-check-input" type="checkbox" value="1" name="printing" onchange="changeColor(this)"/>
+                        </td>
                         {% endif %}
-                    </td>
-                    <td>
+
                         {% if el.printed == True %}
-                        <input class="form-check-input" type="checkbox" value="1" name="printed" checked/>
+                        <td style="background: #c2ffbd;">
+                            <input class="form-check-input" type="checkbox" value="1" name="printed" checked onchange="changeColor(this)"/>
+                        </td>
                         {% else %}
-                        <input class="form-check-input" type="checkbox" value="1" name="printed"/>
+                        <td style="background: #fff;">
+                            <input class="form-check-input" type="checkbox" value="1" name="printed" onchange="changeColor(this)"/>
+                        </td>
                         {% endif %}
-                    </td>
-                    <td>
+    
                         {% if el.shipment_status == True %}
-                        <input class="form-check-input" type="checkbox" value="1" name="shipment_status" checked/>
+                        <td style="background: #c2ffbd;">
+                            <div class="checkbox-delivery">
+                                <input class="form-check-input" type="checkbox" value="1" name="shipment_status" checked onchange="changeDateColor(this)"/>
+                                <p>Отгружен</p>
+                            </div>
+                        </td>
                         {% else %}
-                        <input class="form-check-input" type="checkbox" value="1" name="shipment_status"/>
+                        <td style="background: #ffcfcf;">
+                            <div class="checkbox-delivery">
+                                <input class="form-check-input" type="checkbox" value="1" name="shipment_status" onchange="changeDateColor(this)" />
+                                <p>Не отгружен</p>
+                            </div>
+                        </td>
                         {% endif %}
-                    </td>
-                    <button style="display: none;" class="custom-button" type="Submit"  name="button_task_id" value="{{ el.id }}" method="POST"> Загрузить
+                        <button style="display: none;" class="custom-button" type="Submit"  name="button_task_id" value="{{ el.id }}" method="POST"> Загрузить
                     </form>
-                    <form method="post" id="add_shipment_date_id" enctype="multipart/form-data">
+                    <form method="post" id="add_shipment_date_id" class="date-form-control" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        <td><input value="{{ el.shipping_date|stringformat:'s' }}" type="date" class="form-control" id="shipment_date" name="add_shipment_date_name"></td>
+                        <td><input value="{{ el.shipping_date|stringformat:'s' }}" type="date" class="form-control" id="shipment_date" name="add_shipment_date_name" style="background: transparent;"></td>
                         <button style="display: none;" class="custom-button" type="Submit"  name="button_add_shipment_date" value="{{ el.id }}" method="POST"> Загрузить
                     </form>
                     <td class="td_with_del_button">
