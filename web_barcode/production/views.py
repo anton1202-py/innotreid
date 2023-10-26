@@ -1,11 +1,8 @@
 import datetime
-from datetime import date, timedelta
 
 import pandas as pd
-from database.forms import SelectDateForm
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 
 from .forms import TaskCreatorForm
 from .models import ArticlesDelivery, ProductionDelivery, TaskCreator
@@ -48,56 +45,68 @@ def task_creation(request):
                     remainder='0/0',
                     progress='0%'
                     )
-
     if request.method == 'POST' and 'button_task_id' in request.POST.keys():
-        if 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=True,
-                printed=True,
-                shipment_status=True
-                )
-        elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=False,
-                printed=False,
-                shipment_status=False
-                )
-        elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=True,
-                printed=False,
-                shipment_status=False
-                )
-        elif 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=True,
-                printed=True,
-                shipment_status=False
-                )
-        elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=True,
-                printed=False,
-                shipment_status=True
-                )
-        elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=False,
-                printed=True,
-                shipment_status=False
-                )
-        elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=False,
-                printed=True,
-                shipment_status=True
-                )
-        elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
-            TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
-                printing=False,
-                printed=False,
-                shipment_status=True
-                )
+        keys = request.POST.keys()
+        printing = 'printing' in keys
+        printed = 'printed' in keys
+        shipment_status = 'shipment_status' in keys
+
+        update_data = {
+            'printing': printing,
+            'printed': printed,
+            'shipment_status': shipment_status
+        }
+
+        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(**update_data)
+    #if request.method == 'POST' and 'button_task_id' in request.POST.keys():
+    #    if 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=True,
+    #            printed=True,
+    #            shipment_status=True
+    #            )
+    #    elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=False,
+    #            printed=False,
+    #            shipment_status=False
+    #            )
+    #    elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=True,
+    #            printed=False,
+    #            shipment_status=False
+    #            )
+    #    elif 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=True,
+    #            printed=True,
+    #            shipment_status=False
+    #            )
+    #    elif 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=True,
+    #            printed=False,
+    #            shipment_status=True
+    #            )
+    #    elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and not 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=False,
+    #            printed=True,
+    #            shipment_status=False
+    #            )
+    #    elif not 'printing' in request.POST.keys() and 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=False,
+    #            printed=True,
+    #            shipment_status=True
+    #            )
+    #    elif not 'printing' in request.POST.keys() and not 'printed' in request.POST.keys() and 'shipment_status'  in request.POST.keys():
+    #        TaskCreator.objects.filter(id=int(request.POST['button_task_id'])).update(
+    #            printing=False,
+    #            printed=False,
+    #            shipment_status=True
+    #            )
 
     if request.method == 'POST' and form.is_valid():
         task_name = form.cleaned_data.get("task_name")

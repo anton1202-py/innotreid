@@ -107,12 +107,13 @@
                 <span class="material-symbols-sharp">stockpot</span>
                 <h3>Статистика со склада FBS</h3>
             </a>
-            {% endif %}
+            
             {% url 'task_creation' as url_delivery_number %}
             <a href="{{ url_delivery_number }}" {% if request.path == url_delivery_number %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">stockpot</span>
                 <h3>Поставки</h3>
             </a>
+            {% endif %}
             {% url 'add_article' as url_add_article %}
             <a href="{{ url_add_article }}" {% if request.path == url_add_article %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">sell</span>
