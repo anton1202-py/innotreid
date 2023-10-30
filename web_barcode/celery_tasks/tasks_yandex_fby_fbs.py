@@ -27,7 +27,7 @@ headers = {
   'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
-@app.task
+#@app.task
 def change_fbs_amount():
     """
     Функция смотрит остаток артикулов на складе FBY, если остаток не равен 0,
@@ -55,7 +55,7 @@ def change_fbs_amount():
         result = data['result']
         dict_res = result['shopSkus']
         for res in dict_res:
-        
+
             stocks_data = res['warehouses']
             stock_article = res['shopSku']
 
@@ -88,13 +88,13 @@ def change_fbs_amount():
         response = requests.request("PUT", URL_FBS, headers=headers, data=payload)
 
 
-#@app.task
+@app.task
 def add_fby_amount_to_database():
     """
     Функция складывает остаток со склада FBY в базу данных
     раз в сутки.
     """
-    add_date_stock = date.today()
+    add_date_stock = date.today() - timedelta(1)
     excel_data = pd.read_excel(ARTICLE_DATA_FILE)
     data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
     article_list = data['Ваш SKU'].to_list()
@@ -110,16 +110,15 @@ def add_fby_amount_to_database():
             finish_point = (i+1)*400
         else:
             finish_point = len(article_list)
+
         articke_info_list = article_list[start_point:finish_point]
         # ПОСТ запрос для получения данных по артикулу
         payload = json.dumps({"shopSkus": articke_info_list})
-
         response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
-        
         result = data['result']
         dict_res = result['shopSkus']
-        
+
         for res in dict_res:
             stock_article = res['shopSku']
             if 'warehouses' in res.keys():
@@ -137,7 +136,7 @@ def add_fby_amount_to_database():
                 fby_common_data_storage[stock_article] = 0
 
     common_data_for_database = []
-  
+
     for article, amount in fby_common_data_storage.items():
         add_data = (add_date_stock, article, 3, amount)
         common_data_for_database.append(add_data)
@@ -192,8 +191,12 @@ def sender_message():
     return sender_data
 
 
-#@app.task
+@app.task
 def sender_zero_balance():
+    """
+    Отправляет в чат сообщение с артикулами, которые
+    вчера имели не нулевой остаток, а сегодня - нуль.
+    """
     # Получаем список всех пользователей бота
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     connection = psycopg2.connect(user=os.getenv('POSTGRES_TG_USER'),
@@ -219,4 +222,4 @@ def sender_zero_balance():
                     message = f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}'
                     bot.send_message(chat_id=id, text=message)
 
-add_fby_amount_to_database()
+#add_fby_amount_to_database()
