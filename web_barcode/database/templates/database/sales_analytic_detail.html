@@ -83,29 +83,31 @@
       </div>
     </div>
 
-    <table name="mytable" class="sortable" style="white-space: nowrap">
-      <thead>
-        <tr>
-          <th>Артикул продавца</th>
-          {% for week in unique_week %}
-            <th>{{ week }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for article, value in data.items %}
+    <div class="table_wrapper_sales_by_week">
+      <table name="mytable" class="sortable" style="white-space: nowrap">
+        <thead>
           <tr>
-            <td>{{ article }}</td>
+            <th>Артикул продавца</th>
             {% for week in unique_week %}
-              {% for date, amount in value.items %}
-                {% if date == week  %}
-                    <td>{{ amount }}</td>
-                {% endif %}
-              {% endfor %}
+              <th>{{ week }}</th>
             {% endfor %}
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for article, value in data.items %}
+            <tr>
+              <td>{{ article }}</td>
+              {% for week in unique_week %}
+                {% for date, amount in value.items %}
+                  {% if date == week  %}
+                      <td>{{ amount }}</td>
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 </div>    
 {% endblock %}
