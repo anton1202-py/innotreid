@@ -1,0 +1,115 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title %}Скорость недельных продаж{% endblock %}
+
+{% block content %}
+
+
+<div class="features">
+    <div class="top-befor-header">
+       <h1>Продажи по неделям</h1>
+    </div>
+
+    <div class="alert alert-warninng">
+      <div class="charts_sales_by_week">
+        <div class='chart_sales_by_week'>
+          <canvas id="acquisitions"></canvas>
+          <script>
+            function getGradient(ctx, chartArea) {
+              let gradient = ctx.createLinearGradient(
+                  0,
+                  chartArea.bottom,
+                  0,
+                  chartArea.top
+                );
+                gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                return gradient;
+            }
+            function getGradient2(ctx, chartArea) {
+              let gradient = ctx.createLinearGradient(
+                0,
+                chartArea.bottom,
+                0,
+                chartArea.top
+              );
+              gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+              gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+              return gradient;
+            }
+            (async function() {
+              new Chart(
+                document.getElementById('acquisitions'),
+                {
+                  type: 'line',
+                  data: {
+                    labels: [{% for data in articles_amount %} '{{ data.week|date:"W-Y" }}', {% endfor %}],
+                    datasets: [
+                      {
+                        label: 'Количество продаж всех артикулов по неделям',
+                        data: [{% for data in articles_amount %} '{{ data.count }}', {% endfor %}],
+                        lineTension: 0.3,
+                        fill: true,
+                        backgroundColor: function (context) {
+                          const chart = context.chart;
+                          const { ctx, chartArea } = chart;
+                          // This case happens on initial chart load
+                          if (!chartArea) return;
+                          return getGradient2(ctx, chartArea);
+                        }
+                      },
+                    ]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                // This more specific font property overrides the global property
+                                font: {
+                                  size: 14,
+                                  family: "'Open Sans', 'Arial', 'sans-serif'"
+                                }
+                            }
+                        }
+                    }
+                  }
+                }
+              );
+            })();
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <div class="table_wrapper_sales_by_week">
+       <table name="mytable" class="sortable" style="white-space: nowrap">
+        <thead>
+            <tr>
+              <th>Артикул продавца</th>
+              {% for week in unique_week %}
+                <th>{{ week }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for article, value in data.items %}
+              <tr>
+                <td><a href="{% url 'sales_analytic_detail' article %}">{{ article }}</a></td>
+
+                {% for week in unique_week %}
+                  {% for date, amount in value.items %}
+                    {% if date == week  %}
+                        <td>{{ amount }}</td>
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+   </div>
+</div>    
+{% endblock %}

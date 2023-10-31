@@ -83,6 +83,14 @@ urlpatterns = [
           views.DatabaseSalesDeleteView.as_view(),
           name='sales_delete'
           ),
+     path('sales_analytic/',
+          views.analytic_sales_data,
+          name='sales_analytic'
+          ),
+     path('sales_analytic/<str:article_marketplace>',
+          views.DatabaseSalesAnalyticDetailView.as_view(),
+          name='sales_analytic_detail'
+          ),
      path('orders_fbs/',
           views.database_orders_fbs,
           name='orders_fbs'

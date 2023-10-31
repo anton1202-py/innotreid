@@ -94,7 +94,7 @@ def add_fby_amount_to_database():
     Функция складывает остаток со склада FBY в базу данных
     раз в сутки.
     """
-    add_date_stock = date.today() - timedelta(1)
+    add_date_stock = date.today()
     excel_data = pd.read_excel(ARTICLE_DATA_FILE)
     data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
     article_list = data['Ваш SKU'].to_list()
