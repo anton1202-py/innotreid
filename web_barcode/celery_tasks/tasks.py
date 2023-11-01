@@ -491,10 +491,16 @@ def add_article_price_info_to_database():
             data = json.loads(response.text)
             # Обход ошибки не существующиего артикула
             if data['data']['products']:
-                price = int(data['data']['products'][0]['extended']['clientPriceU'])//100
-                spp = data['data']['products'][0]['extended']['clientSale']
+                print(data)
+                # Обход ошибки отсутствия spp
+                if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
+                    price = int(data['data']['products'][0]['extended']['clientPriceU'])//100
+                    spp = data['data']['products'][0]['extended']['clientSale']
+                else:
+                    price = int(data['data']['products'][0]['extended']['basicPriceU'])//100
+                    spp = 0
                 basic_sale = data['data']['products'][0]['extended']['basicSale']
-                set_with_price = (article_dict[i], i, today_data, price, spp, basic_sale)
+                set_with_price = [article_dict[i], i, today_data, price, spp, basic_sale]
                 data_for_database.append(set_with_price)
 
         cursor.executemany(
