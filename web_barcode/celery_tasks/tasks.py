@@ -672,7 +672,7 @@ def get_current_ssp():
                 if str(spp) != spp_form_db:
                     cursor.executemany(
                         "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
-                        data_for_database)
+                        set_with_price)
                     for set_id in sender_users:
                         message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
                         bot.send_message(chat_id=set_id[0], text=message)
