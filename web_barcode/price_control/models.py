@@ -36,7 +36,7 @@ class DataForAnalysis(models.Model):
         verbose_name='Артикул Wildberries',
         max_length=100,
     )
-    price_date = models.DateField(
+    price_date = models.DateTimeField(
         verbose_name='Дата',
     )
     price = models.PositiveSmallIntegerField(

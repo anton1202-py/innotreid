@@ -9,9 +9,9 @@ from .models import ArticleWriter, DataForAnalysis
 
 
 def add_article(request):
-    
+
     data = ArticleWriter.objects.all()
-    
+
     today = datetime.datetime.today().strftime("%d-%m-%Y")
     context = {
         'data': data,
@@ -21,19 +21,20 @@ def add_article(request):
 
         if ArticleWriter.objects.filter(Q(wb_article=request_data['wildberries_article'])):
             ArticleWriter.objects.filter(wb_article=request_data['wildberries_article']).update(
-            seller_article = request_data['seller_article'],
-            )    
+                seller_article=request_data['seller_article'],
+            )
         else:
-            obj, created =  ArticleWriter.objects.get_or_create(
-            seller_article = request_data['seller_article'],
-            wb_article=request_data['wildberries_article'],
+            obj, created = ArticleWriter.objects.get_or_create(
+                seller_article=request_data['seller_article'],
+                wb_article=request_data['wildberries_article'],
             )
             add_article_price_info_to_database()
         return redirect('add_article')
     elif request.method == 'POST' and 'del-button' in request.POST.keys():
-        ArticleWriter.objects.get(wb_article=request.POST['del-button']).delete()
+        ArticleWriter.objects.get(
+            wb_article=request.POST['del-button']).delete()
         return redirect('add_article')
-    
+
     return render(request, 'price_control/add_article.html', context)
 
 

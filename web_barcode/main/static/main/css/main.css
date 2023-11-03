@@ -47,7 +47,10 @@ body {
     height: 100vh;
     font-family: poppins, sans-serif;
     font-size: 1rem;
-    user-select: none;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
     overflow-x: hidden;
     background: var(--color-background);
     color: var(--color-dark);
