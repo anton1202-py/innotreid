@@ -17,7 +17,11 @@
                 </tr>
                 {% for el in data %}
                 <tr>
-                    <td>{{ el.seller_article }}</td>
+                    <form method="post" name="change_article" enctype="multipart/form-data" action="{% url 'add_article' %}">
+                        {% csrf_token %}
+                        <td><input value="{{ el.seller_article }}" type="text" name="seller_article" required/></td>
+                        <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
+                    </form>
                     <td><a href="{% url 'price_article_detail' el.wb_article %}">{{ el.wb_article }}</a></td>
                     <td class="td_with_del_button">
                         <form method="post" class="del_article" name="del_article" enctype="multipart/form-data">

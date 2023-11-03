@@ -10,7 +10,7 @@ from .models import ArticleWriter, DataForAnalysis
 
 def add_article(request):
 
-    data = ArticleWriter.objects.all()
+    data = ArticleWriter.objects.all().order_by('id')
 
     today = datetime.datetime.today().strftime("%d-%m-%Y")
     context = {
@@ -29,6 +29,12 @@ def add_article(request):
                 wb_article=request_data['wildberries_article'],
             )
             add_article_price_info_to_database()
+    elif request.method == 'POST' and 'change_button' in request.POST.keys():
+        request_data = request.POST
+        print(request_data)
+        ArticleWriter.objects.filter(id=request_data['change_button']).update(
+            seller_article=request_data['seller_article'],
+        )
         return redirect('add_article')
     elif request.method == 'POST' and 'del-button' in request.POST.keys():
         ArticleWriter.objects.get(
