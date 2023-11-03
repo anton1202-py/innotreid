@@ -31,7 +31,6 @@ def add_article(request):
             add_article_price_info_to_database()
     elif request.method == 'POST' and 'change_button' in request.POST.keys():
         request_data = request.POST
-        print(request_data)
         ArticleWriter.objects.filter(id=request_data['change_button']).update(
             seller_article=request_data['seller_article'],
         )
