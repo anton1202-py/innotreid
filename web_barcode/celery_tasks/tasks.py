@@ -38,7 +38,6 @@ def add_database_data():
     APIKEY = {"Authorization": os.getenv('API_KEY_WB')}
     response_stock = requests.get(url_stock, headers=APIKEY)
     data_stock = json.loads(response_stock.text)
-    print(data_stock)
     response_sale = requests.get(url_sales, headers=APIKEY)
     data_sale = json.loads(response_sale.text)
     # Список со сводными данными для БД
@@ -465,8 +464,6 @@ def add_article_price_info_to_database():
     Добавляет при вызове информацию о цене артикула на сайте
     со скидкой покупателя за текущий день.
     """
-    ARTICLE_DATA_FILE = 'web_barcode\database\Ночники ИП.xlsx'
-    path = '/DATABASE/Ночники ООО.xlsx'
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
 
     try:
@@ -499,7 +496,6 @@ def add_article_price_info_to_database():
             data = json.loads(response.text)
             # Обход ошибки не существующиего артикула
             if data['data']['products']:
-                print(data)
                 # Обход ошибки отсутствия spp
                 if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
                     price = int(data['data']['products'][0]
@@ -688,3 +684,57 @@ def get_current_ssp():
             cursor_tg.close()
             connection_tg.close()
             print("Соединение с PostgreSQL_TG закрыто")
+
+
+def add_one_article_info_to_db(seller_article, wb_article):
+    """
+    Добавляет при вызове информацию о цене одного артикула на сайте
+    со скидкой покупателя за текущий момент.
+    """
+    URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+
+    try:
+        # Подключение к существующей базе данных
+        connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
+                                      dbname=os.getenv('DB_NAME'),
+                                      password=os.getenv('POSTGRES_PASSWORD'),
+                                      host=os.getenv('DB_HOST'),
+                                      port=os.getenv('DB_PORT'))
+        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        # Курсор для выполнения операций с базой данных
+        cursor = connection.cursor()
+        data_for_database = []
+
+        url = URL + str(wb_article)
+        payload = {}
+        headers = {}
+        response = requests.request(
+            "GET", url, headers=headers, data=payload)
+        data = json.loads(response.text)
+        # Обход ошибки не существующиего артикула
+        if data['data']['products']:
+            # Обход ошибки отсутствия spp
+            if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
+                price = int(data['data']['products'][0]
+                            ['extended']['clientPriceU'])//100
+                spp = data['data']['products'][0]['extended']['clientSale']
+            else:
+                price = int(data['data']['products'][0]
+                            ['extended']['basicPriceU'])//100
+                spp = 0
+            basic_sale = data['data']['products'][0]['extended']['basicSale']
+            set_with_price = [seller_article, wb_article,
+                              today_data, price, spp, basic_sale]
+            data_for_database.append(set_with_price)
+            print('set_with_price', data_for_database)
+        cursor.executemany(
+            "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
+            data_for_database)
+
+    except (Exception, Error) as error:
+        print("Ошибка при работе с PostgreSQL", error)
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            print("Соединение с PostgreSQL закрыто")
