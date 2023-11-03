@@ -24,6 +24,10 @@ today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
 
 @app.task
 def add_database_data():
+    """
+    Добавляет данные в базу взятые по API WB.
+    Данные по остаткам на складах и данные продаж
+    """
     control_date_stock = date.today() - timedelta(1)
     control_date_sales = date.today() - timedelta(1)
 
@@ -108,7 +112,6 @@ def add_database_data():
         common_data_sale.append(x)
 
     if str("<class 'str'>") not in check_data_sales:
-        print('УРА!!!')
         try:
             # Подключение к существующей базе данных
             connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
@@ -188,6 +191,7 @@ def orders_fbs_statistic():
 
 @app.task
 def add_stock_data_from_frontend():
+    """Добавляет данные в базу с сайта WB"""
     refresh_token_db = os.getenv('REFRESH_TOKEN_DB')
     app_key_db = os.getenv('APP_KEY_DB')
     app_secret_db = os.getenv('APP_SECRET_DB')
