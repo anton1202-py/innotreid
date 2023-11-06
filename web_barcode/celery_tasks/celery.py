@@ -46,6 +46,6 @@ app.conf.beat_schedule = {
     },
     "run-every-15-minutes": {
         "task": "celery_tasks.tasks.get_current_ssp",
-        'schedule': crontab(minute='*/15'),
+        'schedule': 900,
     },
 }

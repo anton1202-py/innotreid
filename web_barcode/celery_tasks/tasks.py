@@ -671,8 +671,8 @@ def get_current_ssp():
                     print()
                     for set_id in sender_users:
                         message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
-                        bot.send_message(chat_id=269605714, text=message)
-                        # bot.send_message(chat_id=set_id[0], text=message)
+                        # bot.send_message(chat_id=269605714, text=message)
+                        bot.send_message(chat_id=set_id[0], text=message)
 
     except (Exception, Error) as error:
         print("Ошибка при работе с PostgreSQL:", error)
@@ -738,6 +738,3 @@ def add_one_article_info_to_db(seller_article, wb_article):
             cursor.close()
             connection.close()
             print("Соединение с PostgreSQL закрыто")
-
-
-get_current_ssp()
