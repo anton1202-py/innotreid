@@ -617,10 +617,10 @@ def get_current_ssp():
         # Подключение к базе телеграма
         connection_tg = psycopg2.connect(user=os.getenv('POSTGRES_TG_USER'),
                                          password=os.getenv(
-                                             'POSTGRES_TG_PASSWORD'),
-                                         host=os.getenv('DB_HOST'),
-                                         port=os.getenv('DB_PORT'),
-                                         database=os.getenv('DB_TG_NAME'))
+            'POSTGRES_TG_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+            port=os.getenv('DB_PORT'),
+            database=os.getenv('DB_TG_NAME'))
         cursor_tg = connection_tg.cursor()
         tg_select_Query = '''SELECT chat_id FROM users_data;'''
         cursor_tg.execute(tg_select_Query)
@@ -629,9 +629,8 @@ def get_current_ssp():
         for i in range(len(articles_datas)):
             article_dict[articles_datas[i][2]] = articles_datas[i][1]
 
-        data_for_database = []
         for i in article_dict.keys():
-
+            data_for_database = []
             url = URL + str(i)
             payload = {}
             headers = {}
@@ -668,13 +667,15 @@ def get_current_ssp():
                 if str(spp) != spp_form_db:
                     cursor.executemany(
                         "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
-                        set_with_price)
+                        data_for_database)
+                    print()
                     for set_id in sender_users:
                         message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
-                        bot.send_message(chat_id=set_id[0], text=message)
+                        bot.send_message(chat_id=269605714, text=message)
+                        # bot.send_message(chat_id=set_id[0], text=message)
 
     except (Exception, Error) as error:
-        print("Ошибка при работе с PostgreSQL", error)
+        print("Ошибка при работе с PostgreSQL:", error)
     finally:
         if connection:
             cursor.close()
@@ -726,7 +727,6 @@ def add_one_article_info_to_db(seller_article, wb_article):
             set_with_price = [seller_article, wb_article,
                               today_data, price, spp, basic_sale]
             data_for_database.append(set_with_price)
-            print('set_with_price', data_for_database)
         cursor.executemany(
             "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
             data_for_database)
@@ -738,3 +738,6 @@ def add_one_article_info_to_db(seller_article, wb_article):
             cursor.close()
             connection.close()
             print("Соединение с PostgreSQL закрыто")
+
+
+get_current_ssp()
