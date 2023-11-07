@@ -1,3 +1,11 @@
 {
-    "python.analysis.typeCheckingMode": "off"
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+    "python.formatting.provider": "none",
+    "python.terminal.activateEnvironment": true
 }

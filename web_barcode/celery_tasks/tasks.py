@@ -19,7 +19,6 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
 
 
 @app.task
@@ -465,7 +464,7 @@ def add_article_price_info_to_database():
     со скидкой покупателя за текущий день.
     """
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-
+    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
@@ -598,7 +597,7 @@ def get_current_ssp():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-
+    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
@@ -693,7 +692,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
     со скидкой покупателя за текущий момент.
     """
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-
+    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
