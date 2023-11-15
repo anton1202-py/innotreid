@@ -13,15 +13,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 
 from .celery import app
-from .models import ArticleAmountRating
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-app = Celery('ozon_system.tasks', broker='redis://localhost:6379/0')
-app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks()
+# app = Celery('ozon_system.tasks', broker='redis://localhost:6379/0')
+# app.config_from_object('django.conf:settings', namespace='CELERY')
+# app.autodiscover_tasks()
 
 
 @app.task
