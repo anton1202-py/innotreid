@@ -18,7 +18,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-app = Celery('ozon_system.tasks')
+app = Celery('ozon_system.tasks.my_task')
 app.config_from_object('ozon_system.celeryconfig')
 
 
