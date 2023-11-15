@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @app.task
 def my_task(compaign_id):
-    from .views import access_token
+    from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
     print('Начало работы')
