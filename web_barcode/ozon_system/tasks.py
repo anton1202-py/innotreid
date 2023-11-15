@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # app.autodiscover_tasks()
 
 
-@shared_task
+@app.task
 def my_task(compaign_id):
     from .views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
