@@ -24,6 +24,7 @@ def my_task(compaign_id):
     from .views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
+    print('Начало работы')
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token()}',
