@@ -5,12 +5,12 @@ from collections import Counter
 
 import pandas as pd
 import requests
-from celery_tasks.tasks import my_task
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 
 from .models import ArticleAmountRating
+from .tasks import my_task
 
 load_dotenv()
 
