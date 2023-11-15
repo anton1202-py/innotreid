@@ -19,9 +19,9 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# app = Celery('ozon_system.tasks', broker='redis://localhost:6379/0')
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-# app.autodiscover_tasks()
+app = Celery('ozon_system.tasks', broker='redis://localhost:6379/0')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 
 @app.task
