@@ -12,7 +12,8 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 
-from ..celery import app
+from web_barcode.celery import app
+
 from .models import ArticleAmountRating
 
 load_dotenv()
