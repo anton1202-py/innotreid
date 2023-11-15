@@ -76,6 +76,18 @@
                     <h3>База данных Склада Wildberries</h3>
                 </a>
 
+                {% url 'ozon_system_main_data' as url_ozon_system_main_data %}
+                <a href="{{ url_ozon_system_main_data }}" {% if request.path == url_stock %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">inventory_2</span>
+                    <h3>Данные OZON</h3>
+                </a>
+
+                {% url 'ozon_adv_group' as url_ozon_adv_group %}
+                <a href="{{ url_ozon_adv_group }}" {% if request.path == url_stock %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">inventory_2</span>
+                    <h3>Рекламные компании OZON</h3>
+                </a>
+
             {% url 'stock-shelving' as url_stock %}
             <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
                 <span class="material-symbols-sharp">shelves</span>

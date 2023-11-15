@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'database',
     'database_yandex',
     'import_export',
+    'ozon_system',
     'production',
     'price_control',
 ]
@@ -126,7 +127,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BEAT_SCHEDULER ='django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_BROKER_TRANSPORT_OPTION = {'visibility_timeout': 3600}

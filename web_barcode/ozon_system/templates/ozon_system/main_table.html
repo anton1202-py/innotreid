@@ -1,0 +1,81 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Данные с OZON{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Данные с OZON</h1>
+        </div>
+        <div class='filter-data'>
+            <form method="post" name="filter-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <span>Выберите даты для выгрузки статистики</span>
+                <div class="inner-form-data">
+                    <p>От</p>
+                    <input type="date" name="datestart" class="choose-date" required="" id="datestart">
+                </div><br>
+                <div class="inner-form-data">
+                    <p>До</p>
+                    <input type="date" name="datefinish" class="choose-date" required="" id="datefinish">
+                </div><br>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="show_statistic" class="custom-button-change"/>
+                </div>
+            </form>
+            
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+                    <div class="inner-form-data">
+                        <br>
+                        <input type="Submit" id="filter" name="add_article_group" class="custom-button-change"/>
+                    </div>
+                
+        </form>
+        {% if table_data.items %}
+            <table class="price_control">
+                
+                <tr>
+                    <th>Артикул продавца</th>
+                    <th>SKU</th>
+                    <th>Продано, штук</th>
+                    <th>Продано, руб</th>
+                </tr>
+                {% for article, info_list in table_data.items %}
+                <tr>
+                    <td>{{ data_table }}{{ article }}</td>
+                    <td>{{ info_list.2 }}</td>
+                    <td>{{ info_list.0 }}</td>
+                    <td>{{ info_list.1 }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        <table class="price_control">
+                
+            <tr>
+                <th>Артикул продавца</th>
+                <th>SKU</th>
+                <th>Продано, штук</th>
+                <th>Продано, руб</th>
+                <th>Номер группы</th>
+            </tr>
+            {% for el in main_data %}
+            <tr>
+                <td>{{ el.seller_article }}</td>
+                <td>{{ el.sku }}</td>
+                <td>{{ el.sale_amount }}</td>
+                <td>{{ el.sale_summa }}</td>
+                <td>{{ el.article_group }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>    
+        
+{% endblock %}

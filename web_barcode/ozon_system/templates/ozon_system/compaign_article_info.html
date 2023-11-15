@@ -1,0 +1,31 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Данные рекламных компаний{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Данные рекламной компании {{ campaign_id }}</h1>
+        </div>
+        <table class="price_control">
+            
+            <tr>
+                <th>sku</th>
+                <th>title</th>
+                <th>bid</th>
+                <th>groupId</th>
+            </tr>
+            {% for article in compaign_info %}
+            <tr>
+                <td>{{ article.sku }}</td>
+                <td>{{ article.title }}</td>
+                <td>{{ article.bid }}</td>
+                <td>{{ article.groupId }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>    
+        
+{% endblock %}
