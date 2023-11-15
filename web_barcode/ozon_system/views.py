@@ -8,9 +8,8 @@ import requests
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
+from ozon_system.models import ArticleAmountRating
 from ozon_system.tasks import my_task
-
-from .models import ArticleAmountRating
 
 load_dotenv()
 
