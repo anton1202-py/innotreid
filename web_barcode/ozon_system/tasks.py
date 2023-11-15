@@ -29,14 +29,14 @@ def my_task(compaign_id):
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
     print('Начало работы')
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token()}',
-    }
-    url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/deactivate"
-    payload_deactive = json.dumps({
-        "campaignId": compaign_id
-    })
-    response = requests.request(
-        "POST", url, headers=headers, data=payload_deactive)
+    # headers = {
+    #    'Content-Type': 'application/json',
+    #    'Authorization': f'Bearer {access_token()}',
+    # }
+    # url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/deactivate"
+    # payload_deactive = json.dumps({
+    #    "campaignId": compaign_id
+    # })
+    # response = requests.request(
+    #    "POST", url, headers=headers, data=payload_deactive)
     print("Функция выполняется в", datetime.now())
