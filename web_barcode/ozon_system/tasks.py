@@ -12,6 +12,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 
+from ..celery import app
 from .models import ArticleAmountRating
 
 load_dotenv()
@@ -19,7 +20,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@app.task
 def my_task(compaign_id):
     from .views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
