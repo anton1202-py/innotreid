@@ -4,7 +4,7 @@ from celery import Celery
 from celery.schedules import crontab
 
 app = Celery('celery_tasks',
-             include=['celery_tasks.tasks', 'celery_tasks.tasks_yandex_fby_fbs', 'ozon_system.tasks'])
+             include=['celery_tasks.tasks', 'celery_tasks.tasks_yandex_fby_fbs', '..ozon_system.tasks'])
 app.config_from_object('celery_tasks.celeryconfig')
 
 # настройка логирования
