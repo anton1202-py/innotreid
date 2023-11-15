@@ -133,6 +133,7 @@ def ozon_adv_group(request):
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             my_task.apply_async(args=[compaign_id], eta=selected_datetime)
+            print('попросил остановить компанию')
         elif 'start' in request.POST.keys():
             url = f"https://performance.ozon.ru:443/api/client/campaign/{request.POST['start']}/activate"
             payload_active = json.dumps({
