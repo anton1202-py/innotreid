@@ -132,7 +132,7 @@ def ozon_adv_group(request):
             #    "POST", url, headers=headers, data=payload_deactive)
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
-            eta = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
             my_task.apply_async(args=[compaign_id], eta=eta)
             print('попросил остановить компанию')
         elif 'start' in request.POST.keys():
