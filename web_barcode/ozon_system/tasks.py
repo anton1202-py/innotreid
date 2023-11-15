@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 from collections import Counter
 from datetime import datetime
@@ -15,11 +16,14 @@ from .models import ArticleAmountRating
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 
 @shared_task
 def my_task(compaign_id):
     from .views import access_token
-
+    logger.info("Функция my_task приняла задание для compaign_id %s в %s",
+                compaign_id, datetime.now())
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token()}',
