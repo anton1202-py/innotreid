@@ -12,16 +12,18 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 
-from web_barcode.celery import app
-
 from .models import ArticleAmountRating
+
+# from web_barcode.celery import app
+
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# app = Celery('ozon_system.tasks')
-# app.config_from_object('ozon_system.celeryconfig')
+app = Celery('ozon_system')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 
 @app.task
