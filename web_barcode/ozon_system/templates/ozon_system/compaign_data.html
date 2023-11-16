@@ -37,7 +37,7 @@
                         {% csrf_token %}
                         <input type="datetime-local" name="stop_time" class="choose-date">
                         <button class="custom-button" type="submit" name="stop" value="{{article.id}}">Остановить</button>
-                        <input type="datetime-local" name="start_time">
+                        <input type="datetime-local" name="start_time" class="choose-date">
                         <button class="custom-button" type="submit" name="start" value="{{article.id}}">Запустить</button>   
                     </form>
                 </td>

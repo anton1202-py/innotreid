@@ -123,26 +123,23 @@ def ozon_adv_group(request):
     if request.POST:
         print(request.POST)
         if 'stop' in request.POST.keys():
-            # url = f"https://performance.ozon.ru:443/api/client/campaign/{request.POST['stop']}/deactivate"
-            # payload_deactive = json.dumps({
-            #    "campaignId": request.POST['stop']
-            # })
-            # response = requests.request(
-            #    "POST", url, headers=headers, data=payload_deactive)
+
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
-            # print(adjusted_datetime)
-            eta = datetime.datetime.now() - datetime.timedelta(hours=3)
+
             stop_compaign.apply_async(
                 args=[compaign_id], eta=adjusted_datetime)
             print('попросил остановить компанию')
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
             selected_datetime = request.POST['start_time']
-            eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
+            python_datetime = datetime.datetime.strptime(
+                selected_datetime, "%Y-%m-%dT%H:%M")
+            adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
+
             start_compaign.apply_async(
                 args=[compaign_id], eta=selected_datetime)
             print('попросил запустить компанию')
