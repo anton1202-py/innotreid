@@ -132,7 +132,7 @@ def ozon_adv_group(request):
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
-                selected_datetime, "%Y-%m-%dT%H:%M:%S")
+                selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
             # print(adjusted_datetime)
             eta = datetime.datetime.now() - datetime.timedelta(hours=3)
