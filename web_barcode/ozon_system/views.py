@@ -132,13 +132,15 @@ def ozon_adv_group(request):
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
-            stop_compaign.apply_async(args=[compaign_id], eta=eta)
+            stop_compaign.apply_async(
+                args=[compaign_id], eta=selected_datetime)
             print('попросил остановить компанию')
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
             selected_datetime = request.POST['start_time']
             eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
-            start_compaign.apply_async(args=[compaign_id], eta=eta)
+            start_compaign.apply_async(
+                args=[compaign_id], eta=selected_datetime)
             print('попросил запустить компанию')
     context = {
         'compaign_data': compaign_data,
