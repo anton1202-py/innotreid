@@ -141,7 +141,7 @@ def ozon_adv_group(request):
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
             start_compaign.apply_async(
-                args=[compaign_id], eta=selected_datetime)
+                args=[compaign_id], eta=adjusted_datetime)
             print('попросил запустить компанию')
     context = {
         'compaign_data': compaign_data,
