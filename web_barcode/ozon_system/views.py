@@ -9,7 +9,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 from ozon_system.models import ArticleAmountRating
-from ozon_system.tasks import my_task
+from ozon_system.tasks import start_compaign, stop_compaign
 
 load_dotenv()
 
@@ -132,15 +132,14 @@ def ozon_adv_group(request):
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
-            my_task.apply_async(args=[compaign_id], eta=eta)
+            stop_compaign.apply_async(args=[compaign_id], eta=eta)
             print('попросил остановить компанию')
         elif 'start' in request.POST.keys():
-            url = f"https://performance.ozon.ru:443/api/client/campaign/{request.POST['start']}/activate"
-            payload_active = json.dumps({
-                "campaignId": request.POST['start']
-            })
-            response = requests.request(
-                "POST", url, headers=headers, data=payload_active)
+            compaign_id = request.POST['start']
+            selected_datetime = request.POST['start_time']
+            eta = datetime.datetime.now() - datetime.timedelta(minutes=178)
+            start_compaign.apply_async(args=[compaign_id], eta=eta)
+            print('попросил запустить компанию')
     context = {
         'compaign_data': compaign_data,
     }

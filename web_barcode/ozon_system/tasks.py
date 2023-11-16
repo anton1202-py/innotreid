@@ -24,19 +24,38 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def my_task(compaign_id):
+def stop_compaign(compaign_id):
     from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
-    print('Начало работы')
-    # headers = {
-    #    'Content-Type': 'application/json',
-    #    'Authorization': f'Bearer {access_token()}',
-    # }
-    # url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/deactivate"
-    # payload_deactive = json.dumps({
-    #    "campaignId": compaign_id
-    # })
-    # response = requests.request(
-    #    "POST", url, headers=headers, data=payload_deactive)
-    print("Функция выполняется в", datetime.now())
+    print('Тушим компанию')
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token()}',
+    }
+    url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/deactivate"
+    payload_deactive = json.dumps({
+        "campaignId": compaign_id
+    })
+    response = requests.request(
+        "POST", url, headers=headers, data=payload_deactive)
+    print("остановилась в", datetime.now())
+
+
+@shared_task
+def start_compaign(compaign_id):
+    from ozon_system.views import access_token
+    logger.info("Функция my_task приняла задание для compaign_id %s в %s",
+                compaign_id, datetime.now())
+    print('запускаем компанию')
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token()}',
+    }
+    url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/activate"
+    payload_deactive = json.dumps({
+        "campaignId": compaign_id
+    })
+    response = requests.request(
+        "POST", url, headers=headers, data=payload_deactive)
+    print("запустилась в", datetime.now())
