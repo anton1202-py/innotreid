@@ -1,7 +1,10 @@
 import logging
+import os
 
 from celery import Celery
 from celery.schedules import crontab
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 
 app = Celery('celery_tasks',
              include=['celery_tasks.tasks', 'ozon_system.tasks', 'celery_tasks.tasks_yandex_fby_fbs'])
