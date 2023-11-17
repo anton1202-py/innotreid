@@ -40,9 +40,9 @@
                         <button class="custom-button" type="submit" name="stop" value="{{article.id}}" style="display: none;">Остановить</button>
                     </form>
                     <div class="celery_action_data">
+                        <span>Расписание остановок</span>
                         {% for date in action_data %}
                             {% if article.id == date.company_number and date.action_type == 'stop' %}
-                            <span>Расписание остановок</span>
                             <div class="celery_date_info">
                                 <span class="task_date">{{date.action_datetime}}</span>
                                 <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
@@ -65,9 +65,10 @@
                         <button class="custom-button" type="submit" name="start" value="{{article.id}}" style="display: none;">Запустить</button>
                     </form>
                     <div class="celery_action_data">
+                        <span>Расписание запусков</span>
                     {% for date in action_data %}
                         {% if article.id == date.company_number and date.action_type == 'start' %}
-                        <span>Расписание запусков</span>
+                        
                         <div class="celery_date_info">
                             <span class="task_date">{{date.action_datetime}}</span>
                             <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
