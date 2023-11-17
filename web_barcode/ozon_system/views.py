@@ -137,21 +137,21 @@ def ozon_adv_group(request):
             # stop_compaign.apply_async(
             #     args=[compaign_id], eta=adjusted_datetime)
 
-            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
-                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
-                    start_task_datetime=datetime.datetime.now(),
-                )
-            else:
-                stop_compaign.apply_async(
-                    args=[compaign_id], eta=adjusted_datetime)
-                action_object = DateActionInfo(
-                    company_number=compaign_id,
-                    action_type='stop',
-                    action_datetime=python_datetime,
-                    celery_task=stop_compaign.apply_async(
-                        args=[compaign_id], eta=adjusted_datetime).id
-                )
-                action_object.save()
+            # if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
+            #     DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
+            #         start_task_datetime=datetime.datetime.now(),
+            #     )
+            # else:
+            stop_compaign.apply_async(
+                args=[compaign_id], eta=adjusted_datetime)
+            action_object = DateActionInfo(
+                company_number=compaign_id,
+                action_type='stop',
+                action_datetime=python_datetime,
+                celery_task=stop_compaign.apply_async(
+                    args=[compaign_id], eta=adjusted_datetime).id
+            )
+            action_object.save()
 
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
