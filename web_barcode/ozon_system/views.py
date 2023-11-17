@@ -131,8 +131,6 @@ def ozon_adv_group(request):
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
-            stop_compaign.apply_async(
-                args=[compaign_id], eta=adjusted_datetime)
             action_object = DateActionInfo(
                 company_number=compaign_id,
                 action_type='stop',
