@@ -22,23 +22,6 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 
 @app.task
-def my_task(compaign_id):
-    from ozon_system.views import access_token
-    print('Начало работы')
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token()}',
-    }
-    url = f"https://performance.ozon.ru:443/api/client/campaign/{compaign_id}/deactivate"
-    payload_deactive = json.dumps({
-        "campaignId": compaign_id
-    })
-    response = requests.request(
-        "POST", url, headers=headers, data=payload_deactive)
-    print("Функция выполняется в", datetime.now())
-
-
-@app.task
 def add_database_data():
     """
     Добавляет данные в базу взятые по API WB.

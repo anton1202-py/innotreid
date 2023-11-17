@@ -134,16 +134,16 @@ def ozon_adv_group(request):
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
-            stop_compaign.apply_async(
-                args=[compaign_id], eta=adjusted_datetime)
+            # stop_compaign.apply_async(
+            #     args=[compaign_id], eta=adjusted_datetime)
 
             if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
                 DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
                     start_task_datetime=datetime.datetime.now(),
-                    celery_task=stop_compaign.apply_async(
-                        args=[compaign_id], eta=adjusted_datetime).id
                 )
             else:
+                stop_compaign.apply_async(
+                    args=[compaign_id], eta=adjusted_datetime)
                 action_object = DateActionInfo(
                     company_number=compaign_id,
                     action_type='stop',
@@ -159,17 +159,18 @@ def ozon_adv_group(request):
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
-
-            start_compaign.apply_async(
-                args=[compaign_id], eta=adjusted_datetime)
+            print('Перед функцией')
+            # celery_task_start = start_compaign.apply_async(
+            #    args=[compaign_id], eta=adjusted_datetime)
+            print('Прошел функцию')
 
             if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)):
                 DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)).update(
                     start_task_datetime=datetime.datetime.now(),
-                    celery_task=start_compaign.apply_async(
-                        args=[compaign_id], eta=adjusted_datetime).id
                 )
             else:
+                start_compaign.apply_async(
+                    args=[compaign_id], eta=adjusted_datetime)
                 action_object = DateActionInfo(
                     company_number=compaign_id,
                     action_type='start',
