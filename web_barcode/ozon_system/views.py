@@ -5,6 +5,7 @@ from collections import Counter
 
 import pandas as pd
 import requests
+from celery.result import AsyncResult
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
@@ -131,12 +132,11 @@ def ozon_adv_group(request):
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
-
-            print(python_datetime)
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
             stop_compaign.apply_async(
                 args=[compaign_id], eta=adjusted_datetime)
+
             if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
                 DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
                     start_task_datetime=datetime.datetime.now(),
@@ -152,6 +152,7 @@ def ozon_adv_group(request):
                         args=[compaign_id], eta=adjusted_datetime).id
                 )
                 action_object.save()
+
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
             selected_datetime = request.POST['start_time']
@@ -177,6 +178,14 @@ def ozon_adv_group(request):
                         args=[compaign_id], eta=adjusted_datetime).id
                 )
                 action_object.save()
+        elif 'del_task' in request.POST:
+            info_data = request.POST.get('del_task')
+            common_data = info_data.split()
+            action_id = common_data[0]
+            task_id = common_data[1]
+            DateActionInfo.objects.get(pk=action_id).delete()
+            AsyncResult(task_id).revoke()
+
     context = {
         'action_data': action_with_company_datetime,
         'compaign_data': compaign_data,

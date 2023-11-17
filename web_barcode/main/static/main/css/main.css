@@ -760,3 +760,56 @@ table tr:hover {
     vertical-align: center;
     border-left: none;
 }
+/* ========== КОНЕЦ ТАБЛИЦЫ =========*/
+
+/* ========== БЛОК С СИСТЕМОЙ ДЛЯ ОЗОНА =========*/
+
+/* ========== СТРАНИЦА С РЕКЛАМНЫМИ КОМПАНИЯМИ =========*/
+
+.features table td form {
+    width: fit-content;
+    margin: 0;
+    padding: 0;
+}
+
+.celery-action-date {
+    padding: 8px;
+    font-family: poppins, sans-serif;
+    color: var(--color-dark);
+    font-size: 14px;
+    border: 1px solid var(--color-table-separator);
+    outline: none;
+    border-radius: var(--border-radius-1);
+}
+
+.features table td form input{
+    color: var(--color-info-dark);
+}
+
+.features table td form button{
+    background: transparent;
+
+}
+
+.celery_date_info {
+    display: flex;
+    gap: 0.5rem;
+}
+
+
+.celery_date_info form {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    /* width: fit-content; */
+}
+.celery_date_info form span{
+    background: transparent;
+}
+.celery_date_info .material-symbols-outlined{
+    background: transparent;
+    color: var(--color-info-dark);
+}
+
+
+/* ========== КОНЕЦ СТРАНИЦЫ С РЕКЛАМНЫМИ КОМПАНИЯМИ =========*/

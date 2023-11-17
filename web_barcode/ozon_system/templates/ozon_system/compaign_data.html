@@ -34,33 +34,70 @@
                 <td>{{ article.updatedAt }}</td>
                 <td>{{ article.state }}</td>
                 <td>
-                    <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <input type="datetime-local" name="stop_time" class="choose-date">
-                        <button class="custom-button" type="submit" name="stop" value="{{article.id}}">Остановить</button><br>
-                    {% for date in action_data %}
-                        {% if article.id == date.company_number and date.action_type == 'stop' %}
-                            <span>{{date.action_datetime}}</span><br>
-                        {% endif %}
-                    {% endfor %}
+                        <input type="datetime-local" name="stop_time" class="celery-action-date">
+                        <button class="custom-button" type="submit" name="stop" value="{{article.id}}" style="display: none;">Остановить</button>
                     </form>
+                    <div class="celery_action_data">
+                        {% for date in action_data %}
+                            {% if article.id == date.company_number and date.action_type == 'stop' %}
+                            <span>Расписание остановок</span>
+                            <div class="celery_date_info">
+                                <span class="task_date">{{date.action_datetime}}</span>
+                                <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" name="del_task" value="{{date.id}} {{date.celery_task}}">
+                                        <span class="material-symbols-outlined">
+                                            delete
+                                        </span>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% endfor %} 
+                    </div>
                 </td>
                 <td>
-
-                    <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <input type="datetime-local" name="start_time" class="choose-date">
-                        <button class="custom-button" type="submit" name="start" value="{{article.id}}">Запустить</button><br> 
+                        <input type="datetime-local" name="start_time" class="celery-action-date">
+                        <button class="custom-button" type="submit" name="start" value="{{article.id}}" style="display: none;">Запустить</button>
+                    </form>
+                    <div class="celery_action_data">
                     {% for date in action_data %}
                         {% if article.id == date.company_number and date.action_type == 'start' %}
-                            <span>{{date.action_datetime}}</span><br>
+                        <span>Расписание запусков</span>
+                        <div class="celery_date_info">
+                            <span class="task_date">{{date.action_datetime}}</span>
+                            <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+                                {% csrf_token %}
+                                <button type="submit" name="del_task" value="{{date.id}} {{date.celery_task}}">
+                                    <span class="material-symbols-outlined">
+                                        delete
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
                         {% endif %}
                     {% endfor %} 
-                    </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
         </table>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+  var schedule = document.querySelector('.celery_date_info');
+  var spanContent = schedule.querySelector('span.task_date');
+
+  if (spanContent.textContent.trim() === "") {
+    schedule.style.display = "none";
+  } else {
+    schedule.style.display = "";
+  }
+});
+        </script>
     </div>    
         
 {% endblock %}
