@@ -14,24 +14,21 @@
             <tr>
                 <th>ID Компании</th>
                 <th>Название</th>
-                <th>advObjectType</th>
-                <th>dailyBudget</th>
                 <th>budget</th>
-                <th>createdAt</th>
-                <th>updatedAt</th>
                 <th>state</th>
                 <th>Отключить</th>
                 <th>включить</th>
+                <th>advObjectType</th>
+                <th>dailyBudget</th>
+                <th>createdAt</th>
+                <th>updatedAt</th>
+                
             </tr>
             {% for article in compaign_data %}
             <tr>
                 <td><a href="{% url 'ozon_campaing_article_info' article.id %}">{{ article.id }}</a></td>
                 <td>{{ article.title }}</td>
-                <td>{{ article.advObjectType }}</td>
-                <td>{{ article.dailyBudget }}</td>
                 <td>{{ article.budget }}</td>
-                <td>{{ article.createdAt }}</td>
-                <td>{{ article.updatedAt }}</td>
                 <td>{{ article.state }}</td>
                 <td>
                     <form method="post" enctype="multipart/form-data">
@@ -68,7 +65,6 @@
                         <!-- <span class="name_work">Расписание запусков</span> -->
                         {% for date in action_data %}
                             {% if article.id == date.company_number and date.action_type == 'start' %}
-
                             <div class="celery_date_info">
                                 <span class="task_date">{{date.action_datetime}}</span>
                                 <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
@@ -84,6 +80,11 @@
                         {% endfor %} 
                     </div>
                 </td>
+                <td>{{ article.advObjectType }}</td>
+                <td>{{ article.dailyBudget }}</td>
+                <td>{{ article.createdAt }}</td>
+                <td>{{ article.updatedAt }}</td>
+                
             </tr>
             {% endfor %}
         </table>

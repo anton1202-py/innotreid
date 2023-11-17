@@ -18,17 +18,12 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# app = Celery('ozon_system.tasks', broker='redis://localhost:6379/0')
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-# app.autodiscover_tasks()
-
 
 @shared_task
 def stop_compaign(compaign_id):
     from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
-    print('Тушим компанию')
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token()}',
@@ -39,7 +34,6 @@ def stop_compaign(compaign_id):
     })
     response = requests.request(
         "POST", url, headers=headers, data=payload_deactive)
-    print("остановилась в", datetime.now())
 
 
 @shared_task
@@ -47,7 +41,6 @@ def start_compaign(compaign_id):
     from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
-    print('запускаем компанию')
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token()}',
@@ -58,4 +51,3 @@ def start_compaign(compaign_id):
     })
     response = requests.request(
         "POST", url, headers=headers, data=payload_deactive)
-    print("запустилась в", datetime.now())

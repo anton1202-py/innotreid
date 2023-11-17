@@ -162,9 +162,7 @@ def ozon_adv_group(request):
             action_id = common_data[0]
             task_id = common_data[1]
             DateActionInfo.objects.get(pk=action_id).delete()
-            print('задача должна удалиться из БД')
             AsyncResult(task_id).revoke()
-            print(f'задача {task_id} должна удалиться из селери')
 
     context = {
         'action_data': action_with_company_datetime,
