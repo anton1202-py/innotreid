@@ -124,53 +124,59 @@ def ozon_adv_group(request):
     compaign_data = json.loads(response.text)['list']
 
     if request.POST:
-        print(request.POST)
+
         if 'stop' in request.POST.keys():
 
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
-            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
-                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
-                    start_task_datetime=datetime.datetime.now()
-                )
-            else:
-                action_object = DateActionInfo(
-                    company_number=compaign_id,
-                    action_type='stop',
-                    action_datetime=python_datetime
-                )
-                action_object.save()
+
             print(python_datetime)
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
             stop_compaign.apply_async(
                 args=[compaign_id], eta=adjusted_datetime)
-            print('попросил остановить компанию')
+            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
+                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
+                    start_task_datetime=datetime.datetime.now(),
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign_id], eta=adjusted_datetime).id
+                )
+            else:
+                action_object = DateActionInfo(
+                    company_number=compaign_id,
+                    action_type='stop',
+                    action_datetime=python_datetime,
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign_id], eta=adjusted_datetime).id
+                )
+                action_object.save()
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
             selected_datetime = request.POST['start_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
+            adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
+
+            start_compaign.apply_async(
+                args=[compaign_id], eta=adjusted_datetime)
+
             if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)):
                 DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)).update(
-                    start_task_datetime=datetime.datetime.now()
+                    start_task_datetime=datetime.datetime.now(),
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign_id], eta=adjusted_datetime).id
                 )
             else:
                 action_object = DateActionInfo(
                     company_number=compaign_id,
                     action_type='start',
-                    action_datetime=python_datetime
+                    action_datetime=python_datetime,
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign_id], eta=adjusted_datetime).id
                 )
                 action_object.save()
-            action_object.save()
-            adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
-
-            start_compaign.apply_async(
-                args=[compaign_id], eta=adjusted_datetime)
-            print(start_compaign.apply_async(
-                args=[compaign_id], eta=adjusted_datetime).id)
     context = {
         'action_data': action_with_company_datetime,
         'compaign_data': compaign_data,
