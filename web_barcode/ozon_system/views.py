@@ -163,6 +163,7 @@ def ozon_adv_group(request):
             task_id = common_data[1]
             DateActionInfo.objects.get(pk=action_id).delete()
             AsyncResult(task_id).revoke()
+        return redirect('ozon_adv_group')
 
     context = {
         'action_data': action_with_company_datetime,
