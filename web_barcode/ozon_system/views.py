@@ -142,8 +142,8 @@ def ozon_adv_group(request):
             #         start_task_datetime=datetime.datetime.now(),
             #     )
             # else:
-            # stop_compaign.apply_async(
-            #     args=[compaign_id], eta=adjusted_datetime)
+            stop_compaign.apply_async(
+                args=[compaign_id], eta=adjusted_datetime)
             action_object = DateActionInfo(
                 company_number=compaign_id,
                 action_type='stop',
