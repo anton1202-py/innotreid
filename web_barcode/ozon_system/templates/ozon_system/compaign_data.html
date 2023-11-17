@@ -20,7 +20,8 @@
                 <th>createdAt</th>
                 <th>updatedAt</th>
                 <th>state</th>
-                <th>Действие</th>
+                <th>Отключить</th>
+                <th>включить</th>
             </tr>
             {% for article in compaign_data %}
             <tr>
@@ -36,9 +37,25 @@
                     <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
                         {% csrf_token %}
                         <input type="datetime-local" name="stop_time" class="choose-date">
-                        <button class="custom-button" type="submit" name="stop" value="{{article.id}}">Остановить</button>
+                        <button class="custom-button" type="submit" name="stop" value="{{article.id}}">Остановить</button><br>
+                    {% for date in action_data %}
+                        {% if article.id == date.company_number and date.action_type == 'stop' %}
+                            <span>{{date.action_datetime}}</span><br>
+                        {% endif %}
+                    {% endfor %}
+                    </form>
+                </td>
+                <td>
+
+                    <form method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+                        {% csrf_token %}
                         <input type="datetime-local" name="start_time" class="choose-date">
-                        <button class="custom-button" type="submit" name="start" value="{{article.id}}">Запустить</button>   
+                        <button class="custom-button" type="submit" name="start" value="{{article.id}}">Запустить</button><br> 
+                    {% for date in action_data %}
+                        {% if article.id == date.company_number and date.action_type == 'start' %}
+                            <span>{{date.action_datetime}}</span><br>
+                        {% endif %}
+                    {% endfor %} 
                     </form>
                 </td>
             </tr>

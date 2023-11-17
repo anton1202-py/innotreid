@@ -8,7 +8,7 @@ import requests
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
-from ozon_system.models import ArticleAmountRating
+from ozon_system.models import ArticleAmountRating, DateActionInfo
 from ozon_system.tasks import start_compaign, stop_compaign
 
 load_dotenv()
@@ -102,6 +102,9 @@ def ozon_main_info_table(request):
 
 
 def ozon_adv_group(request):
+    action_with_company_datetime = DateActionInfo.objects.filter(
+        action_datetime__gt=datetime.datetime.now())
+    print(action_with_company_datetime)
     url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_UNKNOWN"
 
     payload = json.dumps({
@@ -128,6 +131,18 @@ def ozon_adv_group(request):
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
+            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
+                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
+                    start_task_datetime=datetime.datetime.now()
+                )
+            else:
+                action_object = DateActionInfo(
+                    company_number=compaign_id,
+                    action_type='stop',
+                    action_datetime=python_datetime
+                )
+                action_object.save()
+            print(python_datetime)
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
             stop_compaign.apply_async(
@@ -138,12 +153,26 @@ def ozon_adv_group(request):
             selected_datetime = request.POST['start_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
+            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)):
+                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)).update(
+                    start_task_datetime=datetime.datetime.now()
+                )
+            else:
+                action_object = DateActionInfo(
+                    company_number=compaign_id,
+                    action_type='start',
+                    action_datetime=python_datetime
+                )
+                action_object.save()
+            action_object.save()
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
             start_compaign.apply_async(
                 args=[compaign_id], eta=adjusted_datetime)
-            print('попросил запустить компанию')
+            print(start_compaign.apply_async(
+                args=[compaign_id], eta=adjusted_datetime).id)
     context = {
+        'action_data': action_with_company_datetime,
         'compaign_data': compaign_data,
     }
     return render(request, 'ozon_system/compaign_data.html', context)
