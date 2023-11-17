@@ -140,7 +140,7 @@ def ozon_adv_group(request):
             if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
                 DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
                     start_task_datetime=datetime.datetime.now(),
-                    celery_task=start_compaign.apply_async(
+                    celery_task=stop_compaign.apply_async(
                         args=[compaign_id], eta=adjusted_datetime).id
                 )
             else:
@@ -148,7 +148,7 @@ def ozon_adv_group(request):
                     company_number=compaign_id,
                     action_type='stop',
                     action_datetime=python_datetime,
-                    celery_task=start_compaign.apply_async(
+                    celery_task=stop_compaign.apply_async(
                         args=[compaign_id], eta=adjusted_datetime).id
                 )
                 action_object.save()
