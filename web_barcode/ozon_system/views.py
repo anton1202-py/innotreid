@@ -105,7 +105,6 @@ def ozon_main_info_table(request):
 def ozon_adv_group(request):
     action_with_company_datetime = DateActionInfo.objects.filter(
         action_datetime__gt=datetime.datetime.now())
-    print(action_with_company_datetime)
     url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_UNKNOWN"
 
     payload = json.dumps({
@@ -125,23 +124,13 @@ def ozon_adv_group(request):
     compaign_data = json.loads(response.text)['list']
 
     if request.POST:
-
         if 'stop' in request.POST.keys():
-
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
 
-            # stop_compaign.apply_async(
-            #     args=[compaign_id], eta=adjusted_datetime)
-
-            # if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)):
-            #     DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='stop') & Q(action_datetime=python_datetime)).update(
-            #         start_task_datetime=datetime.datetime.now(),
-            #     )
-            # else:
             stop_compaign.apply_async(
                 args=[compaign_id], eta=adjusted_datetime)
             action_object = DateActionInfo(
@@ -159,33 +148,25 @@ def ozon_adv_group(request):
             python_datetime = datetime.datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
-            print('Перед функцией')
-            # celery_task_start = start_compaign.apply_async(
-            #    args=[compaign_id], eta=adjusted_datetime)
-            print('Прошел функцию')
 
-            if DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)):
-                DateActionInfo.objects.filter(Q(company_number=compaign_id) & Q(action_type='start') & Q(action_datetime=python_datetime)).update(
-                    start_task_datetime=datetime.datetime.now(),
-                )
-            else:
-                start_compaign.apply_async(
-                    args=[compaign_id], eta=adjusted_datetime)
-                action_object = DateActionInfo(
-                    company_number=compaign_id,
-                    action_type='start',
-                    action_datetime=python_datetime,
-                    celery_task=start_compaign.apply_async(
-                        args=[compaign_id], eta=adjusted_datetime).id
-                )
-                action_object.save()
+            action_object = DateActionInfo(
+                company_number=compaign_id,
+                action_type='start',
+                action_datetime=python_datetime,
+                celery_task=start_compaign.apply_async(
+                    args=[compaign_id], eta=adjusted_datetime).id
+            )
+            action_object.save()
+
         elif 'del_task' in request.POST:
             info_data = request.POST.get('del_task')
             common_data = info_data.split()
             action_id = common_data[0]
             task_id = common_data[1]
             DateActionInfo.objects.get(pk=action_id).delete()
+            print('задача должна удалиться из БД')
             AsyncResult(task_id).revoke()
+            print(f'задача {task_id} должна удалиться из селери')
 
     context = {
         'action_data': action_with_company_datetime,
