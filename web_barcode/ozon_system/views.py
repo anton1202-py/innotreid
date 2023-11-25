@@ -9,10 +9,14 @@ from celery.result import AsyncResult
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
-from ozon_system.models import ArticleAmountRating, DateActionInfo
-from ozon_system.tasks import start_compaign, stop_compaign
+from ozon_system.models import (AdvGroup, ArticleAmountRating, DateActionInfo,
+                                GroupActions, GroupCeleryAction, GroupCompaign)
+from ozon_system.tasks import (start_compaign, start_group, stop_compaign,
+                               stop_group)
 
 load_dotenv()
+
+now_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M")
 
 
 def access_token():
@@ -157,6 +161,7 @@ def ozon_adv_group(request):
             action_object.save()
 
         elif 'del_task' in request.POST:
+            print(request.POST)
             info_data = request.POST.get('del_task')
             common_data = info_data.split()
             action_id = common_data[0]
@@ -183,9 +188,185 @@ def ozon_campaing_article_info(request, campaign_id):
     response = requests.request("GET", url, headers=headers)
 
     compaign_info = json.loads(response.text)['products']
-    context = {
-        'compaign_info': compaign_info,
-        'campaign_id': campaign_id
-    }
+
+    url_search = f"https://performance.ozon.ru:443/api/client/campaign/{campaign_id}/search_promo/products"
+
+    if compaign_info:
+        context = {
+            'compaign_info': compaign_info,
+            'campaign_id': campaign_id
+        }
+    else:
+        payload = json.dumps({
+            "page": 0,
+            "pageSize": 1000
+        })
+
+        response_search = requests.request(
+            "POST", url_search, headers=headers, data=payload)
+        response_search_info = json.loads(response_search.text)['products']
+        context = {
+            'compaign_info': response_search_info,
+            'campaign_id': campaign_id
+        }
 
     return render(request, 'ozon_system/compaign_article_info.html', context)
+
+
+def group_adv_compaign_timetable(request):
+    url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_UNKNOWN"
+
+    payload = json.dumps({
+        "filter": {
+            "operation_type": [],
+            "posting_number": "",
+            "transaction_type": "all"
+        },
+        "page": 1,
+        "page_size": 1000
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token()}',
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    compaign_data = json.loads(response.text)['list']
+
+    compaign_status = {}
+    for compaign in compaign_data:
+        compaign_status[str(compaign['id'])] = compaign['state']
+
+    # groups - queryset с номерами всех групп.
+    groups = AdvGroup.objects.all()
+
+    # groups_info - список ID всех компаний, которые добавлены в группы.
+    groups_info = GroupCompaign.objects.values_list(
+        'compaign', flat=True).distinct()
+
+    # compaigns_in_group - queryset с ID компаний в каждой группе.
+    compaigns_in_group = GroupCompaign.objects.all()
+
+    # action_with_group_datetime - queryset с действиями для групп.
+    # Отфильтрован по дате выполнения, чтобы была больше текущей
+    action_with_group_datetime = GroupActions.objects.filter(
+        action_datetime__gt=datetime.datetime.now())
+
+    # celery_actions - queryset с действиями для celery.
+    celery_actions = GroupCeleryAction.objects.all()
+
+    # Смотрю какие компании есть в ответе API и если они не добавлены в группы,
+    # то есть их нет в  списке groups_info, то их добавляю в список для выбора групп
+    compaigns_list = []
+    for compaign in compaign_data:
+        compaigns_list.append(compaign['id'])
+    compaigns_list_for_select = [
+        item for item in compaigns_list if item not in groups_info]
+
+    if request.POST:
+        if 'add_compaign_to_group' in request.POST.keys():
+            # Добавляет компанию в группу
+            group_number = request.POST['group_number']
+            compaign_id = request.POST['compaign_id']
+            group_id = groups.get(group=group_number)
+            adv_group = GroupCompaign(
+                group=group_id,
+                compaign=compaign_id
+            )
+            adv_group.save()
+
+        elif 'del_compaign' in request.POST.keys():
+            # Удаляет компанию из группы
+            compaign_id = request.POST['del_compaign']
+            GroupCompaign.objects.get(compaign=compaign_id).delete()
+        elif 'start' in request.POST.keys():
+            # Добавляет дейсвие старта рекламы в базу данных
+            group_number = request.POST['start']
+            selected_datetime = request.POST['start_time']
+            python_datetime = datetime.datetime.strptime(
+                selected_datetime, "%Y-%m-%dT%H:%M")
+            group_id = groups.get(group=group_number)
+            adjusted_datetime_start = python_datetime - \
+                datetime.timedelta(hours=3)
+            action_start_group_for_celery = GroupActions(
+                group=group_id,
+                action_type='start',
+                start_task_datetime=now_time,
+                action_datetime=adjusted_datetime_start)
+            action_start_group_for_celery.save()
+
+            # Добавляет задачу старта рекламы на каждую Компанию в Celery
+            compaigns_for_celery = GroupCompaign.objects.filter(
+                group=group_id).values_list(
+                    'compaign', flat=True)
+
+            for compaign in compaigns_for_celery:
+                start_action_object = GroupCeleryAction(
+                    group_action=action_start_group_for_celery,
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign],
+                        eta=action_start_group_for_celery.start_task_datetime).id
+                )
+                start_action_object.save()
+
+        elif 'stop' in request.POST.keys():
+            # Добавляет дейсвие остановки рекламы в базуу данных
+            group_number = request.POST['stop']
+            selected_datetime = request.POST['stop_time']
+            python_datetime = datetime.datetime.strptime(
+                selected_datetime, "%Y-%m-%dT%H:%M")
+            group_id = groups.get(group=group_number)
+            adjusted_datetime_stop = python_datetime - \
+                datetime.timedelta(hours=3)
+            action_stop_for_group = GroupActions(
+                group=group_id,
+                action_type='stop',
+                start_task_datetime=now_time,
+                action_datetime=adjusted_datetime_stop
+            )
+            action_stop_for_group.save()
+            # Добавляет задачу остановки рекламы на каждую Компанию в Celery
+            for compaign in compaigns_for_celery:
+                stop_action_object = GroupCeleryAction(
+                    group_action=action_stop_for_group,
+                    celery_task=stop_compaign.apply_async(
+                        args=[compaign],
+                        eta=action_stop_for_group.start_task_datetime).id)
+                stop_action_object.save()
+
+        elif 'delete_action' in request.POST:
+            # Удаляет действие из группы
+            action_date_id = request.POST['action_date_id']
+            group_number = request.POST['delete_action']
+            group_action_id = GroupActions.objects.get(id=action_date_id)
+
+            # Формируем список id задач Celery для удаления
+            data_celery_tasks_list = GroupCeleryAction.objects.filter(
+                group_action=group_action_id
+            ).values_list('celery_task', flat=True)
+
+            # Аннулируем поставленные задачи Celery
+            for task_id in data_celery_tasks_list:
+                AsyncResult(task_id).revoke()
+
+            # Удаляем аннулированные задачи из таблицы GroupCeleryAction
+            celery_tasks = GroupCeleryAction.objects.filter(
+                group_action=group_action_id
+            )
+            for task in celery_tasks:
+                task.delete()
+
+            # Удаляем время действия из таблицы GroupActions
+            GroupActions.objects.get(id=action_date_id).delete()
+
+        return redirect('ozon_campaing_timetable')
+
+    context = {
+        'groups': groups,
+        'compaigns_in_group': compaigns_in_group,
+        'compaigns_list_for_select': compaigns_list_for_select,
+        'groups_info': groups_info,
+        'action_with_group_datetime': action_with_group_datetime,
+        'compaign_status': compaign_status,
+    }
+
+    return render(request, 'ozon_system/group_adv_compaign_timetable.html', context)

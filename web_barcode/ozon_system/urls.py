@@ -9,4 +9,6 @@ urlpatterns = [
          name='ozon_adv_group'),
     path('campaign_articles/<int:campaign_id>', views.ozon_campaing_article_info,
          name='ozon_campaing_article_info'),
+    path('ozon_compaign_timetable', views.group_adv_compaign_timetable,
+         name='ozon_campaing_timetable'),
 ]

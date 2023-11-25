@@ -1,0 +1,162 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Данные рекламных компаний{% endblock %}
+
+
+{% block content%}
+{% load util %}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Рекламные группы</h1>
+        </div>
+        
+        <div class='group_compaign_add'>
+            <span class="form-name">Добавить компанию в группу</span>
+            <form action="" method="POST" class="group_compaign_add_form">
+                {% csrf_token %}
+
+                <label for="group_number">
+                    <span>Выберете номер группы</span><br>
+                    <select id="group_number" name="group_number" class="group_compaign_add_containers">
+                        {% for group in groups %}
+                        <option value="{{ group.group }}">{{ group.group }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label for="compaign_id">
+                    <span>Выберете ID рекламной компании</span><br>
+                    <select id="compaign_id" name="compaign_id" class="group_compaign_add_containers">
+                        {% for compaign in compaigns_list_for_select %}
+                        <option value="{{ compaign }}">{{ compaign }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" name="add_compaign_to_group" value="Добавить" class="celery-action-date"/>
+                </div>
+            </form>
+        <table>
+            <!-- ========== Заголовок таблицы ========== -->
+            <tr>
+                <th>Номер группы</th>
+                <th>ID рекламной компании</th>
+                <th>Включить компанию</th>
+                <th>Отключить компанию</th>
+            </tr>
+            <!-- ========== Конец заголовка таблицы ========== -->
+            {% for group in groups %}
+            <tr>
+                <!-- ========== Номер группы ========== -->
+                <td>{{group.group}}</td>
+                <!-- ========== Компании в группе, их статусы и снопки удалить компанию из группы ========== -->
+                <td>
+                    {% for compaign in compaigns_in_group %}
+                        {% if compaign.group.group == group.group %}
+                        <div class="adv-group-compaign">
+                            {{ compaign.compaign }}
+
+                            {% if compaign_status|get_item:compaign.compaign == 'CAMPAIGN_STATE_RUNNING' %}
+                                <span class="material-symbols-outlined">
+                                    done
+                                </span>
+                            {% elif compaign_status|get_item:compaign.compaign == 'CAMPAIGN_STATE_INACTIVE' %}
+                                <span class="material-symbols-outlined">
+                                    timer
+                                </span>
+                            {% elif compaign_status|get_item:compaign.compaign == 'CAMPAIGN_STATE_FINISHED' %}
+                                <span class="material-symbols-outlined">
+                                    close
+                                </span>
+                            {% elif compaign_status|get_item:compaign.compaign == 'CAMPAIGN_STATE_MODERATION_DRAFT' %}
+                                <span class="material-symbols-outlined">
+                                    add_moderator
+                                </span>
+                            {% endif %}
+                            <form action="" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" name="del_compaign" value="{{compaign.compaign}}">
+                                    <span class="material-symbols-outlined">
+                                        delete
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <!-- ========== Форма добавления старта рекламы для группы. ========== -->
+                <!-- ========== Отображение расписания для старта рекламы ========== -->
+                <td>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="datetime-local" name="start_time" class="celery-action-date">
+                        <button class="custom-button" type="submit" name="start" value="{{group.group}}" style="display: none;">Запустить</button>
+                    </form>
+                    {% for data in action_with_group_datetime %}
+                        <div class="adv-group-compaign">
+                            {% if data.group.group == group.group and data.action_type == 'start' %}
+                                {{ data.action_datetime }}
+                                <form action="" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action_date_id" value="{{data.id}}">
+                                    <input type="hidden" name="action_datetime" value="{{data.action_datetime|date:'Y-m-d H:i:s' }}">
+                                    <input type="hidden" name="action_type" value="start">
+                                    <button type="submit" name="delete_action" value="{{group.group}}">
+                                        <span class="material-symbols-outlined">
+                                            delete
+                                        </span>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </td>
+                <!-- ========== Отображение расписания для остановки рекламы ========== -->
+                <td>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="datetime-local" name="stop_time" class="celery-action-date">
+                        <button class="custom-button" type="submit" name="stop" value="{{group.group}}" style="display: none;">Остановить</button>
+                    </form>
+                    <div class="adv-group-compaign">
+                        {% for data in action_with_group_datetime %}
+                            {% if data.group.group == group.group and data.action_type == 'stop' %}
+                                {{ data.action_datetime }}
+                                <form action="" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action_date_id" value="{{data.id }}">
+                                    <input type="hidden" name="action_datetime" value="{{data.action_datetime|date:'Y-m-d H:i:s' }}">
+                                    <input type="hidden" name="action_type" value="stop">
+                                    <button type="submit" name="delete_action" value="{{group.group}}">
+                                        <span class="material-symbols-outlined">
+                                            delete
+                                        </span>
+                                    </button>
+                                </form><br>
+                            {% endif %}
+                    {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}                
+        </table>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+  var schedule = document.querySelector('.celery_date_info');
+  console.log(schedule)
+  var spanContent = schedule.querySelector('.task_date');
+  console.log(spanContent)
+
+  if (spanContent.textContent.trim() === "") {
+    schedule.style.display = "none";
+  } else {
+    schedule.style.display = "";
+  }
+});
+        </script>
+    </div>    
+        
+{% endblock %}

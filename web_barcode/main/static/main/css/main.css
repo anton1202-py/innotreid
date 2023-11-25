@@ -813,3 +813,63 @@ table tr:hover {
 
 
 /* ========== КОНЕЦ СТРАНИЦЫ С РЕКЛАМНЫМИ КОМПАНИЯМИ =========*/
+
+
+/* ========== Рекламные группы OZON =========*/
+
+.td-adv-group-compaign {
+    display: block;
+}
+
+.adv-group-compaign {
+    display: flex;
+    text-align: center;
+    vertical-align: center;
+    gap: 0.5rem;
+    width: fit-content;
+}
+
+.adv-group-compaign button {
+    background: transparent;
+    color: var(--color-table-separator);
+}
+
+.adv-group-compaign button span{
+    font-size: 20px;
+}
+
+table tr td .adv-group-compaign form {
+    margin: 0;
+    padding: 0;
+}
+
+.group_compaign_add {
+    float: left;
+    margin-top: 2rem;
+}
+
+.group_compaign_add .form-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.group_compaign_add .group_compaign_add_form {
+    display: flex;
+    margin: 1rem 0 1rem 0;
+    padding: 0;
+    gap: 1rem;
+}
+
+.group_compaign_add_containers {
+    padding: 8px;
+    width: 250px;
+    font-family: poppins, sans-serif;
+    color: var(--color-dark);
+    font-size: 14px;
+    border: 1px solid var(--color-table-separator);
+    outline: none;
+    border-radius: var(--border-radius-1);
+}
+
+
+/* ========== Конец с рекламными группами OZON =========*/

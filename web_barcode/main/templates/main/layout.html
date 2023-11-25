@@ -87,6 +87,11 @@
                     <span class="material-symbols-sharp">inventory_2</span>
                     <h3>Рекламные компании OZON</h3>
                 </a>
+                {% url 'ozon_campaing_timetable' as url_ozon_campaing_timetable %}
+                <a href="{{ url_ozon_campaing_timetable }}" {% if request.path == url_stock %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">ad_group</span>
+                    <h3>Распределение рекламных групп OZON</h3>
+                </a>
 
             {% url 'stock-shelving' as url_stock %}
             <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
