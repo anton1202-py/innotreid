@@ -324,6 +324,9 @@ def group_adv_compaign_timetable(request):
                 action_datetime=adjusted_datetime_stop
             )
             action_stop_for_group.save()
+            compaigns_for_celery = GroupCompaign.objects.filter(
+                group=group_id).values_list(
+                    'compaign', flat=True)
             # Добавляет задачу остановки рекламы на каждую Компанию в Celery
             for compaign in compaigns_for_celery:
                 stop_action_object = GroupCeleryAction(
