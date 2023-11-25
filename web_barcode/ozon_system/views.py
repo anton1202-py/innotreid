@@ -291,7 +291,7 @@ def group_adv_compaign_timetable(request):
                 group=group_id,
                 action_type='start',
                 start_task_datetime=now_time,
-                action_datetime=adjusted_datetime_start)
+                action_datetime=python_datetime)
             action_start_group_for_celery.save()
 
             # Добавляет задачу старта рекламы на каждую Компанию в Celery
@@ -321,7 +321,7 @@ def group_adv_compaign_timetable(request):
                 group=group_id,
                 action_type='stop',
                 start_task_datetime=now_time,
-                action_datetime=adjusted_datetime_stop
+                action_datetime=python_datetime
             )
             action_stop_for_group.save()
             compaigns_for_celery = GroupCompaign.objects.filter(
