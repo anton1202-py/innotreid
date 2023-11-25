@@ -304,7 +304,7 @@ def group_adv_compaign_timetable(request):
                     group_action=action_start_group_for_celery,
                     celery_task=start_compaign.apply_async(
                         args=[compaign],
-                        eta=action_start_group_for_celery.start_task_datetime).id
+                        eta=adjusted_datetime_start).id
                 )
                 start_action_object.save()
 
@@ -333,7 +333,7 @@ def group_adv_compaign_timetable(request):
                     group_action=action_stop_for_group,
                     celery_task=stop_compaign.apply_async(
                         args=[compaign],
-                        eta=action_stop_for_group.start_task_datetime).id)
+                        eta=adjusted_datetime_stop).id)
                 stop_action_object.save()
 
         elif 'delete_action' in request.POST:
