@@ -56,7 +56,24 @@ def start_compaign(compaign_id):
 
 @app.task
 def start_adv_company():
-    pass
+    today = datetime.now().date()
+    group_list = AdvGroup.objects.all().values_list(
+        'group', flat=True)
+    data_group_dict = {}
+
+    for group in group_list:
+        data_group_dict[group] = GroupActions.objects.get(
+            group=group, action_type='start').start_task_datetime
+
+    for group, date_start in data_group_dict.items():
+        date_object = datetime.strptime(date_start, "%Y-%m-%d")
+        months_passed = (today.year - date_object.year) * \
+            12 + (today.month - date_object.month)
+        if months_passed % 3 == 0:
+            compaigns_list = GroupCompaign.objects.filter(
+                group=group).values_list('compaign', flat=True)
+            for compaign in compaigns_list:
+                start_compaign(compaign)
 
 
 def stop_adv_company():

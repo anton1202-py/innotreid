@@ -11,8 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
 from ozon_system.models import (AdvGroup, ArticleAmountRating, DateActionInfo,
                                 GroupActions, GroupCeleryAction, GroupCompaign)
-from ozon_system.tasks import (start_compaign, start_group, stop_compaign,
-                               stop_group)
+from ozon_system.tasks import start_compaign, stop_compaign
 
 load_dotenv()
 
