@@ -7,7 +7,10 @@ from celery.schedules import crontab
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 
 app = Celery('celery_tasks',
-             include=['celery_tasks.tasks', 'ozon_system.tasks', 'celery_tasks.tasks_yandex_fby_fbs'])
+             include=['celery_tasks.tasks',
+                      'ozon_system.tasks',
+                      'celery_tasks.tasks_yandex_fby_fbs'
+                      ])
 app.config_from_object('celery_tasks.celeryconfig')
 
 # настройка логирования
@@ -50,5 +53,13 @@ app.conf.beat_schedule = {
     "run-every-15-minutes": {
         "task": "celery_tasks.tasks.get_current_ssp",
         'schedule': crontab(minute='*/15'),
+    },
+    "stop-adv-all-ozon-company": {
+        "task": "ozon_system.tasks.stop_adv_company",
+        'schedule': crontab(day_of_month='L-1', hour=20, minute=0),
+    },
+    "start-adv-ozon-company": {
+        "task": "ozon_system.tasks.start_adv_company",
+        'schedule': crontab(day_of_month=1, hour=5, minute=0),
     },
 }

@@ -33,7 +33,7 @@ def access_token():
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-
+    print(response)
     return json.loads(response.text)['access_token']
 
 
@@ -248,8 +248,7 @@ def group_adv_compaign_timetable(request):
 
     # action_with_group_datetime - queryset с действиями для групп.
     # Отфильтрован по дате выполнения, чтобы была больше текущей
-    action_with_group_datetime = GroupActions.objects.filter(
-        action_datetime__gt=datetime.datetime.now())
+    action_with_group_datetime = GroupActions.objects.all()
 
     # celery_actions - queryset с действиями для celery.
     celery_actions = GroupCeleryAction.objects.all()

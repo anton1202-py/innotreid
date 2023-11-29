@@ -38,13 +38,13 @@
                     <input type="Submit" name="add_compaign_to_group" value="Добавить" class="celery-action-date"/>
                 </div>
             </form>
+        <span><b>Включение рекламы в группе будет повторяться каждые 3 месяца с даты, выставленной в таблице</b></span><br>
         <table>
             <!-- ========== Заголовок таблицы ========== -->
             <tr>
                 <th>Номер группы</th>
                 <th>ID рекламной компании</th>
                 <th>Включить компанию</th>
-                <th>Отключить компанию</th>
             </tr>
             <!-- ========== Конец заголовка таблицы ========== -->
             {% for group in groups %}
@@ -113,32 +113,6 @@
                             {% endif %}
                         </div>
                     {% endfor %}
-                </td>
-                <!-- ========== Отображение расписания для остановки рекламы ========== -->
-                <td>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="datetime-local" name="stop_time" class="celery-action-date">
-                        <button class="custom-button" type="submit" name="stop" value="{{group.group}}" style="display: none;">Остановить</button>
-                    </form>
-                    <div class="adv-group-compaign">
-                        {% for data in action_with_group_datetime %}
-                            {% if data.group.group == group.group and data.action_type == 'stop' %}
-                                {{ data.action_datetime }}
-                                <form action="" method="POST">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action_date_id" value="{{data.id }}">
-                                    <input type="hidden" name="action_datetime" value="{{data.action_datetime|date:'Y-m-d H:i:s' }}">
-                                    <input type="hidden" name="action_type" value="stop">
-                                    <button type="submit" name="delete_action" value="{{group.group}}">
-                                        <span class="material-symbols-outlined">
-                                            delete
-                                        </span>
-                                    </button>
-                                </form><br>
-                            {% endif %}
-                    {% endfor %}
-                    </div>
                 </td>
             </tr>
             {% endfor %}                
