@@ -65,6 +65,6 @@ app.conf.beat_schedule = {
     },
     "start-adv-ozon-company": {
         "task": "ozon_system.tasks.start_adv_company",
-        'schedule': schedule(run_every=crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0)),
+        'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
     },
 }

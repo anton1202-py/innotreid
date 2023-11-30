@@ -51,4 +51,4 @@ class DataForAnalysisDetailView(ListView):
 
     def get_queryset(self):
         return DataForAnalysis.objects.filter(
-            wb_article=self.kwargs['wb_article'])
+            wb_article=self.kwargs['wb_article']).order_by('price_date')
