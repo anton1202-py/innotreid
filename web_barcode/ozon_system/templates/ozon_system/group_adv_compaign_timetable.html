@@ -13,6 +13,7 @@
         
         <div class='group_compaign_add'>
             <span class="form-name">Добавить компанию в группу</span>
+            <!-- ========== Форма добавления компании в группу ========== -->
             <form action="" method="POST" class="group_compaign_add_form">
                 {% csrf_token %}
 
@@ -25,12 +26,17 @@
                     </select>
                 </label>
                 <label for="compaign_id">
-                    <span>Выберете ID рекламной компании</span><br>
+                    <span>Выберете ID рекламной компании или</span><br>
                     <select id="compaign_id" name="compaign_id" class="group_compaign_add_containers">
+                        <option value="">Выберете компанию</option>
                         {% for compaign in compaigns_list_for_select %}
                         <option value="{{ compaign }}">{{ compaign }}</option>
                         {% endfor %}
                     </select>
+                </label>
+                <label for="compaign_id_input">
+                    <span>введите ID рекламной компании</span><br>
+                    <input type="number" id="compaign_id_input" name="compaign_id_input" class="group_compaign_add_containers">
                 </label>
 
                 <div class="inner-form-data">
@@ -38,7 +44,9 @@
                     <input type="Submit" name="add_compaign_to_group" value="Добавить" class="celery-action-date"/>
                 </div>
             </form>
+            <!-- ========== Конец формы ========== -->
         <span><b>Включение рекламы в группе будет повторяться каждые 3 месяца с даты, выставленной в таблице</b></span><br>
+        </div>
         <table>
             <!-- ========== Заголовок таблицы ========== -->
             <tr>
@@ -51,7 +59,7 @@
             <tr>
                 <!-- ========== Номер группы ========== -->
                 <td>{{group.group}}</td>
-                <!-- ========== Компании в группе, их статусы и снопки удалить компанию из группы ========== -->
+                <!-- ========== Компании в группе, их статусы и кнопки удалить компанию из группы ========== -->
                 <td>
                     {% for compaign in compaigns_in_group %}
                         {% if compaign.group.group == group.group %}
@@ -99,6 +107,7 @@
                         <div class="adv-group-compaign">
                             {% if data.group.group == group.group and data.action_type == 'start' %}
                                 {{ data.action_datetime }}
+                                <!-- ========== Кнопка УДАЛИТЬ ВРЕМЯ ДЕЙСТВИЯ ========== -->
                                 <form action="" method="POST">
                                     {% csrf_token %}
                                     <input type="hidden" name="action_date_id" value="{{data.id}}">
@@ -110,6 +119,7 @@
                                         </span>
                                     </button>
                                 </form>
+                                <!-- ========== КОНЕЦ Кнопки УДАЛИТЬ ВРЕМЯ ДЕЙСТВИЯ ========== -->
                             {% endif %}
                         </div>
                     {% endfor %}
@@ -131,6 +141,6 @@
   }
 });
         </script>
-    </div>    
+        
         
 {% endblock %}

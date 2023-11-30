@@ -1,8 +1,9 @@
+import datetime
 import logging
 import os
 
 from celery import Celery
-from celery.schedules import crontab
+from celery.schedules import crontab, schedule
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 
@@ -16,6 +17,10 @@ app.config_from_object('celery_tasks.celeryconfig')
 # настройка логирования
 logging.basicConfig(filename='celery.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
+
+today = datetime.date.today()
+first_day_of_next_month = datetime.date(today.year, today.month+1, 1)
+penultimate_day_of_month = first_day_of_next_month - datetime.timedelta(days=2)
 
 app.conf.beat_schedule = {
     "everyday-task1": {
@@ -44,7 +49,7 @@ app.conf.beat_schedule = {
     },
     "add_article_price_info_to_database": {
         "task": "celery_tasks.tasks.add_article_price_info_to_database",
-        "schedule": crontab(hour=12, minute=45)
+        "schedule": crontab(hour=9, minute=0)
     },
     "sender_change_price_info": {
         "task": "celery_tasks.tasks.sender_change_price_info",
@@ -60,6 +65,6 @@ app.conf.beat_schedule = {
     },
     "start-adv-ozon-company": {
         "task": "ozon_system.tasks.start_adv_company",
-        'schedule': crontab(day_of_month=1, hour=5, minute=0),
+        'schedule': schedule(run_every=crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0)),
     },
 }

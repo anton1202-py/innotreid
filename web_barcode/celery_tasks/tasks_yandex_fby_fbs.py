@@ -16,20 +16,18 @@ load_dotenv()
 # Адрес, где лежит файл с артикулами
 ARTICLE_DATA_FILE = 'celery_tasks/2023_08_10_yandex_sku.xlsx'
 # Эндпоинт для информации по количеству товара на складе FBY
-# https://api.partner.market.yandex.ru/campaigns/{campaignId}/stats/skus
+#https://api.partner.market.yandex.ru/campaigns/{campaignId}/stats/skus
 URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPAIGNID')}/stats/skus"
 # Эндпоинт для изменения остатков на складе FBS
 URL_FBS = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBS_COMPAIGNID')}/offers/stocks"
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 headers = {
-    'Content-Type': 'application/json',
-    'Authorization': os.getenv('API_KEY_YANDEX')
+  'Content-Type': 'application/json',
+  'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
-# @app.task
-
-
+#@app.task
 def change_fbs_amount():
     """
     Функция смотрит остаток артикулов на складе FBY, если остаток не равен 0,
@@ -39,8 +37,8 @@ def change_fbs_amount():
     data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
     article_list = data['Ваш SKU'].to_list()
 
-    # ограничения по передачи количества артикулов в одном запросе - 500 штук.
-    residue = len(article_list) % 400  # остаток
+    # ограничения по передачи количества артикулов в одном запросе - 500 штук. 
+    residue = len(article_list) % 400 # остаток
     iter_amount = len(article_list) // 400
     # Словарь для данных по артикулу и его остатку на складе, если он != 0.
     fby_common_data_storage = {}
@@ -52,8 +50,7 @@ def change_fbs_amount():
         # ПОСТ запрос для получения данных по артикулу
         payload = json.dumps({"shopSkus": articke_info_list})
 
-        response = requests.request(
-            "POST", URL_FBY, headers=headers, data=payload)
+        response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
         result = data['result']
         dict_res = result['shopSkus']
@@ -63,7 +60,7 @@ def change_fbs_amount():
             stock_article = res['shopSku']
 
             for j in stocks_data:
-                if len(j['stocks']) > 0:
+                if len(j['stocks'])>0:
                     for sum in j['stocks']:
                         if sum['type'] == 'AVAILABLE':
                             fby_common_data_storage[stock_article] = sum['count']
@@ -73,23 +70,22 @@ def change_fbs_amount():
 
     for article in fby_common_data_storage.keys():
         payload = json.dumps({
-            "skus": [
+          "skus": [
+            {
+              "sku": article,
+              "warehouseId": 250643,
+              "items": [
                 {
-                    "sku": article,
-                    "warehouseId": 250643,
-                    "items": [
-                        {
-                            "count": 0,
-                            "type": "FIT",
-                            "updatedAt": time
-                        }
-                    ]
+                  "count": 0,
+                  "type": "FIT",
+                  "updatedAt": time
                 }
-            ]
+              ]
+            }
+          ]
         })
 
-        response = requests.request(
-            "PUT", URL_FBS, headers=headers, data=payload)
+        response = requests.request("PUT", URL_FBS, headers=headers, data=payload)
 
 
 @app.task
@@ -118,8 +114,7 @@ def add_fby_amount_to_database():
         articke_info_list = article_list[start_point:finish_point]
         # ПОСТ запрос для получения данных по артикулу
         payload = json.dumps({"shopSkus": articke_info_list})
-        response = requests.request(
-            "POST", URL_FBY, headers=headers, data=payload)
+        response = requests.request("POST", URL_FBY, headers=headers, data=payload)
         data = json.loads(response.text)
         result = data['result']
         dict_res = result['shopSkus']
@@ -127,11 +122,11 @@ def add_fby_amount_to_database():
         for res in dict_res:
             stock_article = res['shopSku']
             if 'warehouses' in res.keys():
-
+        
                 stocks_data = res['warehouses']
-
+                
                 article_amount = 0
-
+            
                 for sum in stocks_data:
                     for amount in sum['stocks']:
                         if amount['type'] == 'AVAILABLE':
@@ -171,11 +166,11 @@ def add_fby_amount_to_database():
 
 def sender_message():
     connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
-                                  # пароль, который указали при установке PostgreSQL
-                                  password=os.getenv('POSTGRES_PASSWORD'),
-                                  host=os.getenv('DB_HOST'),
-                                  port=os.getenv('DB_PORT'),
-                                  database=os.getenv('DB_NAME'))
+    # пароль, который указали при установке PostgreSQL
+    password=os.getenv('POSTGRES_PASSWORD'),
+    host=os.getenv('DB_HOST'),
+    port=os.getenv('DB_PORT'),
+    database=os.getenv('DB_NAME'))
     cursor = connection.cursor()
 
     postgreSQL_select_Query = '''SELECT article_marketplace, 
@@ -191,9 +186,8 @@ def sender_message():
     sender_data = cursor.fetchall()
 
     for article, current_amount, yesterday_amount in sender_data:
-        print(
-            f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
-
+        print(f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
+    
     return sender_data
 
 
@@ -206,15 +200,15 @@ def sender_zero_balance():
     # Получаем список всех пользователей бота
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     connection = psycopg2.connect(user=os.getenv('POSTGRES_TG_USER'),
-                                  password=os.getenv('POSTGRES_TG_PASSWORD'),
-                                  host=os.getenv('DB_HOST'),
-                                  port=os.getenv('DB_PORT'),
-                                  database=os.getenv('DB_TG_NAME'))
+        password=os.getenv('POSTGRES_TG_PASSWORD'),
+        host=os.getenv('DB_HOST'),
+        port=os.getenv('DB_PORT'),
+        database=os.getenv('DB_TG_NAME'))
     cursor = connection.cursor()
 
     # Подключаюсь к базе данных бота, чтобы достать всех юзеров
     tg_select_Query = '''SELECT chat_id FROM users_data;'''
-    cursor.execute(tg_select_Query)
+    cursor.execute(tg_select_Query)    
     sender_data = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -228,6 +222,4 @@ def sender_zero_balance():
                     message = f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}'
                     bot.send_message(chat_id=id, text=message)
 
-
-# add_fby_amount_to_database()
-# add_fby_amount_to_database()
+#add_fby_amount_to_database()

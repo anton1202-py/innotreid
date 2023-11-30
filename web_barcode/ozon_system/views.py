@@ -2,10 +2,11 @@ import datetime
 import json
 import os
 from collections import Counter
+from datetime import datetime, timedelta
 
 import pandas as pd
 import requests
-from celery.result import AsyncResult
+# from celery.result import AsyncResult
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
@@ -15,7 +16,7 @@ from ozon_system.tasks import start_compaign, stop_compaign
 
 load_dotenv()
 
-now_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M")
+now_time = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
 
 def access_token():
@@ -107,7 +108,7 @@ def ozon_main_info_table(request):
 
 def ozon_adv_group(request):
     action_with_company_datetime = DateActionInfo.objects.filter(
-        action_datetime__gt=datetime.datetime.now())
+        action_datetime__gt=datetime.now())
     url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_UNKNOWN"
 
     payload = json.dumps({
@@ -130,9 +131,9 @@ def ozon_adv_group(request):
         if 'stop' in request.POST.keys():
             compaign_id = request.POST['stop']
             selected_datetime = request.POST['stop_time']
-            python_datetime = datetime.datetime.strptime(
+            python_datetime = datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
-            adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
+            adjusted_datetime = python_datetime - timedelta(hours=3)
 
             action_object = DateActionInfo(
                 company_number=compaign_id,
@@ -146,9 +147,9 @@ def ozon_adv_group(request):
         elif 'start' in request.POST.keys():
             compaign_id = request.POST['start']
             selected_datetime = request.POST['start_time']
-            python_datetime = datetime.datetime.strptime(
+            python_datetime = datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
-            adjusted_datetime = python_datetime - datetime.timedelta(hours=3)
+            adjusted_datetime = python_datetime - timedelta(hours=3)
 
             action_object = DateActionInfo(
                 company_number=compaign_id,
@@ -166,7 +167,7 @@ def ozon_adv_group(request):
             action_id = common_data[0]
             task_id = common_data[1]
             DateActionInfo.objects.get(pk=action_id).delete()
-            AsyncResult(task_id).revoke()
+            # AsyncResult(task_id).revoke()
         return redirect('ozon_adv_group')
 
     context = {
@@ -213,6 +214,7 @@ def ozon_campaing_article_info(request, campaign_id):
 
 
 def group_adv_compaign_timetable(request):
+    # start_compaign(compaign)
     url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_UNKNOWN"
 
     payload = json.dumps({
@@ -262,9 +264,13 @@ def group_adv_compaign_timetable(request):
 
     if request.POST:
         if 'add_compaign_to_group' in request.POST.keys():
+            print(request.POST)
             # Добавляет компанию в группу
+            if request.POST['compaign_id']:
+                compaign_id = request.POST['compaign_id']
+            elif request.POST['compaign_id_input']:
+                compaign_id = request.POST['compaign_id_input']
             group_number = request.POST['group_number']
-            compaign_id = request.POST['compaign_id']
             group_id = groups.get(group=group_number)
             adv_group = GroupCompaign(
                 group=group_id,
@@ -280,11 +286,34 @@ def group_adv_compaign_timetable(request):
             # Добавляет дейсвие старта рекламы в базу данных
             group_number = request.POST['start']
             selected_datetime = request.POST['start_time']
-            python_datetime = datetime.datetime.strptime(
+            python_datetime = datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             group_id = groups.get(group=group_number)
             adjusted_datetime_start = python_datetime - \
-                datetime.timedelta(hours=3)
+                timedelta(hours=3)
+            if GroupActions.objects.filter(group=group_id,
+                                           action_type='start'):
+                group_action_id = GroupActions.objects.get(
+                    group=group_id, action_type='start')
+
+                # Формируем список id задач Celery для удаления
+                data_celery_tasks_list = GroupCeleryAction.objects.filter(
+                    group_action=group_action_id
+                ).values_list('celery_task', flat=True)
+
+                # Аннулируем поставленные задачи Celery
+                # for task_id in data_celery_tasks_list:
+                #    AsyncResult(task_id).revoke()
+
+                # Удаляем аннулированные задачи из таблицы GroupCeleryAction
+                celery_tasks = GroupCeleryAction.objects.filter(
+                    group_action=group_action_id
+                )
+                for task in celery_tasks:
+                    task.delete()
+                GroupActions.objects.filter(group=group_id,
+                                            action_type='start').delete()
+
             action_start_group_for_celery = GroupActions(
                 group=group_id,
                 action_type='start',
@@ -300,9 +329,9 @@ def group_adv_compaign_timetable(request):
             for compaign in compaigns_for_celery:
                 start_action_object = GroupCeleryAction(
                     group_action=action_start_group_for_celery,
-                    celery_task=start_compaign.apply_async(
-                        args=[compaign],
-                        eta=adjusted_datetime_start).id
+                    # celery_task=start_compaign.apply_async(
+                    #     args=[compaign],
+                    #     eta=adjusted_datetime_start).id
                 )
                 start_action_object.save()
 
@@ -310,11 +339,11 @@ def group_adv_compaign_timetable(request):
             # Добавляет дейсвие остановки рекламы в базуу данных
             group_number = request.POST['stop']
             selected_datetime = request.POST['stop_time']
-            python_datetime = datetime.datetime.strptime(
+            python_datetime = datetime.strptime(
                 selected_datetime, "%Y-%m-%dT%H:%M")
             group_id = groups.get(group=group_number)
             adjusted_datetime_stop = python_datetime - \
-                datetime.timedelta(hours=3)
+                timedelta(hours=3)
             action_stop_for_group = GroupActions(
                 group=group_id,
                 action_type='stop',
@@ -329,9 +358,10 @@ def group_adv_compaign_timetable(request):
             for compaign in compaigns_for_celery:
                 stop_action_object = GroupCeleryAction(
                     group_action=action_stop_for_group,
-                    celery_task=stop_compaign.apply_async(
-                        args=[compaign],
-                        eta=adjusted_datetime_stop).id)
+                    # celery_task=stop_compaign.apply_async(
+                    #     args=[compaign],
+                    #     eta=adjusted_datetime_stop).id
+                )
                 stop_action_object.save()
 
         elif 'delete_action' in request.POST:
@@ -346,8 +376,8 @@ def group_adv_compaign_timetable(request):
             ).values_list('celery_task', flat=True)
 
             # Аннулируем поставленные задачи Celery
-            for task_id in data_celery_tasks_list:
-                AsyncResult(task_id).revoke()
+            # for task_id in data_celery_tasks_list:
+            #    AsyncResult(task_id).revoke()
 
             # Удаляем аннулированные задачи из таблицы GroupCeleryAction
             celery_tasks = GroupCeleryAction.objects.filter(
