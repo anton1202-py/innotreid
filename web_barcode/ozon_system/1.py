@@ -1,31 +1,8 @@
-import json
-import os
+import datetime
 
-import requests
-from dotenv import load_dotenv
+today = datetime.date.today()
+first_day_of_next_month = datetime.date(today.year, today.month+1, 1)
+penultimate_day_of_month = first_day_of_next_month - datetime.timedelta(days=2)
 
-load_dotenv()
-
-
-url = "https://performance.ozon.ru/api/client/campaign?state=CAMPAIGN_STATE_RUNNING"
-
-payload = json.dumps({
-    "filter": {
-        "operation_type": [],
-        "posting_number": "",
-        "transaction_type": "all"
-    },
-    "page": 1,
-    "page_size": 1000
-})
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': f'Bearer {os.getenv("BEARER_TOKEN")}',
-}
-response = requests.request("GET", url, headers=headers, data=payload)
-print(response)
-compaign_data = json.loads(response.text)['list']
-
-for i in compaign_data:
-    print(i)
-    print('****************')
+# Выведет предпоследний день текущего месяца
+print(penultimate_day_of_month.day)

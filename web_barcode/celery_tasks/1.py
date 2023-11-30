@@ -177,24 +177,24 @@ def get_current_ssp():
     и отрпавляет сообщение в ТГ бот, что СПП поменялось
     """
     today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    # bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
-    URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+    URL = 'https://card.wb.ru/cards/detail?appType=2&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
 
     try:
         # Подключение к существующей базе данных
-        connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
-                                      dbname=os.getenv('DB_NAME'),
-                                      password=os.getenv('POSTGRES_PASSWORD'),
-                                      host=os.getenv('DB_HOST'),
-                                      port=os.getenv('DB_PORT'))
-        connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        # connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
+        #                              dbname=os.getenv('DB_NAME'),
+        #                              password=os.getenv('POSTGRES_PASSWORD'),
+        #                              host=os.getenv('DB_HOST'),
+        #                              port=os.getenv('DB_PORT'))
+        # connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         # Курсор для выполнения операций с базой данных
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT * FROM price_control_articlewriter")
-
-        articles_datas = cursor.fetchall()
+        # cursor = connection.cursor()
+        # cursor.execute(
+        #    "SELECT * FROM price_control_articlewriter")
+        #
+        # articles_datas = cursor.fetchall()
         article_dict = {}
         # Подключение к базе телеграма
        # connection_tg = psycopg2.connect(user=os.getenv('POSTGRES_TG_USER'),
@@ -208,53 +208,53 @@ def get_current_ssp():
        # cursor_tg.execute(tg_select_Query)
        # sender_users = cursor_tg.fetchall()
 
-        for i in range(len(articles_datas)):
-            article_dict[articles_datas[i][2]] = articles_datas[i][1]
+       # for i in range(len(articles_datas)):
+       #    article_dict[articles_datas[i][2]] = articles_datas[i][1]
 
         data_for_database = []
-        for i in article_dict.keys():
+        # for i in article_dict.keys():
 
-            url = URL + str(i)
-            payload = {}
-            headers = {}
-            response = requests.request(
-                "GET", url, headers=headers, data=payload)
-            data = json.loads(response.text)
-            # Обход ошибки не существующиего артикула
-            if data['data']['products']:
+        url = URL + '64523738'
+        payload = {}
+        headers = {}
+        response = requests.request(
+            "GET", url, headers=headers, data=payload)
+        data = json.loads(response.text)
+        print(data['data']['products'][0]['extended'])
+        # Обход ошибки не существующиего артикула
+        if data['data']['products']:
+            # Обход ошибки отсутствия spp
+            if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
+                price = int(data['data']['products'][0]
+                            ['extended']['clientPriceU'])//100
 
-                # Обход ошибки отсутствия spp
-                if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
-                    price = int(data['data']['products'][0]
-                                ['extended']['clientPriceU'])//100
-                    spp = data['data']['products'][0]['extended']['clientSale']
-                else:
-                    price = int(data['data']['products'][0]
-                                ['extended']['basicPriceU'])//100
-                    spp = 0
-                basic_sale = data['data']['products'][0]['extended']['basicSale']
-                set_with_price = [article_dict[i], i,
-                                  today_data, price, spp, basic_sale]
-                data_for_database.append(set_with_price)
+                spp = data['data']['products'][0]['extended']['clientSale']
+            else:
+                price = int(data['data']['products'][0]
+                            ['extended']['basicPriceU'])//100
+                spp = 0
+            basic_sale = data['data']['products'][0]['extended']['basicSale']
+            set_with_price = [article_dict[i], i,
+                              today_data, price, spp, basic_sale]
+            data_for_database.append(set_with_price)
+            print(data_for_database)
+            # postgreSQL_select_Query = f"""
+            #    SELECT spp FROM price_control_dataforanalysis WHERE id IN (
+            #        SELECT MAX(id) FROM price_control_dataforanalysis
+            #        WHERE seller_article='{article_dict[i]}' GROUP BY seller_article);
+            # """
+            # cursor.execute(postgreSQL_select_Query)
 
-                postgreSQL_select_Query = f"""
-                    SELECT spp FROM price_control_dataforanalysis WHERE id IN (
-                        SELECT MAX(id) FROM price_control_dataforanalysis
-                        WHERE seller_article='{article_dict[i]}' GROUP BY seller_article);
-                """
+            # spp_form_db = cursor.fetchall()[0][0]
 
-                cursor.execute(postgreSQL_select_Query)
-
-                spp_form_db = cursor.fetchall()[0][0]
-
-                if str(spp) != spp_form_db:
-                    print(article_dict[i], spp_form_db, spp)
-                    cursor.executemany(
-                        "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
-                        data_for_database)
-                    # for set_id in sender_users:
-                    #   message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
-                    #   bot.send_message(chat_id=set_id[0], text=message)
+            # if str(spp) != spp_form_db:
+            #    print(article_dict[i], spp_form_db, spp)
+            #    cursor.executemany(
+            #        "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
+            #        data_for_database)
+            # for set_id in sender_users:
+            #   message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
+            #   bot.send_message(chat_id=set_id[0], text=message)
 
     except (Exception, Error) as error:
         print("Ошибка при работе с PostgreSQL", error)
@@ -272,4 +272,4 @@ def get_current_ssp():
 # sender_change_price_info()
 # get_current_ssp()
 
-change_price_info()
+get_current_ssp()
