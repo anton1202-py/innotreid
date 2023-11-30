@@ -44,7 +44,7 @@ app.conf.beat_schedule = {
     },
     "add_article_price_info_to_database": {
         "task": "celery_tasks.tasks.add_article_price_info_to_database",
-        "schedule": crontab(hour=9, minute=0)
+        "schedule": crontab(hour=12, minute=45)
     },
     "sender_change_price_info": {
         "task": "celery_tasks.tasks.sender_change_price_info",
