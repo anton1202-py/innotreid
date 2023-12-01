@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import requests
-# from celery.result import AsyncResult
+from celery.result import AsyncResult
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from dotenv import load_dotenv
@@ -302,8 +302,8 @@ def group_adv_compaign_timetable(request):
                 ).values_list('celery_task', flat=True)
 
                 # Аннулируем поставленные задачи Celery
-                # for task_id in data_celery_tasks_list:
-                #    AsyncResult(task_id).revoke()
+                for task_id in data_celery_tasks_list:
+                    AsyncResult(task_id).revoke()
 
                 # Удаляем аннулированные задачи из таблицы GroupCeleryAction
                 celery_tasks = GroupCeleryAction.objects.filter(
@@ -329,9 +329,9 @@ def group_adv_compaign_timetable(request):
             for compaign in compaigns_for_celery:
                 start_action_object = GroupCeleryAction(
                     group_action=action_start_group_for_celery,
-                    # celery_task=start_compaign.apply_async(
-                    #     args=[compaign],
-                    #     eta=adjusted_datetime_start).id
+                    celery_task=start_compaign.apply_async(
+                        args=[compaign],
+                        eta=adjusted_datetime_start).id
                 )
                 start_action_object.save()
 
@@ -358,9 +358,9 @@ def group_adv_compaign_timetable(request):
             for compaign in compaigns_for_celery:
                 stop_action_object = GroupCeleryAction(
                     group_action=action_stop_for_group,
-                    # celery_task=stop_compaign.apply_async(
-                    #     args=[compaign],
-                    #     eta=adjusted_datetime_stop).id
+                    celery_task=stop_compaign.apply_async(
+                        args=[compaign],
+                        eta=adjusted_datetime_stop).id
                 )
                 stop_action_object.save()
 
@@ -376,8 +376,8 @@ def group_adv_compaign_timetable(request):
             ).values_list('celery_task', flat=True)
 
             # Аннулируем поставленные задачи Celery
-            # for task_id in data_celery_tasks_list:
-            #    AsyncResult(task_id).revoke()
+            for task_id in data_celery_tasks_list:
+                AsyncResult(task_id).revoke()
 
             # Удаляем аннулированные задачи из таблицы GroupCeleryAction
             celery_tasks = GroupCeleryAction.objects.filter(
