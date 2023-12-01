@@ -19,7 +19,10 @@ logging.basicConfig(filename='celery.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 today = datetime.date.today()
-first_day_of_next_month = datetime.date(today.year, today.month+1, 1)
+if today.month < 12:
+    first_day_of_next_month = datetime.date(today.year, today.month+1, 1)
+elif today.month == 12:
+    first_day_of_next_month = datetime.date(today.year+1, 1, 1)
 penultimate_day_of_month = first_day_of_next_month - datetime.timedelta(days=2)
 
 app.conf.beat_schedule = {
