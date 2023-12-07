@@ -332,7 +332,7 @@ def add_stock_data_from_frontend():
 
     ARTICLE_DATA_FILE = 'web_barcode\database\Ночники ИП.xlsx'
     path = '/DATABASE/Ночники ИП.xlsx'
-    URL = 'https://card.wb.ru/cards/detail?regions=80,64,83,4,38,33,70,68,69,86,30,40,48,1,22,66,31&dest=-2133464&nm='
+    URL = 'https://card.wb.ru/cards/detail?appType=0&regions=80,64,83,4,38,33,70,68,69,86,30,40,48,1,22,66,31&dest=-2133464&nm='
 
     def stream_dropbox_file(path):
         _, res = dbx_db.files_download(path)
@@ -463,7 +463,7 @@ def add_article_price_info_to_database():
     Добавляет при вызове информацию о цене артикула на сайте
     со скидкой покупателя за текущий день.
     """
-    URL = 'https://card.wb.ru/cards/detail?appType=2&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
     today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
@@ -596,7 +596,7 @@ def get_current_ssp():
     """
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
-    URL = 'https://card.wb.ru/cards/detail?appType=2&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
     today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
@@ -691,7 +691,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
     Добавляет при вызове информацию о цене одного артикула на сайте
     со скидкой покупателя за текущий момент.
     """
-    URL = 'https://card.wb.ru/cards/detail?appType=2&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
     today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
         # Подключение к существующей базе данных
