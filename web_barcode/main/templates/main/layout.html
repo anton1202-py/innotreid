@@ -50,98 +50,142 @@
         </a>
         
         <div class="sidebar">
+            <nav class="menu">
             {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
-                {% url 'database_home' as url %}
-                <a href="{{ url }}" {% if request.path == url %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">receipt_long</span>
-                    <h3>База данных Артикулов</h3>
-                </a>
-            
-                {% url 'database_article_compare' as url_article_compare %}
-                <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">filter_list</span>
-                    <h3>Сопоставить артикулы</h3>
-                </a>
+                <ul>
+                    <li>
+                        <a href="" class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>База данных</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </a>
+                        {% url 'database_home' as url %}
+                        <ul>
+                        <li>
+                            <a href="{{ url }}" {% if request.path == url %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">receipt_long</span>
+                                <h3>База данных Артикулов</h3>
+                            </a>
+                        </li>
+                        {% url 'database_article_compare' as url_article_compare %}
+                        <li>
+                            <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Сопоставить артикулы</h3>
+                            </a>
+                        </li>
+                        {% url 'database_stock' as url_database_stock %}
+                        <li>
+                            <a href="{{ url_database_stock }}" {% if request.path == url_database_stock %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">inventory</span>
+                                <h3>База данных Склада</h3>
+                            </a>
+                        </li>
+	                    {% url 'stock_wb' as url_stock_wb %}
+                        <li>
+                            <a href="{{ url_stock_wb }}" {% if request.path == url_stock_wb %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">inventory_2</span>
+                                <h3>База данных Склада Wildberries</h3>
+                            </a>
+                        </li>
+                        {% url 'stock_frontend' as url_stock_frontend %}
+                        <li>
+                            <a href="{{ url_stock_frontend }}" {% if request.path == url_stock_frontend %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">trending_up</span>
+                                <h3>Остатки WB с Фронтенда</h3>
+                            </a>
+                        </li>
+                        {% url 'database_sales' as url_sales %}
+                        <li>
+                            <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">stockpot</span>
+                                <h3>База данных Продаж</h3>
+                            </a>
+                        </li>
+                        {% url 'sales_analytic' as url_sales_analytic %}
+                        <li>
+                            <a href="{{ url_sales_analytic }}" {% if request.path == url_sales_analytic %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">query_stats</span>
+                                <h3>Аналитика Продаж</h3>
+                            </a>
+                        </li>
+                        {% url 'innotreid_stock_yandex' as url_stock_yandex %}
+                        <li>
+                            <a href="{{ url_stock_yandex }}" {% if request.path == url_stock_yandex %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">database</span>
+                                <h3>Склад FBY Иннотрейд</h3>
+                            </a>
+                        </li>
+                        {% url 'orders_fbs' as url_orders_fbs %}
+                        <li>
+                            <a href="{{ url_orders_fbs }}" {% if request.path == url_orders_fbs %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">stockpot</span>
+                                <h3>Статистика со склада FBS</h3>
+                            </a>
+                        </li>
+                        {% url 'stock_shelving' as url_stock_shelving %}
+                        <li>
+                            <a href="{{ url_stock_shelving }}" {% if request.path == url_stock_shelving %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">shelves</span>
+                                <h3>Задание на изготовление</h3>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
             {% endif %}
             {% if request.user.is_staff %}
-                {% url 'database_stock' as url_stock %}
-                <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">inventory</span>
-                    <h3>База данных Склада</h3>
-                </a>
+                <li> 
+                    <a href="" class="expanded">
+                        <span class="material-symbols-outlined">
+                            linked_services
+                        </span>
+                        <h3>OZON</h3>
+                        <span class="material-symbols-outlined">
+                            chevron_right
+                        </span>
+                    </a>
+                    {% url 'ozon_adv_group' as url_ozon_adv_group %}
+                    <ul>
+                        <li>
+                            <a href="{{ url_ozon_adv_group }}" {% if request.path == url_ozon_adv_group %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">inventory_2</span>
+                                <h3>Рекламные компании OZON</h3>
+                            </a>
+                        </li>
+                        {% url 'ozon_campaing_timetable' as url_ozon_campaing_timetable %}
+                        <li>
+                            <a href="{{ url_ozon_campaing_timetable }}" {% if request.path == url_ozon_campaing_timetable %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">ad_group</span>
+                                <h3>Рекламные группы OZON</h3>
+                            </a>
+                        </li>
+                    </ul>
+                </li>          
             
-	            {% url 'stock-wb' as url_stock %}
-                <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">inventory_2</span>
-                    <h3>База данных Склада Wildberries</h3>
-                </a>
-
-                {% url 'ozon_system_main_data' as url_ozon_system_main_data %}
-                <a href="{{ url_ozon_system_main_data }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">inventory_2</span>
-                    <h3>Данные OZON</h3>
-                </a>
-
-                {% url 'ozon_adv_group' as url_ozon_adv_group %}
-                <a href="{{ url_ozon_adv_group }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">inventory_2</span>
-                    <h3>Рекламные компании OZON</h3>
-                </a>
-                {% url 'ozon_campaing_timetable' as url_ozon_campaing_timetable %}
-                <a href="{{ url_ozon_campaing_timetable }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">ad_group</span>
-                    <h3>Распределение рекламных групп OZON</h3>
-                </a>
-
-            {% url 'stock-shelving' as url_stock %}
-            <a href="{{ url_stock }}" {% if request.path == url_stock %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">shelves</span>
-                <h3>Задание на изготовление</h3>
-            </a>
-
-            {% url 'stock_frontend' as url_stock_frontend %}
-                <a href="{{ url_stock_frontend }}" {% if request.path == url_stock_frontend %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">trending_up</span>
-                    <h3>Остатки WB с Фронтенда</h3>
-                </a>
-
-            {% url 'database_sales' as url_sales %}
-                <a href="{{ url_sales }}" {% if request.path == url_sales %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">stockpot</span>
-                    <h3>База данных Продаж</h3>
-                </a>
-
-            {% url 'sales_analytic' as url_sales_analytic %}
-            <a href="{{ url_sales_analytic }}" {% if request.path == url_sales_analytic %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">query_stats</span>
-                <h3>Аналитика Продаж</h3>
-            </a>
-
-            {% url 'innotreid_stock_yandex' as url_stock_yandex %}
-                <a href="{{ url_stock_yandex }}" {% if request.path == url_stock_yandex %}class="active"{% endif %}>
-                    <span class="material-symbols-sharp">database</span>
-                    <h3>Склад FBY Иннотрейд</h3>
-                </a>
             {% endif %}
             
             {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
-            {% url 'orders_fbs' as url_orders_fbs %}
-            <a href="{{ url_orders_fbs }}" {% if request.path == url_orders_fbs %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">stockpot</span>
-                <h3>Статистика со склада FBS</h3>
-            </a>
             
             {% url 'task_creation' as url_delivery_number %}
-            <a href="{{ url_delivery_number }}" {% if request.path == url_delivery_number %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">stockpot</span>
-                <h3>Поставки</h3>
-            </a>
+            <li>
+                <a href="{{ url_delivery_number }}" {% if request.path == url_delivery_number %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">stockpot</span>
+                    <h3>Поставки</h3>
+                </a>
+            </li>
             {% endif %}
             {% url 'add_article' as url_add_article %}
-            <a href="{{ url_add_article }}" {% if request.path == url_add_article %}class="active"{% endif %}>
-                <span class="material-symbols-sharp">sell</span>
-                <h3>Контроль цен</h3>
-            </a>
+            <li>
+                <a href="{{ url_add_article }}" {% if request.path == url_add_article %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">sell</span>
+                    <h3>Контроль цен</h3>
+                </a>
+            </li>
+        </ul>
+        </nav>
         </div>
     </aside>
     <main>
@@ -150,5 +194,19 @@
             {% endblock %}
         </div>
     </main>
+    <script>
+        // при клике на пункт меню
+$('li').click(function() {
+  // если пункт меню уже раскрыт, сворачиваем его
+  if ($(this).hasClass('expanded')) {
+    $(this).removeClass('expanded');
+  } else {
+    // иначе раскрываем его и сворачиваем все остальные пункты
+    $('li.expanded').removeClass('expanded');
+    $(this).addClass('expanded');
+  }
+});
+    </script>
 </body>
+
 </html>

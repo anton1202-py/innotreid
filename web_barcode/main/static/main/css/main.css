@@ -148,6 +148,45 @@ aside h3 {
     font-weight: 700;
 }
 
+/* ========== БОКОВОЕ МЕНЮ ==========*/
+.menu {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+  
+.menu ul {
+    margin: 0;
+    padding: 0;
+}
+  
+.menu  li {
+    position: relative;
+}
+  
+
+.menu li ul {
+    display: none;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    left: 1rem;
+}
+
+a.expanded:hover span:last-of-type{
+    transform: rotate(90deg);
+}
+
+.menu li:hover > ul,
+.menu li.open > ul {
+    display: block;
+}
+  
+.menu a {
+    display: block;
+    padding: 0;
+  }
+
 aside .sidebar a {
     text-decoration: none;
     display: flex;

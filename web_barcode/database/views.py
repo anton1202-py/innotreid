@@ -7,9 +7,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db.models import Case, Count, IntegerField, Q, Sum, When
+from django.db.models.functions import (ExtractMonth, ExtractWeek, ExtractYear,
+                                        TruncWeek)
 from django.http import HttpResponse
-
-from django.db.models.functions import ExtractMonth, ExtractWeek, ExtractYear, TruncWeek
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
@@ -100,7 +100,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    #if request.user.is_staff == True:
+    # if request.user.is_staff == True:
     data = Articles.objects.all()
     context = {
         'data': data,
@@ -116,48 +116,56 @@ def database_home(request):
                                    'FBS OZON SKU ID', 'Barcode',
                                    'Наш Артикул на Яндекс (артикул поставщика)',
                                    'ШК Яндекс', 'SKU на Маркете'])
-        common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list()
-        article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на ВБ (артикул поставщика)'].to_list()
-        article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list()
+        common_article_list = load_excel_data_wb_stock['Общий артикул'].to_list(
+        )
+        article_seller_wb_list = load_excel_data_wb_stock['Наш Артикул на ВБ (артикул поставщика)'].to_list(
+        )
+        article_wb_nomenclature_list = load_excel_data_wb_stock['Артикул WB (номенклатура)'].to_list(
+        )
         barcode_wb_list = load_excel_data_wb_stock['ШК ВБ'].to_list()
-        article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на ОЗОН (артикул поставщика)'].to_list()
-        ozon_product_id_list = load_excel_data_wb_stock['Ozon Product ID'].to_list()
-        fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list()
-        fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list()
+        article_seller_ozon_list = load_excel_data_wb_stock['Наш Артикул на ОЗОН (артикул поставщика)'].to_list(
+        )
+        ozon_product_id_list = load_excel_data_wb_stock['Ozon Product ID'].to_list(
+        )
+        fbo_ozon_sku_id_list = load_excel_data_wb_stock['FBO OZON SKU ID'].to_list(
+        )
+        fbs_ozon_sku_id_list = load_excel_data_wb_stock['FBS OZON SKU ID'].to_list(
+        )
         barcode_ozon_list = load_excel_data_wb_stock['Barcode'].to_list()
-        article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list()
+        article_seller_yandex_list = load_excel_data_wb_stock['Наш Артикул на Яндекс (артикул поставщика)'].to_list(
+        )
         barcode_yandex_list = load_excel_data_wb_stock['ШК Яндекс'].to_list()
         sku_yandex_list = load_excel_data_wb_stock['SKU на Маркете'].to_list()
         dbframe = empexceldata
         for i in range(len(common_article_list)):
             if Articles.objects.filter(Q(common_article=common_article_list[i])):
                 Articles.objects.filter(common_article=common_article_list[i]).update(
-                article_seller_wb=article_seller_wb_list[i],
-                article_wb_nomenclature=article_wb_nomenclature_list[i],
-                barcode_wb=barcode_wb_list[i],
-                article_seller_ozon=article_seller_ozon_list[i],
-                ozon_product_id=ozon_product_id_list[i],
-                fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
-                fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
-                barcode_ozon=barcode_ozon_list[i],
-                article_seller_yandex=article_seller_yandex_list[i],
-                barcode_yandex=barcode_yandex_list[i],
-                sku_yandex=sku_yandex_list[i],
+                    article_seller_wb=article_seller_wb_list[i],
+                    article_wb_nomenclature=article_wb_nomenclature_list[i],
+                    barcode_wb=barcode_wb_list[i],
+                    article_seller_ozon=article_seller_ozon_list[i],
+                    ozon_product_id=ozon_product_id_list[i],
+                    fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
+                    fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
+                    barcode_ozon=barcode_ozon_list[i],
+                    article_seller_yandex=article_seller_yandex_list[i],
+                    barcode_yandex=barcode_yandex_list[i],
+                    sku_yandex=sku_yandex_list[i],
                 )
             else:
                 obj = Articles(
-                common_article=common_article_list[i],
-                article_seller_wb=article_seller_wb_list[i],
-                article_wb_nomenclature=article_wb_nomenclature_list[i],
-                barcode_wb=barcode_wb_list[i],
-                article_seller_ozon=article_seller_ozon_list[i],
-                ozon_product_id=ozon_product_id_list[i],
-                fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
-                fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
-                barcode_ozon=barcode_ozon_list[i],
-                article_seller_yandex=article_seller_yandex_list[i],
-                barcode_yandex=barcode_yandex_list[i],
-                sku_yandex=sku_yandex_list[i],
+                    common_article=common_article_list[i],
+                    article_seller_wb=article_seller_wb_list[i],
+                    article_wb_nomenclature=article_wb_nomenclature_list[i],
+                    barcode_wb=barcode_wb_list[i],
+                    article_seller_ozon=article_seller_ozon_list[i],
+                    ozon_product_id=ozon_product_id_list[i],
+                    fbo_ozon_sku_id=fbo_ozon_sku_id_list[i],
+                    fbs_ozon_sku_id=fbs_ozon_sku_id_list[i],
+                    barcode_ozon=barcode_ozon_list[i],
+                    article_seller_yandex=article_seller_yandex_list[i],
+                    barcode_yandex=barcode_yandex_list[i],
+                    sku_yandex=sku_yandex_list[i],
                 )
                 obj.save()
     return render(request, 'database/database_home.html', context)
@@ -167,8 +175,8 @@ def article_compare(request):
     data = Articles.objects.all()
     form = SelectArticlesForm(request.POST or None)
     article_data = []
-    
-    if request.method == 'POST'and form.is_valid():
+
+    if request.method == 'POST' and form.is_valid():
         articles_filter = form.cleaned_data.get("article_filter")
         articles_list = articles_filter.split()
         for article in articles_list:
@@ -176,8 +184,8 @@ def article_compare(request):
                 Q(common_article=article))
             article_data.append(filtered_article)
     context = {
-        
-        'article_data':article_data,
+
+        'article_data': article_data,
         'data': data.all().values(),
     }
     return render(request, 'database/article_compare.html', context)
@@ -200,19 +208,19 @@ def database_stock(request):
         dbframe = empexceldata
         for dbframe in dbframe.itertuples():
             if 'school' not in dbframe.seller_article and (
-                        'diplom' not in dbframe.seller_article):
+                    'diplom' not in dbframe.seller_article):
                 if str(dbframe.Количество) == 'nan':
                     obj = Stocks.objects.create(
                         article_marketplace=dbframe.seller_article,
                         code_marketplace_id=1,
                         amount=0
-                        )
+                    )
                 else:
                     obj = Stocks.objects.create(
                         article_marketplace=dbframe.seller_article,
                         code_marketplace_id=1,
                         amount=dbframe.Количество
-                        )
+                    )
                 obj.save()
     elif form.is_valid():
         datestart = form.cleaned_data.get("datestart")
@@ -251,7 +259,8 @@ def database_stock_wb(request):
         empexceldata = pd.read_excel(myfile)
         load_excel_data_wb_stock = pd.DataFrame(
             empexceldata, columns=['Артикул продавца', 'Артикул WB'])
-        list_name_seller_article = load_excel_data_wb_stock['Артикул продавца'].to_list()
+        list_name_seller_article = load_excel_data_wb_stock['Артикул продавца'].to_list(
+        )
         list_name_wb_article = load_excel_data_wb_stock['Артикул WB'].to_list()
 
         for i in empexceldata.columns.ravel():
@@ -271,13 +280,14 @@ def database_stock_wb(request):
                                 if str(dbframe[i+1]) == 'nan':
                                     continue
                                 else:
-                                    
+
                                     obj = WildberriesStocks.objects.create(
                                         seller_article_wb=dbframe[3],
                                         article_wb=dbframe[4],
-                                        code_stock_id=int(DICT_FOR_STOCKS_WB[empexceldata.columns.ravel()[i]]),
+                                        code_stock_id=int(
+                                            DICT_FOR_STOCKS_WB[empexceldata.columns.ravel()[i]]),
                                         amount=dbframe[i+1],
-                                        )
+                                    )
                                     obj.save()
         else:
             result = " ".join(MUST_BE_EMPTY)
@@ -294,7 +304,8 @@ def database_stock_wb(request):
             data = WildberriesStocks.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(seller_article_wb=article_filter))
-    stocks_names = WildberriesStocks.objects.values_list('code_stock', flat=True).distinct()
+    stocks_names = WildberriesStocks.objects.values_list(
+        'code_stock', flat=True).distinct()
     context = {
         'stocks_list': DICT_FOR_STOCKS_WB.keys(),
         'stocks_names': stocks_names,
@@ -322,7 +333,7 @@ def database_stock_shelving(request):
         amount__gte=4).exclude(
         task_finish_date=None).exclude(
         task_finish_date__lte=two_days_ago).order_by('-task_finish_date')
-    #pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    # pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
     # ========== Печать PDF файла ========== #
     if request.method == 'GET' and 'to-my-pdf' in request.GET.keys():
         response = HttpResponse(content_type='application/pdf')
@@ -330,7 +341,8 @@ def database_stock_shelving(request):
         response['Content-Disposition'] = 'attachment; filename="my_table.pdf"'
         doc = SimpleDocTemplate(response, pagesize=letter)
         data = []
-        data.append(['Дата начала задачи', 'Артикул', 'Номер полки', 'Количество', 'Новое количество'])
+        data.append(['Дата начала задачи', 'Артикул',
+                    'Номер полки', 'Количество', 'Новое количество'])
         for item in task_data:
             item.task_start_date = item.task_start_date + timedelta(hours=3)
             table_time = item.task_start_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -370,7 +382,7 @@ def database_stock_shelving(request):
                 seller_article=dbframe.Артикул,
                 shelf_number=dbframe.Ячейка,
                 amount=dbframe.Количество,
-                )
+            )
             obj.save()
     elif request.method == 'POST':
         quantity = int(list(request.POST.values())[1])
@@ -397,14 +409,14 @@ def database_stock_shelving(request):
 def stock_frontend(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    control_date_stock = date.today()# - timedelta(days=1)
+    control_date_stock = date.today()  # - timedelta(days=1)
     data = Stocks_wb_frontend.objects.filter(Q(pub_date__range=[
         control_date_stock,
         control_date_stock]))
     form = SelectDateStocksForm(request.POST or None)
     datestart = control_date_stock
     datefinish = control_date_stock
-    
+
     if form.is_valid():
         datestart = form.cleaned_data.get("datestart")
         datefinish = form.cleaned_data.get("datefinish")
@@ -442,15 +454,15 @@ def database_sales(request):
     datefinish = date.today() - timedelta(days=1)
     data = Sales.objects.filter(
         Q(pub_date__range=[datestart, datefinish])
-        ).values('article_marketplace').annotate(
+    ).values('article_marketplace').annotate(
         summ_sale=Sum('sum_sale'),
         summ_pay=Sum('sum_pay'),
         avg=Sum('sum_pay')/Sum('amount'),
         total=Sum('amount')
-        ).order_by('-total')
+    ).order_by('-total')
     orders_count = Sales.objects.filter(
         Q(pub_date__range=[datestart, datefinish])
-        ).values('article_marketplace').aggregate(total=Sum('amount'))
+    ).values('article_marketplace').aggregate(total=Sum('amount'))
     form = SelectDateForm(request.POST or None)
 
     if form.is_valid():
@@ -460,29 +472,29 @@ def database_sales(request):
         if article_filter == '':
             data = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish])
-                ).values('article_marketplace').annotate(
+            ).values('article_marketplace').annotate(
                 summ_sale=Sum('sum_sale'),
                 summ_pay=Sum('sum_pay'),
                 avg=Sum('sum_sale')/Sum('amount'),
                 total=Sum('amount')
-                ).order_by('-total')
+            ).order_by('-total')
             orders_count = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish])
-                ).values('article_marketplace').aggregate(total=Sum('amount'))
+            ).values('article_marketplace').aggregate(total=Sum('amount'))
         else:
             data = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(article_marketplace=article_filter)
-                ).values('article_marketplace').annotate(
+            ).values('article_marketplace').annotate(
                 summ_sale=Sum('sum_sale'),
                 summ_pay=Sum('sum_pay'),
                 avg=Sum('sum_sale')/Sum('amount'),
                 total=Sum('amount')
-                ).order_by('-total')
+            ).order_by('-total')
             orders_count = Sales.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(article_marketplace=article_filter)
-                ).values('article_marketplace').aggregate(total=Sum('amount'))
+            ).values('article_marketplace').aggregate(total=Sum('amount'))
     context = {
         'form': form,
         'data': data,
@@ -500,7 +512,8 @@ def analytic_sales_data(request):
         week=ExtractWeek('pub_date'),
         year=ExtractYear('pub_date')
     ).values('article_marketplace', 'week', 'year').annotate(
-        count=Count(Case(When(sum_sale__gte=0, then=1), output_field=IntegerField()))
+        count=Count(Case(When(sum_sale__gte=0, then=1),
+                    output_field=IntegerField()))
     ).order_by('article_marketplace', 'year', 'week')
 
     articles_amount = Sales.objects.filter(sum_sale__gte=0).annotate(
@@ -518,14 +531,13 @@ def analytic_sales_data(request):
     data = {}
     week_data = []
     for tim in sales_data:
-        
+
         week_year = f"{tim['week']}-{tim['year']}"
         week_data.append(week_year)
 
     unique_week = list(set(week_data))
     unique_week.sort()
 
-    
     for sale in sales:
         supplier_article = sale['article_marketplace']
         week_year = f"{sale['week']}-{sale['year']}"
@@ -552,7 +564,7 @@ def database_orders_fbs(request):
     """Отображение страницы База данных продаж"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    
+
     # Вычисляем сумму заказанных артикулов
     form = SelectDateForm(request.POST or None)
     datestart = date.today() - timedelta(days=7)
@@ -560,11 +572,11 @@ def database_orders_fbs(request):
 
     data = OrdersFbsInfo.objects.filter(
         Q(pub_date__range=[datestart, datefinish])
-        ).values('article_marketplace').annotate(total=Sum('amount')
-                                                 ).order_by('-total')
+    ).values('article_marketplace').annotate(total=Sum('amount')
+                                             ).order_by('-total')
     orders_count = OrdersFbsInfo.objects.filter(
         Q(pub_date__range=[datestart, datefinish])
-        ).values('article_marketplace').aggregate(total=Sum('amount'))
+    ).values('article_marketplace').aggregate(total=Sum('amount'))
     if form.is_valid():
         datestart = form.cleaned_data.get("datestart")
         datefinish = form.cleaned_data.get("datefinish")
@@ -576,28 +588,27 @@ def database_orders_fbs(request):
                 total=Sum('amount')).order_by('-total')
             orders_count = OrdersFbsInfo.objects.filter(
                 Q(pub_date__range=[datestart, datefinish])
-                ).values('article_marketplace').aggregate(total=Sum('amount'))
+            ).values('article_marketplace').aggregate(total=Sum('amount'))
         else:
             data = OrdersFbsInfo.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(article_marketplace=article_filter)
-                ).values('article_marketplace').annotate(total=Sum('amount')
-                                                         ).order_by('-total')
+            ).values('article_marketplace').annotate(total=Sum('amount')
+                                                     ).order_by('-total')
             orders_count = OrdersFbsInfo.objects.filter(
                 Q(pub_date__range=[datestart, datefinish]),
                 Q(article_marketplace=article_filter)
-                ).values('article_marketplace').aggregate(total=Sum('amount'))
+            ).values('article_marketplace').aggregate(total=Sum('amount'))
 
     context = {
         'form': form,
         'data': data,
         'form_date': str(datestart),
-        'date_finish':str(datefinish),
+        'date_finish': str(datefinish),
         'orders_count': orders_count
     }
 
     return render(request, 'database/database_orders_fbs.html', context)
-
 
 
 class DatabaseDetailView(DetailView):
@@ -632,10 +643,11 @@ class DatabaseSalesDetailView(ListView):
     context_object_name = 'articles'
 
     def get_context_data(self, **kwargs):
-        context = super(DatabaseSalesDetailView, self).get_context_data(**kwargs)
+        context = super(DatabaseSalesDetailView,
+                        self).get_context_data(**kwargs)
         context.update({
             'wbstocks': Stocks.objects.filter(
-            article_marketplace=self.kwargs['article_marketplace']).values()
+                article_marketplace=self.kwargs['article_marketplace']).values()
         })
         return context
 
@@ -650,33 +662,34 @@ class DatabaseSalesAnalyticDetailView(ListView):
     context_object_name = 'articles'
 
     def get_context_data(self, **kwargs):
-        context = super(DatabaseSalesAnalyticDetailView, self).get_context_data(**kwargs)
+        context = super(DatabaseSalesAnalyticDetailView,
+                        self).get_context_data(**kwargs)
 
         sales = Sales.objects.filter(
             Q(article_marketplace=self.kwargs['article_marketplace']),
             Q(sum_sale__gte=0)).annotate(
                 week=ExtractWeek('pub_date'),
                 year=ExtractYear('pub_date')
-                ).values('article_marketplace', 'week', 'year').annotate(
-                count=Count(Case(When(sum_sale__gte=0, then=1), output_field=IntegerField()))
-                ).order_by('article_marketplace', 'year', 'week')
+        ).values('article_marketplace', 'week', 'year').annotate(
+                count=Count(Case(When(sum_sale__gte=0, then=1),
+                            output_field=IntegerField()))
+        ).order_by('article_marketplace', 'year', 'week')
 
         sales_data = Sales.objects.filter(
             Q(sum_sale__gte=0)).annotate(
                 week=ExtractWeek('pub_date'),
                 year=ExtractYear('pub_date')
-                ).values('week', 'year').order_by('year', 'week')
+        ).values('week', 'year').order_by('year', 'week')
         data = {}
         week_data = []
         for tim in sales_data:
-            
+
             week_year = f"{tim['week']}-{tim['year']}"
             week_data.append(week_year)
-    
+
         unique_week = list(set(week_data))
         unique_week.sort()
-    
-        
+
         for sale in sales:
             supplier_article = sale['article_marketplace']
             week_year = f"{sale['week']}-{sale['year']}"
@@ -684,7 +697,7 @@ class DatabaseSalesAnalyticDetailView(ListView):
             if supplier_article not in data:
                 data[supplier_article] = {}
             data[supplier_article][week_year] = count
-    
+
         # Добавляем недостающие недели со значением 0
         for article_data in data.values():
             for week in unique_week:

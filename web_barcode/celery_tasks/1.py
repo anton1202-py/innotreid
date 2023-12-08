@@ -21,6 +21,8 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+now_day = date.today()
+print(now_day)
 
 
 def add_article_price_info_to_database():
@@ -28,9 +30,22 @@ def add_article_price_info_to_database():
     Добавляет при вызове информацию о цене артикула на сайте
     со скидкой покупателя за текущий день.
     """
-    today_data = datetime.today().strftime('%Y-%m-%d %H:%')
+    today_data = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     URL = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+    statistic_url = f'https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={now_day}'
+    payload = {}
+    headers = {
+        'Authorization': os.getenv('API_KEY_WB')
+    }
 
+    response = requests.request(
+        "GET", statistic_url, headers=headers, data=payload)
+
+    statistic_data = json.loads(response.text)
+    for i in statistic_data:
+        nomid = i['nmId']
+
+        print(nomid)
     try:
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
@@ -52,29 +67,29 @@ def add_article_price_info_to_database():
 
         data_for_database = []
         for i in article_dict.keys():
-
             url = URL + str(i)
-            payload = {}
-            headers = {}
-            response = requests.request(
-                "GET", url, headers=headers, data=payload)
-            data = json.loads(response.text)
-            # Обход ошибки не существующиего артикула
-            if data['data']['products']:
-                print(data)
-                # Обход ошибки отсутствия spp
-                if 'clientPriceU' in data['data']['products'][0]['extended'].keys():
-                    price = int(data['data']['products'][0]
-                                ['extended']['clientPriceU'])//100
-                    spp = data['data']['products'][0]['extended']['clientSale']
-                else:
-                    price = int(data['data']['products'][0]
-                                ['extended']['basicPriceU'])//100
-                    spp = 0
-                basic_sale = data['data']['products'][0]['extended']['basicSale']
-                set_with_price = [article_dict[i], i,
-                                  today_data, price, spp, basic_sale]
-                data_for_database.append(set_with_price)
+            for statistic_wb in statistic_data:
+                if str(i) == str(statistic_wb['nmId']):
+                    payload = {}
+                    headers = {}
+                    response = requests.request(
+                        "GET", url, headers=headers, data=payload)
+                    data = json.loads(response.text)
+                    # Обход ошибки не существующиего артикула
+                    if data['data']['products']:
+                        print(data)
+                        # Обход ошибки отсутствия spp
+                        price = int(data['data']['products'][0]
+                                    ['salePriceU'])//100
+                        print('price', price)
+                        spp = int(data['data']['products'][0]
+                                  ['sale']) - int(statistic_wb['Discount'])
+                        print('spp', spp)
+                        basic_sale = data['data']['products'][0]['salePriceU']
+                        set_with_price = [article_dict[i], i,
+                                          today_data, price, spp, basic_sale]
+                        print(set_with_price)
+                        data_for_database.append(set_with_price)
 
         cursor.executemany(
             "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
@@ -271,5 +286,5 @@ def get_current_ssp():
 
 # sender_change_price_info()
 # get_current_ssp()
-
-get_current_ssp()
+add_article_price_info_to_database()
+# get_current_ssp()
