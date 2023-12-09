@@ -19,6 +19,8 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 now_day = date.today()
 
 
@@ -462,25 +464,36 @@ def orders_fbs_statistic():
 def add_article_price_info_to_database():
     """
     Добавляет при вызове информацию о цене артикула на сайте
-    со скидкой покупателя за текущий день.
+    со скидкой покупателя СПП на текущий момент. 
+    Включается один раз в сутки в 9 часов утра.
     """
-    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-    statistic_url = f'https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={now_day}'
-    payload_stat = {}
-    headers_stat = {
-        'Authorization': os.getenv('API_KEY_WB')
-    }
-
-    response_stat = requests.request(
-        "GET", statistic_url, headers=headers_stat, data=payload_stat)
-    statistic_data = json.loads(response_stat.text)
-    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
-
     try:
+        URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+        # URL для определения текущей скидки, которую выставил продавец
+        statistic_url = f'https://suppliers-api.wildberries.ru/public/api/v1/info?quantity=0'
+
+        # Авторизация для получения данных от ИП Караваев
+        headers_stat = {
+            'Authorization': os.getenv('API_KEY_WB')
+        }
+        # Авторизация для получения данных от Иннотрейд
+        headers_stat_innotreid = {
+            'Authorization': os.getenv('API_KEY_WB_INNOTREID')
+        }
+
+        response_stat = requests.request(
+            "GET", statistic_url, headers=headers_stat)
+        response_stat_innotreid = requests.request(
+            "GET", statistic_url, headers=headers_stat_innotreid)
+        statistic_data = json.loads(response_stat.text)
+
+        today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
+
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
                                       dbname=os.getenv('DB_NAME'),
-                                      password=os.getenv('POSTGRES_PASSWORD'),
+                                      password=os.getenv(
+                                          'POSTGRES_PASSWORD'),
                                       host=os.getenv('DB_HOST'),
                                       port=os.getenv('DB_PORT'))
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -488,46 +501,58 @@ def add_article_price_info_to_database():
         cursor = connection.cursor()
         cursor.execute(
             "SELECT * FROM price_control_articlewriter")
-
+        # Получение артикулов с базы данных сайта, по которым нужно собирать СПП
         articles_datas = cursor.fetchall()
         article_dict = {}
-
         for i in range(len(articles_datas)):
             article_dict[articles_datas[i][2]] = articles_datas[i][1]
-
         data_for_database = []
+        # Словарь с ном. номером и скидкой продавца. Получаем из данных АПИ.
+        nom_id_discount_dict = {}
+        for statistic_wb in statistic_data:
+            nom_id_discount_dict[statistic_wb['nmId']
+                                 ] = statistic_wb['discount']
+        # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
+        # Их может и не существовать, если Андрей не даст ключ
+        if response_stat_innotreid:
+            statistic_data_innotreid = json.loads(
+                response_stat_innotreid.text)
+            for statistic_wb_innotreid in statistic_data_innotreid:
+                nom_id_discount_dict[statistic_wb_innotreid['nmId']
+                                     ] = statistic_wb_innotreid['discount']
         for i in article_dict.keys():
             url = URL + str(i)
-            for statistic_wb in statistic_data:
-                if str(i) == str(statistic_wb['nmId']):
-                    payload = {}
-                    headers = {}
-                    response = requests.request(
-                        "GET", url, headers=headers, data=payload)
-                    data = json.loads(response.text)
-                    # Обход ошибки не существующиего артикула
-                    if data['data']['products']:
-                        # Обход ошибки отсутствия spp
-                        price = int(data['data']['products'][0]
-                                    ['salePriceU'])//100
-                        spp = int(data['data']['products'][0]
-                                  ['sale']) - int(statistic_wb['Discount'])
-                        basic_sale = int(data['data']['products'][0]
-                                         ['salePriceU'])//100
-                        set_with_price = [article_dict[i], i,
-                                          today_data, price, spp, basic_sale]
-                        data_for_database.append(set_with_price)
+            # Перед запуском скрипта, проверяем, что ном номер есть в словаре от АПИ.
+            # Проверка нужна пока нет ключа от Иннотрейд.
+            if int(i) in nom_id_discount_dict:
+                response = requests.request(
+                    "GET", url)
+                data = json.loads(response.text)
+                # Обход ошибки не существующиего артикула
+                if data['data']['products1']:
+                    # Обход ошибки отсутствия spp
+                    price = int(data['data']['products'][0]
+                                ['salePriceU'])//100
+                    spp = int(data['data']['products'][0]
+                              ['sale']) - int(nom_id_discount_dict[int(i)])
+                    basic_sale = int(data['data']['products'][0]
+                                     ['salePriceU'])//100
+                    set_with_price = [article_dict[i], i,
+                                      today_data, price, spp, basic_sale]
+                    data_for_database.append(set_with_price)
         cursor.executemany(
             "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
             data_for_database)
 
-    except (Exception, Error) as error:
-        print("Ошибка при работе с PostgreSQL", error)
-    finally:
         if connection:
             cursor.close()
             connection.close()
             print("Соединение с PostgreSQL закрыто")
+    # Если функция даст какой-то сбой, то данные об ошибке полетят в телегу.
+    except Exception as er:
+        message = (f'Ошибка выполнения функции add_article_price_info_to_database: <b>{er}</b>\n\n'
+                   f'Что делает функция: {add_article_price_info_to_database.__doc__}')
+        bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
 
 
 def change_price_info():
@@ -600,23 +625,30 @@ def sender_change_price_info():
 def get_current_ssp():
     """
     Включается каждые 15 мин. Если СПП изменилась, то записывает данные в базу
-    и отрпавляет сообщение в ТГ бот, что СПП поменялось
+    и отправляет сообщение в ТГ бот, что СПП поменялось
     """
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
-    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-    statistic_url = f'https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={now_day}'
-    payload_stat = {}
-    headers_stat = {
-        'Authorization': os.getenv('API_KEY_WB')
-    }
-
-    response_stat = requests.request(
-        "GET", statistic_url, headers=headers_stat, data=payload_stat)
-    statistic_data = json.loads(response_stat.text)
-
-    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
+        bot = telegram.Bot(token=TELEGRAM_TOKEN)
+
+        URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+        # URL для определения текущей скидки, которую выставил продавец
+        statistic_url = f'https://suppliers-api.wildberries.ru/public/api/v1/info?quantity=0'
+        # Авторизация для получения данных от ИП Караваев
+        headers_stat = {
+            'Authorization': os.getenv('API_KEY_WB')
+        }
+        # Авторизация для получения данных от Иннотрейд
+        headers_stat_innotreid = {
+            'Authorization': os.getenv('API_KEY_WB_INNOTREID')
+        }
+        response_stat = requests.request(
+            "GET", statistic_url, headers=headers_stat)
+        response_stat_innotreid = requests.request(
+            "GET", statistic_url, headers=headers_stat_innotreid)
+        statistic_data = json.loads(response_stat.text)
+
+        today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
+
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
                                       dbname=os.getenv('DB_NAME'),
@@ -628,7 +660,6 @@ def get_current_ssp():
         cursor = connection.cursor()
         cursor.execute(
             "SELECT * FROM price_control_articlewriter")
-
         articles_datas = cursor.fetchall()
         article_dict = {}
         # Подключение к базе телеграма
@@ -642,56 +673,54 @@ def get_current_ssp():
         tg_select_Query = '''SELECT chat_id FROM users_data;'''
         cursor_tg.execute(tg_select_Query)
         sender_users = cursor_tg.fetchall()
-
         for i in range(len(articles_datas)):
             article_dict[articles_datas[i][2]] = articles_datas[i][1]
-
+        nom_id_discount_dict = {}
+        for statistic_wb in statistic_data:
+            nom_id_discount_dict[statistic_wb['nmId']
+                                 ] = statistic_wb['discount']
+        # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
+        # Их может и не существовать, если Андрей не даст ключ
+        if response_stat_innotreid:
+            statistic_data_innotreid = json.loads(
+                response_stat_innotreid.text)
+            for statistic_wb_innotreid in statistic_data_innotreid:
+                nom_id_discount_dict[statistic_wb_innotreid['nmId']
+                                     ] = statistic_wb_innotreid['discount']
         for i in article_dict.keys():
             data_for_database = []
-            for statistic_wb in statistic_data:
-                if str(i) == str(statistic_wb['nmId']):
-                    url = URL + str(i)
-                    payload = {}
-                    headers = {}
-                    response = requests.request(
-                        "GET", url, headers=headers, data=payload)
-                    data = json.loads(response.text)
-                    # Обход ошибки не существующиего артикула
-                    if data['data']['products']:
-                        # Обход ошибки отсутствия spp
-                        price = int(data['data']['products'][0]
-                                    ['salePriceU'])//100
-                        spp = int(data['data']['products'][0]
-                                  ['sale']) - int(statistic_wb['Discount'])
-                        basic_sale = int(data['data']['products'][0]
-                                         ['salePriceU'])//100
-                        set_with_price = [article_dict[i], i,
-                                          today_data, price, spp, basic_sale]
-                        data_for_database.append(set_with_price)
-
-                        postgreSQL_select_Query = f"""
-                            SELECT spp FROM price_control_dataforanalysis WHERE id IN (
-                                SELECT MAX(id) FROM price_control_dataforanalysis
-                                WHERE seller_article='{article_dict[i]}' GROUP BY seller_article);
-                        """
-
-                        cursor.execute(postgreSQL_select_Query)
-
-                        spp_form_db = cursor.fetchall()[0][0]
-
-                        if str(spp) != spp_form_db:
-                            cursor.executemany(
-                                "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
-                                data_for_database)
-                            for set_id in sender_users:
-                                message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
-                                # bot.send_message(chat_id=269605714, text=message)
-                                bot.send_message(
-                                    chat_id=set_id[0], text=message)
-
-    except (Exception, Error) as error:
-        print("Ошибка при работе с PostgreSQL:", error)
-    finally:
+            if int(i) in nom_id_discount_dict:
+                url = URL + str(i)
+                response = requests.request("GET", url)
+                data = json.loads(response.text)
+                # Обход ошибки не существующиего артикула
+                if data['data']['products']:
+                    # Обход ошибки отсутствия spp
+                    price = int(data['data']['products'][0]
+                                ['salePriceU'])//100
+                    spp = int(data['data']['products'][0]
+                              ['sale']) - int(nom_id_discount_dict[int(i)])
+                    basic_sale = int(data['data']['products'][0]
+                                     ['salePriceU'])//100
+                    set_with_price = [article_dict[i], i,
+                                      today_data, price, spp, basic_sale]
+                    data_for_database.append(set_with_price)
+                    postgreSQL_select_Query = f"""
+                        SELECT spp FROM price_control_dataforanalysis WHERE id IN (
+                            SELECT MAX(id) FROM price_control_dataforanalysis
+                            WHERE seller_article='{article_dict[i]}' GROUP BY seller_article);
+                    """
+                    cursor.execute(postgreSQL_select_Query)
+                    spp_form_db = cursor.fetchall()[0][0]
+                    if str(spp) != spp_form_db:
+                        cursor.executemany(
+                            "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
+                            data_for_database)
+                        for set_id in sender_users:
+                            message = f'СПП ариткула {article_dict[i]} изменилась. Была {spp_form_db}% стала {spp}%'
+                            # bot.send_message(chat_id=269605714, text=message)
+                            bot.send_message(
+                                chat_id=set_id[0], text=message)
         if connection:
             cursor.close()
             connection.close()
@@ -700,6 +729,10 @@ def get_current_ssp():
             cursor_tg.close()
             connection_tg.close()
             print("Соединение с PostgreSQL_TG закрыто")
+    except Exception as er:
+        message = (f'Ошибка выполнения функции get_current_ssp: <b>{er}</b>\n\n'
+                   f'Что делает функция: {get_current_ssp.__doc__}')
+        bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
 
 
 def add_one_article_info_to_db(seller_article, wb_article):
@@ -707,19 +740,26 @@ def add_one_article_info_to_db(seller_article, wb_article):
     Добавляет при вызове информацию о цене одного артикула на сайте
     со скидкой покупателя за текущий момент.
     """
-    URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
-    statistic_url = f'https://statistics-api.wildberries.ru/api/v1/supplier/stocks?dateFrom={now_day}'
-    payload_stat = {}
-    headers_stat = {
-        'Authorization': os.getenv('API_KEY_WB')
-    }
-
-    response_stat = requests.request(
-        "GET", statistic_url, headers=headers_stat, data=payload_stat)
-    statistic_data = json.loads(response_stat.text)
-
-    today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
     try:
+        URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
+        # URL для определения текущей скидки, которую выставил продавец
+        statistic_url = f'https://suppliers-api.wildberries.ru/public/api/v1/info?quantity=0'
+        # Авторизация для получения данных от ИП Караваев
+        headers_stat = {
+            'Authorization': os.getenv('API_KEY_WB')
+        }
+        # Авторизация для получения данных от Иннотрейд
+        headers_stat_innotreid = {
+            'Authorization': os.getenv('API_KEY_WB_INNOTREID')
+        }
+        response_stat = requests.request(
+            "GET", statistic_url, headers=headers_stat)
+        response_stat_innotreid = requests.request(
+            "GET", statistic_url, headers=headers_stat_innotreid)
+        statistic_data = json.loads(response_stat.text)
+
+        today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
+
         # Подключение к существующей базе данных
         connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
                                       dbname=os.getenv('DB_NAME'),
@@ -730,34 +770,44 @@ def add_one_article_info_to_db(seller_article, wb_article):
         # Курсор для выполнения операций с базой данных
         cursor = connection.cursor()
         data_for_database = []
+        nom_id_discount_dict = {}
         for statistic_wb in statistic_data:
-            if str(wb_article) == str(statistic_wb['nmId']):
-                url = URL + str(wb_article)
-                payload = {}
-                headers = {}
-                response = requests.request(
-                    "GET", url, headers=headers, data=payload)
-                data = json.loads(response.text)
-                # Обход ошибки не существующиего артикула
-                if data['data']['products']:
-                    # Обход ошибки отсутствия spp
-                    price = int(data['data']['products'][0]
-                                ['salePriceU'])//100
-                    spp = int(data['data']['products'][0]
-                              ['sale']) - int(statistic_wb['Discount'])
-                    basic_sale = int(data['data']['products'][0]
-                                     ['salePriceU'])//100
-                    set_with_price = [seller_article, wb_article,
-                                      today_data, price, spp, basic_sale]
-                    data_for_database.append(set_with_price)
+            nom_id_discount_dict[statistic_wb['nmId']
+                                 ] = statistic_wb['discount']
+        # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
+        # Их может и не существовать, если Андрей не даст ключ
+        if response_stat_innotreid:
+            statistic_data_innotreid = json.loads(
+                response_stat_innotreid.text)
+            for statistic_wb_innotreid in statistic_data_innotreid:
+                nom_id_discount_dict[statistic_wb_innotreid['nmId']
+                                     ] = statistic_wb_innotreid['discount']
+
+        if str(wb_article) in nom_id_discount_dict:
+            url = URL + str(wb_article)
+            response = requests.request("GET", url)
+            data = json.loads(response.text)
+            # Обход ошибки не существующиего артикула
+            if data['data']['products']:
+                # Обход ошибки отсутствия spp
+                price = int(data['data']['products'][0]
+                            ['salePriceU'])//100
+                spp = int(data['data']['products'][0]
+                          ['sale']) - int(nom_id_discount_dict[int(wb_article)])
+                basic_sale = int(data['data']['products'][0]
+                                 ['salePriceU'])//100
+                set_with_price = [seller_article, wb_article,
+                                  today_data, price, spp, basic_sale]
+                data_for_database.append(set_with_price)
         cursor.executemany(
             "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
             data_for_database)
 
-    except (Exception, Error) as error:
-        print("Ошибка при работе с PostgreSQL", error)
-    finally:
         if connection:
             cursor.close()
             connection.close()
             print("Соединение с PostgreSQL закрыто")
+    except Exception as er:
+        message = (f'Ошибка выполнения функции add_one_article_info_to_db: <b>{er}</b>\n\n'
+                   f'Что делает функция: {add_one_article_info_to_db.__doc__}')
+        bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
