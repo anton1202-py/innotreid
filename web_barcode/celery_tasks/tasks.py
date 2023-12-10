@@ -511,7 +511,7 @@ def add_article_price_info_to_database():
         nom_id_discount_dict = {}
         for statistic_wb in statistic_data:
             nom_id_discount_dict[statistic_wb['nmId']
-                                 ] = statistic_wb['discount']
+                                 ] = [statistic_wb['price'], statistic_wb['discount']]
         # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
         # Их может и не существовать, если Андрей не даст ключ
         if response_stat_innotreid:
@@ -519,7 +519,7 @@ def add_article_price_info_to_database():
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = statistic_wb_innotreid['discount']
+                                     ] = [statistic_wb['price'], statistic_wb['discount']]
         for i in article_dict.keys():
             url = URL + str(i)
             # Перед запуском скрипта, проверяем, что ном номер есть в словаре от АПИ.
@@ -529,12 +529,12 @@ def add_article_price_info_to_database():
                     "GET", url)
                 data = json.loads(response.text)
                 # Обход ошибки не существующиего артикула
-                if data['data']['products1']:
+                if data['data']['products']:
                     # Обход ошибки отсутствия spp
                     price = int(data['data']['products'][0]
                                 ['salePriceU'])//100
-                    spp = int(data['data']['products'][0]
-                              ['sale']) - int(nom_id_discount_dict[int(i)])
+                    spp = int((1 - price / (int(nom_id_discount_dict[int(i)][0]) * (
+                        1 - int(nom_id_discount_dict[int(i)][1])/100))) * 100)
                     basic_sale = int(data['data']['products'][0]
                                      ['salePriceU'])//100
                     set_with_price = [article_dict[i], i,
@@ -678,7 +678,7 @@ def get_current_ssp():
         nom_id_discount_dict = {}
         for statistic_wb in statistic_data:
             nom_id_discount_dict[statistic_wb['nmId']
-                                 ] = statistic_wb['discount']
+                                 ] = [statistic_wb['price'], statistic_wb['discount']]
         # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
         # Их может и не существовать, если Андрей не даст ключ
         if response_stat_innotreid:
@@ -686,7 +686,7 @@ def get_current_ssp():
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = statistic_wb_innotreid['discount']
+                                     ] = [statistic_wb['price'], statistic_wb['discount']]
         for i in article_dict.keys():
             data_for_database = []
             if int(i) in nom_id_discount_dict:
@@ -698,8 +698,8 @@ def get_current_ssp():
                     # Обход ошибки отсутствия spp
                     price = int(data['data']['products'][0]
                                 ['salePriceU'])//100
-                    spp = int(data['data']['products'][0]
-                              ['sale']) - int(nom_id_discount_dict[int(i)])
+                    spp = int((1 - price / (int(nom_id_discount_dict[int(i)][0]) * (
+                        1 - int(nom_id_discount_dict[int(i)][1])/100))) * 100)
                     basic_sale = int(data['data']['products'][0]
                                      ['salePriceU'])//100
                     set_with_price = [article_dict[i], i,
@@ -773,7 +773,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
         nom_id_discount_dict = {}
         for statistic_wb in statistic_data:
             nom_id_discount_dict[statistic_wb['nmId']
-                                 ] = statistic_wb['discount']
+                                 ] = [statistic_wb['price'], statistic_wb['discount']]
         # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
         # Их может и не существовать, если Андрей не даст ключ
         if response_stat_innotreid:
@@ -781,7 +781,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = statistic_wb_innotreid['discount']
+                                     ] = [statistic_wb['price'], statistic_wb['discount']]
 
         if str(wb_article) in nom_id_discount_dict:
             url = URL + str(wb_article)
@@ -792,8 +792,8 @@ def add_one_article_info_to_db(seller_article, wb_article):
                 # Обход ошибки отсутствия spp
                 price = int(data['data']['products'][0]
                             ['salePriceU'])//100
-                spp = int(data['data']['products'][0]
-                          ['sale']) - int(nom_id_discount_dict[int(wb_article)])
+                spp = int((1 - price / (int(nom_id_discount_dict[int(wb_article)][0]) * (
+                    1 - int(nom_id_discount_dict[int(wb_article)][1])/100))) * 100)
                 basic_sale = int(data['data']['products'][0]
                                  ['salePriceU'])//100
                 set_with_price = [seller_article, wb_article,
