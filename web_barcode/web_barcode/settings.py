@@ -10,6 +10,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = str(os.getenv('key', default=None))
 
+CHAT_ID = os.getenv('CHAT_ID')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
+API_KEY_WB_INNOTREID = os.getenv('API_KEY_WB_INNOTREID')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +35,7 @@ INSTALLED_APPS = [
     'ozon_system',
     'production',
     'price_control',
+    'fbs_mode',
 ]
 
 MIDDLEWARE = [
