@@ -519,7 +519,7 @@ def add_article_price_info_to_database():
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = [statistic_wb['price'], statistic_wb['discount']]
+                                     ] = [statistic_wb_innotreid['price'], statistic_wb_innotreid['discount']]
         for i in article_dict.keys():
             url = URL + str(i)
             # Перед запуском скрипта, проверяем, что ном номер есть в словаре от АПИ.
@@ -686,7 +686,7 @@ def get_current_ssp():
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = [statistic_wb['price'], statistic_wb['discount']]
+                                     ] = [statistic_wb_innotreid['price'], statistic_wb_innotreid['discount']]
         for i in article_dict.keys():
             data_for_database = []
             if int(i) in nom_id_discount_dict:
@@ -781,7 +781,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
                 response_stat_innotreid.text)
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
-                                     ] = [statistic_wb['price'], statistic_wb['discount']]
+                                     ] = [statistic_wb_innotreid['price'], statistic_wb_innotreid['discount']]
 
         if str(wb_article) in nom_id_discount_dict:
             url = URL + str(wb_article)
