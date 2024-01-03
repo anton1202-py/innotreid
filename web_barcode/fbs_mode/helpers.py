@@ -13,6 +13,7 @@ from pathlib import Path
 import dropbox
 import img2pdf
 import pandas as pd
+import pdfplumber
 import requests
 from barcode import Code128
 from barcode.writer import ImageWriter
@@ -21,6 +22,10 @@ from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
 from PyPDF3 import PdfFileReader, PdfFileWriter
 from PyPDF3.pdf import PageObject
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -527,3 +532,131 @@ def supply_qrcode_to_standart_view():
     #    except Exception:
     #        print('')
     return pdf_filenames_qrcode
+
+
+# def new_data_for_ozon_ticket(pdf_orders_file, csv_orders_file, out_filename):
+def new_data_for_ozon_ticket(save_folder: str, fbs_ozon_common_data: dict):
+    """
+    Функция добавляет название артикула на этикетки с номером заказа в файле ОЗОН
+    save_folder_docs - папка, где хранятся сохраненные этикетки на отправления
+    fbs_ozon_common_data - словарь с данными {'номер отправления': {'артикул продавца': 'количество'}}
+    """
+    # Формируем список файлов во входящей папке. Названия файла - номер отправления
+    list_filename = glob.glob(f'{save_folder}/*.pdf')
+    # Вставляем на страницу необходимые данные
+    # Регистрируем штрифт, чтобы читалась кирилица
+    pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
+    for file in list_filename:
+        path = Path(file)
+        file_name_package = os.path.basename(path).split('.')[0]
+        existing_pdf = PdfFileReader(open(file, "rb"))
+        output = PdfFileWriter()  # создаем новый объект PdfFileWriter
+        with pdfplumber.open(file) as pdf:
+
+            packet = io.BytesIO()
+            # Создаю запись в репортлаб что вставлять и в какое место вставлять
+            can = canvas.Canvas(packet, pagesize=letter)
+            can.setFont('Arial', 8)
+            text = ''
+            text_data = fbs_ozon_common_data[file_name_package]
+            for seller_article, amount in text_data.items():
+                text_for_ticket = f'{seller_article} - {amount}шт'
+                text += f'{text_for_ticket}\n'
+            lines = text.split("\n")
+            x = 11
+            y = 97
+            for line in lines:
+                can.drawString(x, y, line)
+                y -= 11  # уменьшаем координату Y для перехода на следующую строку
+            can.showPage()
+            can.save()
+            # Move to the beginning of the StringIO buffer
+            packet.seek(0)
+            new_pdf = PdfFileReader(packet)
+            # output = PdfFileWriter()  # перенесли создание объекта PdfFileWriter в начало цикла
+            # Add the "watermark" (which is the new pdf) on the existing page
+            page = existing_pdf.getPage(0)
+            page.mergePage(new_pdf.getPage(0))
+            # добавляем страницу в новый объект PdfFileWriter
+            output.addPage(page)
+        out_filename = f'{save_folder}/done/{file_name_package}.pdf'
+        # Finally, write "output" to a real file
+        outputStream = open(out_filename, "wb")
+        output.write(outputStream)
+        outputStream.close()
+
+
+def merge_barcode_for_ozon_two_on_two(list_filenames, folder_summary_file_name):
+    """
+    Создает pdf файл с штрихкодами для Озона со вставкой 2х2 этикетки
+    Входящие данные:
+    list_filenames - список с полными адресами и названиями файлов для объединения,
+    folder_summary_file_name - полное название файла для сохранения 
+    (вместе с названием папок в пути)
+    """
+    with open(list_filenames[0], "rb") as f:
+        input1 = PdfFileReader(f, strict=False)
+        # Создаем новую страницу
+        page1 = input1.getPage(0)
+        # Задаем максимальную ширину страницы.
+        # Почему-то всегда берет самую длинную сторону в качестве ширины
+        total_width = max([page1.mediaBox.upperRight[0]*(2)])
+        # Задаем максимальную высоту страницы.
+        # Почему-то всегда берет самую короткую сторону в качестве длины
+        total_height = max([page1.mediaBox.upperRight[1]*(2)])
+        # Горизонтальный размер страницы
+        horiz_size = page1.mediaBox.upperRight[0]
+        # Вертикальный размер страницы
+        vertic_size = page1.mediaBox.upperRight[1]
+        # Создаем объект записи конечного файла
+        output = PdfFileWriter()
+        # Присваиваем имя конечного файла
+        file_name = folder_summary_file_name
+
+        # Создаем страницу конечного файла
+        new_page = PageObject.createBlankPage(
+            file_name, total_width, total_height)
+        # Размещаем нулевой элемент на первой странице
+        new_page.mergeTranslatedPage(page1, 0, vertic_size)
+        # При добавлении страницы разворачиваем ее на 90 градусов.
+        # Потому что длина берется всегда с длинной координаты, в у нас файл вертикальный.
+        output.addPage(new_page)
+        # Узнает из скольки страниц файл нам нужен
+        page_amount = (len(list_filenames) // 4)
+        if len(list_filenames) % 4 > 0:
+            page_amount = page_amount + 1
+        pages_names = []
+        for p in range(1, page_amount):
+            p = PageObject.createBlankPage(
+                file_name, total_width, total_height)
+            # При добавлении всех страниц переворачиваем их на 90 градусов, как первую.
+            output.addPage(p)
+            # Добавляем к новосму файлу каждую страницу в цикле
+            pages_names.append(p)
+        for i in range(1, len(list_filenames)):
+            with open(list_filenames[i], "rb") as bb:
+                # Коэффициент счетчика страниц
+                m = i // 4
+                # Вертикальный коэффициент. Равен либо 0, либо 1.
+                if i % 4 == 0 or i % 4 == 1:
+                    n = 1
+                else:
+                    n = 0
+                # Горизонтальный коэффициент. Равен либо 0, либо 1.
+                k = i % 2
+                # Размещаем файлы на первой странице.
+                if i < 4:
+                    new_page.mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(n))
+                # Размещаем файлы на всех последующих страницах.
+                elif i >= 4:
+                    (pages_names[m-1]).mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(n))
+                output.write(open(file_name, "wb"))
+    f.close()

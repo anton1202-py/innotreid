@@ -47,7 +47,7 @@ APP_KEY_DB = os.getenv('APP_KEY_DB')
 APP_SECRET_DB = os.getenv('APP_SECRET_DB')
 API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
 
-headers = {
+wb_headers_karavaev = {
     'Content-Type': 'application/json',
     'Authorization': API_KEY_WB_IP
 }
@@ -322,14 +322,9 @@ def create_delivery():
             "name": f"Тестовая поставка {delivery_date}"
         }
     )
-    headers_data = {
-        'Content-Type': 'application/json',
-        'Authorization': API_KEY_WB_IP
-    }
-
     # Из этой переменной достать ID поставки
     response_data = requests.request(
-        "POST", url_data, headers=headers_data, data=payload)
+        "POST", url_data, headers=wb_headers_karavaev, data=payload)
     # print(response_data)
     global supply_id
     supply_id = json.loads(response_data.text)['id']
@@ -382,13 +377,8 @@ def article_data_for_tickets():
                 }
             }
         })
-        headers_data = {
-            'Content-Type': 'application/json',
-            'Authorization': API_KEY_WB_IP
-        }
-
         response_data = requests.request(
-            "POST", url_data, headers=headers_data, data=payload)
+            "POST", url_data, headers=wb_headers_karavaev, data=payload)
         if json.loads(response_data.text)[
                 'data']['cards'][0]['object'] == "Ночники":
             clear_article_list.append(article)
@@ -457,8 +447,8 @@ def create_pivot_xls():
     # sheet['C1'] = 'На производство'
     sheet['D1'] = 'Всего для FBS'
     sheet['E1'] = 'FBS WB'
-    # ========== РАСКРЫТЬ КОГДА ПОЯВИТСЯ ОЗОН И ЯНДЕКС МАРКЕТ ========= #
-    # sheet['F1'] = 'FBS Ozon'
+    sheet['F1'] = 'FBS Ozon'
+    # ========== РАСКРЫТЬ КОГДА ПОЯВИТСЯ ЯНДЕКС МАРКЕТ ========= #
     # sheet['G1'] = 'FBY Yandex'
 
     for key, value in sorted_data_for_pivot_xls.items():
@@ -659,18 +649,15 @@ def qrcode_order():
     # Вызываем функцию для создания поставки и определения ее delivery_id
     for order in article_id_dict.keys():
         add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders/{order}'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': API_KEY_WB_IP
-        }
 
-        response = requests.request("PATCH", add_url, headers=headers)
+        response = requests.request(
+            "PATCH", add_url, headers=wb_headers_karavaev)
 
     for order in article_id_dict.keys():
         ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
         payload_ticket = json.dumps({"orders": [order]})
         response_ticket = requests.request(
-            "POST", ticket_url, headers=headers, data=payload_ticket)
+            "POST", ticket_url, headers=wb_headers_karavaev, data=payload_ticket)
 
         # Расшифровываю ответ, чтобы сохранить файл этикетки задания
         ticket_data = json.loads(response_ticket.text)["stickers"][0]["file"]
@@ -825,12 +812,12 @@ def qrcode_supply():
     # Переводим поставку в доставку
     url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/deliver'
     response_to_supply = requests.request(
-        "PATCH", url_to_supply, headers=headers)
+        "PATCH", url_to_supply, headers=wb_headers_karavaev)
 
     # Получаем QR код поставки:
     url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/barcode?type=png"
     response_supply_qrcode = requests.request(
-        "GET", url_supply_qrcode, headers=headers)
+        "GET", url_supply_qrcode, headers=wb_headers_karavaev)
 
     # Создаем QR код поставки
     qrcode_base64_data = json.loads(response_supply_qrcode.text)["file"]
