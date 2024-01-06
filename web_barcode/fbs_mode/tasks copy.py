@@ -13,27 +13,19 @@ from io import BytesIO
 from pathlib import Path
 
 import dropbox
-import img2pdf
 import openpyxl
 import pandas as pd
 import psycopg2
 import pythoncom
 import requests
-import win32com.client as win32
-from barcode import Code128
-from barcode.writer import ImageWriter
 from dotenv import load_dotenv
-from helpers import (design_barcodes_dict_spec,
-                     merge_barcode_for_ozon_two_on_two,
+from helpers import (merge_barcode_for_ozon_two_on_two,
                      new_data_for_ozon_ticket, print_barcode_to_pdf2,
-                     qrcode_print_for_products, special_design_dark,
-                     special_design_light, supply_qrcode_to_standart_view)
+                     qrcode_print_for_products, supply_qrcode_to_standart_view)
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.styles import Alignment, Border, Font, Side
 from PIL import Image, ImageDraw, ImageFont
-from PyPDF3 import PdfFileReader, PdfFileWriter
-from PyPDF3.pdf import PageObject
 from sqlalchemy import create_engine
 from win32com.client import DispatchEx
 
@@ -75,7 +67,7 @@ def stream_dropbox_file(path):
 
 
 def clearning_folders():
-    dir = 'web_barcode/fbs_mode\data_for_barcodes/'
+    dir = 'web_barcode/fbs_mode/data_for_barcodes/'
     for file_name in os.listdir(dir):
         file_path = os.path.join(dir, file_name)
         if os.path.isfile(file_path):
@@ -87,6 +79,10 @@ def clearning_folders():
             'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3',
             'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder',
             'web_barcode/fbs_mode/data_for_barcodes/qrcode_supply',
+            'web_barcode/fbs_mode/data_for_barcodes/package_tickets/done',
+            'web_barcode/fbs_mode/data_for_barcodes/package_tickets',
+            'web_barcode/fbs_mode/data_for_barcodes/ozon_docs',
+            'web_barcode/fbs_mode/data_for_barcodes/ozon_delivery_barcode'
             ]
     for dir in dirs:
         for filename in glob.glob(os.path.join(dir, "*")):
@@ -104,8 +100,8 @@ class WildberriesFbsMode():
     """Класс отвечает за работу с заказами Wildberries"""
 
     def __init__(self):
-        # Данные отправлений для FBS OZON
         """Основные данные класса"""
+        self.amount_articles = {}
 
     def article_data_for_tickets(self):
         """
@@ -205,9 +201,16 @@ class WildberriesFbsMode():
     def create_delivery(self):
         """Создание поставки"""
         url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
+        hour = datetime.now().hour
+        delivery_name = f"Поставка {delivery_date}"
+        if hour >= 18 or hour <= 6:
+            delivery_name = f'Производство ночь {delivery_date}'
+        else:
+            delivery_name = f'Производство день {delivery_date}'
+
         payload = json.dumps(
             {
-                "name": f"Тестовая поставка {delivery_date}"
+                "name": delivery_name
             }
         )
         # Из этой переменной достать ID поставки
@@ -473,36 +476,6 @@ class WildberriesFbsMode():
             print_barcode_to_pdf2(list_pdf_file_ticket_for_complect, file_name)
 
 
-def working_algoritm_function():
-    """Функция проходит по алгоритму для создания файлов поставки"""
-    clearning_folders()
-    wb = WildberriesFbsMode()
-    # 1. Нахожу новые сборочные задания.
-    wb.article_data_for_tickets()
-    # Сохраняем все таблицы на DROPBOX
-    # wb.create_pivot_xls()
-    # 2. Создаю поставку
-    # wb.create_delivery()
-    # 3. Добавляю в созданную поставку id всех новых сборочных заданий.
-    # wb.qrcode_order()
-    # Создаю лист подбора
-    # wb.create_selection_list()
-    # 4. Добавляю поставку в доставку.
-    # wb.qrcode_supply()
-    # if self.clear_article_list:
-    #    # 5. Создаем этикетки для товаров из сборочных заданий.
-    #    design_barcodes_dict_spec(
-    #        self.clear_article_list, self.data_article_info_dict)
-    #    # 6. Создаем список со всеми этикетками, объединяем их в один файл и сохраняем
-    #    # в папке на Дропбокс
-    #    list_for_print_create(self.amount_articles)
-    # 7. Очистка всех папок от промежуточных файлов
-    # clearning_folders()
-
-
-working_algoritm_function()
-
-
 class OzonFbsMode():
     """Класс отвечает за работу с заказами ОЗОН"""
 
@@ -511,8 +484,14 @@ class OzonFbsMode():
         self.posting_data = []
         self.warehouse_list = [1020000089903000, 22655170176000]
         self.date_for_files = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-        self.main_save_folder_selver = 'web_barcode/fbs_mode/data_for_barcodes'
+        self.main_save_folder_server = 'web_barcode/fbs_mode/data_for_barcodes'
         self.dropbox_main_fbs_folder = '/DATABASE/beta'
+        self.date_before = datetime.now() - timedelta(days=20)
+        self.tomorrow_date = datetime.now() + timedelta(days=1)
+        self.future_date = datetime.now() + timedelta(days=20)
+
+        self.since_date_for_filter = self.date_before.strftime(
+            '%Y-%m-%d') + 'T08:00:00Z'
 
     def awaiting_packaging_orders(self):
         """
@@ -522,11 +501,14 @@ class OzonFbsMode():
         # Метод для просмотра новых заказов
         url = "https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list"
 
+        future_date_for_filter = self.future_date.strftime(
+            '%Y-%m-%d') + 'T08:00:00Z'
+
         payload = json.dumps({
             "dir": "ASC",
             "filter": {
-                "cutoff_from": "2023-12-22T14:15:22Z",
-                "cutoff_to": "2023-12-31T14:15:22Z",
+                "cutoff_from": self.since_date_for_filter,
+                "cutoff_to": future_date_for_filter,
                 "delivery_method_id": [],
                 "provider_id": [],
                 "status": "awaiting_packaging",
@@ -544,8 +526,8 @@ class OzonFbsMode():
 
         response = requests.request(
             "POST", url, headers=ozon_headers_karavaev, data=payload)
+        # Заполняю словарь данными
         for i in json.loads(response.text)['result']['postings']:
-
             inner_dict_data = {}
             inner_dict_data['posting_number'] = i['posting_number']
             inner_dict_data['order_id'] = i['order_id']
@@ -553,11 +535,13 @@ class OzonFbsMode():
             inner_dict_data['in_process_at'] = i['in_process_at']
             inner_dict_data['shipment_date'] = i['shipment_date']
             inner_dict_data['products'] = i['products']
-
             self.posting_data.append(inner_dict_data)
-        # for j in self.posting_data:
-        #     print(j)
-        #     print('***************')
+
+        # После отработки кода удалить цикл и вывод длины списка
+        for j in self.posting_data:
+            print(j)
+            print('***************')
+        print(len(self.posting_data))
 
     def awaiting_deliver_orders(self):
         """
@@ -591,21 +575,22 @@ class OzonFbsMode():
                 response = requests.request(
                     "POST", url, headers=ozon_headers_karavaev, data=payload)
 
+    def check_folder_exists(self, path):
+        try:
+            dbx_db.files_list_folder(path)
+            return True
+        except dropbox.exceptions.ApiError as e:
+            return False
+
     def prepare_data_for_confirm_delivery(self):
         """Подготовка данных для подтверждения отгрузки"""
-        now_time = datetime.now()
-        hour = now_time.hour
+
+        hour = datetime.now().hour
         date_folder = datetime.today().strftime('%Y-%m-%d')
 
-        date_before = now_time - timedelta(days=20)
-        tomorrow_date = now_time + timedelta(days=1)
-
-        since_date_for_filter = date_before.strftime(
-            '%Y-%m-%d') + 'T08:00:00Z'
-        to_date_for_filter = tomorrow_date.strftime(
+        to_date_for_filter = self.tomorrow_date.strftime(
             '%Y-%m-%d') + 'T23:59:00Z'
-        date_confirm_delivery = now_time + timedelta(days=1)
-        date_confirm_delivery = date_confirm_delivery.strftime('%Y-%m-%d')
+        date_confirm_delivery = self.tomorrow_date.strftime('%Y-%m-%d')
 
         # Проверяем все отгрузки, которые буду завтра
         url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
@@ -620,10 +605,16 @@ class OzonFbsMode():
         if hour >= 18 or hour <= 6:
             self.delivary_method_id = 22655170176000
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+
         else:
             self.delivary_method_id = 1020000089903000
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
         self.departure_date = date_confirm_delivery + 'T10:00:00Z'
+
+        # Создаем папку на dropbox, если ее еще нет
+        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
+            dbx_db.files_create_folder_v2(
+                self.dropbox_current_assembling_folder)
 
         amount_products = 0
         payload = json.dumps(
@@ -632,7 +623,7 @@ class OzonFbsMode():
                 "filter": {
                     "delivery_method_id": [self.delivary_method_id],
                     "provider_id": [24],
-                    "since": since_date_for_filter,
+                    "since": self.since_date_for_filter,
                     "status": "awaiting_deliver",
                     "to": to_date_for_filter,
                     "warehouse_id": [self.delivary_method_id]
@@ -652,8 +643,8 @@ class OzonFbsMode():
         for data in json.loads(response.text)['result']['postings']:
             inner_article_amount_dict = {}
 
-            # if tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
-            if '29' in data["shipment_date"]:
+            if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
+                # if '29' in data["shipment_date"]:
                 for product in data['products']:
                     amount_products += product['quantity']
                     inner_article_amount_dict[product['offer_id']
@@ -720,28 +711,51 @@ class OzonFbsMode():
         url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/get-barcode'
         payload = json.dumps(
             {
-                # "id": self.delivery_id
-                "id": 35275670
+                "id": self.delivery_id
+                # "id": 35275670
             }
         )
-        self.delivery_id = 35275670
+        # self.delivery_id = 35275670
         response = requests.request(
             "POST", url, headers=ozon_headers_karavaev, data=payload)
 
         image = Image.open(io.BytesIO(response.content))
-        save_folder_docs = f"{self.main_save_folder_selver}/ozon_delivery_barcode/{self.delivery_id}_баркод {self.date_for_files}.png"
+        save_folder_docs = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {self.date_for_files}.png"
         image.save(save_folder_docs)
+
+        # Сохраняем штрихкод в PDF формате
+        now_date = datetime.now().strftime(("%d.%m"))
+        im = Image.open(save_folder_docs)
+        text_common = "Штрихкод для отгрузки ОЗОН"
+        text_company = 'ИП Караваев'
+        font = ImageFont.truetype("arial.ttf", size=50)
+        A4 = (1033, 1462)
+        white_A4 = Image.new('RGB', A4, 'white')
+        text_draw = ImageDraw.Draw(white_A4)
+        text_common_lenght = text_draw.textlength(text_common, font=font)
+        text_company_lenght = text_draw.textlength(text_company, font=font)
+        x = (A4[0] - im.width) // 2
+        text_common_x = (A4[0] - round(text_common_lenght)) // 2
+        text_company_x = (A4[0] - round(text_company_lenght)) // 2
+        white_A4.paste(im, (x, 330))
+        text_draw.text((text_common_x, 100), text_common,
+                       font=font, fill=('#000000'))
+        text_draw.text((text_company_x, 200), text_company,
+                       font=font, fill=('#000000'))
+        save_folder_docs_pdf = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {now_date}.pdf"
+        white_A4.save(save_folder_docs_pdf, 'PDF', quality=100)
+
         folder = (
-            f'{self.dropbox_current_assembling_folder}/OZON-ИП акт поставки {self.date_for_files}.png')
-        with open(save_folder_docs, 'rb') as f:
+            f'{self.dropbox_current_assembling_folder}/OZON-ИП акт {now_date}.pdf')
+        with open(save_folder_docs_pdf, 'rb') as f:
             dbx_db.files_upload(f.read(), folder)
 
     def check_status_formed_invoice(self):
         """
         Проверяет статус формирования накладной: /v2/posting/fbs/digital/act/check-status. 
         Когда статус документа перейдёт в FORMED или CONFIRMED, получите файлы:
-        Транспортная накладная: /v2/posting/fbs/act/get-pdf.
-        Лист отгрузки: /v2/posting/fbs/digital/act/get-pdf.
+        Получает и сохраняет этикетки для каждой коробки: /v2/posting/fbs/act/get-container-labels.
+        Этикетки для каждой отправки: /v2/posting/fbs/package-label.
         """
 
         url = 'https://api-seller.ozon.ru/v2/posting/fbs/digital/act/check-status'
@@ -775,8 +789,8 @@ class OzonFbsMode():
 
         payload = json.dumps(
             {
-                # "id": self.delivery_id
-                "id": 35275670
+                "id": self.delivery_id
+                # "id": 35275670
             }
         )
         response = requests.request(
@@ -784,7 +798,7 @@ class OzonFbsMode():
 
         # получение данных PDF из входящих данных
         pdf_data = response.content  # замените на фактические входные данные
-        save_folder_docs = f'{self.main_save_folder_selver}/ozon_docs/OZON - ИП ШК на 1 коробку {self.date_for_files}.pdf'
+        save_folder_docs = f'{self.main_save_folder_server}/ozon_docs/OZON - ИП ШК на 1 коробку {self.date_for_files}.pdf'
         # сохранение PDF-файла
         with open(save_folder_docs, 'wb') as f:
             f.write(pdf_data)
@@ -795,7 +809,7 @@ class OzonFbsMode():
 
     def forming_package_ticket_with_article(self):
         """
-        Функция получает и сохраняет этикетки этикетки для каждой отправки.
+        Функция получает и сохраняет этикетки для каждой отправки.
         Данные получают из эндпоинта /v2/posting/fbs/package-label.
         После получения и сохранения всех этикеток помещает артикул продавца
         на этикетку.
@@ -809,29 +823,35 @@ class OzonFbsMode():
             )
             response = requests.request(
                 "POST", url, headers=ozon_headers_karavaev, data=payload)
-            save_folder = f'{self.main_save_folder_selver}/package_tickets'
-            save_folder_docs = f'{self.main_save_folder_selver}/package_tickets/{package}.pdf'
+            save_folder = f'{self.main_save_folder_server}/package_tickets'
+            save_folder_docs = f'{self.main_save_folder_server}/package_tickets/{package}.pdf'
             # сохранение PDF-файла
             with open(save_folder_docs, 'wb') as f:
                 f.write(response.content)
 
+        done_files_folder = f'{self.main_save_folder_server}/package_tickets/done'
+        if not os.path.isdir(done_files_folder):
+            os.mkdir(done_files_folder)
+
         # Записываем артикул продавциа в файл с этикеткой
         new_data_for_ozon_ticket(save_folder, self.fbs_ozon_common_data)
         # Формируем список всех файлов, которые нужно объединять в один документ
-        done_files_folder = f'{self.main_save_folder_selver}/package_tickets/done'
         list_filename = glob.glob(f'{done_files_folder}/*.pdf')
         # Адрес и имя конечного файла
-        file_name = f'{self.main_save_folder_selver}/package_tickets/done/done_tickets.pdf'
+        file_name = f'{self.main_save_folder_server}/package_tickets/done/done_tickets.pdf'
         merge_barcode_for_ozon_two_on_two(list_filename, file_name)
         folder = f'{self.dropbox_current_assembling_folder}/OZON-ИП этикетки.pdf'
         with open(file_name, 'rb') as f:
             dbx_db.files_upload(f.read(), folder)
 
 
-class CreatePivotFile(WildberriesFbsMode):
+class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
     def __init__(self):
         WildberriesFbsMode.__init__(self)
-        self.amount_articles = WildberriesFbsMode.amount_articles
+        if WildberriesFbsMode.amount_articles:
+            self.amount_articles = WildberriesFbsMode.amount_articles
+        else:
+            self.amount_articles = {}
         self.ozon_article_amount = OzonFbsMode.ozon_article_amount
 
     def create_pivot_xls(self):
@@ -1052,3 +1072,63 @@ class CreatePivotFile(WildberriesFbsMode):
         with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
             dbx_db.files_upload(
                 f.read(), f'/DATABASE/beta/{name_for_file}.pdf')
+
+
+# ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
+
+def common_action():
+    wb_actions = WildberriesFbsMode()
+    ozon_actions = OzonFbsMode()
+    pivot_file = CreatePivotFile()
+
+    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+    # 1. Обрабатываю новые сборочные задания.
+    # wb_actions.article_data_for_tickets()
+
+    # 2. Создаю поставку
+    # wb_actions.create_delivery()
+
+    # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+
+    # 4. Создаю лист сборки
+    # wb_actions.create_selection_list()
+
+    # 5. Добавляю поставку в доставку, получаю QR код поставки
+    # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
+
+    # 6. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
+
+    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+    # 1. Собираю информацию о новых заказах с Озон.
+    ozon_actions.awaiting_packaging_orders()
+
+    # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+    # ozon_actions.awaiting_deliver_orders()
+
+    # 3. Готовлю данные для подтверждения отгрузки
+    ozon_actions.prepare_data_for_confirm_delivery()
+    ozon_actions.forming_package_ticket_with_article()
+
+    # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    # ozon_actions.confirm_delivery_create_document()
+
+    # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    # ozon_actions.check_delivery_create()
+
+    # # 6. Проверяю статус формирования накладной.
+    # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    # ozon_actions.check_status_formed_invoice()
+
+    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
+    # 1. Создаю сводный файл для производства
+    # pivot_file.create_pivot_xls()
+
+    # Очищаем все папки на сервере
+    clearning_folders()
+
+
+common_action()
