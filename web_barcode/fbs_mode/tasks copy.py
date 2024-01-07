@@ -161,6 +161,7 @@ class WildberriesFbsMode():
                 self.data_article_info_dict[article] = [title, barcode]
         # Словарь с данными: {артикул_продавца: количество}
         self.amount_articles = dict(Counter(self.clear_article_list))
+        print('self.amount_articles', self.amount_articles)
 
         for order in orders_data:
             if order['article'] in self.clear_article_list:
@@ -196,7 +197,7 @@ class WildberriesFbsMode():
             # Заполняем словарь данными для Листа подбора
             self.selection_dict[order_id] = [
                 photo, brand, title_article, seller_article]
-        print(self.article_id_dict)
+        return self.amount_articles
 
     def create_delivery(self):
         """Создание поставки"""
@@ -493,6 +494,9 @@ class OzonFbsMode():
         self.since_date_for_filter = self.date_before.strftime(
             '%Y-%m-%d') + 'T08:00:00Z'
 
+        # Словарь с данными {'артикул продавца': 'количество'}. Для сводной таблицы по FBS
+        self.ozon_article_amount = {}
+
     def awaiting_packaging_orders(self):
         """
         Функция собирает новые заказы и преобразует данные
@@ -599,8 +603,6 @@ class OzonFbsMode():
         self.ware_house_amount_dict = {}
         # Словарь с данными {'номер отправления': {'артикул продавца': 'количество'}}
         self.fbs_ozon_common_data = {}
-        # Словарь с данными {'артикул продавца': 'количество'}. Для сводной таблицы по FBS
-        self.ozon_article_amount = {}
 
         if hour >= 18 or hour <= 6:
             self.delivary_method_id = 22655170176000
@@ -666,6 +668,7 @@ class OzonFbsMode():
         print('self.ware_house_amount_dict', self.ware_house_amount_dict)
         print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
         print('self.ozon_article_amount', self.ozon_article_amount)
+        return self.ozon_article_amount
 
     def confirm_delivery_create_document(self):
         """Функция подтверждает отгрузку и запускает создание документов на стороне ОЗОН"""
@@ -847,18 +850,27 @@ class OzonFbsMode():
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
     def __init__(self):
-        WildberriesFbsMode.__init__(self)
-        if WildberriesFbsMode.amount_articles:
-            self.amount_articles = WildberriesFbsMode.amount_articles
-        else:
-            self.amount_articles = {}
-        self.ozon_article_amount = OzonFbsMode.ozon_article_amount
+        self.amount_articles = WildberriesFbsMode().article_data_for_tickets()
+        self.ozon_article_amount = OzonFbsMode().prepare_data_for_confirm_delivery()
+        self.dropbox_main_fbs_folder = '/DATABASE/beta'
 
     def create_pivot_xls(self):
         '''Создает сводный файл excel с количеством каждого артикула.
         Подключается к базе данных на сервере'''
+        # Задаем словарь с данными WB, а входящий становится общим для всех маркетплейсов
+        wb_article_amount = self.amount_articles.copy()
+        hour = datetime.now().hour
+        date_folder = datetime.today().strftime('%Y-%m-%d')
+        if hour >= 18 or hour <= 6:
+            self.delivary_method_id = 22655170176000
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+
+        else:
+            self.delivary_method_id = 1020000089903000
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
         CELL_LIMIT = 16  # ограничение символов в ячейке Excel
         COUNT_HELPER = 2
+
         for article in self.ozon_article_amount.keys():
             if article in self.amount_articles.keys():
                 self.amount_articles[article] = int(
@@ -888,7 +900,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             COUNT_HELPER += 1
         name_pivot_xls = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/На производство.xlsx'
         path_file = os.path.abspath(name_pivot_xls)
-        print('path', path_file)
         # file_name_dir = path.parent
 
         pivot_xls.save(name_pivot_xls)
@@ -922,7 +933,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         name_article = source_page['A']
         amount_all_fbs = source_page['D']
 
-        name_article_wb = self.amount_articles.keys()
         for i in range(1, len(name_article)):
             for j in self.ozon_article_amount.keys():
                 if name_article[i].value == j:
@@ -933,7 +943,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             #     if name_article[i].value == name_article_ya[k]:
             #         source_page.cell(row=i+1,column=7).value = amount_article_ya[k]
 
-            if name_article[i].value in name_article_wb:
+            if name_article[i].value in wb_article_amount.keys():
                 source_page.cell(
                     row=i+1, column=5).value = self.amount_articles[name_article[i].value]
             # Заполняется столбец "В" - номер ячейки на внутреннем складе
@@ -1051,7 +1061,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         xl.DisplayAlerts = False
         # print(f'{file_name_dir}/На производство.xlsx')
         folder_path = os.path.dirname(os.path.abspath(path_file))
-        print('folder_path', folder_path)
         name_for_file = f'Общий файл производство ИП {delivery_date}'
         name_xls_dropbox = f'На производство ИП {delivery_date}'
         wb = xl.Workbooks.Open(path_file)
@@ -1068,10 +1077,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         # Сохраняем на DROPBOX
         with open(f'{path_file}', 'rb') as f:
             dbx_db.files_upload(
-                f.read(), f'/DATABASE/beta/{name_xls_dropbox}.xlsx')
+                f.read(), f'{self.dropbox_current_assembling_folder}/{name_xls_dropbox}.xlsx')
         with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
             dbx_db.files_upload(
-                f.read(), f'/DATABASE/beta/{name_for_file}.pdf')
+                f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
 
 
 # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
@@ -1080,6 +1089,7 @@ def common_action():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
 
+    clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     # wb_actions.article_data_for_tickets()
@@ -1110,7 +1120,6 @@ def common_action():
 
     # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
-    # ozon_actions.forming_package_ticket_with_article()
 
     # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
     ozon_actions.confirm_delivery_create_document()
