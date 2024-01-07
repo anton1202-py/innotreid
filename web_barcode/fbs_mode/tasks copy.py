@@ -1079,7 +1079,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
 def common_action():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
-    pivot_file = CreatePivotFile()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
@@ -1107,27 +1106,29 @@ def common_action():
     ozon_actions.awaiting_packaging_orders()
 
     # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    # ozon_actions.awaiting_deliver_orders()
+    ozon_actions.awaiting_deliver_orders()
 
     # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
-    ozon_actions.forming_package_ticket_with_article()
+    # ozon_actions.forming_package_ticket_with_article()
 
     # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    # ozon_actions.confirm_delivery_create_document()
+    ozon_actions.confirm_delivery_create_document()
 
     # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    # ozon_actions.check_delivery_create()
+    ozon_actions.check_delivery_create()
 
     # # 6. Проверяю статус формирования накладной.
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    # ozon_actions.check_status_formed_invoice()
+    ozon_actions.check_status_formed_invoice()
 
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    # pivot_file.create_pivot_xls()
+    pivot_file = CreatePivotFile()
+    pivot_file.create_pivot_xls()
 
     # Очищаем все папки на сервере
+
     clearning_folders()
 
 
