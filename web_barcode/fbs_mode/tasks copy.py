@@ -24,7 +24,7 @@ from helpers import (merge_barcode_for_ozon_two_on_two,
                      qrcode_print_for_products, supply_qrcode_to_standart_view)
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
-from openpyxl.styles import Alignment, Border, Font, Side
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import create_engine
 from win32com.client import DispatchEx
@@ -116,7 +116,8 @@ class WildberriesFbsMode():
         Функция обрабатывает новые сборочные задания.
         Выделяет артикулы продавца светильников, их баркоды и наименования.
         Создает словарь с данными каждого артикулы и словарь с количеством каждого
-        артикула.
+        артикула. 
+        Создает папку для созданных документов на Дропбоксе.
         """
         hour = datetime.now().hour
         date_folder = datetime.today().strftime('%Y-%m-%d')
@@ -248,9 +249,7 @@ class WildberriesFbsMode():
         # Вызываем эндпоинт для создания поставки и определения ее delivery_id
         for order in self.article_id_dict.keys():
             add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
-
-            response = requests.request(
-                "PATCH", add_url, headers=wb_headers_karavaev)
+            requests.request("PATCH", add_url, headers=wb_headers_karavaev)
 
         for order in self.article_id_dict.keys():
             ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
@@ -411,8 +410,7 @@ class WildberriesFbsMode():
         """
         # Переводим поставку в доставку
         url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-        response_to_supply = requests.request(
-            "PATCH", url_to_supply, headers=wb_headers_karavaev)
+        requests.request("PATCH", url_to_supply, headers=wb_headers_karavaev)
 
         # Получаем QR код поставки:
         url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
@@ -625,6 +623,10 @@ class OzonFbsMode():
         # Словарь с данными {'номер отправления': {'артикул продавца': 'количество'}}
         self.fbs_ozon_common_data = {}
 
+        # Словарь с данными {'номер отправления': [{'артикул продавца': 'seller_article',
+        # 'Наименование': 'article_name', 'Количество': 'amount'}]}
+        self.fbs_ozon_common_data_buils_dict = {}
+
         if hour >= 18 or hour <= 6:
             self.delivary_method_id = 22655170176000
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
@@ -664,11 +666,18 @@ class OzonFbsMode():
         response = requests.request(
             "POST", url, headers=ozon_headers_karavaev, data=payload)
         for data in json.loads(response.text)['result']['postings']:
+            print(data)
+            print('********************')
             inner_article_amount_dict = {}
-
+            inner_bilding_list = []
             if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
                 # if '29' in data["shipment_date"]:
                 for product in data['products']:
+                    inner_bilding_dict = {}
+                    inner_bilding_dict['Артикул продавца'] = product['offer_id']
+                    inner_bilding_dict['Наименование'] = product['name']
+                    inner_bilding_dict['Количество'] = product['quantity']
+
                     amount_products += product['quantity']
                     inner_article_amount_dict[product['offer_id']
                                               ] = product['quantity']
@@ -678,8 +687,13 @@ class OzonFbsMode():
                     else:
                         self.ozon_article_amount[product['offer_id']
                                                  ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
+                inner_bilding_list.append(inner_bilding_dict)
                 self.fbs_ozon_common_data[data['posting_number']
                                           ] = inner_article_amount_dict
+
+                # Словарь для файла сборки
+                self.fbs_ozon_common_data_buils_dict[data['posting_number']
+                                                     ] = inner_bilding_list
         containers_count = math.ceil(amount_products/20)
         self.ware_house_amount_dict[self.delivary_method_id] = {
             'quantity': amount_products, 'containers_count': containers_count}
@@ -689,6 +703,8 @@ class OzonFbsMode():
         print('self.ware_house_amount_dict', self.ware_house_amount_dict)
         print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
         print('self.ozon_article_amount', self.ozon_article_amount)
+        print('self.fbs_ozon_common_data_buils_dict',
+              self.fbs_ozon_common_data_buils_dict)
         return self.ozon_article_amount
 
     def confirm_delivery_create_document(self):
@@ -773,6 +789,129 @@ class OzonFbsMode():
             f'{self.dropbox_current_assembling_folder}/OZON-ИП акт {now_date}.pdf')
         with open(save_folder_docs_pdf, 'rb') as f:
             dbx_db.files_upload(f.read(), folder)
+
+    def create_ozone_selection_sheet_pdf(self):
+        """Создает лист подбора для OZON"""
+
+        """number_of_departure_oz = excel_data['Номер отправления'].to_list()
+        product_name_oz = excel_data['Наименование товара'].to_list()
+        name_for_print_oz = excel_data['Артикул'].to_list()
+        amount_for_print_oz = excel_data['Количество'].to_list()
+
+        ozone_selection_sheet_xls = openpyxl.Workbook()
+        create = ozone_selection_sheet_xls.create_sheet(title = 'pivot_list', index = 0)
+        sheet = ozone_selection_sheet_xls['pivot_list']
+        sheet['A1'] = 'Номер отправления'
+        sheet['B1'] = 'Наименование товара'
+        sheet['C1'] = 'Артикул'
+        sheet['D1'] = 'Количество'
+
+        al = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        al2 = Alignment(vertical="center", wrap_text=True)
+        thin = Side(border_style="thin", color="000000")
+        thick = Side(border_style="medium", color="000000")
+        pattern = PatternFill('solid', fgColor="fcff52")
+        new_dict = {}
+        for i in range(len(number_of_departure_oz)):
+            new_dict[i] = [number_of_departure_oz[i],
+                product_name_oz[i], name_for_print_oz[i],
+                amount_for_print_oz[i]]
+
+        sorted_dict = dict(sorted(new_dict.items(), key=lambda item: item[1][0][-6:]))
+
+        upd_number_of_departure_oz = []
+        upd_product_name_oz = []
+        upd_name_for_print_oz = []
+        upd_amount_for_print_oz = []
+
+        for key, value in sorted_dict.items():
+            upd_number_of_departure_oz.append(value[0])
+            upd_product_name_oz.append(value[1])
+            upd_name_for_print_oz.append(value[2])
+            upd_amount_for_print_oz.append(value[3])
+
+        for i in range(len(upd_number_of_departure_oz)):
+            create.cell(row=i+2,column=1).value = upd_number_of_departure_oz[i]
+            create.cell(row=i+2,column=2).value = upd_product_name_oz[i]
+            create.cell(row=i+2,column=3).value = upd_name_for_print_oz[i]
+            create.cell(row=i+2,column=4).value = upd_amount_for_print_oz[i]
+        for i in range(1, len(upd_number_of_departure_oz)+2):
+            for c in create[f'A{i}:D{i}']:
+                c[0].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                c[1].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                c[2].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                c[3].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                c[3].alignment = al
+                for j in range(3):
+                    c[j].alignment = al2
+
+        create.column_dimensions['A'].width = 18
+        create.column_dimensions['B'].width = 38
+        create.column_dimensions['C'].width = 18
+        create.column_dimensions['D'].width = 10
+
+        name_for_file = f'{file_name_dir}/OZON-{self.file_name_ur} лист подбора {now_date}'
+
+        ozone_selection_sheet_xls.save(f'{name_for_file}.xlsx')
+        w_b2 = load_workbook(f'{name_for_file}.xlsx')
+        source_page2 = w_b2.active
+        number_of_departure_oz = source_page2['A']
+        amount_for_print_oz = source_page2['D']
+
+        for i in range(1, len(number_of_departure_oz)+2):
+            if i < len(number_of_departure_oz)-1:
+                for c in source_page2[f'A{i+1}:D{i+1}']:
+                    if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
+                        and number_of_departure_oz[i].value != number_of_departure_oz[i-1].value):
+                        c[0].border = Border(top=thick, left=thick, bottom = thin, right = thin)
+                        c[1].border = Border(top=thick, left=thin, bottom = thin, right = thin)
+                        c[2].border = Border(top=thick, left=thin, bottom = thin, right = thin)
+                        c[3].border = Border(top=thick, left=thin, bottom = thin, right = thick)
+                        for j in range(4):
+                            c[j].fill = pattern
+                    if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
+                        and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
+                        c[0].border = Border(top=thin, left=thick, bottom = thin, right = thin)
+                        c[1].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                        c[2].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                        c[3].border = Border(top=thin, left=thin, bottom = thin, right = thick)
+                        for j in range(4):
+                            c[j].fill = pattern
+                    elif (number_of_departure_oz[i].value != number_of_departure_oz[i+1].value
+                            and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
+                        c[0].border = Border(top=thin, left=thick, bottom = thick, right = thin)
+                        c[1].border = Border(top=thin, left=thin, bottom = thick, right = thin)
+                        c[2].border = Border(top=thin, left=thin, bottom = thick, right = thin)
+                        c[3].border = Border(top=thin, left=thin, bottom = thick, right = thick)
+                        for j in range(4):
+                            c[j].fill = pattern
+                    if amount_for_print_oz[i].value > 1:
+                        c[0].border = Border(top=thick, left=thick, bottom = thick, right = thin)
+                        c[1].border = Border(top=thick, left=thin, bottom = thick, right = thin)
+                        c[2].border = Border(top=thick, left=thin, bottom = thick, right = thin)
+                        c[3].border = Border(top=thick, left=thin, bottom = thick, right = thick)
+                        for j in range(4):
+                            c[j].fill = pattern
+
+                w_b2.save(f'{name_for_file}.xlsx')
+
+                xl = DispatchEx("Excel.Application")
+                xl.DisplayAlerts = False
+                wb = xl.Workbooks.Open(f'{name_for_file}.xlsx')
+                xl.CalculateFull()
+                pythoncom.PumpWaitingMessages()
+                try:
+                    wb.ExportAsFixedFormat(0, f'{name_for_file}.pdf')
+                except Exception as e:
+                    print("Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+                finally:
+                    wb.Close()
+                if os.path.isfile(f'{name_for_file}.xlsx'): 
+                    os.remove(f'{name_for_file}.xlsx') 
+                    print("success") 
+                else: 
+                    print("File doesn't exists!")
+                break"""
 
     def check_status_formed_invoice(self):
         """
@@ -1113,7 +1252,7 @@ def common_action():
     clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
+    # wb_actions.article_data_for_tickets()
 
     # 2. Создаю поставку
     # wb_actions.create_delivery()
@@ -1140,7 +1279,7 @@ def common_action():
     # ozon_actions.awaiting_deliver_orders()
 
     # 3. Готовлю данные для подтверждения отгрузки
-    # ozon_actions.prepare_data_for_confirm_delivery()
+    ozon_actions.prepare_data_for_confirm_delivery()
 
     # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
     # ozon_actions.confirm_delivery_create_document()
