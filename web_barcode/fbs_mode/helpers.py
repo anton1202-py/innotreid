@@ -361,13 +361,14 @@ def design_barcodes_dict_spec(names_for_print_barcodes, dict_barcode_print):
         special_design_dark(dark_special_dict)
 
 
-def print_barcode_to_pdf2(list_filenames, folder_summary_file_name):
+def print_barcode_to_pdf2(list_filenames, folder_summary_file_name, dropbox_folder):
     """
     Создает pdf файл для печати. С возможностью удаления всего кеша.
     Входящие данные:
     list_filenames - список с полными адресами и названиями файлов для объединения,
     folder_summary_file_name - полное название файла для сохранения 
     (вместе с названием папок в пути)
+    dropbox_folder - папка на Дропбокс в которой будет сохранятся конечный файл
     """
 
     with open(list_filenames[0], "rb") as f:
@@ -414,7 +415,7 @@ def print_barcode_to_pdf2(list_filenames, folder_summary_file_name):
                         horiz_size*(k),
                         vertic_size*(5-n))
                 output.write(open(file_name, "wb"))
-    folder = (f'/DATABASE/beta/WB-ИП этикетки FBS '
+    folder = (f'{dropbox_folder}/WB-ИП этикетки FBS '
               f'{time.strftime("%Y-%m-%d %H-%M-%S")}.pdf')
     with open(file_name, 'rb') as f:
         dbx_db.files_upload(f.read(), folder)

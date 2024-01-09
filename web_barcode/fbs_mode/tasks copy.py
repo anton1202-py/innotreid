@@ -102,6 +102,14 @@ class WildberriesFbsMode():
     def __init__(self):
         """Основные данные класса"""
         self.amount_articles = {}
+        self.dropbox_main_fbs_folder = '/DATABASE/beta'
+
+    def check_folder_exists(self, path):
+        try:
+            dbx_db.files_list_folder(path)
+            return True
+        except dropbox.exceptions.ApiError as e:
+            return False
 
     def article_data_for_tickets(self):
         """
@@ -110,6 +118,17 @@ class WildberriesFbsMode():
         Создает словарь с данными каждого артикулы и словарь с количеством каждого
         артикула.
         """
+        hour = datetime.now().hour
+        date_folder = datetime.today().strftime('%Y-%m-%d')
+        if hour >= 18 or hour <= 6:
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+        else:
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+
+        # Создаем папку на dropbox, если ее еще нет
+        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
+            dbx_db.files_create_folder_v2(
+                self.dropbox_current_assembling_folder)
         url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
 
         # Список с ID соборочных заданий
@@ -367,8 +386,8 @@ class WildberriesFbsMode():
         xl = DispatchEx("Excel.Application")
         xl.DisplayAlerts = False
         folder_path = os.path.dirname(os.path.abspath(path_file))
-        name_for_file = f'Лист подбора {delivery_date}'
-        name_xls_dropbox = f'Лист подбора {delivery_date}'
+        name_for_file = f'WB - ИП лист подбора {delivery_date}'
+        name_xls_dropbox = f'WB - ИП Лист подбора {delivery_date}'
         wb = xl.Workbooks.Open(path_file)
         xl.CalculateFull()
         pythoncom.PumpWaitingMessages()
@@ -383,7 +402,7 @@ class WildberriesFbsMode():
         # Сохраняем на DROPBOX
         with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
             dbx_db.files_upload(
-                f.read(), f'/DATABASE/beta/{name_for_file}.pdf')
+                f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
 
     def qrcode_supply(self):
         """
@@ -474,7 +493,9 @@ class WildberriesFbsMode():
 
             file_name = (f'web_barcode/fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                          f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
-            print_barcode_to_pdf2(list_pdf_file_ticket_for_complect, file_name)
+            print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
+                                  file_name,
+                                  self.dropbox_current_assembling_folder)
 
 
 class OzonFbsMode():
@@ -1092,7 +1113,7 @@ def common_action():
     clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    # wb_actions.article_data_for_tickets()
+    wb_actions.article_data_for_tickets()
 
     # 2. Создаю поставку
     # wb_actions.create_delivery()
@@ -1113,32 +1134,32 @@ def common_action():
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
     # 1. Собираю информацию о новых заказах с Озон.
-    ozon_actions.awaiting_packaging_orders()
+    # ozon_actions.awaiting_packaging_orders()
 
     # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    ozon_actions.awaiting_deliver_orders()
+    # ozon_actions.awaiting_deliver_orders()
 
     # 3. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
+    # ozon_actions.prepare_data_for_confirm_delivery()
 
     # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    ozon_actions.confirm_delivery_create_document()
+    # ozon_actions.confirm_delivery_create_document()
 
     # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    ozon_actions.check_delivery_create()
+    # ozon_actions.check_delivery_create()
 
     # # 6. Проверяю статус формирования накладной.
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    ozon_actions.check_status_formed_invoice()
+    # ozon_actions.check_status_formed_invoice()
 
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile()
-    pivot_file.create_pivot_xls()
+    # pivot_file = CreatePivotFile()
+    # pivot_file.create_pivot_xls()
 
     # Очищаем все папки на сервере
 
-    clearning_folders()
+    # clearning_folders()
 
 
 common_action()
