@@ -793,13 +793,15 @@ class OzonFbsMode():
     def create_ozone_selection_sheet_pdf(self):
         """Создает лист подбора для OZON"""
 
-        """number_of_departure_oz = excel_data['Номер отправления'].to_list()
+        number_of_departure_oz = self.fbs_ozon_common_data_buils_dict.keys()
+
         product_name_oz = excel_data['Наименование товара'].to_list()
         name_for_print_oz = excel_data['Артикул'].to_list()
         amount_for_print_oz = excel_data['Количество'].to_list()
 
         ozone_selection_sheet_xls = openpyxl.Workbook()
-        create = ozone_selection_sheet_xls.create_sheet(title = 'pivot_list', index = 0)
+        create = ozone_selection_sheet_xls.create_sheet(
+            title='pivot_list', index=0)
         sheet = ozone_selection_sheet_xls['pivot_list']
         sheet['A1'] = 'Номер отправления'
         sheet['B1'] = 'Наименование товара'
@@ -814,10 +816,11 @@ class OzonFbsMode():
         new_dict = {}
         for i in range(len(number_of_departure_oz)):
             new_dict[i] = [number_of_departure_oz[i],
-                product_name_oz[i], name_for_print_oz[i],
-                amount_for_print_oz[i]]
+                           product_name_oz[i], name_for_print_oz[i],
+                           amount_for_print_oz[i]]
 
-        sorted_dict = dict(sorted(new_dict.items(), key=lambda item: item[1][0][-6:]))
+        sorted_dict = dict(
+            sorted(new_dict.items(), key=lambda item: item[1][0][-6:]))
 
         upd_number_of_departure_oz = []
         upd_product_name_oz = []
@@ -831,16 +834,21 @@ class OzonFbsMode():
             upd_amount_for_print_oz.append(value[3])
 
         for i in range(len(upd_number_of_departure_oz)):
-            create.cell(row=i+2,column=1).value = upd_number_of_departure_oz[i]
-            create.cell(row=i+2,column=2).value = upd_product_name_oz[i]
-            create.cell(row=i+2,column=3).value = upd_name_for_print_oz[i]
-            create.cell(row=i+2,column=4).value = upd_amount_for_print_oz[i]
+            create.cell(
+                row=i+2, column=1).value = upd_number_of_departure_oz[i]
+            create.cell(row=i+2, column=2).value = upd_product_name_oz[i]
+            create.cell(row=i+2, column=3).value = upd_name_for_print_oz[i]
+            create.cell(row=i+2, column=4).value = upd_amount_for_print_oz[i]
         for i in range(1, len(upd_number_of_departure_oz)+2):
             for c in create[f'A{i}:D{i}']:
-                c[0].border = Border(top=thin, left=thin, bottom = thin, right = thin)
-                c[1].border = Border(top=thin, left=thin, bottom = thin, right = thin)
-                c[2].border = Border(top=thin, left=thin, bottom = thin, right = thin)
-                c[3].border = Border(top=thin, left=thin, bottom = thin, right = thin)
+                c[0].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[1].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[2].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[3].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
                 c[3].alignment = al
                 for j in range(3):
                     c[j].alignment = al2
@@ -862,34 +870,50 @@ class OzonFbsMode():
             if i < len(number_of_departure_oz)-1:
                 for c in source_page2[f'A{i+1}:D{i+1}']:
                     if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
-                        and number_of_departure_oz[i].value != number_of_departure_oz[i-1].value):
-                        c[0].border = Border(top=thick, left=thick, bottom = thin, right = thin)
-                        c[1].border = Border(top=thick, left=thin, bottom = thin, right = thin)
-                        c[2].border = Border(top=thick, left=thin, bottom = thin, right = thin)
-                        c[3].border = Border(top=thick, left=thin, bottom = thin, right = thick)
+                            and number_of_departure_oz[i].value != number_of_departure_oz[i-1].value):
+                        c[0].border = Border(
+                            top=thick, left=thick, bottom=thin, right=thin)
+                        c[1].border = Border(
+                            top=thick, left=thin, bottom=thin, right=thin)
+                        c[2].border = Border(
+                            top=thick, left=thin, bottom=thin, right=thin)
+                        c[3].border = Border(
+                            top=thick, left=thin, bottom=thin, right=thick)
                         for j in range(4):
                             c[j].fill = pattern
                     if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
-                        and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
-                        c[0].border = Border(top=thin, left=thick, bottom = thin, right = thin)
-                        c[1].border = Border(top=thin, left=thin, bottom = thin, right = thin)
-                        c[2].border = Border(top=thin, left=thin, bottom = thin, right = thin)
-                        c[3].border = Border(top=thin, left=thin, bottom = thin, right = thick)
+                            and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
+                        c[0].border = Border(
+                            top=thin, left=thick, bottom=thin, right=thin)
+                        c[1].border = Border(
+                            top=thin, left=thin, bottom=thin, right=thin)
+                        c[2].border = Border(
+                            top=thin, left=thin, bottom=thin, right=thin)
+                        c[3].border = Border(
+                            top=thin, left=thin, bottom=thin, right=thick)
                         for j in range(4):
                             c[j].fill = pattern
                     elif (number_of_departure_oz[i].value != number_of_departure_oz[i+1].value
                             and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
-                        c[0].border = Border(top=thin, left=thick, bottom = thick, right = thin)
-                        c[1].border = Border(top=thin, left=thin, bottom = thick, right = thin)
-                        c[2].border = Border(top=thin, left=thin, bottom = thick, right = thin)
-                        c[3].border = Border(top=thin, left=thin, bottom = thick, right = thick)
+                        c[0].border = Border(
+                            top=thin, left=thick, bottom=thick, right=thin)
+                        c[1].border = Border(
+                            top=thin, left=thin, bottom=thick, right=thin)
+                        c[2].border = Border(
+                            top=thin, left=thin, bottom=thick, right=thin)
+                        c[3].border = Border(
+                            top=thin, left=thin, bottom=thick, right=thick)
                         for j in range(4):
                             c[j].fill = pattern
                     if amount_for_print_oz[i].value > 1:
-                        c[0].border = Border(top=thick, left=thick, bottom = thick, right = thin)
-                        c[1].border = Border(top=thick, left=thin, bottom = thick, right = thin)
-                        c[2].border = Border(top=thick, left=thin, bottom = thick, right = thin)
-                        c[3].border = Border(top=thick, left=thin, bottom = thick, right = thick)
+                        c[0].border = Border(
+                            top=thick, left=thick, bottom=thick, right=thin)
+                        c[1].border = Border(
+                            top=thick, left=thin, bottom=thick, right=thin)
+                        c[2].border = Border(
+                            top=thick, left=thin, bottom=thick, right=thin)
+                        c[3].border = Border(
+                            top=thick, left=thin, bottom=thick, right=thick)
                         for j in range(4):
                             c[j].fill = pattern
 
@@ -903,15 +927,16 @@ class OzonFbsMode():
                 try:
                     wb.ExportAsFixedFormat(0, f'{name_for_file}.pdf')
                 except Exception as e:
-                    print("Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+                    print(
+                        "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
                 finally:
                     wb.Close()
-                if os.path.isfile(f'{name_for_file}.xlsx'): 
-                    os.remove(f'{name_for_file}.xlsx') 
-                    print("success") 
-                else: 
+                if os.path.isfile(f'{name_for_file}.xlsx'):
+                    os.remove(f'{name_for_file}.xlsx')
+                    print("success")
+                else:
                     print("File doesn't exists!")
-                break"""
+                break
 
     def check_status_formed_invoice(self):
         """
