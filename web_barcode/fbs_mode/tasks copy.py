@@ -19,7 +19,8 @@ import psycopg2
 import pythoncom
 import requests
 from dotenv import load_dotenv
-from helpers import (merge_barcode_for_ozon_two_on_two,
+from helpers import (design_barcodes_dict_spec,
+                     merge_barcode_for_ozon_two_on_two,
                      new_data_for_ozon_ticket, print_barcode_to_pdf2,
                      qrcode_print_for_products, supply_qrcode_to_standart_view)
 from openpyxl import Workbook, load_workbook
@@ -217,6 +218,7 @@ class WildberriesFbsMode():
             # Заполняем словарь данными для Листа подбора
             self.selection_dict[order_id] = [
                 photo, brand, title_article, seller_article]
+
         return self.amount_articles
 
     def create_delivery(self):
@@ -428,6 +430,11 @@ class WildberriesFbsMode():
         img.save(
             f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
 
+    def create_barcode_tickets(self):
+        """Функция создает этикетки со штрихкодами для артикулов"""
+        design_barcodes_dict_spec(
+            self.clear_article_list, self.data_article_info_dict)
+
     def list_for_print_create(self):
         """
         Функция создает список с полными именами файлов, которые нужно объединить
@@ -560,12 +567,6 @@ class OzonFbsMode():
             inner_dict_data['products'] = i['products']
             self.posting_data.append(inner_dict_data)
 
-        # После отработки кода удалить цикл и вывод длины списка
-        for j in self.posting_data:
-            print(j)
-            print('***************')
-        print(len(self.posting_data))
-
     def awaiting_deliver_orders(self):
         """
         Делит заказ на отправления и переводит его в статус awaiting_deliver.
@@ -620,10 +621,10 @@ class OzonFbsMode():
 
         # Словарь с данными {'Номер склада': {quantity: 'Количество артикулов', containers_count: 'количество коробок'}}
         self.ware_house_amount_dict = {}
-        # Словарь с данными {'номер отправления': {'артикул продавца': 'количество'}}
+        # Словарь с данными {'номер отправления': {'Артикул продавца': 'количество'}}
         self.fbs_ozon_common_data = {}
 
-        # Словарь с данными {'номер отправления': [{'артикул продавца': 'seller_article',
+        # Словарь с данными {'номер отправления': [{'Артикул продавца': 'seller_article',
         # 'Наименование': 'article_name', 'Количество': 'amount'}]}
         self.fbs_ozon_common_data_buils_dict = {}
 
@@ -666,8 +667,6 @@ class OzonFbsMode():
         response = requests.request(
             "POST", url, headers=ozon_headers_karavaev, data=payload)
         for data in json.loads(response.text)['result']['postings']:
-            print(data)
-            print('********************')
             inner_article_amount_dict = {}
             inner_bilding_list = []
             if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
@@ -700,11 +699,6 @@ class OzonFbsMode():
 
         # print(self.delivary_method_id)
         # print(self.departure_date)
-        print('self.ware_house_amount_dict', self.ware_house_amount_dict)
-        print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
-        print('self.ozon_article_amount', self.ozon_article_amount)
-        print('self.fbs_ozon_common_data_buils_dict',
-              self.fbs_ozon_common_data_buils_dict)
         return self.ozon_article_amount
 
     def confirm_delivery_create_document(self):
@@ -793,11 +787,10 @@ class OzonFbsMode():
     def create_ozone_selection_sheet_pdf(self):
         """Создает лист подбора для OZON"""
 
-        number_of_departure_oz = self.fbs_ozon_common_data_buils_dict.keys()
+        sorted_data_buils_dict = dict(
+            sorted(self.fbs_ozon_common_data_buils_dict.items(), key=lambda x: x[0][-6:]))
 
-        product_name_oz = excel_data['Наименование товара'].to_list()
-        name_for_print_oz = excel_data['Артикул'].to_list()
-        amount_for_print_oz = excel_data['Количество'].to_list()
+        number_of_departure_oz = sorted_data_buils_dict.keys()
 
         ozone_selection_sheet_xls = openpyxl.Workbook()
         create = ozone_selection_sheet_xls.create_sheet(
@@ -813,25 +806,18 @@ class OzonFbsMode():
         thin = Side(border_style="thin", color="000000")
         thick = Side(border_style="medium", color="000000")
         pattern = PatternFill('solid', fgColor="fcff52")
-        new_dict = {}
-        for i in range(len(number_of_departure_oz)):
-            new_dict[i] = [number_of_departure_oz[i],
-                           product_name_oz[i], name_for_print_oz[i],
-                           amount_for_print_oz[i]]
-
-        sorted_dict = dict(
-            sorted(new_dict.items(), key=lambda item: item[1][0][-6:]))
 
         upd_number_of_departure_oz = []
         upd_product_name_oz = []
         upd_name_for_print_oz = []
         upd_amount_for_print_oz = []
 
-        for key, value in sorted_dict.items():
-            upd_number_of_departure_oz.append(value[0])
-            upd_product_name_oz.append(value[1])
-            upd_name_for_print_oz.append(value[2])
-            upd_amount_for_print_oz.append(value[3])
+        for key, value in sorted_data_buils_dict.items():
+            for data in value:
+                upd_number_of_departure_oz.append(key)
+                upd_product_name_oz.append(data['Наименование'])
+                upd_name_for_print_oz.append(data['Артикул продавца'])
+                upd_amount_for_print_oz.append(data['Количество'])
 
         for i in range(len(upd_number_of_departure_oz)):
             create.cell(
@@ -858,7 +844,7 @@ class OzonFbsMode():
         create.column_dimensions['C'].width = 18
         create.column_dimensions['D'].width = 10
 
-        name_for_file = f'{file_name_dir}/OZON-{self.file_name_ur} лист подбора {now_date}'
+        name_for_file = f'{self.main_save_folder_server}/ozon_docs/OZON-ИП лист подбора {self.date_for_files}'
 
         ozone_selection_sheet_xls.save(f'{name_for_file}.xlsx')
         w_b2 = load_workbook(f'{name_for_file}.xlsx')
@@ -917,26 +903,28 @@ class OzonFbsMode():
                         for j in range(4):
                             c[j].fill = pattern
 
-                w_b2.save(f'{name_for_file}.xlsx')
+        w_b2.save(f'{name_for_file}.xlsx')
+        xl = DispatchEx("Excel.Application")
+        xl.DisplayAlerts = False
+        path_file = os.path.abspath(f'{name_for_file}.xlsx')
+        only_file_name = os.path.splitext(os.path.basename(path_file))[0]
+        wb = xl.Workbooks.Open(path_file)
+        xl.CalculateFull()
+        pythoncom.PumpWaitingMessages()
+        folder_path = os.path.dirname(os.path.abspath(path_file))
+        try:
+            wb.ExportAsFixedFormat(
+                0, f'{folder_path}/{only_file_name}.pdf')
+        except Exception as e:
+            print(
+                "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+        finally:
+            wb.Close()
 
-                xl = DispatchEx("Excel.Application")
-                xl.DisplayAlerts = False
-                wb = xl.Workbooks.Open(f'{name_for_file}.xlsx')
-                xl.CalculateFull()
-                pythoncom.PumpWaitingMessages()
-                try:
-                    wb.ExportAsFixedFormat(0, f'{name_for_file}.pdf')
-                except Exception as e:
-                    print(
-                        "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
-                finally:
-                    wb.Close()
-                if os.path.isfile(f'{name_for_file}.xlsx'):
-                    os.remove(f'{name_for_file}.xlsx')
-                    print("success")
-                else:
-                    print("File doesn't exists!")
-                break
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/OZON - ИП лист подбора {self.date_for_files}.pdf')
+        with open(f'{folder_path}/{only_file_name}.pdf', 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
     def check_status_formed_invoice(self):
         """
@@ -963,6 +951,7 @@ class OzonFbsMode():
             self.receive_barcode_delivery()
             self.get_box_tickets()
             self.forming_package_ticket_with_article()
+            self.create_ozone_selection_sheet_pdf()
         else:
             print('уснули на 5 мин в функции check_status_formed_invoice')
             time.sleep(300)
@@ -1275,9 +1264,14 @@ def common_action():
     ozon_actions = OzonFbsMode()
 
     clearning_folders()
+    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
+    # 1. Создаю сводный файл для производства
+    # pivot_file = CreatePivotFile()
+    # pivot_file.create_pivot_xls()
+
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    # wb_actions.article_data_for_tickets()
+    wb_actions.article_data_for_tickets()
 
     # 2. Создаю поставку
     # wb_actions.create_delivery()
@@ -1293,7 +1287,10 @@ def common_action():
     # и преобразует этот QR код в необходимый формат.
     # wb_actions.qrcode_supply()
 
-    # 6. Создаю список с полными именами файлов, которые нужно объединить
+    # 6. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+
+    # 7. Создаю список с полными именами файлов, которые нужно объединить
     # wb_actions.list_for_print_create()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
@@ -1304,7 +1301,7 @@ def common_action():
     # ozon_actions.awaiting_deliver_orders()
 
     # 3. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
+    # ozon_actions.prepare_data_for_confirm_delivery()
 
     # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
     # ozon_actions.confirm_delivery_create_document()
@@ -1316,13 +1313,7 @@ def common_action():
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     # ozon_actions.check_status_formed_invoice()
 
-    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
-    # pivot_file = CreatePivotFile()
-    # pivot_file.create_pivot_xls()
-
     # Очищаем все папки на сервере
-
     # clearning_folders()
 
 

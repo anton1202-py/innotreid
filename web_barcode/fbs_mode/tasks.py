@@ -285,7 +285,7 @@ def list_for_print_create(amount_articles):
 
         file_name = (f'web_barcode/fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                      f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
-        print_barcode_to_pdf2(list_pdf_file_ticket_for_complect, file_name)
+        # print_barcode_to_pdf2(list_pdf_file_ticket_for_complect, file_name)
 
 
 def clearning_folders():
