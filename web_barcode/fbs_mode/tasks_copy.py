@@ -697,8 +697,8 @@ class OzonFbsMode():
         self.ware_house_amount_dict[self.delivary_method_id] = {
             'quantity': amount_products, 'containers_count': containers_count}
 
-        # print(self.delivary_method_id)
-        # print(self.departure_date)
+        print(self.fbs_ozon_common_data_buils_dict)
+        print(self.departure_date)
         return self.ozon_article_amount
 
     def confirm_delivery_create_document(self):
@@ -712,6 +712,7 @@ class OzonFbsMode():
             })
             response = requests.request(
                 "POST", url, headers=ozon_headers_karavaev, data=payload)
+
             self.delivery_id = json.loads(response.text)['result']['id']
 
     def check_delivery_create(self):
@@ -1271,7 +1272,7 @@ def common_action():
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
+    # wb_actions.article_data_for_tickets()
 
     # 2. Создаю поставку
     # wb_actions.create_delivery()
@@ -1301,17 +1302,17 @@ def common_action():
     # ozon_actions.awaiting_deliver_orders()
 
     # 3. Готовлю данные для подтверждения отгрузки
-    # ozon_actions.prepare_data_for_confirm_delivery()
+    ozon_actions.prepare_data_for_confirm_delivery()
 
-    # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    # ozon_actions.confirm_delivery_create_document()
+    # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    ozon_actions.confirm_delivery_create_document()
 
-    # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    # ozon_actions.check_delivery_create()
+    # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    ozon_actions.check_delivery_create()
 
-    # # 6. Проверяю статус формирования накладной.
-    # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    # ozon_actions.check_status_formed_invoice()
+    # 6. Проверяю статус формирования накладной.
+    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    ozon_actions.check_status_formed_invoice()
 
     # Очищаем все папки на сервере
     # clearning_folders()

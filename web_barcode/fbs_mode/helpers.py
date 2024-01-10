@@ -52,7 +52,7 @@ def common_barcode_design(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода {артикул: [название светильника, штрихкод]}
     """
-    from tasks import version
+    from tasks_copy import version
     UR_LICO_DATA = '/DATABASE/web_barcode_data/helper_files/Печать Караваев.xlsx'
     ur_lico_data = stream_dropbox_file(UR_LICO_DATA)
 
