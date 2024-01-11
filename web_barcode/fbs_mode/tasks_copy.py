@@ -241,6 +241,7 @@ class WildberriesFbsMode():
             "POST", url_data, headers=wb_headers_karavaev, data=payload)
         # print(response_data)
         self.supply_id = json.loads(response_data.text)['id']
+        print(self.supply_id)
 
     def qrcode_order(self):
         """
@@ -251,7 +252,8 @@ class WildberriesFbsMode():
         # Вызываем эндпоинт для создания поставки и определения ее delivery_id
         for order in self.article_id_dict.keys():
             add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
-            requests.request("PATCH", add_url, headers=wb_headers_karavaev)
+            response_add_orders = requests.request(
+                "PATCH", add_url, headers=wb_headers_karavaev)
 
         for order in self.article_id_dict.keys():
             ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
@@ -412,7 +414,8 @@ class WildberriesFbsMode():
         """
         # Переводим поставку в доставку
         url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-        requests.request("PATCH", url_to_supply, headers=wb_headers_karavaev)
+        response_to_supply = requests.request(
+            "PATCH", url_to_supply, headers=wb_headers_karavaev)
 
         # Получаем QR код поставки:
         url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
@@ -1264,55 +1267,56 @@ def common_action():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
 
-    clearning_folders()
-    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
+    # clearning_folders()
+    # # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
+    # # 1. Создаю сводный файл для производства
     # pivot_file = CreatePivotFile()
     # pivot_file.create_pivot_xls()
 
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Обрабатываю новые сборочные задания.
+    # # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+    # # 1. Обрабатываю новые сборочные задания.
     # wb_actions.article_data_for_tickets()
 
-    # 2. Создаю поставку
+    # # 3. Создаю поставку
     # wb_actions.create_delivery()
 
-    # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
-
-    # 4. Создаю лист сборки
-    # wb_actions.create_selection_list()
-
-    # 5. Добавляю поставку в доставку, получаю QR код поставки
-    # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
-
-    # 6. Создаю шрихкоды для артикулов
+    # # 2. Создаю шрихкоды для артикулов
     # wb_actions.create_barcode_tickets()
 
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+
+    # # 5. Создаю лист сборки
+    # wb_actions.create_selection_list()
+
+    # # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
+
+    # # 7. Создаю список с полными именами файлов, которые нужно объединить
     # wb_actions.list_for_print_create()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-    # 1. Собираю информацию о новых заказах с Озон.
+    # # 1. Собираю информацию о новых заказах с Озон.
     # ozon_actions.awaiting_packaging_orders()
 
     # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
     # ozon_actions.awaiting_deliver_orders()
 
-    # 3. Готовлю данные для подтверждения отгрузки
+    # # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
+    ozon_actions.create_ozone_selection_sheet_pdf()
 
-    # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    ozon_actions.confirm_delivery_create_document()
+    # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    # ozon_actions.confirm_delivery_create_document()
 
-    # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    ozon_actions.check_delivery_create()
+    # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    # ozon_actions.check_delivery_create()
 
-    # 6. Проверяю статус формирования накладной.
-    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    ozon_actions.check_status_formed_invoice()
+    # # 6. Проверяю статус формирования накладной.
+    # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    # ozon_actions.check_status_formed_invoice()
 
     # Очищаем все папки на сервере
     # clearning_folders()

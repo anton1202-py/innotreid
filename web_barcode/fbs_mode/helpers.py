@@ -149,7 +149,7 @@ def special_design_light(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
     """
-    from tasks import version
+    from tasks_copy import version
     barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
     layout_function = img2pdf.get_layout_fun(barcode_size)
 
@@ -228,7 +228,7 @@ def special_design_dark(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
     """
-    from tasks import version
+    from tasks_copy import version
     barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
     layout_function = img2pdf.get_layout_fun(barcode_size)
 
@@ -308,7 +308,6 @@ def design_barcodes_dict_spec(names_for_print_barcodes, dict_barcode_print):
     Создает дизайн штрихкода. Входящие файлы:
     names_for_print_barcodes - список всех артикулов для печати (получаем из файла).
     dict_barcode_print - словарь с информацией об артикуле: {артикул_продавца: [наименование, баркод]}
-    sheet - лист excel с юр. данными для печати на штрихкоде (ООО или ИП).
     """
     SPECIAL_TICKETS_FILE_NAME = '/DATABASE/Специальные этикетки.xlsx'
     special_tickets_file = stream_dropbox_file(SPECIAL_TICKETS_FILE_NAME)
