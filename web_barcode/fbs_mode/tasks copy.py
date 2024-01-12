@@ -17,6 +17,7 @@ import dropbox
 import openpyxl
 import pandas as pd
 import psycopg2
+import pythoncom
 import requests
 import telegram
 from celery_tasks.celery import app
@@ -25,12 +26,12 @@ from helpers import (design_barcodes_dict_spec,
                      merge_barcode_for_ozon_two_on_two,
                      new_data_for_ozon_ticket, print_barcode_to_pdf2,
                      qrcode_print_for_products, supply_qrcode_to_standart_view)
-from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import create_engine
+from win32com.client import DispatchEx
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -423,15 +424,28 @@ class WildberriesFbsMode():
             # Увеличиваем высоту строки
             for i in range(2, len(self.selection_dict) + 2):
                 source_page2.row_dimensions[i].height = 40
+
             w_b2.save(name_selection_file)
+
+            xl = DispatchEx("Excel.Application")
+            xl.DisplayAlerts = False
             folder_path = os.path.dirname(os.path.abspath(path_file))
             name_for_file = f'WB - ИП лист подбора {delivery_date}'
             name_xls_dropbox = f'WB - ИП Лист подбора {delivery_date}'
-
-            output = convert(source=path_file, output_dir=folder_path, soft=1)
+            wb = xl.Workbooks.Open(path_file)
+            xl.CalculateFull()
+            pythoncom.PumpWaitingMessages()
+            try:
+                wb.ExportAsFixedFormat(
+                    0, f'{folder_path}/{name_for_file}.pdf')
+            except Exception as e:
+                print(
+                    "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+            finally:
+                wb.Close()
 
             # Сохраняем на DROPBOX
-            with open(output, 'rb') as f:
+            with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
                 dbx_db.files_upload(
                     f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
         except Exception as e:
@@ -1011,16 +1025,26 @@ class OzonFbsMode():
                                 c[j].fill = pattern
 
             w_b2.save(f'{name_for_file}.xlsx')
-
+            xl = DispatchEx("Excel.Application")
+            xl.DisplayAlerts = False
             path_file = os.path.abspath(f'{name_for_file}.xlsx')
             only_file_name = os.path.splitext(os.path.basename(path_file))[0]
-
+            wb = xl.Workbooks.Open(path_file)
+            xl.CalculateFull()
+            pythoncom.PumpWaitingMessages()
             folder_path = os.path.dirname(os.path.abspath(path_file))
-            output = convert(source=path_file, output_dir=folder_path, soft=1)
+            try:
+                wb.ExportAsFixedFormat(
+                    0, f'{folder_path}/{only_file_name}.pdf')
+            except Exception as e:
+                print(
+                    "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+            finally:
+                wb.Close()
 
             folder = (
                 f'{self.dropbox_current_assembling_folder}/OZON - ИП лист подбора {self.date_for_files}.pdf')
-            with open(output, 'rb') as f:
+            with open(f'{folder_path}/{only_file_name}.pdf', 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -1361,18 +1385,29 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             # Когда понадобится столбец НА ПРОИЗВОДСТВО - удалить следующую строку
             source_page2.delete_cols(3, 1)
             w_b2.save(name_pivot_xls)
-
+            xl = DispatchEx("Excel.Application")
+            xl.DisplayAlerts = False
+            # print(f'{file_name_dir}/На производство.xlsx')
             folder_path = os.path.dirname(os.path.abspath(path_file))
             name_for_file = f'Общий файл производство ИП {delivery_date}'
             name_xls_dropbox = f'На производство ИП {delivery_date}'
-
-            output = convert(source=path_file, output_dir=folder_path, soft=1)
+            wb = xl.Workbooks.Open(path_file)
+            xl.CalculateFull()
+            pythoncom.PumpWaitingMessages()
+            try:
+                wb.ExportAsFixedFormat(
+                    0, f'{folder_path}/{name_for_file}.pdf')
+            except Exception as e:
+                print(
+                    "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+            finally:
+                wb.Close()
 
             # Сохраняем на DROPBOX
             with open(f'{path_file}', 'rb') as f:
                 dbx_db.files_upload(
                     f.read(), f'{self.dropbox_current_assembling_folder}/{name_xls_dropbox}.xlsx')
-            with open(output, 'rb') as f:
+            with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
                 dbx_db.files_upload(
                     f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
         except Exception as e:
