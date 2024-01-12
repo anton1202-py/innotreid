@@ -1424,7 +1424,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         """
         try:
             wb_article_amount = self.amount_articles.copy()
-
             for article in self.ozon_article_amount.keys():
                 if article in self.amount_articles.keys():
                     self.amount_articles[article] = int(
@@ -1432,13 +1431,11 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 else:
                     self.amount_articles[article] = int(
                         self.ozon_article_amount[article])
-
             sum_all_fbs = sum(self.amount_articles.values())
             sum_fbs_wb = 0
             if len(wb_article_amount.values()) != 0:
                 for i in wb_article_amount.values():
                     sum_fbs_wb += int(i)
-
             sum_fbs_ozon = 0
             if len(self.ozon_article_amount.values()) != 0:
                 for i in self.ozon_article_amount.values():
@@ -1448,9 +1445,9 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 articles_for_fbs = []
                 max_article_amount_all_fbs = 0
             else:
-                max_amount_all_fbs = max(self.amount_articles.values())
-                amount_for_fbs = self.amount_articles.values()
-                articles_for_fbs = self.amount_articles.keys()
+                max_amount_all_fbs = max(list(self.amount_articles.values()))
+                amount_for_fbs = list(self.amount_articles.values())
+                articles_for_fbs = list(self.amount_articles.keys())
                 max_article_amount_all_fbs = articles_for_fbs[amount_for_fbs.index(
                     max_amount_all_fbs)]
             return (sum_fbs_wb,
