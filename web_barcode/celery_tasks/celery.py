@@ -10,6 +10,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 app = Celery('celery_tasks',
              include=['celery_tasks.tasks',
                       'ozon_system.tasks',
+                      'fbs_mode.tasks',
                       'celery_tasks.tasks_yandex_fby_fbs'
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
@@ -69,5 +70,17 @@ app.conf.beat_schedule = {
     "start-adv-ozon-company": {
         "task": "ozon_system.tasks.start_adv_company",
         'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
+    },
+    "morning_wb_oz_action": {
+        "task": "fbs_mode.tasks.common_action_wb_pivot_ozon_morning",
+        "schedule": crontab(hour=10, minute=5)
+    },
+    "morning_only_oz_action": {
+        "task": "fbs_mode.tasks.common_action_ozon_morning",
+        "schedule": crontab(hour=11, minute=10)
+    },
+    "evening_wb_oz_action": {
+        "task": "fbs_mode.tasks.common_action_evening",
+        "schedule": crontab(hour=21, minute=30)
     },
 }

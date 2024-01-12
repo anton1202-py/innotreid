@@ -27,6 +27,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
+version = 'w1.0'
+
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
 load_dotenv(dotenv_path)
@@ -52,7 +54,7 @@ def common_barcode_design(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода {артикул: [название светильника, штрихкод]}
     """
-    from tasks_copy import version
+
     UR_LICO_DATA = '/DATABASE/web_barcode_data/helper_files/Печать Караваев.xlsx'
     ur_lico_data = stream_dropbox_file(UR_LICO_DATA)
 
@@ -149,7 +151,6 @@ def special_design_light(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
     """
-    from tasks_copy import version
     barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
     layout_function = img2pdf.get_layout_fun(barcode_size)
 
@@ -228,7 +229,6 @@ def special_design_dark(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
     """
-    from tasks_copy import version
     barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
     layout_function = img2pdf.get_layout_fun(barcode_size)
 
