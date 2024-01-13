@@ -863,7 +863,7 @@ class OzonFbsMode():
             im = Image.open(save_folder_docs)
             text_common = "Штрихкод для отгрузки ОЗОН"
             text_company = 'ИП Караваев'
-            font = ImageFont.truetype("arial.ttf", size=50)
+            font = ImageFont.truetype("Arial.ttf", size=50)
             A4 = (1033, 1462)
             white_A4 = Image.new('RGB', A4, 'white')
             text_draw = ImageDraw.Draw(white_A4)
@@ -1531,44 +1531,48 @@ def common_action_evening():
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
-    pivot_file.create_pivot_xls()
+    # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
-    # 3. Создаю поставку
-    wb_actions.create_delivery()
-    # 2. Создаю шрихкоды для артикулов
     wb_actions.create_barcode_tickets()
-    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
-    wb_actions.create_selection_list()
-    # 6. Добавляю поставку в доставку, получаю QR код поставки
-    # и преобразует этот QR код в необходимый формат.
-    wb_actions.qrcode_supply()
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+    # 3. Создаю поставку
+    # wb_actions.create_delivery()
+    # # 2. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+    # # 5. Создаю лист сборки
+    # wb_actions.create_selection_list()
+    # # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
+    # # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
 
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-    # 1. Собираю информацию о новых заказах с Озон.
-    ozon_actions.awaiting_packaging_orders()
-    # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    ozon_actions.awaiting_deliver_orders()
-    # 3. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
-    # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    ozon_actions.confirm_delivery_create_document()
-    # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    ozon_actions.check_delivery_create()
-    # 6. Проверяю статус формирования накладной.
-    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    ozon_actions.check_status_formed_invoice()
-    # Очищаем все папки на сервере
-    clearning_folders()
-    message_text = 'Вечерняя сборка ФБС сформирована'
-    bot.send_message(chat_id=CHAT_ID_MANAGER,
-                     text=message_text, parse_mode='HTML')
+    # # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+    # # 1. Собираю информацию о новых заказах с Озон.
+    # ozon_actions.awaiting_packaging_orders()
+    # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+    # ozon_actions.awaiting_deliver_orders()
+    # # 3. Готовлю данные для подтверждения отгрузки
+    # ozon_actions.prepare_data_for_confirm_delivery()
+    # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    # ozon_actions.confirm_delivery_create_document()
+    # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    # ozon_actions.check_delivery_create()
+    # # 6. Проверяю статус формирования накладной.
+    # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    # ozon_actions.check_status_formed_invoice()
+    # # Очищаем все папки на сервере
+    # clearning_folders()
+    # message_text = 'Вечерняя сборка ФБС сформирована'
+    # bot.send_message(chat_id=CHAT_ID_MANAGER,
+    #                  text=message_text, parse_mode='HTML')
+
+
+common_action_evening()
