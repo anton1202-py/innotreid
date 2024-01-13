@@ -1204,7 +1204,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 create.cell(row=COUNT_HELPER, column=4).value = value
                 COUNT_HELPER += 1
-            name_pivot_xls = 'fbs_mode/data_for_barcodes/pivot_excel/На производство.xlsx'
+            name_pivot_xls = 'fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx'
             path_file = os.path.abspath(name_pivot_xls)
             # file_name_dir = path.parent
 
