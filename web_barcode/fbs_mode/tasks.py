@@ -78,22 +78,22 @@ def stream_dropbox_file(path):
 
 
 def clearning_folders():
-    dir = 'web_barcode/fbs_mode/data_for_barcodes/'
+    dir = 'fbs_mode/data_for_barcodes/'
     for file_name in os.listdir(dir):
         file_path = os.path.join(dir, file_name)
         if os.path.isfile(file_path):
             os.unlink(file_path)
 
-    dirs = ['web_barcode/fbs_mode/data_for_barcodes/cache_dir',
-            'web_barcode/fbs_mode/data_for_barcodes/done_data',
-            'web_barcode/fbs_mode/data_for_barcodes/pivot_excel',
-            'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3',
-            'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder',
-            'web_barcode/fbs_mode/data_for_barcodes/qrcode_supply',
-            'web_barcode/fbs_mode/data_for_barcodes/package_tickets/done',
-            'web_barcode/fbs_mode/data_for_barcodes/package_tickets',
-            'web_barcode/fbs_mode/data_for_barcodes/ozon_docs',
-            'web_barcode/fbs_mode/data_for_barcodes/ozon_delivery_barcode'
+    dirs = ['fbs_mode/data_for_barcodes/cache_dir',
+            'fbs_mode/data_for_barcodes/done_data',
+            'fbs_mode/data_for_barcodes/pivot_excel',
+            'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3',
+            'fbs_mode/data_for_barcodes/qrcode_folder',
+            'fbs_mode/data_for_barcodes/qrcode_supply',
+            'fbs_mode/data_for_barcodes/package_tickets/done',
+            'fbs_mode/data_for_barcodes/package_tickets',
+            'fbs_mode/data_for_barcodes/ozon_docs',
+            'fbs_mode/data_for_barcodes/ozon_delivery_barcode'
             ]
     for dir in dirs:
         for filename in glob.glob(os.path.join(dir, "*")):
@@ -319,7 +319,7 @@ class WildberriesFbsMode():
                 img = Image.open(BytesIO(binary_data))
                 # сохраняем изображение в файл
                 img.save(
-                    f"web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
+                    f"fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message('qrcode_order', self.qrcode_order, e)
@@ -370,7 +370,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
                 COUNT_HELPER += 1
-            name_selection_file = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/Лист подбора.xlsx'
+            name_selection_file = 'fbs_mode/data_for_barcodes/pivot_excel/Лист подбора.xlsx'
             path_file = os.path.abspath(name_selection_file)
 
             selection_file.save(name_selection_file)
@@ -470,7 +470,7 @@ class WildberriesFbsMode():
             img = Image.open(BytesIO(binary_data))
             # сохраняем изображение в файл
             img.save(
-                f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
+                f"fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -500,7 +500,7 @@ class WildberriesFbsMode():
         try:
             qrcode_list = qrcode_print_for_products()
             pdf_filenames = glob.glob(
-                'web_barcode/fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
             list_pdf_file_ticket_for_complect = []
             if self.amount_articles:
                 for j in pdf_filenames:
@@ -552,7 +552,7 @@ class WildberriesFbsMode():
                         qrcode_supply_amount)
                     amount_of_supply_qrcode -= 1
 
-                file_name = (f'web_barcode/fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
+                file_name = (f'fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                              f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
                 print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                       file_name,
@@ -1204,7 +1204,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 create.cell(row=COUNT_HELPER, column=4).value = value
                 COUNT_HELPER += 1
-            name_pivot_xls = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/На производство.xlsx'
+            name_pivot_xls = 'fbs_mode/data_for_barcodes/pivot_excel/На производство.xlsx'
             path_file = os.path.abspath(name_pivot_xls)
             # file_name_dir = path.parent
 
