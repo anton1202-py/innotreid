@@ -68,13 +68,14 @@ def common_barcode_design(dict_barcode_print):
     EAC_FILE = '/DATABASE/web_barcode_data/programm_data/eac.png'
 
     metadata, response = dbx_db.files_download(EAC_FILE)
-    if not os.path.exists('web_barcode/fbs_mode/data_for_barcodes/cache_dir/'):
-        os.makedirs('web_barcode/fbs_mode/data_for_barcodes/cache_dir/')
-    with open('web_barcode/fbs_mode/data_for_barcodes/eac.png', 'wb') as eac_file:
+    if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+        os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
+    with open('fbs_mode/data_for_barcodes/eac.png', 'wb') as eac_file:
         eac_file.write(response.content)
 
         # Создание самого штрихкода
     for key, value in dict_barcode_print.items():
+        print(key)
         render_options = {
             "module_width": 1,
             "module_height": 35,
@@ -87,7 +88,7 @@ def common_barcode_design(dict_barcode_print):
             writer=ImageWriter()
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#000000'))
-        image1 = Image.open('web_barcode/fbs_mode/data_for_barcodes/eac.png')
+        image1 = Image.open('fbs_mode/data_for_barcodes/eac.png')
         draw_text = ImageDraw.Draw(im)
         # Длина подложки
         w_width = round(im.width/2)
@@ -127,12 +128,12 @@ def common_barcode_design(dict_barcode_print):
             font=font_version,
             fill=('#ffffff')
         )
-        im.save(f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.png')
+        im.save(f'fbs_mode/data_for_barcodes/cache_dir/{key}.png')
         im.close()
         pdf = img2pdf.convert(
-            f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.png',
+            f'fbs_mode/data_for_barcodes/cache_dir/{key}.png',
             layout_fun=layout_function)
-        with open(f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
+        with open(f'fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
             f.write(pdf)
 
 

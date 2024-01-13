@@ -79,9 +79,9 @@ def common_barcode_design(dict_barcode_print):
     EAC_FILE = '/DATABASE/web_barcode_data/programm_data/eac.png'
 
     metadata, response = dbx_db.files_download(EAC_FILE)
-    if not os.path.exists('web_barcode/fbs_mode/data_for_barcodes/cache_dir/'):
-        os.makedirs('web_barcode/fbs_mode/data_for_barcodes/cache_dir/')
-    with open('web_barcode/fbs_mode/data_for_barcodes/eac.png', 'wb') as eac_file:
+    if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+        os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
+    with open('fbs_mode/data_for_barcodes/eac.png', 'wb') as eac_file:
         eac_file.write(response.content)
 
         # Создание самого штрихкода
@@ -98,7 +98,7 @@ def common_barcode_design(dict_barcode_print):
             writer=ImageWriter()
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#000000'))
-        image1 = Image.open('web_barcode/fbs_mode/data_for_barcodes/eac.png')
+        image1 = Image.open('fbs_mode/data_for_barcodes/eac.png')
         draw_text = ImageDraw.Draw(im)
         # Длина подложки
         w_width = round(im.width/2)
@@ -138,12 +138,12 @@ def common_barcode_design(dict_barcode_print):
             font=font_version,
             fill=('#ffffff')
         )
-        im.save(f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.png')
+        im.save(f'fbs_mode/data_for_barcodes/cache_dir/{key}.png')
         im.close()
         pdf = img2pdf.convert(
-            f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.png',
+            f'fbs_mode/data_for_barcodes/cache_dir/{key}.png',
             layout_fun=layout_function)
-        with open(f'web_barcode/fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
+        with open(f'fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
             f.write(pdf)
 
 
@@ -440,13 +440,13 @@ def qrcode_print_for_products():
     Входящие файлы:
     filename - название файла с qr-кодами. Для создания промежуточной папки.
     """
-    dir = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/'
+    dir = 'fbs_mode/data_for_barcodes/qrcode_folder/'
     filelist = glob.glob(os.path.join(dir, "*.png"))
     filelist.sort(key=natural_keys)
     i = 0
     font1 = ImageFont.truetype("arial.ttf", size=40)
     font2 = ImageFont.truetype("arial.ttf", size=90)
-    filename = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
+    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
     if not os.path.isdir(filename):
         os.mkdir(filename)
     for file in filelist:
@@ -496,7 +496,7 @@ def supply_qrcode_to_standart_view():
     filename - название файла с qr-кодами. Для создания промежуточной папки.
     """
 
-    dir = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/'
+    dir = 'fbs_mode/data_for_barcodes/qrcode_supply/'
     filelist = glob.glob(os.path.join(dir, "*.png"))
     filelist.sort(key=natural_keys)
 
