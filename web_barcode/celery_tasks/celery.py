@@ -81,6 +81,6 @@ app.conf.beat_schedule = {
     },
     "evening_wb_oz_action": {
         "task": "fbs_mode.tasks.common_action_evening",
-        "schedule": crontab(hour=21, minute=30)
+        "schedule": crontab(hour=15, minute=25)
     },
 }
