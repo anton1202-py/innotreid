@@ -19,7 +19,7 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-from celery_tasks.celery import app
+# from celery_tasks.celery import app
 from dotenv import load_dotenv
 from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
@@ -1496,7 +1496,7 @@ def common_action_wb_pivot_ozon_morning():
                      text=message_text, parse_mode='HTML')
 
 
-@app.task
+# @app.task
 def common_action_ozon_morning():
 
     ozon_actions = OzonFbsMode()
@@ -1522,7 +1522,7 @@ def common_action_ozon_morning():
                      text=message_text, parse_mode='HTML')
 
 
-@app.task
+# @app.task
 def common_action_evening():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
