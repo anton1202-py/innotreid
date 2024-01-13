@@ -446,7 +446,7 @@ def qrcode_print_for_products():
     i = 0
     font1 = ImageFont.truetype("arial.ttf", size=40)
     font2 = ImageFont.truetype("arial.ttf", size=90)
-    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
+    filename = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
     if not os.path.isdir(filename):
         os.mkdir(filename)
     for file in filelist:

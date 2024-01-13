@@ -319,7 +319,7 @@ class WildberriesFbsMode():
                 img = Image.open(BytesIO(binary_data))
                 # сохраняем изображение в файл
                 img.save(
-                    f"fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
+                    f"web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message('qrcode_order', self.qrcode_order, e)
@@ -470,7 +470,7 @@ class WildberriesFbsMode():
             img = Image.open(BytesIO(binary_data))
             # сохраняем изображение в файл
             img.save(
-                f"fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
+                f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -500,7 +500,7 @@ class WildberriesFbsMode():
         try:
             qrcode_list = qrcode_print_for_products()
             pdf_filenames = glob.glob(
-                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                'web_barcode/fbs_mode/data_for_barcodes/cache_dir/*.pdf')
             list_pdf_file_ticket_for_complect = []
             if self.amount_articles:
                 for j in pdf_filenames:
