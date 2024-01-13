@@ -1533,7 +1533,7 @@ def common_action_evening():
     pivot_file = CreatePivotFile()
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
