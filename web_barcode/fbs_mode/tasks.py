@@ -78,11 +78,11 @@ def stream_dropbox_file(path):
 
 
 def clearning_folders():
-    dir = 'fbs_mode/data_for_barcodes/'
-    for file_name in os.listdir(dir):
-        file_path = os.path.join(dir, file_name)
-        if os.path.isfile(file_path):
-            os.unlink(file_path)
+    # dir = 'fbs_mode/data_for_barcodes/'
+    # for file_name in os.listdir(dir):
+    #    file_path = os.path.join(dir, file_name)
+    #    if os.path.isfile(file_path):
+    #        os.unlink(file_path)
 
     dirs = ['fbs_mode/data_for_barcodes/cache_dir',
             'fbs_mode/data_for_barcodes/done_data',
@@ -139,7 +139,7 @@ class WildberriesFbsMode():
 
     def article_data_for_tickets(self):
         """
-        WILDVERRIES
+        WILDBERRIES
         Функция обрабатывает новые сборочные задания.
         Выделяет артикулы продавца светильников, их баркоды и наименования.
         Создает словарь с данными каждого артикулы и словарь с количеством каждого
@@ -253,7 +253,7 @@ class WildberriesFbsMode():
                              text=message_text, parse_mode='HTML')
 
     def create_delivery(self):
-        """WILDVERRIES. Создание поставки"""
+        """WILDBERRIES. Создание поставки"""
         try:
             url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
             hour = datetime.now().hour
@@ -283,7 +283,7 @@ class WildberriesFbsMode():
 
     def qrcode_order(self):
         """
-        WILDVERRIES.
+        WILDBERRIES.
         Функция добавляет сборочные задания по их id
         в созданную поставку и получает qr стикер каждого
         задания и сохраняет его в папку
@@ -327,7 +327,7 @@ class WildberriesFbsMode():
                              text=message_text, parse_mode='HTML')
 
     def create_selection_list(self):
-        """WILDVERRIES. Создает лист сборки"""
+        """WILDBERRIES. Создает лист сборки"""
         try:
             # создаем новую книгу Excel
             selection_file = Workbook()
@@ -370,7 +370,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
                 COUNT_HELPER += 1
-            name_selection_file = 'fbs_mode/data_for_barcodes/pivot_excel/selection_list.xlsx'
+            name_selection_file = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/selection_list.xlsx'
             path_file = os.path.abspath(name_selection_file)
 
             selection_file.save(name_selection_file)
@@ -445,7 +445,7 @@ class WildberriesFbsMode():
 
     def qrcode_supply(self):
         """
-        WILDVERRIES.
+        WILDBERRIES.
         Функция добавляет поставку в доставку, получает QR код поставки
         и преобразует этот QR код в необходимый формат.
         """
@@ -479,7 +479,7 @@ class WildberriesFbsMode():
                              text=message_text, parse_mode='HTML')
 
     def create_barcode_tickets(self):
-        """WILDVERRIES. Функция создает этикетки со штрихкодами для артикулов"""
+        """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
         try:
             design_barcodes_dict_spec(
                 self.clear_article_list, self.data_article_info_dict)
@@ -492,7 +492,7 @@ class WildberriesFbsMode():
 
     def list_for_print_create(self):
         """
-        WILDVERRIES.
+        WILDBERRIES.
         Функция создает список с полными именами файлов, которые нужно объединить
         amount_articles - словарь с данными {артикул_продавца: количество}.
         Объединяет эти файлы и сохраняет конечный файл на дропбоксе.
@@ -1204,7 +1204,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 create.cell(row=COUNT_HELPER, column=4).value = value
                 COUNT_HELPER += 1
-            name_pivot_xls = 'fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx'
+            name_pivot_xls = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx'
             path_file = os.path.abspath(name_pivot_xls)
             # file_name_dir = path.parent
 
@@ -1459,7 +1459,7 @@ def common_action_wb_pivot_ozon_morning():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
 
-    clearning_folders()
+    # clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
