@@ -80,10 +80,11 @@ def clearning_folders():
     dirs = ['fbs_mode/data_for_barcodes/cache_dir',
             'fbs_mode/data_for_barcodes/done_data',
             'fbs_mode/data_for_barcodes/pivot_excel',
-            'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3',
+            os.path.abspath(
+                'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3'),
             'fbs_mode/data_for_barcodes/qrcode_folder',
             'fbs_mode/data_for_barcodes/qrcode_supply',
-            'fbs_mode/data_for_barcodes/package_tickets/done',
+            os.path.abspath('fbs_mode/data_for_barcodes/package_tickets/done'),
             'fbs_mode/data_for_barcodes/package_tickets',
             'fbs_mode/data_for_barcodes/ozon_docs',
             'fbs_mode/data_for_barcodes/ozon_delivery_barcode'
@@ -1543,6 +1544,7 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
