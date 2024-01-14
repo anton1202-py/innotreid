@@ -140,7 +140,7 @@ def qrcode_supply():
     # создаем объект изображения из бинарных данных
     img = Image.open(BytesIO(binary_data))
     # сохраняем изображение в файл
-    folder_path = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_supply'
+    folder_path = 'fbs_mode/data_for_barcodes/qrcode_supply'
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     img.save(
