@@ -1183,6 +1183,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             COUNT_HELPER += 1
             os.path.abspath
         script_path = os.path.abspath(__file__)
+        print('script_path', script_path)
         pivot_excel_path = os.path.join(os.path.dirname(
             script_path), "fbs_mode/data_for_barcodes/pivot_excel")
         folder_path_excel = os.path.abspath(
@@ -1512,7 +1513,7 @@ def common_action_evening():
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
-    # pivot_file.create_pivot_xls()
+    pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
 
