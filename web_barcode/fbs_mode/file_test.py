@@ -497,7 +497,8 @@ class WildberriesFbsMode():
                 result = [i[:last_slash_index], i[last_slash_index+1:]]
                 print('result', result)
                 print('******************')
-                new_name = i.split('\\')
+                # new_name = i.split('\\')
+                new_name = result
                 print('new_name', new_name)
                 full_new_name = []  # Список с полным именени файла после разделения
                 # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
@@ -1559,7 +1560,8 @@ def common_action_evening():
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
-    # clearning_folders()
+    clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
