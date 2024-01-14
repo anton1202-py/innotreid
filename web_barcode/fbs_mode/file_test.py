@@ -303,7 +303,7 @@ class WildberriesFbsMode():
                 os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
-            png_file_name = f"{folder_path}/{order} {self.article_id_dict[order]}.png"
+            png_file_name = f"{folder_path}/{order}_{self.article_id_dict[order]}.png"
             img.save(png_file_name)
         # except Exception as e:
         #    # обработка ошибки и отправка сообщения через бота
