@@ -1545,7 +1545,8 @@ def common_action_evening():
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
-    clearning_folders()
+    # clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
