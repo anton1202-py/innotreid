@@ -1184,10 +1184,12 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             os.path.abspath
         folder_path_excel = os.path.abspath(
             'fbs_mode/data_for_barcodes/pivot_excel')
+        print('folder_path_excel', folder_path_excel)
         if not os.path.exists(folder_path_excel):
             os.makedirs(folder_path_excel)
         # os.chmod(folder_path_excel, 0o777)
-        name_pivot_xls = f'{folder_path_excel}/for_production.xlsx'
+        name_pivot_xls = os.path.abspath(
+            f'{folder_path_excel}/for_production.xlsx')
         path_file = os.path.abspath(name_pivot_xls)
         # file_name_dir = path.parent
         pivot_xls.save(name_pivot_xls)
@@ -1543,6 +1545,7 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
