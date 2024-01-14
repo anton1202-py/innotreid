@@ -11,7 +11,6 @@ app = Celery('celery_tasks',
              include=['celery_tasks.tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
-                      'fbs_mode.file_test',
                       'celery_tasks.tasks_yandex_fby_fbs'
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
@@ -82,10 +81,6 @@ app.conf.beat_schedule = {
     },
     "evening_wb_oz_action": {
         "task": "fbs_mode.tasks.common_action_evening",
-        "schedule": crontab(hour=13, minute=10)
-    },
-    "evening_wb_ozon_action": {
-        "task": "fbs_mode.file_test.common_action_evening",
-        "schedule": crontab(hour=20, minute=12)
+        "schedule": crontab(hour=21, minute=50)
     },
 }
