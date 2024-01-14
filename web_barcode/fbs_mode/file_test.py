@@ -1192,7 +1192,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             'fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx')
         path_file = os.path.abspath(name_pivot_xls)
         # file_name_dir = path.parent
-        pivot_xls.save(name_pivot_xls)
+        pivot_xls.save(os.path.join(folder_path_excel, 'for_production.xlsx'))
         # ========= Подключение к базе данных ========= #
         engine = create_engine(
             "postgresql://databaseadmin:Up3psv8x@158.160.28.219:5432/innotreid")
