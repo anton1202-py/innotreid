@@ -80,11 +80,8 @@ def clearning_folders():
     dirs = ['fbs_mode/data_for_barcodes/cache_dir',
             'fbs_mode/data_for_barcodes/done_data',
             'fbs_mode/data_for_barcodes/pivot_excel',
-            os.path.abspath(
-                'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3'),
             'fbs_mode/data_for_barcodes/qrcode_folder',
             'fbs_mode/data_for_barcodes/qrcode_supply',
-            os.path.abspath('fbs_mode/data_for_barcodes/package_tickets/done'),
             'fbs_mode/data_for_barcodes/package_tickets',
             'fbs_mode/data_for_barcodes/ozon_docs',
             'fbs_mode/data_for_barcodes/ozon_delivery_barcode'
@@ -306,8 +303,8 @@ class WildberriesFbsMode():
                 os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
-            img.save(
-                f"{folder_path}/{order} {self.article_id_dict[order]}.png")
+            png_file_name = f"{folder_path}/{order} {self.article_id_dict[order]}.png"
+            img.save(png_file_name)
         # except Exception as e:
         #    # обработка ошибки и отправка сообщения через бота
         #    message_text = error_message('qrcode_order', self.qrcode_order, e)
@@ -1191,12 +1188,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         # os.chmod(folder_path_excel, 0o777)
         new_folder_path = os.path.join(
             os.getcwd(), "fbs_mode/data_for_barcodes/new_pivot_excel")
-        print('new_folder_path', new_folder_path)
         if not os.path.exists(new_folder_path):
             os.makedirs(new_folder_path)
 
         name_pivot_xls = f'{new_folder_path}/for_production.xlsx'
-        print('name_pivot_xls', name_pivot_xls)
         path_file = os.path.abspath(name_pivot_xls)
         # file_name_dir = path.parent
         pivot_xls.save(name_pivot_xls)
