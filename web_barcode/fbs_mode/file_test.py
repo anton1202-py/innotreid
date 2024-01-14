@@ -514,6 +514,8 @@ class WildberriesFbsMode():
                 i = '/'.join(i)
                 last_sorted_list.append(i)
             list_pdf_file_ticket_for_complect = last_sorted_list
+            print('list_pdf_file_ticket_for_complect',
+                  list_pdf_file_ticket_for_complect)
             qrcode_supply_amount = supply_qrcode_to_standart_view()[0]
             while amount_of_supply_qrcode > 0:
                 list_pdf_file_ticket_for_complect.append(
@@ -1548,7 +1550,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     # clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
