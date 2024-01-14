@@ -1185,7 +1185,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         script_path = os.path.abspath(__file__)
         print('script_path', script_path)
         pivot_excel_path = os.path.join(os.path.dirname(
-            script_path), "fbs_mode/data_for_barcodes/pivot_excel")
+            script_path), "data_for_barcodes/pivot_excel")
         folder_path_excel = os.path.abspath(
             'fbs_mode/data_for_barcodes/pivot_excel')
         print('folder_path_excel', folder_path_excel)
