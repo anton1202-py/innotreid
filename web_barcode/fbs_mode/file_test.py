@@ -1498,7 +1498,7 @@ def common_action_evening():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
 
-    # clearning_folders()
+    clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
@@ -1524,7 +1524,6 @@ def common_action_evening():
     # # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
-
     # # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
     # # 1. Собираю информацию о новых заказах с Озон.
     # ozon_actions.awaiting_packaging_orders()
@@ -1540,7 +1539,8 @@ def common_action_evening():
     # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
-    # clearning_folders()
+    clearning_folders()
+
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
     #                  text=message_text, parse_mode='HTML')
