@@ -54,7 +54,7 @@ def common_barcode_design(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода {артикул: [название светильника, штрихкод]}
     """
-
+    print(dict_barcode_print)
     UR_LICO_DATA = '/DATABASE/web_barcode_data/helper_files/Печать Караваев.xlsx'
     ur_lico_data = stream_dropbox_file(UR_LICO_DATA)
 
@@ -441,14 +441,21 @@ def qrcode_print_for_products():
     filename - название файла с qr-кодами. Для создания промежуточной папки.
     """
     dir = 'fbs_mode/data_for_barcodes/qrcode_folder/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    os.chmod(dir, 0o777)
+
     filelist = glob.glob(os.path.join(dir, "*.png"))
     filelist.sort(key=natural_keys)
     i = 0
     font1 = ImageFont.truetype("arial.ttf", size=40)
     font2 = ImageFont.truetype("arial.ttf", size=90)
-    filename = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
-    if not os.path.isdir(filename):
-        os.mkdir(filename)
+
+    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
+    if not os.path.exists(filename):
+        os.makedirs(filename)
+    os.chmod(filename, 0o777)
+
     for file in filelist:
         path = Path(file)
         file_name = str(os.path.basename(path).split('.')[0])
