@@ -1553,6 +1553,7 @@ def common_action_evening():
     # # Очищаем все папки на сервере
     # clearning_folders()
 
+
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
     #                  text=message_text, parse_mode='HTML')
