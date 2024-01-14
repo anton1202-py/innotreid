@@ -350,7 +350,8 @@ class WildberriesFbsMode():
             create.cell(row=COUNT_HELPER, column=5).value = value[3]
             create.cell(row=COUNT_HELPER, column=6).value = value[4]
             COUNT_HELPER += 1
-        folder_path = 'fbs_mode/data_for_barcodes/pivot_excel'
+        folder_path = os.path.join(
+            os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         name_selection_file = f'{folder_path}/selection_list.xlsx'
@@ -1544,6 +1545,7 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
