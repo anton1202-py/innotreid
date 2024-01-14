@@ -54,7 +54,6 @@ def common_barcode_design(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода {артикул: [название светильника, штрихкод]}
     """
-    print(dict_barcode_print)
     UR_LICO_DATA = '/DATABASE/web_barcode_data/helper_files/Печать Караваев.xlsx'
     ur_lico_data = stream_dropbox_file(UR_LICO_DATA)
 
@@ -492,7 +491,6 @@ def qrcode_print_for_products():
     #        os.remove(f)
     #    except Exception:
     #        print('')
-    print(pdf_filenames_qrcode)
     return pdf_filenames_qrcode
 
 

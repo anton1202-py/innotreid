@@ -470,10 +470,10 @@ class WildberriesFbsMode():
         """
         # try:
         qrcode_list = qrcode_print_for_products()
-        print('qrcode_list', qrcode_list)
+
         pdf_filenames = glob.glob(
             'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
-        print('pdf_filenames', pdf_filenames)
+
         list_pdf_file_ticket_for_complect = []
         if self.amount_articles:
             for j in pdf_filenames:
@@ -500,6 +500,7 @@ class WildberriesFbsMode():
                 outer_list.append(full_new_name)
             # Сортирую самый внешний список по последнему элемену самого внутреннего списка
             sorted_list = sorted(outer_list, key=lambda x: x[-1][-1])
+            print('sorted_list', sorted_list)
             # Далее идет обратный процесс - процесс объединения элементов списка
             # в первоначальные имена файлов, но уже отсортированные
             new_sort = []
@@ -514,6 +515,7 @@ class WildberriesFbsMode():
                 i = '/'.join(i)
                 last_sorted_list.append(i)
             list_pdf_file_ticket_for_complect = last_sorted_list
+            print('***********************************')
             print('list_pdf_file_ticket_for_complect',
                   list_pdf_file_ticket_for_complect)
             qrcode_supply_amount = supply_qrcode_to_standart_view()[0]
