@@ -1181,24 +1181,16 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             create.cell(row=COUNT_HELPER, column=1).value = key
             create.cell(row=COUNT_HELPER, column=4).value = value
             COUNT_HELPER += 1
-            os.path.abspath
-        script_path = os.path.abspath(__file__)
-        print('script_path', script_path)
-        pivot_excel_path = os.path.join(os.path.dirname(
-            script_path), "data_for_barcodes/pivot_excel")
+
         folder_path_excel = os.path.abspath(
             'fbs_mode/data_for_barcodes/pivot_excel')
-        print('pivot_excel_path', pivot_excel_path)
         if not os.path.exists(folder_path_excel):
             os.makedirs(folder_path_excel)
         # os.chmod(folder_path_excel, 0o777)
-
-        # file_name_dir = path.parent
-        pivot_xls.save(os.path.join(pivot_excel_path, 'for_production.xlsx'))
-
-        name_pivot_xls = os.path.abspath(
-            'fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx')
+        name_pivot_xls = f'{folder_path_excel}/for_production.xlsx'
         path_file = os.path.abspath(name_pivot_xls)
+        # file_name_dir = path.parent
+        pivot_xls.save(name_pivot_xls)
         # ========= Подключение к базе данных ========= #
         engine = create_engine(
             "postgresql://databaseadmin:Up3psv8x@158.160.28.219:5432/innotreid")
@@ -1551,7 +1543,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
