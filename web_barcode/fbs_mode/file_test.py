@@ -496,7 +496,7 @@ class WildberriesFbsMode():
                 last_slash_index = i.rfind("/")
                 result = [[i[:last_slash_index]], [i[last_slash_index+1:]]]
                 print(result)
-                new_name = i.split('\\')
+                new_name = result
                 full_new_name = []  # Список с полным именени файла после разделения
                 # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
                 # В этом цикле разделяю имена из предыдущих списков по пробелу.
