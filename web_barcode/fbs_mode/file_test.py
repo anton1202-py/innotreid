@@ -1512,7 +1512,7 @@ def common_action_evening():
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
-    pivot_file.create_pivot_xls()
+    # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
 
@@ -1550,6 +1550,7 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
+
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
