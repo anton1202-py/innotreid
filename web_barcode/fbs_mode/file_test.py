@@ -486,6 +486,9 @@ class WildberriesFbsMode():
             amount_of_supply_qrcode = math.ceil(
                 len(list_pdf_file_ticket_for_complect)/20)
             outer_list = []  # Внешний список для процесса сортировки
+            print('list_pdf_file_ticket_for_complect',
+                  list_pdf_file_ticket_for_complect)
+            print('**************************')
             for i in list_pdf_file_ticket_for_complect:
                 # Разделяю полное название файла на путь к файлу и имя файла
                 # Оказывается в python знаком \ отделяется последняя папка перед файлом
@@ -1552,7 +1555,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     # clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
