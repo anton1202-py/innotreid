@@ -226,7 +226,6 @@ class WildberriesFbsMode():
             # Заполняем словарь данными для Листа подбора
             self.selection_dict[order_id] = [
                 photo, brand, title_article, seller_article]
-            print(self.amount_articles)
         return self.amount_articles
         # except Exception as e:
         #    # обработка ошибки и отправка сообщения через бота
@@ -303,7 +302,7 @@ class WildberriesFbsMode():
                 os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
-            png_file_name = f"{folder_path}/{order}_{self.article_id_dict[order]}.png"
+            png_file_name = f"{folder_path}/{order} {self.article_id_dict[order]}.png"
             img.save(png_file_name)
         # except Exception as e:
         #    # обработка ошибки и отправка сообщения через бота
@@ -743,8 +742,6 @@ class OzonFbsMode():
             self.ware_house_amount_dict[self.delivary_method_id] = {
                 'quantity': amount_products, 'containers_count': containers_count}
 
-            print(self.fbs_ozon_common_data_buils_dict)
-            print(self.departure_date)
             return self.ozon_article_amount
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
