@@ -470,8 +470,10 @@ class WildberriesFbsMode():
         """
         # try:
         qrcode_list = qrcode_print_for_products()
+        print('qrcode_list', qrcode_list)
         pdf_filenames = glob.glob(
             'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+        print('pdf_filenames', pdf_filenames)
         list_pdf_file_ticket_for_complect = []
         if self.amount_articles:
             for j in pdf_filenames:
