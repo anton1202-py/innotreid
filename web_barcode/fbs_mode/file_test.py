@@ -1188,7 +1188,13 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
         if not os.path.exists(folder_path_excel):
             os.makedirs(folder_path_excel)
         # os.chmod(folder_path_excel, 0o777)
-        name_pivot_xls = f'{folder_path_excel}/for_production.xlsx'
+        new_folder_path = os.path.join(os.getcwd(), "new_pivot_excel")
+        print('new_folder_path', new_folder_path)
+        if not os.path.exists(new_folder_path):
+            os.makedirs(new_folder_path)
+
+        name_pivot_xls = f'{new_folder_path}/for_production.xlsx'
+        print('name_pivot_xls', name_pivot_xls)
         path_file = os.path.abspath(name_pivot_xls)
         # file_name_dir = path.parent
         pivot_xls.save(name_pivot_xls)
