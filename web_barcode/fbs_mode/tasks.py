@@ -273,7 +273,6 @@ class WildberriesFbsMode():
                 "POST", url_data, headers=wb_headers_karavaev, data=payload)
             # print(response_data)
             self.supply_id = json.loads(response_data.text)['id']
-            print(self.supply_id)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -318,8 +317,11 @@ class WildberriesFbsMode():
                 # создаем объект изображения из бинарных данных
                 img = Image.open(BytesIO(binary_data))
                 # сохраняем изображение в файл
+                folder_path = 'fbs_mode/data_for_barcodes/qrcode_folder'
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
                 img.save(
-                    f"web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
+                    f"{folder_path}/{order} {self.article_id_dict[order]}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message('qrcode_order', self.qrcode_order, e)
@@ -370,7 +372,10 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
                 COUNT_HELPER += 1
-            name_selection_file = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/selection_list.xlsx'
+            folder_path = 'fbs_mode/data_for_barcodes/pivot_excel'
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            name_selection_file = f'{folder_path}/selection_list.xlsx'
             path_file = os.path.abspath(name_selection_file)
 
             selection_file.save(name_selection_file)
@@ -469,8 +474,11 @@ class WildberriesFbsMode():
             # создаем объект изображения из бинарных данных
             img = Image.open(BytesIO(binary_data))
             # сохраняем изображение в файл
+            folder_path = 'fbs_mode/data_for_barcodes/qrcode_supply'
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
             img.save(
-                f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
+                f"{folder_path}/{self.supply_id}.png")
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -500,7 +508,7 @@ class WildberriesFbsMode():
         try:
             qrcode_list = qrcode_print_for_products()
             pdf_filenames = glob.glob(
-                'web_barcode/fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
             list_pdf_file_ticket_for_complect = []
             if self.amount_articles:
                 for j in pdf_filenames:
@@ -551,8 +559,10 @@ class WildberriesFbsMode():
                     list_pdf_file_ticket_for_complect.append(
                         qrcode_supply_amount)
                     amount_of_supply_qrcode -= 1
-
-                file_name = (f'fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
+                folder_path = 'fbs_mode/data_for_barcodes/done_data'
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+                file_name = (f'{folder_path}/Наклейки для комплектовщиков '
                              f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
                 print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                       file_name,
@@ -855,7 +865,10 @@ class OzonFbsMode():
                 "POST", url, headers=ozon_headers_karavaev, data=payload)
 
             image = Image.open(io.BytesIO(response.content))
-            save_folder_docs = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {self.date_for_files}.png"
+            folder_path = f'{self.main_save_folder_server}/ozon_delivery_barcode'
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            save_folder_docs = f"{folder_path}/{self.delivery_id}_баркод {self.date_for_files}.png"
             image.save(save_folder_docs)
 
             # Сохраняем штрихкод в PDF формате
@@ -877,7 +890,8 @@ class OzonFbsMode():
                            font=font, fill=('#000000'))
             text_draw.text((text_company_x, 200), text_company,
                            font=font, fill=('#000000'))
-            save_folder_docs_pdf = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {now_date}.pdf"
+
+            save_folder_docs_pdf = f"{folder_path}/{self.delivery_id}_баркод {now_date}.pdf"
             white_A4.save(save_folder_docs_pdf, 'PDF', quality=100)
 
             folder = (
@@ -952,8 +966,10 @@ class OzonFbsMode():
             create.column_dimensions['B'].width = 38
             create.column_dimensions['C'].width = 18
             create.column_dimensions['D'].width = 10
-
-            name_for_file = f'{self.main_save_folder_server}/ozon_docs/selection_sheet'
+            folder_path_docs = f'{self.main_save_folder_server}/ozon_docs'
+            if not os.path.exists(folder_path_docs):
+                os.makedirs(folder_path_docs)
+            name_for_file = f'{folder_path_docs}/selection_sheet'
 
             ozone_selection_sheet_xls.save(f'{name_for_file}.xlsx')
             w_b2 = load_workbook(f'{name_for_file}.xlsx')
@@ -1090,7 +1106,10 @@ class OzonFbsMode():
 
             # получение данных PDF из входящих данных
             pdf_data = response.content  # замените на фактические входные данные
-            save_folder_docs = f'{self.main_save_folder_server}/ozon_docs/OZON - ИП ШК на 1 коробку {self.date_for_files}.pdf'
+            folder_path = f'{self.main_save_folder_server}/ozon_docs'
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            save_folder_docs = f'{folder_path}/OZON - ИП ШК на 1 коробку {self.date_for_files}.pdf'
             # сохранение PDF-файла
             with open(save_folder_docs, 'wb') as f:
                 f.write(pdf_data)
@@ -1115,6 +1134,9 @@ class OzonFbsMode():
         """
         try:
             url = 'https://api-seller.ozon.ru/v2/posting/fbs/package-label'
+            save_folder = f'{self.main_save_folder_server}/package_tickets'
+            if not os.path.exists(save_folder):
+                os.makedirs(save_folder)
             for package in self.fbs_ozon_common_data.keys():
                 payload = json.dumps(
                     {
@@ -1123,8 +1145,8 @@ class OzonFbsMode():
                 )
                 response = requests.request(
                     "POST", url, headers=ozon_headers_karavaev, data=payload)
-                save_folder = f'{self.main_save_folder_server}/package_tickets'
-                save_folder_docs = f'{self.main_save_folder_server}/package_tickets/{package}.pdf'
+
+                save_folder_docs = f'{save_folder}/{package}.pdf'
                 # сохранение PDF-файла
                 with open(save_folder_docs, 'wb') as f:
                     f.write(response.content)
@@ -1138,7 +1160,7 @@ class OzonFbsMode():
             # Формируем список всех файлов, которые нужно объединять в один документ
             list_filename = glob.glob(f'{done_files_folder}/*.pdf')
             # Адрес и имя конечного файла
-            file_name = f'{self.main_save_folder_server}/package_tickets/done/done_tickets.pdf'
+            file_name = f'{done_files_folder}/done_tickets.pdf'
             merge_barcode_for_ozon_two_on_two(list_filename, file_name)
             folder = f'{self.dropbox_current_assembling_folder}/OZON-ИП этикетки.pdf'
             with open(file_name, 'rb') as f:
@@ -1204,7 +1226,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 create.cell(row=COUNT_HELPER, column=4).value = value
                 COUNT_HELPER += 1
-            name_pivot_xls = 'web_barcode/fbs_mode/data_for_barcodes/pivot_excel/for_production.xlsx'
+            folder_path_excel = 'fbs_mode/data_for_barcodes/pivot_excel'
+            if not os.path.exists(folder_path_excel):
+                os.makedirs(folder_path_excel)
+            name_pivot_xls = f'{folder_path_excel}/for_production.xlsx'
             path_file = os.path.abspath(name_pivot_xls)
             # file_name_dir = path.parent
 
@@ -1527,7 +1552,7 @@ def common_action_evening():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
 
-    # clearning_folders()
+    clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
