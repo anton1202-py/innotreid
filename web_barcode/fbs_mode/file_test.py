@@ -19,20 +19,18 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-from celery_tasks.celery import app
+# from celery_tasks.celery import app
 from dotenv import load_dotenv
+from helpers import (design_barcodes_dict_spec,
+                     merge_barcode_for_ozon_two_on_two,
+                     new_data_for_ozon_ticket, print_barcode_to_pdf2,
+                     qrcode_print_for_products, supply_qrcode_to_standart_view)
 # from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import create_engine
-
-from .helpers import (design_barcodes_dict_spec,
-                      merge_barcode_for_ozon_two_on_two,
-                      new_data_for_ozon_ticket, print_barcode_to_pdf2,
-                      qrcode_print_for_products,
-                      supply_qrcode_to_standart_view)
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -1186,7 +1184,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             COUNT_HELPER += 1
 
         folder_path_excel = os.path.abspath(
-            'fbs_mode/data_for_barcodes/pivot_excel')
+            'fbs_mode/data_for_barcodes')
         if not os.path.exists(folder_path_excel):
             os.makedirs(folder_path_excel)
         # os.chmod(folder_path_excel, 0o777)
@@ -1499,7 +1497,7 @@ def common_action_ozon_morning():
                      text=message_text, parse_mode='HTML')
 
 
-@app.task
+# @app.task
 def common_action_evening():
     wb_actions = WildberriesFbsMode()
     ozon_actions = OzonFbsMode()
@@ -1546,7 +1544,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
