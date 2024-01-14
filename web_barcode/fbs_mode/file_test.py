@@ -494,9 +494,11 @@ class WildberriesFbsMode():
                 # Оказывается в python знаком \ отделяется последняя папка перед файлом
                 # А все внешние отделяются знаком /
                 last_slash_index = i.rfind("/")
-                result = [[i[:last_slash_index]], [i[last_slash_index+1:]]]
-                print(result)
-                new_name = result
+                result = [i[:last_slash_index], i[last_slash_index+1:]]
+                print('result', result)
+                print('******************')
+                new_name = i.split('\\')
+                print('new_name', new_name)
                 full_new_name = []  # Список с полным именени файла после разделения
                 # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
                 # В этом цикле разделяю имена из предыдущих списков по пробелу.
