@@ -517,7 +517,8 @@ class WildberriesFbsMode():
                 list_pdf_file_ticket_for_complect.append(
                     qrcode_supply_amount)
                 amount_of_supply_qrcode -= 1
-            folder_path = 'fbs_mode/data_for_barcodes/done_data'
+            folder_path = os.path.join(
+                os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
             file_name = (f'{folder_path}/Наклейки для комплектовщиков '
@@ -1545,7 +1546,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
