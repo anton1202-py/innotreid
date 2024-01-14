@@ -302,7 +302,8 @@ class WildberriesFbsMode():
             # создаем объект изображения из бинарных данных
             img = Image.open(BytesIO(binary_data))
             # сохраняем изображение в файл
-            folder_path = 'fbs_mode/data_for_barcodes/qrcode_folder'
+            folder_path = os.path.join(
+                os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
             img.save(
@@ -1551,7 +1552,6 @@ def common_action_evening():
     # ozon_actions.check_status_formed_invoice()
     # # Очищаем все папки на сервере
     clearning_folders()
-
 
     # message_text = 'Вечерняя сборка ФБС сформирована'
     # bot.send_message(chat_id=CHAT_ID_MANAGER,
