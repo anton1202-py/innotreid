@@ -140,8 +140,11 @@ def qrcode_supply():
     # создаем объект изображения из бинарных данных
     img = Image.open(BytesIO(binary_data))
     # сохраняем изображение в файл
+    folder_path = 'web_barcode/fbs_mode/data_for_barcodes/qrcode_supply'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     img.save(
-        f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{supply_id}.png")
+        f"{folder_path}/{supply_id}.png")
     # except Exception as e:
     #    # обработка ошибки и отправка сообщения через бота
     #    message_text = error_message(
