@@ -1503,14 +1503,16 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
 def common_action_wb_pivot_ozon_morning():
 
     clearning_folders()
-    wb_actions = WildberriesFbsMode()
+
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
+    # 1. Создаю сводный файл для производства
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     pivot_file.sender_message_to_telegram()
+
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+    wb_actions = WildberriesFbsMode()
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
     # 2. Создаю поставку
@@ -1547,8 +1549,8 @@ def common_action_wb_pivot_ozon_morning():
 def common_action_ozon_morning():
 
     clearning_folders()
-    ozon_actions = OzonFbsMode()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+    ozon_actions = OzonFbsMode()
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
     # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
@@ -1577,8 +1579,8 @@ def common_action_evening():
     clearning_folders()
 
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile()
+    # 1. Создаю сводный файл для производства
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     pivot_file.sender_message_to_telegram()
