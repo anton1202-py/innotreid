@@ -811,3 +811,10 @@ def add_one_article_info_to_db(seller_article, wb_article):
         message = (f'Ошибка выполнения функции add_one_article_info_to_db: <b>{er}</b>\n\n'
                    f'Что делает функция: {add_one_article_info_to_db.__doc__}')
         bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
+
+
+@app.task
+def test_task():
+    """Тестовая задача"""
+    print('WHAT IS YOUR NAME???')
+    print('*************')

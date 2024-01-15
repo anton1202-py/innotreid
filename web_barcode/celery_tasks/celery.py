@@ -83,4 +83,8 @@ app.conf.beat_schedule = {
         "task": "fbs_mode.tasks.common_action_evening",
         "schedule": crontab(hour=21, minute=50)
     },
+    "test_task": {
+        "task": "celery_tasks.tasks.test_task",
+        "schedule": crontab(hour=12, minute=40)
+    },
 }
