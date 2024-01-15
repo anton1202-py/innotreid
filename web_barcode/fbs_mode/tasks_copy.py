@@ -169,9 +169,16 @@ class WildberriesFbsMode():
             response = requests.request(
                 "GET", url, headers=wb_headers_karavaev)
             orders_data = json.loads(response.text)['orders']
-
+            now_time = datetime.now()
             for order in orders_data:
-                order_articles_list.append(order['article'])
+                # Время создания заказа в переводе с UTC на московское
+                create_order_time = datetime.strptime(
+                    order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+                delta_order_time = now_time - create_order_time
+                if delta_order_time > timedelta(hours=1):
+                    print(now_time - create_order_time)
+                    print('**************')
+                    order_articles_list.append(order['article'])
 
             # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
             self.data_article_info_dict = {}
@@ -1485,81 +1492,81 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode):
             bot.send_message(chat_id=chat_id, text=message)
 
 
-# ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
-def common_action_wb_pivot_ozon_morning():
-    wb_actions = WildberriesFbsMode()
-    ozon_actions = OzonFbsMode()
+# # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
+# def common_action_wb_pivot_ozon_morning():
+#     wb_actions = WildberriesFbsMode()
+#     ozon_actions = OzonFbsMode()
 
-    clearning_folders()
-    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile()
-    pivot_file.create_pivot_xls()
-    # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
-    # 3. Создаю поставку
-    wb_actions.create_delivery()
-    # 2. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
-    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
-    wb_actions.create_selection_list()
-    # 6. Добавляю поставку в доставку, получаю QR код поставки
-    # и преобразует этот QR код в необходимый формат.
-    wb_actions.qrcode_supply()
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+#     clearning_folders()
+#     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
+#     # 1. Создаю сводный файл для производства
+#     pivot_file = CreatePivotFile()
+#     pivot_file.create_pivot_xls()
+#     # 2. Отправляю данные по сборке FBS
+#     pivot_file.sender_message_to_telegram()
+#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+#     # 1. Обрабатываю новые сборочные задания.
+#     wb_actions.article_data_for_tickets()
+#     # 3. Создаю поставку
+#     wb_actions.create_delivery()
+#     # 2. Создаю шрихкоды для артикулов
+#     wb_actions.create_barcode_tickets()
+#     # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+#     # задания и сохраняю его в папку
+#     wb_actions.qrcode_order()
+#     # 5. Создаю лист сборки
+#     wb_actions.create_selection_list()
+#     # 6. Добавляю поставку в доставку, получаю QR код поставки
+#     # и преобразует этот QR код в необходимый формат.
+#     wb_actions.qrcode_supply()
+#     # 7. Создаю список с полными именами файлов, которые нужно объединить
+#     wb_actions.list_for_print_create()
 
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-    # 1. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
-    # 2. Создаем лист подбора для ОЗОН
-    ozon_actions.create_ozone_selection_sheet_pdf()
-    # Очищаем все папки на сервере
-    clearning_folders()
-    message_text = 'Утренняя сборка WB сформирована'
-    bot.send_message(chat_id=CHAT_ID_MANAGER,
-                     text=message_text, parse_mode='HTML')
+#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+#     # 1. Готовлю данные для подтверждения отгрузки
+#     ozon_actions.prepare_data_for_confirm_delivery()
+#     # 2. Создаем лист подбора для ОЗОН
+#     ozon_actions.create_ozone_selection_sheet_pdf()
+#     # Очищаем все папки на сервере
+#     clearning_folders()
+#     message_text = 'Утренняя сборка WB сформирована'
+#     bot.send_message(chat_id=CHAT_ID_MANAGER,
+#                      text=message_text, parse_mode='HTML')
 
 
-def common_action_ozon_morning():
+# def common_action_ozon_morning():
 
-    ozon_actions = OzonFbsMode()
-    clearning_folders()
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-    # 1. Собираю информацию о новых заказах с Озон.
-    ozon_actions.awaiting_packaging_orders()
-    # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    ozon_actions.awaiting_deliver_orders()
-    # 3. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
-    # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    ozon_actions.confirm_delivery_create_document()
-    # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    ozon_actions.check_delivery_create()
-    # 6. Проверяю статус формирования накладной.
-    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    ozon_actions.check_status_formed_invoice()
-    # Очищаем все папки на сервере
-    clearning_folders()
-    message_text = 'Утренняя сборка ОЗОН сформирована'
-    bot.send_message(chat_id=CHAT_ID_MANAGER,
-                     text=message_text, parse_mode='HTML')
+#     ozon_actions = OzonFbsMode()
+#     clearning_folders()
+#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+#     # 1. Собираю информацию о новых заказах с Озон.
+#     ozon_actions.awaiting_packaging_orders()
+#     # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+#     ozon_actions.awaiting_deliver_orders()
+#     # 3. Готовлю данные для подтверждения отгрузки
+#     ozon_actions.prepare_data_for_confirm_delivery()
+#     # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+#     ozon_actions.confirm_delivery_create_document()
+#     # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+#     ozon_actions.check_delivery_create()
+#     # 6. Проверяю статус формирования накладной.
+#     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+#     ozon_actions.check_status_formed_invoice()
+#     # Очищаем все папки на сервере
+#     clearning_folders()
+#     message_text = 'Утренняя сборка ОЗОН сформирована'
+#     bot.send_message(chat_id=CHAT_ID_MANAGER,
+#                      text=message_text, parse_mode='HTML')
 
 
 def common_action_evening():
     wb_actions = WildberriesFbsMode()
-    ozon_actions = OzonFbsMode()
+    # ozon_actions = OzonFbsMode()
 
     # clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile()
+    # pivot_file = CreatePivotFile()
     # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
@@ -1567,7 +1574,7 @@ def common_action_evening():
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
-    wb_actions.create_barcode_tickets()
+    # wb_actions.create_barcode_tickets()
     # 3. Создаю поставку
     # wb_actions.create_delivery()
     # # 2. Создаю шрихкоды для артикулов
