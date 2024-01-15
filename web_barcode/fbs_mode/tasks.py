@@ -215,9 +215,13 @@ class WildberriesFbsMode():
             self.amount_articles = dict(Counter(self.clear_article_list))
 
             for order in orders_data:
-                if order['article'] in self.clear_article_list:
-                    self.article_id_dict[order['id']] = order['article']
-                    orders_id_list.append(order['id'])
+                create_order_time = datetime.strptime(
+                    order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+                delta_order_time = now_time - create_order_time
+                if delta_order_time > timedelta(hours=1):
+                    if order['article'] in self.clear_article_list:
+                        self.article_id_dict[order['id']] = order['article']
+                        orders_id_list.append(order['id'])
 
             # Словарь для данных листа подбора.
             self.selection_dict = {}
