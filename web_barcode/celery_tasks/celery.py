@@ -85,6 +85,6 @@ app.conf.beat_schedule = {
     },
     "test_task": {
         "task": "celery_tasks.tasks.test_task",
-        "schedule": crontab(hour=12, minute=40)
+        "schedule": crontab(hour=12, minute=46)
     },
 }
