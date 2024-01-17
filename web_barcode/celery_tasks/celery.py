@@ -88,3 +88,4 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=12, minute=50)
     },
 }
+app.conf.timezone = 'Europe/Moscow'
