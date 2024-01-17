@@ -816,5 +816,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
 @app.task
 def test_task():
     """Тестовая задача"""
-    print('WHAT IS YOUR NAME???')
-    print('*************')
+    time_now = datetime.now()
+    message = f'Сработала тестовая задача. Текущее время на сервере: {time_now}'
+
+    bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')

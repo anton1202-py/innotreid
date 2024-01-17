@@ -73,19 +73,18 @@ app.conf.beat_schedule = {
     },
     "morning_wb_oz_action": {
         "task": "fbs_mode.tasks.common_action_wb_pivot_ozon_morning",
-        "schedule": crontab(hour=10, minute=5)
+        "schedule": crontab(hour=7, minute=5)
     },
     "morning_only_oz_action": {
         "task": "fbs_mode.tasks.common_action_ozon_morning",
-        "schedule": crontab(hour=11, minute=10)
+        "schedule": crontab(hour=8, minute=10)
     },
     "evening_wb_oz_action": {
         "task": "fbs_mode.tasks.common_action_evening",
-        "schedule": crontab(hour=21, minute=50)
+        "schedule": crontab(hour=18, minute=50)
     },
     "test_task": {
         "task": "celery_tasks.tasks.test_task",
-        "schedule": crontab(hour=12, minute=50)
+        "schedule": crontab(hour=10, minute=58)
     },
 }
-app.conf.timezone = 'Europe/Moscow'
