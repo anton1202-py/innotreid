@@ -73,6 +73,36 @@ dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_secret=APP_SECRET_DB)
 
 
+def clearning_folders():
+    # dir = 'fbs_mode/data_for_barcodes/'
+    # for file_name in os.listdir(dir):
+    #    file_path = os.path.join(dir, file_name)
+    #    if os.path.isfile(file_path):
+    #        os.unlink(file_path)
+
+    dirs = ['fbs_mode/data_for_barcodes/cache_dir',
+            'fbs_mode/data_for_barcodes/done_data',
+            'fbs_mode/data_for_barcodes/pivot_excel',
+            'fbs_mode/data_for_barcodes/qrcode_folder',
+            'fbs_mode/data_for_barcodes/qrcode_supply',
+            'fbs_mode/data_for_barcodes/package_tickets',
+            'fbs_mode/data_for_barcodes/ozon_docs',
+            'fbs_mode/data_for_barcodes/ozon_delivery_barcode',
+            'fbs_mode/data_for_barcodes/yandex',
+            'fbs_mode/data_for_barcodes/new_pivot_excel'
+            ]
+    for dir in dirs:
+        for filename in glob.glob(os.path.join(dir, "*")):
+            file_path = os.path.join(dir, filename)
+            try:
+                if os.path.isfile(filename) or os.path.islink(filename):
+                    os.unlink(filename)
+                elif os.path.isdir(filename):
+                    shutil.rmtree(filename)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (filename, e))
+
+
 class YandexMarketFbsMode():
     """Класс отвечает за работу с заказами Wildberries"""
 
@@ -163,12 +193,13 @@ class YandexMarketFbsMode():
         """
         url_delivery = 'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments'
 
-        date_for_delivery = datetime.now() + timedelta(days=1)
+        date_for_delivery = datetime.now() + timedelta(days=0)
         date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
         payload = json.dumps({
             "dateFrom": date_for_delivery,
             "dateTo": date_for_delivery,
             "statuses": [
+                "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
                 "OUTBOUND_READY_FOR_CONFIRMATION"
             ]
         })
@@ -243,7 +274,7 @@ class YandexMarketFbsMode():
                 inner_info_dict[order] = inner_info_list
 
                 orders_info_list.append(inner_info_dict)
-
+        print(self.orders_list)
         return inner_info_dict
 
     def approve_shipment(self):
@@ -252,50 +283,54 @@ class YandexMarketFbsMode():
         Подтверждение отгрузки
         """
         shipment_data = self.received_info_about_delivery()
+        data = self.check_actual_orders()
         shipment_id = shipment_data['shipment_id']
+        print(shipment_id)
+        print(len(shipment_data['orders_list']))
+        print(len(self.orders_list))
 
         approve_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}/confirm'
         payload_approve = json.dumps({
             "externalShipmentId": f'{shipment_id}',
             "orderIds": self.orders_list
         })
-        response = requests.request(
-            "POST", approve_url, headers=yandex_headers_karavaev, data=payload_approve)
+        # response = requests.request(
+        #    "POST", approve_url, headers=yandex_headers_karavaev, data=payload_approve)
 
-    def check_docs_for_shipment(self):
-        """
-        YANDEXMARKET
-        Получает информацию о возможности печати ярлыков-наклеек для заказов в отгрузке
-        """
-        shipment_dict = self.receive_delivery_number()
-        if shipment_dict:
-            shipment_id = shipment_dict['shipment_id']
-            check_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/orders/info'
+    # def check_docs_for_shipment(self):
+    #     """
+    #     YANDEXMARKET
+    #     Получает информацию о возможности печати ярлыков-наклеек для заказов в отгрузке
+    #     """
+    #     shipment_dict = self.receive_delivery_number()
+    #     if shipment_dict:
+    #         shipment_id = shipment_dict['shipment_id']
+    #         check_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/orders/info'
 
-            response_check = requests.request(
-                "GET", check_url, headers=yandex_headers_karavaev)
+    #         response_check = requests.request(
+    #             "GET", check_url, headers=yandex_headers_karavaev)
 
-            shipment_docs_dict = {}
+    #         shipment_docs_dict = {}
 
-            check_info = json.loads(response_check.text)['result']
+    #         check_info = json.loads(response_check.text)['result']
 
-            possible_for_print_list = check_info['orderIdsWithLabels']
+    #         possible_for_print_list = check_info['orderIdsWithLabels']
 
-            shipment_docs_dict['shipment_id'] = shipment_id
-            shipment_docs_dict['orders_list'] = possible_for_print_list
+    #         shipment_docs_dict['shipment_id'] = shipment_id
+    #         shipment_docs_dict['orders_list'] = possible_for_print_list
 
-            return shipment_docs_dict
-            # else:
-            #    print('не все этикетки готовы')
-            #    time.sleep(300)
-            #    self.check_docs_for_shipment()
+    #         return shipment_docs_dict
+    #         # else:
+    #         #    print('не все этикетки готовы')
+    #         #    time.sleep(300)
+    #         #    self.check_docs_for_shipment()
 
     def saving_act(self):
         """
         YANDEXMARKET
         Сохраняет акт приема - передачи в PDF формате.
         """
-        self.shipment_id = 45554272
+        # self.shipment_id = 45554272
         url_act = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/act'
 
         response_act = requests.request(
@@ -456,29 +491,31 @@ class YandexMarketFbsMode():
                 f.read(), f'{self.dropbox_current_assembling_folder}/{name_pdf_dropbox}.pdf')
 
 
+clearning_folders()
 yand = YandexMarketFbsMode()
 
 # 1. Меняет статус ордеров
 # yand.change_orders_status()
-
-# 2. Проверяет все ордеры в поставке и исключает отмененнные.
-yand.check_actual_orders()
+#
+# 2. Формирует файл подбора
+yand.create_yandex_selection_sheet_pdf
 
 # !!! Не понятно нужна эта функция или нет
-# 3. Проверяет существования этикеток для поставки
+# !!!. Проверяет существования этикеток для поставки
 # yand.check_docs_for_shipment()
 
-# 4. Подтверждение отгрузки
-# yand.approve_shipment()
 
-# 5. Сохраняем акт
-# yand.saving_act()
+# 3. Подтверждение отгрузки
+yand.approve_shipment()
+
+# 4. Сохраняем акт
+yand.saving_act()
 
 # инфа о поставке
 # yand.received_info_about_delivery()
 
 # yand.check_actual_orders()
-# 6. Сохраняем этикетки
+# 5. Сохраняем этикетки
 # yand.saving_tickets()
 
-yand.create_yandex_selection_sheet_pdf()
+# yand.create_yandex_selection_sheet_pdf()

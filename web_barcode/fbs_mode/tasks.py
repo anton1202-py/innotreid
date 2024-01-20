@@ -1664,7 +1664,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
     def __init__(self):
         self.amount_articles = WildberriesFbsMode().article_data_for_tickets()
         self.ozon_article_amount = OzonFbsMode().prepare_data_for_confirm_delivery()
-        self.yandex_article_amount = YandexMarketFbsMode().yandex_prepare_data()
+        # self.yandex_article_amount = YandexMarketFbsMode().yandex_prepare_data()
         self.dropbox_main_fbs_folder = '/DATABASE/beta'
 
     def create_pivot_xls(self):
@@ -1695,13 +1695,13 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     self.amount_articles[article] = int(
                         self.ozon_article_amount[article])
 
-            for article in self.yandex_article_amount.keys():
-                if article in self.amount_articles.keys():
-                    self.amount_articles[article] = int(
-                        self.amount_articles[article]) + int(self.yandex_article_amount[article])
-                else:
-                    self.amount_articles[article] = int(
-                        self.yandex_article_amount[article])
+            # for article in self.yandex_article_amount.keys():
+            #     if article in self.amount_articles.keys():
+            #         self.amount_articles[article] = int(
+            #             self.amount_articles[article]) + int(self.yandex_article_amount[article])
+            #     else:
+            #         self.amount_articles[article] = int(
+            #             self.yandex_article_amount[article])
 
             sorted_data_for_pivot_xls = dict(
                 sorted(self.amount_articles.items(), key=lambda v: v[0].upper()))
@@ -1765,10 +1765,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     if name_article[i].value == j:
                         source_page.cell(
                             row=i+1, column=6).value = self.ozon_article_amount[j]
-                for k in self.yandex_article_amount.keys():
-                    if name_article[i].value == k:
-                        source_page.cell(
-                            row=i+1, column=7).value = self.yandex_article_amount[k]
+                # for k in self.yandex_article_amount.keys():
+                #     if name_article[i].value == k:
+                #         source_page.cell(
+                #             row=i+1, column=7).value = self.yandex_article_amount[k]
 
                 if name_article[i].value in wb_article_amount.keys():
                     source_page.cell(
@@ -1919,13 +1919,13 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                 else:
                     self.amount_articles[article] = int(
                         self.ozon_article_amount[article])
-            for article in self.yandex_article_amount.keys():
-                if article in self.amount_articles.keys():
-                    self.amount_articles[article] = int(
-                        self.amount_articles[article]) + int(self.yandex_article_amount[article])
-                else:
-                    self.amount_articles[article] = int(
-                        self.yandex_article_amount[article])
+            # for article in self.yandex_article_amount.keys():
+            #     if article in self.amount_articles.keys():
+            #         self.amount_articles[article] = int(
+            #             self.amount_articles[article]) + int(self.yandex_article_amount[article])
+            #     else:
+            #         self.amount_articles[article] = int(
+            #             self.yandex_article_amount[article])
             sum_all_fbs = sum(self.amount_articles.values())
             sum_fbs_wb = 0
             if len(wb_article_amount.values()) != 0:
@@ -1935,10 +1935,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             if len(self.ozon_article_amount.values()) != 0:
                 for i in self.ozon_article_amount.values():
                     sum_fbs_ozon += int(i)
-            sum_fbs_yandex = 0
-            if len(self.yandex_article_amount.values()) != 0:
-                for i in self.yandex_article_amount.values():
-                    sum_fbs_yandex += int(i)
+            # sum_fbs_yandex = 0
+            # if len(self.yandex_article_amount.values()) != 0:
+            #     for i in self.yandex_article_amount.values():
+            #         sum_fbs_yandex += int(i)
             if len(self.amount_articles) == 0:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
@@ -1951,7 +1951,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     max_amount_all_fbs)]
             return (sum_fbs_wb,
                     sum_fbs_ozon,
-                    sum_fbs_yandex,
+                    # sum_fbs_yandex,
                     sum_all_fbs,
                     articles_for_fbs,
                     max_article_amount_all_fbs,
@@ -1968,7 +1968,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
         list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
 
-        sum_fbs_wb, sum_fbs_ozon, sum_fbs_yandex, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
+        sum_fbs_wb, sum_fbs_ozon, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
         # ur_lico_for_message = ''
         # if 'ООО' in ur_type:
         #     ur_lico_for_message = 'Amstek'
@@ -1977,7 +1977,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         ur_lico_for_message = '3Д Ночник'
 
         message = f''' Отправлено на сборку Фбс {ur_lico_for_message}
-            ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}, Яндекс: {sum_fbs_yandex}
+            ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}
             Итого по ФБС {ur_lico_for_message}: {sum_all_fbs} штук
             В сборке {len(articles_for_fbs)} артикулов
             Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
@@ -1993,11 +1993,11 @@ def common_action_wb_pivot_ozon_morning():
     clearning_folders()
 
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # pivot_file = CreatePivotFile()
-    # # 1. Создаю сводный файл для производства
-    # pivot_file.create_pivot_xls()
-    # # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
+    pivot_file = CreatePivotFile()
+    # 1. Создаю сводный файл для производства
+    pivot_file.create_pivot_xls()
+    # 2. Отправляю данные по сборке FBS
+    pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     wb_actions = WildberriesFbsMode()
@@ -2071,7 +2071,7 @@ def common_action_evening():
     # 1. Создаю сводный файл для производства
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
+    pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     wb_actions = WildberriesFbsMode()
@@ -2110,18 +2110,18 @@ def common_action_evening():
     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     ozon_actions.check_status_formed_invoice()
 
-    # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
-    yandex_actions = YandexMarketFbsMode()
-    # 1. Меняет статус ордеров
-    yandex_actions.change_orders_status()
-    # 2. Формирует файл подбора
-    yandex_actions.create_yandex_selection_sheet_pdf
-    # 3. Подтверждение отгрузки
-    yandex_actions.approve_shipment()
-    # 4. Сохраняем акт
-    yandex_actions.saving_act()
-    # 5. Сохраняем этикетки
-    yandex_actions.saving_tickets()
+    # # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
+    # yandex_actions = YandexMarketFbsMode()
+    # # 1. Меняет статус ордеров
+    # yandex_actions.change_orders_status()
+    # # 2. Формирует файл подбора
+    # yandex_actions.create_yandex_selection_sheet_pdf
+    # # 3. Подтверждение отгрузки
+    # yandex_actions.approve_shipment()
+    # # 4. Сохраняем акт
+    # yandex_actions.saving_act()
+    # # 5. Сохраняем этикетки
+    # yandex_actions.saving_tickets()
 
     # Очищаем все папки на сервере
     clearning_folders()
