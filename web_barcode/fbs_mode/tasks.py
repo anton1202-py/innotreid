@@ -21,18 +21,19 @@ import requests
 import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
-from helpers import (design_barcodes_dict_spec,
-                     merge_barcode_for_ozon_two_on_two,
-                     merge_barcode_for_yandex_two_on_two,
-                     new_data_for_ozon_ticket, new_data_for_yandex_ticket,
-                     print_barcode_to_pdf2, qrcode_print_for_products,
-                     supply_qrcode_to_standart_view)
 from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import create_engine
+
+from .helpers import (design_barcodes_dict_spec,
+                      merge_barcode_for_ozon_two_on_two,
+                      merge_barcode_for_yandex_two_on_two,
+                      new_data_for_ozon_ticket, new_data_for_yandex_ticket,
+                      print_barcode_to_pdf2, qrcode_print_for_products,
+                      supply_qrcode_to_standart_view)
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
