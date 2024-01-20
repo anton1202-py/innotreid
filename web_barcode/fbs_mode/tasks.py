@@ -2130,6 +2130,3 @@ def common_action_evening():
                      text=message_text, parse_mode='HTML')
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=message_text, parse_mode='HTML')
-
-
-common_action_wb_pivot_ozon_morning()
