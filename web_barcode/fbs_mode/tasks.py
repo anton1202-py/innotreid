@@ -2071,7 +2071,7 @@ def common_action_evening():
     # 1. Создаю сводный файл для производства
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     wb_actions = WildberriesFbsMode()
