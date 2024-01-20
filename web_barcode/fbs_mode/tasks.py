@@ -96,8 +96,9 @@ def clearning_folders():
             'fbs_mode/data_for_barcodes/qrcode_supply',
             'fbs_mode/data_for_barcodes/package_tickets',
             'fbs_mode/data_for_barcodes/ozon_docs',
-            'fbs_mode/data_for_barcodes/ozon_delivery_barcode'
-            'fbs_mode/data_for_barcodes/yandex'
+            'fbs_mode/data_for_barcodes/ozon_delivery_barcode',
+            'fbs_mode/data_for_barcodes/yandex',
+            'fbs_mode/data_for_barcodes/new_pivot_excel'
             ]
     for dir in dirs:
         for filename in glob.glob(os.path.join(dir, "*")):
