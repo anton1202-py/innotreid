@@ -193,20 +193,19 @@ class YandexMarketFbsMode():
         """
         url_delivery = 'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments'
 
-        date_for_delivery = datetime.now() + timedelta(days=0)
+        date_for_delivery = datetime.now() + timedelta(days=1)
         date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
         payload = json.dumps({
             "dateFrom": date_for_delivery,
             "dateTo": date_for_delivery,
             "statuses": [
                 "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
-                "OUTBOUND_READY_FOR_CONFIRMATION"
+                "OUTBOUND_READY_FOR_CONFIRMATION", "FINISHED"
             ]
         })
 
         response_delivery = requests.request(
             "PUT", url_delivery, headers=yandex_headers_karavaev, data=payload)
-
         shipments_list = json.loads(response_delivery.text)[
             'result']['shipments']
         if len(shipments_list) == 0:
@@ -226,7 +225,6 @@ class YandexMarketFbsMode():
         Получает информацию о предстоящей отгрузке.
         """
         shipment_data = self.receive_delivery_number()
-
         shipment_id = shipment_data['shipment_id']
 
         # shipment_id = 45554272
@@ -235,9 +233,7 @@ class YandexMarketFbsMode():
         response = requests.request(
             "GET", url_info, headers=yandex_headers_karavaev)
         info_main_data = json.loads(response.text)['result']
-
         orders_list = info_main_data['orderIds']
-
         shipment_data = {}
         shipment_data['shipment_id'] = shipment_id
         shipment_data['orders_list'] = orders_list
@@ -274,7 +270,6 @@ class YandexMarketFbsMode():
                 inner_info_dict[order] = inner_info_list
 
                 orders_info_list.append(inner_info_dict)
-        print(self.orders_list)
         return inner_info_dict
 
     def approve_shipment(self):
@@ -285,17 +280,14 @@ class YandexMarketFbsMode():
         shipment_data = self.received_info_about_delivery()
         data = self.check_actual_orders()
         shipment_id = shipment_data['shipment_id']
-        print(shipment_id)
-        print(len(shipment_data['orders_list']))
-        print(len(self.orders_list))
 
         approve_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}/confirm'
         payload_approve = json.dumps({
             "externalShipmentId": f'{shipment_id}',
             "orderIds": self.orders_list
         })
-        # response = requests.request(
-        #    "POST", approve_url, headers=yandex_headers_karavaev, data=payload_approve)
+        response = requests.request(
+            "POST", approve_url, headers=yandex_headers_karavaev, data=payload_approve)
 
     # def check_docs_for_shipment(self):
     #     """
@@ -383,10 +375,10 @@ class YandexMarketFbsMode():
         folder_summary_file_name = f'{self.main_save_folder_server}/yandex/YANDEX - ИП этикетки {self.date_for_files}.pdf'
         merge_barcode_for_yandex_two_on_two(
             list_filenames, folder_summary_file_name)
-        # folder = (
-        #    f'{self.dropbox_current_assembling_folder}/YANDEX - ИП акт {self.date_for_files}.pdf')
-        # with open(save_folder_docs, 'rb') as f:
-        #    dbx_db.files_upload(f.read(), folder)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/YANDEX - ИП акт {self.date_for_files}.pdf')
+        with open(save_folder_docs, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
     def create_yandex_selection_sheet_pdf(self):
         """
@@ -498,24 +490,13 @@ yand = YandexMarketFbsMode()
 # yand.change_orders_status()
 #
 # 2. Формирует файл подбора
-yand.create_yandex_selection_sheet_pdf
-
-# !!! Не понятно нужна эта функция или нет
-# !!!. Проверяет существования этикеток для поставки
-# yand.check_docs_for_shipment()
-
+yand.create_yandex_selection_sheet_pdf()
 
 # 3. Подтверждение отгрузки
-yand.approve_shipment()
+# yand.approve_shipment()
 
-# 4. Сохраняем акт
+# 4. Сохраняем акт.
 yand.saving_act()
 
-# инфа о поставке
-# yand.received_info_about_delivery()
-
-# yand.check_actual_orders()
 # 5. Сохраняем этикетки
 # yand.saving_tickets()
-
-# yand.create_yandex_selection_sheet_pdf()

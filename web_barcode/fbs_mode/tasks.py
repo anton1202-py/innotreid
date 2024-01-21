@@ -1313,7 +1313,8 @@ class YandexMarketFbsMode():
                 "dateFrom": date_for_delivery,
                 "dateTo": date_for_delivery,
                 "statuses": [
-                    "OUTBOUND_READY_FOR_CONFIRMATION"
+                    "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
+                    "OUTBOUND_READY_FOR_CONFIRMATION", "FINISHED"
                 ]
             })
 
@@ -1346,7 +1347,6 @@ class YandexMarketFbsMode():
         """
         try:
             shipment_data = self.receive_delivery_number()
-
             shipment_id = shipment_data['shipment_id']
 
             # shipment_id = 45554272
@@ -1355,14 +1355,13 @@ class YandexMarketFbsMode():
             response = requests.request(
                 "GET", url_info, headers=yandex_headers_karavaev)
             info_main_data = json.loads(response.text)['result']
-
             orders_list = info_main_data['orderIds']
-
             shipment_data = {}
             shipment_data['shipment_id'] = shipment_id
             shipment_data['orders_list'] = orders_list
 
             return shipment_data
+
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1398,8 +1397,8 @@ class YandexMarketFbsMode():
                         inner_info_list.append(inner_article_list)
                     inner_info_dict[order] = inner_info_list
                     orders_info_list.append(inner_info_dict)
-
             return inner_info_dict
+
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1425,6 +1424,7 @@ class YandexMarketFbsMode():
                         article_count_dict[article_dict['seller_article']] = int(
                             article_dict['amount'])
             return article_count_dict
+
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1439,6 +1439,7 @@ class YandexMarketFbsMode():
         """
         try:
             shipment_data = self.received_info_about_delivery()
+            data = self.check_actual_orders()
             shipment_id = shipment_data['shipment_id']
 
             approve_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}/confirm'
@@ -1455,28 +1456,11 @@ class YandexMarketFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
-    def check_docs_for_shipment(self):
-        """
-        YANDEXMARKET
-        Получает информацию о возможности печати ярлыков-наклеек для заказов в отгрузке
-        """
-        shipment_dict = self.receive_delivery_number()
-        if shipment_dict:
-            shipment_id = shipment_dict['shipment_id']
-            check_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/orders/info'
-
-            response_check = requests.request(
-                "GET", check_url, headers=yandex_headers_karavaev)
-
-            shipment_docs_dict = {}
-
-            check_info = json.loads(response_check.text)['result']
-
-            possible_for_print_list = check_info['orderIdsWithLabels']
-
-            shipment_docs_dict['shipment_id'] = shipment_id
-            shipment_docs_dict['orders_list'] = possible_for_print_list
-            return shipment_docs_dict
+    def check_dropbox_folder_exist(self):
+        """Проверяет, что на Dropbox существует необходимая папка"""
+        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
+            dbx_db.files_create_folder_v2(
+                self.dropbox_current_assembling_folder)
 
     def saving_act(self):
         """
@@ -1484,6 +1468,7 @@ class YandexMarketFbsMode():
         Сохраняет акт приема - передачи в PDF формате.
         """
         try:
+            self.check_dropbox_folder_exist()
             # self.shipment_id = 45554272
             url_act = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/act'
 
@@ -1518,6 +1503,7 @@ class YandexMarketFbsMode():
         """
         try:
             orders_info_list = self.check_actual_orders()
+            self.check_dropbox_folder_exist()
             for order in self.orders_list:
                 url_tickets = f'https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order}/delivery/labels'
                 response_tickets = requests.request(
@@ -1662,9 +1648,11 @@ class YandexMarketFbsMode():
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
     def __init__(self):
+        hour = datetime.now().hour
         self.amount_articles = WildberriesFbsMode().article_data_for_tickets()
         self.ozon_article_amount = OzonFbsMode().prepare_data_for_confirm_delivery()
-        # self.yandex_article_amount = YandexMarketFbsMode().yandex_prepare_data()
+        if hour >= 18:
+            self.yandex_article_amount = YandexMarketFbsMode().yandex_prepare_data()
         self.dropbox_main_fbs_folder = '/DATABASE/beta'
 
     def create_pivot_xls(self):
@@ -1677,13 +1665,13 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             wb_article_amount = self.amount_articles.copy()
             hour = datetime.now().hour
             date_folder = datetime.today().strftime('%Y-%m-%d')
-            if hour >= 18 or hour <= 6:
+            if hour > 6 and hour < 18:
+                self.delivary_method_id = 1020000089903000
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+            else:
                 self.delivary_method_id = 22655170176000
                 self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
 
-            else:
-                self.delivary_method_id = 1020000089903000
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
             CELL_LIMIT = 16
             COUNT_HELPER = 2
 
@@ -1695,13 +1683,14 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     self.amount_articles[article] = int(
                         self.ozon_article_amount[article])
 
-            # for article in self.yandex_article_amount.keys():
-            #     if article in self.amount_articles.keys():
-            #         self.amount_articles[article] = int(
-            #             self.amount_articles[article]) + int(self.yandex_article_amount[article])
-            #     else:
-            #         self.amount_articles[article] = int(
-            #             self.yandex_article_amount[article])
+            if hour >= 18:
+                for article in self.yandex_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.yandex_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.yandex_article_amount[article])
 
             sorted_data_for_pivot_xls = dict(
                 sorted(self.amount_articles.items(), key=lambda v: v[0].upper()))
@@ -1765,10 +1754,11 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     if name_article[i].value == j:
                         source_page.cell(
                             row=i+1, column=6).value = self.ozon_article_amount[j]
-                # for k in self.yandex_article_amount.keys():
-                #     if name_article[i].value == k:
-                #         source_page.cell(
-                #             row=i+1, column=7).value = self.yandex_article_amount[k]
+                if hour >= 18:
+                    for k in self.yandex_article_amount.keys():
+                        if name_article[i].value == k:
+                            source_page.cell(
+                                row=i+1, column=7).value = self.yandex_article_amount[k]
 
                 if name_article[i].value in wb_article_amount.keys():
                     source_page.cell(
@@ -1911,6 +1901,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         Анализирует количество артикулов в текущей сборке
         """
         try:
+            hour = datetime.now().hour
             wb_article_amount = self.amount_articles.copy()
             for article in self.ozon_article_amount.keys():
                 if article in self.amount_articles.keys():
@@ -1919,13 +1910,14 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                 else:
                     self.amount_articles[article] = int(
                         self.ozon_article_amount[article])
-            # for article in self.yandex_article_amount.keys():
-            #     if article in self.amount_articles.keys():
-            #         self.amount_articles[article] = int(
-            #             self.amount_articles[article]) + int(self.yandex_article_amount[article])
-            #     else:
-            #         self.amount_articles[article] = int(
-            #             self.yandex_article_amount[article])
+            if hour >= 18:
+                for article in self.yandex_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.yandex_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.yandex_article_amount[article])
             sum_all_fbs = sum(self.amount_articles.values())
             sum_fbs_wb = 0
             if len(wb_article_amount.values()) != 0:
@@ -1935,10 +1927,11 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             if len(self.ozon_article_amount.values()) != 0:
                 for i in self.ozon_article_amount.values():
                     sum_fbs_ozon += int(i)
-            # sum_fbs_yandex = 0
-            # if len(self.yandex_article_amount.values()) != 0:
-            #     for i in self.yandex_article_amount.values():
-            #         sum_fbs_yandex += int(i)
+            sum_fbs_yandex = 0
+            if hour >= 18:
+                if len(self.yandex_article_amount.values()) != 0:
+                    for i in self.yandex_article_amount.values():
+                        sum_fbs_yandex += int(i)
             if len(self.amount_articles) == 0:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
@@ -1951,11 +1944,12 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     max_amount_all_fbs)]
             return (sum_fbs_wb,
                     sum_fbs_ozon,
-                    # sum_fbs_yandex,
+                    sum_fbs_yandex,
                     sum_all_fbs,
                     articles_for_fbs,
                     max_article_amount_all_fbs,
                     max_amount_all_fbs)
+
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1966,27 +1960,35 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
     def sender_message_to_telegram(self):
         """Отправляет количество артикулов в телеграм бот"""
 
-        list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
+        try:
+            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
+            sum_fbs_wb, sum_fbs_ozon, sum_fbs_yandex, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
+            # ur_lico_for_message = ''
+            # if 'ООО' in ur_type:
+            #     ur_lico_for_message = 'Amstek'
+            # elif 'ИП' in ur_type:
+            #     ur_lico_for_message = '3Д Ночник'
+            ur_lico_for_message = '3Д Ночник'
 
-        sum_fbs_wb, sum_fbs_ozon, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
-        # ur_lico_for_message = ''
-        # if 'ООО' in ur_type:
-        #     ur_lico_for_message = 'Amstek'
-        # elif 'ИП' in ur_type:
-        #     ur_lico_for_message = '3Д Ночник'
-        ur_lico_for_message = '3Д Ночник'
+            message = f''' Отправлено на сборку Фбс {ur_lico_for_message}
+                ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}, Яндекс: {sum_fbs_yandex}
+                Итого по ФБС {ur_lico_for_message}: {sum_all_fbs} штук
+                В сборке {len(articles_for_fbs)} артикулов
+                Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
+            message = message.replace('            ', '')
+            for chat_id in list_chat_id_tg:
+                bot.send_message(chat_id=chat_id, text=message)
 
-        message = f''' Отправлено на сборку Фбс {ur_lico_for_message}
-            ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}
-            Итого по ФБС {ur_lico_for_message}: {sum_all_fbs} штук
-            В сборке {len(articles_for_fbs)} артикулов
-            Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
-        message = message.replace('            ', '')
-        for chat_id in list_chat_id_tg:
-            bot.send_message(chat_id=chat_id, text=message)
-
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'sender_message_to_telegram', self.sender_message_to_telegram, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
 # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
+
+
 @app.task
 def common_action_wb_pivot_ozon_morning():
 
@@ -2110,18 +2112,18 @@ def common_action_evening():
     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     ozon_actions.check_status_formed_invoice()
 
-    # # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
-    # yandex_actions = YandexMarketFbsMode()
-    # # 1. Меняет статус ордеров
-    # yandex_actions.change_orders_status()
-    # # 2. Формирует файл подбора
-    # yandex_actions.create_yandex_selection_sheet_pdf
-    # # 3. Подтверждение отгрузки
-    # yandex_actions.approve_shipment()
-    # # 4. Сохраняем акт
-    # yandex_actions.saving_act()
-    # # 5. Сохраняем этикетки
-    # yandex_actions.saving_tickets()
+    # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
+    yandex_actions = YandexMarketFbsMode()
+    # 1. Меняет статус ордеров
+    yandex_actions.change_orders_status()
+    # 2. Формирует файл подбора
+    yandex_actions.create_yandex_selection_sheet_pdf()
+    # 3. Подтверждение отгрузки
+    yandex_actions.approve_shipment()
+    # 4. Сохраняем акт
+    yandex_actions.saving_act()
+    # 5. Сохраняем этикетки
+    yandex_actions.saving_tickets()
 
     # Очищаем все папки на сервере
     clearning_folders()
