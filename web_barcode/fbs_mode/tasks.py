@@ -1236,7 +1236,7 @@ class YandexMarketFbsMode():
         количество_в_заказе: количество}]}]
         """
         try:
-            url = "https://api.partner.market.yandex.ru/campaigns/23746359/orders?status=PROCESSING&substatus=STARTED"
+            url = "https://api.partner.market.yandex.ru/campaigns/74448338/orders?status=PROCESSING&substatus=STARTED"
             response = requests.request(
                 "GET", url, headers=yandex_headers_karavaev)
 
@@ -1279,7 +1279,7 @@ class YandexMarketFbsMode():
         try:
             orders_list = self.receive_orders_data()
             for order in orders_list:
-                status_url = f"https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order['order_id']}/status"
+                status_url = f"https://api.partner.market.yandex.ru/campaigns/74448338/orders/{order['order_id']}/status"
 
                 payload = json.dumps(
                     {
@@ -1305,7 +1305,7 @@ class YandexMarketFbsMode():
         Определяет id поставки для подтверждения отгрузки.
         """
         try:
-            url_delivery = 'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments'
+            url_delivery = 'https://api.partner.market.yandex.ru/campaigns/74448338/first-mile/shipments'
 
             date_for_delivery = datetime.now() + timedelta(days=1)
             date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
@@ -1350,7 +1350,7 @@ class YandexMarketFbsMode():
             shipment_id = shipment_data['shipment_id']
 
             # shipment_id = 45554272
-            url_info = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}'
+            url_info = f'https://api.partner.market.yandex.ru/campaigns/74448338/first-mile/shipments/{shipment_id}'
 
             response = requests.request(
                 "GET", url_info, headers=yandex_headers_karavaev)
@@ -1383,7 +1383,7 @@ class YandexMarketFbsMode():
             for order in raw_orders_list:
 
                 inner_info_list = []
-                url_check = f'https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order}'
+                url_check = f'https://api.partner.market.yandex.ru/campaigns/74448338/orders/{order}'
                 response = requests.request(
                     "GET", url_check, headers=yandex_headers_karavaev)
                 check_main_data = json.loads(response.text)['order']
@@ -1442,7 +1442,7 @@ class YandexMarketFbsMode():
             data = self.check_actual_orders()
             shipment_id = shipment_data['shipment_id']
 
-            approve_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}/confirm'
+            approve_url = f'https://api.partner.market.yandex.ru/campaigns/74448338/first-mile/shipments/{shipment_id}/confirm'
             payload_approve = json.dumps({
                 "externalShipmentId": f'{shipment_id}',
                 "orderIds": self.orders_list
@@ -1470,7 +1470,7 @@ class YandexMarketFbsMode():
         try:
             self.check_dropbox_folder_exist()
             # self.shipment_id = 45554272
-            url_act = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/act'
+            url_act = f'https://api.partner.market.yandex.ru/campaigns/74448338/first-mile/shipments/{self.shipment_id}/act'
 
             response_act = requests.request(
                 "GET", url_act, headers=yandex_headers_karavaev)
@@ -1505,7 +1505,7 @@ class YandexMarketFbsMode():
             orders_info_list = self.check_actual_orders()
             self.check_dropbox_folder_exist()
             for order in self.orders_list:
-                url_tickets = f'https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order}/delivery/labels'
+                url_tickets = f'https://api.partner.market.yandex.ru/campaigns/74448338/orders/{order}/delivery/labels'
                 response_tickets = requests.request(
                     "GET", url_tickets, headers=yandex_headers_karavaev)
 
@@ -1537,7 +1537,7 @@ class YandexMarketFbsMode():
                 list_filenames, folder_summary_file_name)
             folder = (
                 f'{self.dropbox_current_assembling_folder}/YANDEX - ИП акт {self.date_for_files}.pdf')
-            with open(save_folder_docs, 'rb') as f:
+            with open(folder_summary_file_name, 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -1625,12 +1625,16 @@ class YandexMarketFbsMode():
             create.column_dimensions['B'].width = 38
             create.column_dimensions['C'].width = 18
             create.column_dimensions['D'].width = 12
-            name_for_file = f'{self.main_save_folder_server}/yandex/YANDEX - ИП лист подбора {self.date_for_files}'
-            yandex_selection_sheet_xls.save(f'{name_for_file}.xlsx')
+            select_file_folder = os.path.join(
+                os.getcwd(), f'{self.main_save_folder_server}/yandex')
+            if not os.path.exists(select_file_folder):
+                os.makedirs(select_file_folder)
+            name_for_file = f'{select_file_folder}/YANDEX - ИП лист подбора {self.date_for_files}.xlsx'
+            yandex_selection_sheet_xls.save(name_for_file)
 
             folder_path = os.path.dirname(
-                os.path.abspath(f'{name_for_file}.xlsx'))
-            path_file = os.path.abspath(f'{name_for_file}.xlsx')
+                os.path.abspath(name_for_file))
+            path_file = os.path.abspath(name_for_file)
             output = convert(source=path_file, output_dir=folder_path, soft=1)
 
             folder = (
