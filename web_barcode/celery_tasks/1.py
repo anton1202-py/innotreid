@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from time import sleep
 
 import dropbox
+import gspread
 import pandas as pd
 import psycopg2
 import requests
@@ -15,6 +16,8 @@ import telegram
 from django.conf import settings
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
+from gspread_formatting import *
+from oauth2client.service_account import ServiceAccountCredentials
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
@@ -24,50 +27,78 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 now_day = date.today()
+API_KEY_WB = os.getenv('API_KEY_WB')
 
 
-class YandexMarketFbsMode():
-    """Класс отвечает за работу с заказами Wildberries"""
+def wb_data():
+    url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
+    payload = json.dumps({
+        "settings": {
+            "cursor": {
+                "limit": 1000
+            },
+            "filter": {
+                "withPhoto": -1
+            }
+        }
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': API_KEY_WB
+    }
 
-    def __init__(self):
-        """Основные данные класса"""
-        self.amount_articles = {}
-        self.dropbox_main_fbs_folder = '/DATABASE/beta'
+    response = requests.request("POST", url, headers=headers, data=payload)
+    main_data = json.loads(response.text)['cards']
+    for_table_list = []
+    counter = 2
+    for data in main_data:
+        inner_list = []
+        if data['subjectName'] == 'Ночники':
+            inner_list.append(data['vendorCode'])
+            inner_list.append(f'=IMAGE(D{counter};1)')
+            inner_list.append(data['title'])
+            inner_list.append(data['photos'][0]['big'])
+            for_table_list.append(inner_list)
+            counter += 1
 
-    def check_folder_exists(self, path):
+    return for_table_list
+
+
+def google_sheet():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
+             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        'celery_tasks/innotreid-2c0a6335afd1.json', scope)
+    client = gspread.authorize(creds)
+
+    # Open the Google Sheet using its name
+    sheet = client.open("3D Ночник").sheet1
+    sheet.clear()
+    # Добавьте названия столбцов
+    sheet.update_cell(1, 1, "Артикул")
+    sheet.update_cell(1, 2, "Фото")
+    sheet.update_cell(1, 3, "Наименование")
+    sheet.update_cell(1, 4, "медиафайлы")
+
+    data = wb_data()
+
+    set_row_height(sheet, f'2:{len(data)}', 175)
+    set_column_width(sheet, 'A', 100)
+    set_column_width(sheet, 'B', 130)
+    set_column_width(sheet, 'C', 400)
+    set_column_width(sheet, 'D', 300)
+
+    counter = 2
+    for row in data:
+        time.sleep(1)
+        sheet.append_row(row)
+        time.sleep(3)
         try:
-            dbx_db.files_list_folder(path)
-            return True
-        except dropbox.exceptions.ApiError as e:
-            return False
+            sheet.update_cell(
+                counter, 2, f'=IMAGE(D{counter};1)')
+        except:
+            pass
+        counter += 1
 
 
-url = "https://api.partner.market.yandex.ru/campaigns/23746359/orders?status=PROCESSING&substatus=STARTED"
-
-payload = {}
-headers = {
-    'Authorization': 'Bearer y0_AgAEA7qjt7KxAApPWwAAAADpxzharlAhWWWhR-CN6aC7F0W9cZImPgo',
-}
-response = requests.request("GET", url, headers=headers, data=payload)
-
-orders_list = json.loads(response.text)['orders']
-
-main_orders_list = []
-for order in orders_list:
-    print(order)
-    order_dict = {}
-    article_list_in_order = order['items']
-    inner_article_list = []
-    for article in article_list_in_order:
-
-        inner_article_dict = {}
-
-        inner_article_dict['seller_article'] = article['offerId']
-        inner_article_dict['article_name'] = article['offerName']
-        inner_article_dict['amount'] = article['count']
-
-        inner_article_list.append(inner_article_dict)
-
-    order_dict[order['id']] = inner_article_list
-    main_orders_list.append(order_dict)
-print(main_orders_list)
+google_sheet()

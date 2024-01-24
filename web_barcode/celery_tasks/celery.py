@@ -9,6 +9,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 
 app = Celery('celery_tasks',
              include=['celery_tasks.tasks',
+                      'celery_tasks.google_sheet_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
                       'celery_tasks.tasks_yandex_fby_fbs'
@@ -71,20 +72,20 @@ app.conf.beat_schedule = {
         "task": "ozon_system.tasks.start_adv_company",
         'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
     },
-    "morning_wb_oz_action": {
-        "task": "fbs_mode.tasks.common_action_wb_pivot_ozon_morning",
-        "schedule": crontab(hour=7, minute=5)
-    },
-    "morning_only_oz_action": {
-        "task": "fbs_mode.tasks.common_action_ozon_morning",
-        "schedule": crontab(hour=8, minute=10)
-    },
-    "evening_wb_oz_action": {
-        "task": "fbs_mode.tasks.common_action_evening",
-        "schedule": crontab(hour=18, minute=50)
-    },
-    "test_task": {
-        "task": "celery_tasks.tasks.test_task",
-        "schedule": crontab(hour=10, minute=58)
+    # "morning_wb_oz_action": {
+    #     "task": "fbs_mode.tasks.common_action_wb_pivot_ozon_morning",
+    #     "schedule": crontab(hour=7, minute=5)
+    # },
+    # "morning_only_oz_action": {
+    #     "task": "fbs_mode.tasks.common_action_ozon_morning",
+    #     "schedule": crontab(hour=8, minute=10)
+    # },
+    # "evening_wb_oz_action": {
+    #     "task": "fbs_mode.tasks.common_action_evening",
+    #     "schedule": crontab(hour=18, minute=50)
+    # },
+    "google_sheet_task": {
+        "task": "celery_tasks.google_sheet_tasks.google_sheet",
+        "schedule": crontab(hour=20, minute=0, day_of_week=1)
     },
 }
