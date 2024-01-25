@@ -4,6 +4,7 @@ import os
 import time
 from datetime import date
 
+import dropbox
 import gspread
 import requests
 import telegram
@@ -20,9 +21,16 @@ load_dotenv(dotenv_path)
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
+REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
+APP_KEY_DB = os.getenv('APP_KEY_DB')
+APP_SECRET_DB = os.getenv('APP_SECRET_DB')
 API_KEY_WB = os.getenv('API_KEY_WB_IP')
+
+dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
+                         app_key=APP_KEY_DB,
+                         app_secret=APP_SECRET_DB)
+
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def wb_data():

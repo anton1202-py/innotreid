@@ -17,17 +17,34 @@ from django.conf import settings
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from gspread_formatting import *
+from helpers_func import error_message
 from oauth2client.service_account import ServiceAccountCredentials
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(
+    __file__), '..', 'web_barcode', '.env')
+load_dotenv(dotenv_path)
 
+REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
+APP_KEY_DB = os.getenv('APP_KEY_DB')
+APP_SECRET_DB = os.getenv('APP_SECRET_DB')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID = os.getenv('CHAT_ID')
+CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
-now_day = date.today()
-API_KEY_WB = os.getenv('API_KEY_WB')
+
+API_KEY_WB = os.getenv('API_KEY_WB_IP')
+
+dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
+                         app_key=APP_KEY_DB,
+                         app_secret=APP_SECRET_DB)
+
+
+def stream_dropbox_file(path):
+    _, res = dbx_db.files_download(path)
+    with closing(res) as result:
+        byte_data = result.content
+        return io.BytesIO(byte_data)
 
 
 def wb_data():
@@ -47,6 +64,17 @@ def wb_data():
         'Authorization': API_KEY_WB
     }
 
+    MATCHING_LIST = '/DATABASE/список сопоставления.xlsx'
+    matching_list_data = stream_dropbox_file(MATCHING_LIST)
+
+    df = pd.read_excel(matching_list_data)
+
+    special_tickets_data_file = pd.DataFrame(
+        df, columns=['Артикул'])
+
+    new_list = special_tickets_data_file['Артикул'].to_list()
+    # print(new_list)
+
     response = requests.request("POST", url, headers=headers, data=payload)
     main_data = json.loads(response.text)['cards']
     for_table_list = []
@@ -54,13 +82,13 @@ def wb_data():
     for data in main_data:
         inner_list = []
         if data['subjectName'] == 'Ночники':
-            inner_list.append(data['vendorCode'])
-            inner_list.append(f'=IMAGE(D{counter};1)')
-            inner_list.append(data['title'])
-            inner_list.append(data['photos'][0]['big'])
-            for_table_list.append(inner_list)
-            counter += 1
-
+            if data['vendorCode'] not in new_list:
+                inner_list.append(data['vendorCode'])
+                inner_list.append(f'=IMAGE(D{counter};1)')
+                inner_list.append(data['title'])
+                inner_list.append(data['photos'][0]['big'])
+                for_table_list.append(inner_list)
+                counter += 1
     return for_table_list
 
 
@@ -101,4 +129,5 @@ def google_sheet():
         counter += 1
 
 
-google_sheet()
+wb_data()
+# google_sheet()
