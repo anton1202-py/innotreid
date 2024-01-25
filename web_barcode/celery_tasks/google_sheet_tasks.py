@@ -1,11 +1,14 @@
 import datetime
+import io
 import json
 import os
 import time
+from contextlib import closing
 from datetime import date
 
 import dropbox
 import gspread
+import pandas as pd
 import requests
 import telegram
 from celery_tasks.celery import app
@@ -25,12 +28,30 @@ REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
 APP_KEY_DB = os.getenv('APP_KEY_DB')
 APP_SECRET_DB = os.getenv('APP_SECRET_DB')
 API_KEY_WB = os.getenv('API_KEY_WB_IP')
+MATCHING_DB_FILE = '/DATABASE/список сопоставления.xlsx'
 
 dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_key=APP_KEY_DB,
                          app_secret=APP_SECRET_DB)
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
+
+
+def stream_dropbox_file(path):
+    _, res = dbx_db.files_download(path)
+    with closing(res) as result:
+        byte_data = result.content
+        return io.BytesIO(byte_data)
+
+
+def dropbox_matching_data():
+    """Возвращает список устаревших артикулов ВБ для сравнения"""
+    matching_file = stream_dropbox_file(MATCHING_DB_FILE)
+    matching_file_read = pd.read_excel(matching_file)
+    matching_file_read_data = pd.DataFrame(
+        matching_file_read, columns=['Артикул'])
+    matching_list = matching_file_read_data['Артикул'].to_list()
+    return matching_list
 
 
 def wb_data():
@@ -56,16 +77,19 @@ def wb_data():
         main_data = json.loads(response.text)['cards']
         raw_for_table_list = []
         counter = 2
+
+        matching_list = dropbox_matching_data()
         for data in main_data:
             inner_list = []
             if data['subjectName'] == 'Ночники':
-                inner_list.append(data['vendorCode'])
-                inner_list.append(f'=IMAGE(D{counter};1)')
-                inner_list.append(data['title'])
-                inner_list.append(data['photos'][0]['big'])
-                inner_list.append(now_day)
-                raw_for_table_list.append(inner_list)
-                counter += 1
+                if data['vendorCode'] not in matching_list:
+                    inner_list.append(data['vendorCode'])
+                    inner_list.append(f'=IMAGE(D{counter};1)')
+                    inner_list.append(data['title'])
+                    inner_list.append(data['photos'][0]['big'])
+                    inner_list.append(now_day)
+                    raw_for_table_list.append(inner_list)
+                    counter += 1
 
         for_table_list = sorted(raw_for_table_list, key=lambda x: x[0])
 
