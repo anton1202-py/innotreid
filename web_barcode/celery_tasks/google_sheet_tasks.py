@@ -14,8 +14,9 @@ import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
 from gspread_formatting import *
-from helpers_func import error_message
 from oauth2client.service_account import ServiceAccountCredentials
+
+from .helpers_func import error_message
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')

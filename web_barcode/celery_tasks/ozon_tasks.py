@@ -7,7 +7,8 @@ import requests
 import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
-from helpers_func import error_message, stream_dropbox_file
+
+from .helpers_func import error_message, stream_dropbox_file
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
