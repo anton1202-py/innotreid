@@ -1,27 +1,13 @@
-import io
 import json
 import math
 import os
-import sys
-import time
-from contextlib import closing
-from datetime import date, datetime, timedelta
-from time import sleep
 
-import dropbox
-import gspread
 import pandas as pd
-import psycopg2
 import requests
 import telegram
 from celery_tasks.celery import app
-from django.conf import settings
 from dotenv import load_dotenv
-from gspread_formatting import *
 from helpers_func import error_message, stream_dropbox_file
-from oauth2client.service_account import ServiceAccountCredentials
-from psycopg2 import Error
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')

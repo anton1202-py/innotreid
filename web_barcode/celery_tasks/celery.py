@@ -10,6 +10,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web_barcode.settings")
 app = Celery('celery_tasks',
              include=['celery_tasks.tasks',
                       'celery_tasks.google_sheet_tasks',
+                      'celery_tasks.ozon_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
                       'celery_tasks.tasks_yandex_fby_fbs'
@@ -87,5 +88,9 @@ app.conf.beat_schedule = {
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=20, minute=0, day_of_week=1)
+    },
+    "ozon_balance_task": {
+        "task": "celery_tasks.ozon_tasks.fbs_balance_maker",
+        "schedule": crontab(hour=5, minute=0)
     },
 }

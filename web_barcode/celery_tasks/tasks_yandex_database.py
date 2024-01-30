@@ -17,15 +17,15 @@ URL_FBY = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBY_COMPA
 URL_FBS = f"https://api.partner.market.yandex.ru/campaigns/{os.getenv('FBS_COMPAIGNID')}/offers/stocks"
 
 headers = {
-  'Content-Type': 'application/json',
-  'Authorization': os.getenv('API_KEY_YANDEX')
+    'Content-Type': 'application/json',
+    'Authorization': os.getenv('API_KEY_YANDEX')
 }
 
 excel_data = pd.read_excel(ARTICLE_DATA_FILE)
 data = pd.DataFrame(excel_data, columns=['Ваш SKU'])
 article_list = data['Ваш SKU'].to_list()
-# ограничения по передачи количества артикулов в одном запросе - 500 штук. 
-residue = len(article_list) % 400 # остаток
+# ограничения по передачи количества артикулов в одном запросе - 500 штук.
+residue = len(article_list) % 400  # остаток
 iter_amount = len(article_list) // 400
 # Словарь для данных по артикулу и его остатку на складе, если он != 0.
 fby_common_data_storage = {}
@@ -42,12 +42,11 @@ for i in range(iter_amount+1):
     result = data['result']
     dict_res = result['shopSkus']
     for res in dict_res:
-    
+
         stocks_data = res['warehouses']
         stock_article = res['shopSku']
         for j in stocks_data:
-            if len(j['stocks'])>0:
+            if len(j['stocks']) > 0:
                 for sum in j['stocks']:
                     if sum['type'] == 'AVAILABLE':
                         fby_common_data_storage[stock_article] = sum['count']
-print(fby_common_data_storage)
