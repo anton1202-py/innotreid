@@ -104,14 +104,11 @@ def product_id_list():
 
 def sku_article_data():
     """Берет SKU FBS артикула по его offer_id
-    Возвращает список словарей вида [sku:{offer_id, product_id}]"""
+    Возвращает словарь вида {offer_id: sku}"""
     product_list = product_id_list()
     koef_product = math.ceil(len(product_list)//900)
-    stop_list = create_stop_article_list()
-
     info_url = 'https://api-seller.ozon.ru/v2/product/info/list'
-
-    main_info_list = []
+    main_info_dict = {}
     for i in range(koef_product+1):
         start_point = i*900
         finish_point = (i+1)*900
@@ -125,16 +122,35 @@ def sku_article_data():
             "POST", info_url, headers=headers, data=payload)
         article_data = json.loads(response.text)['result']['items']
         for data in article_data:
-            inner_article_info_dict = {}
-            if data['offer_id'] not in stop_list:
-                if data['fbs_sku'] != 0:
-                    inner_article_info_dict[data['fbs_sku']] = [
-                        data['offer_id'], data['id']]
-                else:
-                    inner_article_info_dict[data['sku']] = [
-                        data['offer_id'], data['id']]
-                main_info_list.append(inner_article_info_dict)
-    return main_info_list
+            if data['fbs_sku'] != 0:
+                main_info_dict[data['offer_id']] = data['fbs_sku']
+            else:
+                main_info_dict[data['offer_id']] = data['sku']
+    return main_info_dict
+
+
+def balance_on_fbs_night_stock():
+    """Возвращет остаток на складе Иннотрейд Ночь"""
+    main_info_dict = sku_article_data()
+    sku_list = list(main_info_dict.values())
+    koef_sku = math.ceil(
+        len(sku_list)//400)
+    sku_stock_dict = {}
+    url = "https://api-seller.ozon.ru/v1/product/info/stocks-by-warehouse/fbs"
+    for i in range(koef_sku):
+        start_point = i*400
+        finish_point = (i+1)*400
+        data_sku_list = sku_list[
+            start_point:finish_point]
+        payload = json.dumps({
+            "sku": data_sku_list
+        })
+        response = requests.request("POST", url, headers=headers, data=payload)
+        stocks_data = json.loads(response.text)['result']
+        for data in stocks_data:
+            if data['warehouse_id'] == 22676408482000:
+                sku_stock_dict[data['product_id']] = data['present']
+    return sku_stock_dict
 
 
 def article_with_big_balance():
@@ -143,18 +159,20 @@ def article_with_big_balance():
     article_big_balance_dict = {}
     article_small_balance_dict = {}
     stop_list = create_stop_article_list()
+    stock_night_dict = balance_on_fbs_night_stock()
 
     for article_data in stocks_data:
-        fbs_value = next(
-            (dictionary["present"] for dictionary in article_data['stocks'] if dictionary["type"] == "fbs"), None)
         fbo_value = next(
             (dictionary["present"] for dictionary in article_data['stocks'] if dictionary["type"] == "fbo"), None)
-        if article_data['offer_id'] not in stop_list and fbo_value < 5:
-            article_small_balance_dict[article_data['offer_id']
-                                       ] = article_data['product_id']
-        elif article_data['offer_id'] not in stop_list and fbo_value >= 20:
-            article_big_balance_dict[article_data['offer_id']
-                                     ] = article_data['product_id']
+        if article_data['offer_id'] not in stop_list:
+            if article_data['product_id'] in stock_night_dict.keys():
+                stock_night = stock_night_dict[article_data['product_id']]
+                if fbo_value < 5 and stock_night < 50:
+                    article_small_balance_dict[article_data['offer_id']
+                                               ] = article_data['product_id']
+                elif fbo_value >= 20 and stock_night != 0:
+                    article_big_balance_dict[article_data['offer_id']
+                                             ] = article_data['product_id']
     return article_big_balance_dict, article_small_balance_dict
 
 
