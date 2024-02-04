@@ -19,6 +19,10 @@ OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
+CHAT_ID_EU = os.getenv('CHAT_ID_EU')
+CHAT_ID_AN = os.getenv('CHAT_ID_AN')
+
+tg_accounts = [CHAT_ID_EU, CHAT_ID_AN]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 API_KEY_WB = os.getenv('API_KEY_WB_IP')
@@ -219,12 +223,16 @@ def fbs_balance_maker():
 
             response = requests.request(
                 "POST", update_balance_url, headers=headers, data=payload)
-        message_text = f'Артикулы для обнуления остатков FBS: {list(article_big_balance_dict.keys())}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message_text, parse_mode='HTML')
-        message_text = f'Артикулы для увеличения остатков FBS: {list(article_small_balance_dict.keys())}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message_text, parse_mode='HTML')
+        if len(list(article_big_balance_dict.keys())) != 0:
+            message_text = f'Артикулы для обнуления остатков ОЗОН FBS: {list(article_big_balance_dict.keys())}'
+            for chat_id in tg_accounts:
+                bot.send_message(chat_id=chat_id,
+                                 text=message_text, parse_mode='HTML')
+        if len(list(article_small_balance_dict.keys())) != 0:
+            message_text = f'Артикулы для увеличения остатков ОЗОН FBS: {list(article_small_balance_dict.keys())}'
+            for chat_id in tg_accounts:
+                bot.send_message(chat_id=chat_id,
+                                 text=message_text, parse_mode='HTML')
     except Exception as e:
         # обработка ошибки и отправка сообщения через бота
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)

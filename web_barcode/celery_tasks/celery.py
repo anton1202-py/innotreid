@@ -73,18 +73,40 @@ app.conf.beat_schedule = {
         "task": "ozon_system.tasks.start_adv_company",
         'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
     },
-    # "morning_wb_oz_action": {
-    #     "task": "fbs_mode.tasks.common_action_wb_pivot_ozon_morning",
-    #     "schedule": crontab(hour=7, minute=5)
-    # },
-    # "morning_only_oz_action": {
-    #     "task": "fbs_mode.tasks.common_action_ozon_morning",
-    #     "schedule": crontab(hour=8, minute=10)
-    # },
-    # "evening_wb_oz_action": {
-    #     "task": "fbs_mode.tasks.common_action_evening",
-    #     "schedule": crontab(hour=18, minute=50)
-    # },
+    "wb_ip_action": {
+        "task": "fbs_mode.tasks.ip_wb_action",
+        "schedule": crontab(hour=5, minute=40)
+    },
+    "wb_ip_action": {
+        "task": "fbs_mode.tasks.ip_wb_action",
+        "schedule": crontab(hour=17, minute=35, day_of_week=5)
+    },
+    "ozon_ip_morning": {
+        "task": "fbs_mode.tasks.ip_ozon_action_morning",
+        "schedule": crontab(hour=5, minute=45)
+    },
+    "yandex_ip_action": {
+        "task": "fbs_mode.tasks.ip_yandex_action()",
+        "schedule": crontab(hour=5, minute=52)
+    },
+    "ozon_ip_day": {
+        "task": "fbs_mode.tasks.ip_ozon_action_day",
+        "schedule": crontab(hour=8, minute=10)
+    },
+
+    "wb_ooo_action": {
+        "task": "fbs_mode.tasks.ooo_wb_action",
+        "schedule": crontab(hour=17, minute=40)
+    },
+    "ozon_ooo_action": {
+        "task": "fbs_mode.tasks.ooo_ozon_action",
+        "schedule": crontab(hour=17, minute=45)
+    },
+    "yandex_ooo_action": {
+        "task": "fbs_mode.tasks.ooo_yandex_action()",
+        "schedule": crontab(hour=17, minute=52)
+    },
+
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=20, minute=0, day_of_week=1)

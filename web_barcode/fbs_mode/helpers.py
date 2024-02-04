@@ -413,10 +413,8 @@ def print_barcode_to_pdf2(list_filenames, folder_summary_file_name, dropbox_fold
                         horiz_size*(k),
                         vertic_size*(5-n))
                 output.write(open(file_name, "wb"))
-    folder = (f'{dropbox_folder}/WB-ИП этикетки FBS '
-              f'{time.strftime("%Y-%m-%d %H-%M-%S")}.pdf')
     with open(file_name, 'rb') as f:
-        dbx_db.files_upload(f.read(), folder)
+        dbx_db.files_upload(f.read(), dropbox_folder)
 
 
 def atoi(text):

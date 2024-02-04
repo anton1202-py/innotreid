@@ -51,7 +51,7 @@ CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
 OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
 OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
 YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
-WB_OOO_API_KEY = os.getenv('API_KEY_WB_INNOTREID')
+WB_OOO_API_KEY = os.getenv('WB_OOO_API_KEY')
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -117,13 +117,13 @@ def clearning_folders():
     dirs = ['fbs_mode/data_for_barcodes/cache_dir',
             'fbs_mode/data_for_barcodes/done_data',
             'fbs_mode/data_for_barcodes/pivot_excel',
-            'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3',
             'fbs_mode/data_for_barcodes/qrcode_folder',
             'fbs_mode/data_for_barcodes/qrcode_supply',
             'fbs_mode/data_for_barcodes/package_tickets/done',
             'fbs_mode/data_for_barcodes/package_tickets',
             'fbs_mode/data_for_barcodes/ozon_docs',
-            'fbs_mode/data_for_barcodes/ozon_delivery_barcode'
+            'fbs_mode/data_for_barcodes/ozon_delivery_barcode',
+            'fbs_mode/data_for_barcodes/yandex'
             ]
     for dir in dirs:
         for filename in glob.glob(os.path.join(dir, "*")):
@@ -178,13 +178,13 @@ class WildberriesFbsMode():
         артикула. 
         Создает папку для созданных документов на Дропбоксе.
         """
-        # try:
         hour = datetime.now().hour
         date_folder = datetime.today().strftime('%Y-%m-%d')
-        if hour >= 18 or hour <= 6:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
-        else:
+
+        if hour >= 6 and hour < 18:
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+        else:
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
         # Создаем папку на dropbox, если ее еще нет
         if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
             dbx_db.files_create_folder_v2(
@@ -271,36 +271,33 @@ class WildberriesFbsMode():
             self.selection_dict[order_id] = [
                 photo, brand, title_article, seller_article]
         return self.amount_articles
-        # except Exception as e:
-        #     # обработка ошибки и отправка сообщения через бота
-        #     message_text = error_message(
-        #         'article_data_for_tickets', self.article_data_for_tickets, e)
-        #     bot.send_message(chat_id=CHAT_ID_ADMIN,
-        #                      text=message_text, parse_mode='HTML')
 
     def create_delivery(self):
-        """WILDVERRIES. Создание поставки"""
+        """WILDBERRIES. Создание поставки"""
         try:
-            delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
-            url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
-            hour = datetime.now().hour
-            delivery_name = f"Поставка {delivery_date}"
-            if hour >= 18 or hour <= 6:
-                delivery_name = f'Ночь {delivery_date}'
-            else:
-                delivery_name = f'День {delivery_date}'
+            amount_articles = self.article_data_for_tickets()
+            if amount_articles:
+                delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
+                url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
+                hour = datetime.now().hour
+                delivery_name = f"Поставка {delivery_date}"
+                if hour >= 6 and hour < 18:
+                    delivery_name = f'День {delivery_date}'
+                else:
+                    delivery_name = f'Ночь {delivery_date}'
 
-            payload = json.dumps(
-                {
-                    "name": delivery_name
-                }
-            )
-            # Из этой переменной достать ID поставки
-            response_data = requests.request(
-                "POST", url_data, headers=self.headers, data=payload)
-            # print(response_data)
-            self.supply_id = json.loads(response_data.text)['id']
-            print(self.supply_id)
+                payload = json.dumps(
+                    {"name": delivery_name}
+                )
+                # Из этой переменной достать ID поставки
+                response_data = requests.request(
+                    "POST", url_data, headers=self.headers, data=payload)
+                # print(response_data)
+                self.supply_id = json.loads(response_data.text)['id']
+            else:
+                text = f'Не артикулов на WB для сборки {self.file_add_name}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -316,37 +313,40 @@ class WildberriesFbsMode():
         задания и сохраняет его в папку
         """
         try:
-            # Добавляем заказы в поставку
-            for order in self.article_id_dict.keys():
-                add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
-                response_add_orders = requests.request(
-                    "PATCH", add_url, headers=self.headers)
-            # Создаем qr коды добавленных ордеров.
-            for order in self.article_id_dict.keys():
-                ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
-                payload_ticket = json.dumps({"orders": [order]})
-                response_ticket = requests.request(
-                    "POST", ticket_url, headers=self.headers, data=payload_ticket)
+            if self.supply_id:
+                # Добавляем заказы в поставку
+                for order in self.article_id_dict.keys():
+                    add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
+                    response_add_orders = requests.request(
+                        "PATCH", add_url, headers=self.headers)
+                # Создаем qr коды добавленных ордеров.
+                for order in self.article_id_dict.keys():
+                    ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
+                    payload_ticket = json.dumps({"orders": [order]})
+                    response_ticket = requests.request(
+                        "POST", ticket_url, headers=self.headers, data=payload_ticket)
 
-                # Расшифровываю ответ, чтобы сохранить файл этикетки задания
-                ticket_data = json.loads(response_ticket.text)[
-                    "stickers"][0]["file"]
+                    # Расшифровываю ответ, чтобы сохранить файл этикетки задания
+                    ticket_data = json.loads(response_ticket.text)[
+                        "stickers"][0]["file"]
 
-                # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
-                # листа подбора
-                sticker_code_first_part = json.loads(response_ticket.text)[
-                    "stickers"][0]["partA"]
-                sticker_code_second_part = json.loads(response_ticket.text)[
-                    "stickers"][0]["partB"]
-                sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
-                self.selection_dict[order].append(sticker_code)
-                # декодируем строку из base64 в бинарные данные
-                binary_data = base64.b64decode(ticket_data)
-                # создаем объект изображения из бинарных данных
-                img = Image.open(BytesIO(binary_data))
-                # сохраняем изображение в файл
-                img.save(
-                    f"web_barcode/fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
+                    # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
+                    # листа подбора
+                    sticker_code_first_part = json.loads(response_ticket.text)[
+                        "stickers"][0]["partA"]
+                    sticker_code_second_part = json.loads(response_ticket.text)[
+                        "stickers"][0]["partB"]
+                    sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
+                    self.selection_dict[order].append(sticker_code)
+                    # декодируем строку из base64 в бинарные данные
+                    binary_data = base64.b64decode(ticket_data)
+                    # создаем объект изображения из бинарных данных
+                    img = Image.open(BytesIO(binary_data))
+                    # сохраняем изображение в файл
+                    img.save(
+                        f"fbs_mode/data_for_barcodes/qrcode_folder/{order} {self.article_id_dict[order]}.png")
+            else:
+                print('не сработала qrcode_order из за отсутвия self.supply_id')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message('qrcode_order', self.qrcode_order, e)
@@ -355,140 +355,144 @@ class WildberriesFbsMode():
 
     def create_selection_list(self):
         """WILDBERRIES. Создает лист сборки"""
-
-        delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
-        # создаем новую книгу Excel
-        selection_file = Workbook()
-        COUNT_HELPER = 2
-        # выбираем лист Sheet1
-        create = selection_file.create_sheet(title='pivot_list', index=0)
-        sheet = selection_file['pivot_list']
-        # Установка параметров печати
-        create.page_setup.paperSize = create.PAPERSIZE_A4
-        create.page_setup.orientation = create.ORIENTATION_PORTRAIT
-        create.page_margins.left = 0.25
-        create.page_margins.right = 0.25
-        create.page_margins.top = 0.25
-        create.page_margins.bottom = 0.25
-        create.page_margins.header = 0.3
-        create.page_margins.footer = 0.3
-        sheet['A1'] = '№ Задания'
-        sheet['B1'] = 'Фото'
-        sheet['C1'] = 'Бренд'
-        sheet['D1'] = 'Наименование'
-        sheet['E1'] = 'Артикул продавца'
-        sheet['F1'] = 'Стикер'
-        for key, value in self.selection_dict.items():
-            print(value)
-            # # загружаем изображение
-            response = requests.get(value[0])
-            img = image.Image(io.BytesIO(response.content))
-            # задаем размеры изображения
-            img.width = 30
-            img.height = 50
-            create.cell(row=COUNT_HELPER, column=1).value = key
-            # вставляем изображение в Столбец В
-            sheet.add_image(img, f'B{COUNT_HELPER}')
-            # create.cell(row=COUNT_HELPER, column=2).value = value[0]
-            create.cell(row=COUNT_HELPER, column=3).value = value[1]
-            create.cell(row=COUNT_HELPER, column=4).value = value[2]
-            create.cell(row=COUNT_HELPER, column=5).value = value[3]
-            # create.cell(row=COUNT_HELPER, column=6).value = value[4]
-            COUNT_HELPER += 1
-        name_selection_file = 'fbs_mode/data_for_barcodes/pivot_excel/Лист подбора.xlsx'
-        path_file = os.path.abspath(name_selection_file)
-        selection_file.save(name_selection_file)
-        w_b2 = load_workbook(name_selection_file)
-        source_page2 = w_b2.active
-        al = Alignment(horizontal="center", vertical="center")
-        al_left = Alignment(horizontal="left",
-                            vertical="center", wrapText=True)
-        source_page2.column_dimensions['A'].width = 10  # Номер задания
-        source_page2.column_dimensions['B'].width = 5  # Картинка
-        source_page2.column_dimensions['C'].width = 15  # Бренд
-        source_page2.column_dimensions['D'].width = 25  # Наименование
-        source_page2.column_dimensions['E'].width = 16  # Артикул продавца
-        source_page2.column_dimensions['F'].width = 16  # Стикер
-        thin = Side(border_style="thin", color="000000")
-        for i in range(len(self.selection_dict)+1):
-            for c in source_page2[f'A{i+1}:F{i+1}']:
-                c[0].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[0].font = Font(size=9)
-                c[0].alignment = al
-                c[1].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[1].font = Font(size=9)
-                c[1].alignment = al
-                c[2].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[2].font = Font(size=9)
-                c[2].alignment = al_left
-                c[3].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[3].font = Font(size=9)
-                c[3].alignment = al_left
-                c[4].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[4].font = Font(size=9)
-                c[4].alignment = al_left
-                c[5].border = Border(top=thin, left=thin,
-                                     bottom=thin, right=thin)
-                c[5].font = Font(size=9)
-                c[5].alignment = al_left
-        # Увеличиваем высоту строки
-        for i in range(2, len(self.selection_dict) + 2):
-            source_page2.row_dimensions[i].height = 40
-        w_b2.save(name_selection_file)
-        xl = DispatchEx("Excel.Application")
-        xl.DisplayAlerts = False
-        folder_path = os.path.dirname(os.path.abspath(path_file))
-        name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
-        name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}'
-        wb = xl.Workbooks.Open(path_file)
-        xl.CalculateFull()
-        pythoncom.PumpWaitingMessages()
-        try:
-            wb.ExportAsFixedFormat(
-                0, f'{folder_path}/{name_for_file}.pdf')
-        except Exception as e:
-            print(
-                "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
-        finally:
-            wb.Close()
-        # Сохраняем на DROPBOX
-        with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
-            dbx_db.files_upload(
-                f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
+        if self.selection_dict:
+            delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
+            # создаем новую книгу Excel
+            selection_file = Workbook()
+            COUNT_HELPER = 2
+            # выбираем лист Sheet1
+            create = selection_file.create_sheet(title='pivot_list', index=0)
+            sheet = selection_file['pivot_list']
+            # Установка параметров печати
+            create.page_setup.paperSize = create.PAPERSIZE_A4
+            create.page_setup.orientation = create.ORIENTATION_PORTRAIT
+            create.page_margins.left = 0.25
+            create.page_margins.right = 0.25
+            create.page_margins.top = 0.25
+            create.page_margins.bottom = 0.25
+            create.page_margins.header = 0.3
+            create.page_margins.footer = 0.3
+            sheet['A1'] = '№ Задания'
+            sheet['B1'] = 'Фото'
+            sheet['C1'] = 'Бренд'
+            sheet['D1'] = 'Наименование'
+            sheet['E1'] = 'Артикул продавца'
+            sheet['F1'] = 'Стикер'
+            for key, value in self.selection_dict.items():
+                # # загружаем изображение
+                response = requests.get(value[0])
+                img = image.Image(io.BytesIO(response.content))
+                # задаем размеры изображения
+                img.width = 30
+                img.height = 50
+                create.cell(row=COUNT_HELPER, column=1).value = key
+                # вставляем изображение в Столбец В
+                sheet.add_image(img, f'B{COUNT_HELPER}')
+                # create.cell(row=COUNT_HELPER, column=2).value = value[0]
+                create.cell(row=COUNT_HELPER, column=3).value = value[1]
+                create.cell(row=COUNT_HELPER, column=4).value = value[2]
+                create.cell(row=COUNT_HELPER, column=5).value = value[3]
+                create.cell(row=COUNT_HELPER, column=6).value = value[4]
+                COUNT_HELPER += 1
+            name_selection_file = 'fbs_mode/data_for_barcodes/pivot_excel/Лист подбора.xlsx'
+            path_file = os.path.abspath(name_selection_file)
+            selection_file.save(name_selection_file)
+            w_b2 = load_workbook(name_selection_file)
+            source_page2 = w_b2.active
+            al = Alignment(horizontal="center", vertical="center")
+            al_left = Alignment(horizontal="left",
+                                vertical="center", wrapText=True)
+            source_page2.column_dimensions['A'].width = 10  # Номер задания
+            source_page2.column_dimensions['B'].width = 5  # Картинка
+            source_page2.column_dimensions['C'].width = 15  # Бренд
+            source_page2.column_dimensions['D'].width = 25  # Наименование
+            source_page2.column_dimensions['E'].width = 16  # Артикул продавца
+            source_page2.column_dimensions['F'].width = 16  # Стикер
+            thin = Side(border_style="thin", color="000000")
+            for i in range(len(self.selection_dict)+1):
+                for c in source_page2[f'A{i+1}:F{i+1}']:
+                    c[0].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[0].font = Font(size=9)
+                    c[0].alignment = al
+                    c[1].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[1].font = Font(size=9)
+                    c[1].alignment = al
+                    c[2].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[2].font = Font(size=9)
+                    c[2].alignment = al_left
+                    c[3].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[3].font = Font(size=9)
+                    c[3].alignment = al_left
+                    c[4].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[4].font = Font(size=9)
+                    c[4].alignment = al_left
+                    c[5].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[5].font = Font(size=9)
+                    c[5].alignment = al_left
+            # Увеличиваем высоту строки
+            for i in range(2, len(self.selection_dict) + 2):
+                source_page2.row_dimensions[i].height = 40
+            w_b2.save(name_selection_file)
+            xl = DispatchEx("Excel.Application")
+            xl.DisplayAlerts = False
+            folder_path = os.path.dirname(os.path.abspath(path_file))
+            name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
+            name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}'
+            wb = xl.Workbooks.Open(path_file)
+            xl.CalculateFull()
+            pythoncom.PumpWaitingMessages()
+            try:
+                wb.ExportAsFixedFormat(
+                    0, f'{folder_path}/{name_for_file}.pdf')
+            except Exception as e:
+                print(
+                    "Failed to convert in PDF format.Please confirm environment meets all the requirements  and try again")
+            finally:
+                wb.Close()
+            # Сохраняем на DROPBOX
+            with open(f'{folder_path}/{name_for_file}.pdf', 'rb') as f:
+                dbx_db.files_upload(
+                    f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
+        else:
+            print('Не сработала create_selection_list потому что нет self.selection_dict')
 
     def qrcode_supply(self):
         """
-        WILDVERRIES.
+        WILDBERRIES.
         Функция добавляет поставку в доставку, получает QR код поставки
         и преобразует этот QR код в необходимый формат.
         """
         try:
-            # Переводим поставку в доставку
-            url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-            response_to_supply = requests.request(
-                "PATCH", url_to_supply, headers=self.headers)
+            if self.supply_id:
+                # Переводим поставку в доставку
+                url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
+                response_to_supply = requests.request(
+                    "PATCH", url_to_supply, headers=self.headers)
 
-            # Получаем QR код поставки:
-            url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
-            response_supply_qrcode = requests.request(
-                "GET", url_supply_qrcode, headers=self.headers)
+                # Получаем QR код поставки:
+                url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
+                response_supply_qrcode = requests.request(
+                    "GET", url_supply_qrcode, headers=self.headers)
 
-            # Создаем QR код поставки
-            qrcode_base64_data = json.loads(
-                response_supply_qrcode.text)["file"]
+                # Создаем QR код поставки
+                qrcode_base64_data = json.loads(
+                    response_supply_qrcode.text)["file"]
 
-            # декодируем строку из base64 в бинарные данные
-            binary_data = base64.b64decode(qrcode_base64_data)
-            # создаем объект изображения из бинарных данных
-            img = Image.open(BytesIO(binary_data))
-            # сохраняем изображение в файл
-            img.save(
-                f"web_barcode/fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
+                # декодируем строку из base64 в бинарные данные
+                binary_data = base64.b64decode(qrcode_base64_data)
+                # создаем объект изображения из бинарных данных
+                img = Image.open(BytesIO(binary_data))
+                # сохраняем изображение в файл
+                img.save(
+                    f"fbs_mode/data_for_barcodes/qrcode_supply/{self.supply_id}.png")
+            else:
+                print('Поставка не сформирована, так как нет артикулов')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -497,10 +501,13 @@ class WildberriesFbsMode():
                              text=message_text, parse_mode='HTML')
 
     def create_barcode_tickets(self):
-        """WILDVERRIES. Функция создает этикетки со штрихкодами для артикулов"""
+        """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
         try:
-            design_barcodes_dict_spec(
-                self.clear_article_list, self.data_article_info_dict)
+            if self.clear_article_list and self.data_article_info_dict:
+                design_barcodes_dict_spec(
+                    self.clear_article_list, self.data_article_info_dict)
+            else:
+                print('не сработала create_barcode_tickets так как нет данных')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -510,17 +517,18 @@ class WildberriesFbsMode():
 
     def list_for_print_create(self):
         """
-        WILDVERRIES.
+        WILDBERRIES.
         Функция создает список с полными именами файлов, которые нужно объединить
         amount_articles - словарь с данными {артикул_продавца: количество}.
         Объединяет эти файлы и сохраняет конечный файл на дропбоксе.
         """
         try:
-            qrcode_list = qrcode_print_for_products()
-            pdf_filenames = glob.glob(
-                'web_barcode/fbs_mode/data_for_barcodes/cache_dir/*.pdf')
-            list_pdf_file_ticket_for_complect = []
             if self.amount_articles:
+                qrcode_list = qrcode_print_for_products()
+                pdf_filenames = glob.glob(
+                    'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                list_pdf_file_ticket_for_complect = []
+
                 for j in pdf_filenames:
                     while self.amount_articles[str(Path(j).stem)] > 0:
                         list_pdf_file_ticket_for_complect.append(j)
@@ -570,11 +578,14 @@ class WildberriesFbsMode():
                         qrcode_supply_amount)
                     amount_of_supply_qrcode -= 1
 
-                file_name = (f'web_barcode/fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
+                file_name = (f'fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                              f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
+                saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
                 print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                       file_name,
-                                      self.dropbox_current_assembling_folder)
+                                      saved_on_dropbox_filename)
+            else:
+                print('не сработала list_for_print_create потому что нет данных')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -594,9 +605,15 @@ class OzonFbsMode():
         self.file_add_name = file_add_name
 
         self.posting_data = []
-        self.warehouse_list = [1020000089903000, 22655170176000]
+        self.warehouse_dict = {}
+        if self.file_add_name == 'ООО':
+            self.warehouse_dict = {
+                'day_stock': 1020001030027000, 'night_stock': 22676408482000}
+        elif self.file_add_name == 'ИП':
+            self.warehouse_dict = {
+                'day_stock': 1020000089903000, 'night_stock': 22655170176000}
         self.date_for_files = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-        self.main_save_folder_server = 'web_barcode/fbs_mode/data_for_barcodes'
+        self.main_save_folder_server = 'fbs_mode/data_for_barcodes'
         self.date_before = datetime.now() - timedelta(days=20)
         self.tomorrow_date = datetime.now() + timedelta(days=1)
         self.future_date = datetime.now() + timedelta(days=20)
@@ -716,9 +733,6 @@ class OzonFbsMode():
                 '%Y-%m-%d') + 'T23:59:00Z'
             date_confirm_delivery = self.tomorrow_date.strftime('%Y-%m-%d')
 
-            # Проверяем все отгрузки, которые буду завтра
-            url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
-
             # Словарь с данными {'Номер склада': {quantity: 'Количество артикулов', containers_count: 'количество коробок'}}
             self.ware_house_amount_dict = {}
             # Словарь с данными {'номер отправления': {'Артикул продавца': 'количество'}}
@@ -728,13 +742,12 @@ class OzonFbsMode():
             # 'Наименование': 'article_name', 'Количество': 'amount'}]}
             self.fbs_ozon_common_data_buils_dict = {}
 
-            if hour >= 18 or hour <= 6:
-                self.delivary_method_id = 22655170176000
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
-
-            else:
-                self.delivary_method_id = 1020000089903000
+            if hour >= 6 and hour < 18:
+                self.delivary_method_id = self.warehouse_dict['day_stock']
                 self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+            else:
+                self.delivary_method_id = self.warehouse_dict['night_stock']
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
             self.departure_date = date_confirm_delivery + 'T10:00:00Z'
 
             # Создаем папку на dropbox, если ее еще нет
@@ -742,6 +755,8 @@ class OzonFbsMode():
                 dbx_db.files_create_folder_v2(
                     self.dropbox_current_assembling_folder)
 
+            # Проверяем все отгрузки, которые буду завтра
+            url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
             amount_products = 0
             payload = json.dumps(
                 {
@@ -796,9 +811,6 @@ class OzonFbsMode():
             containers_count = math.ceil(amount_products/20)
             self.ware_house_amount_dict[self.delivary_method_id] = {
                 'quantity': amount_products, 'containers_count': containers_count}
-
-            print(self.fbs_ozon_common_data_buils_dict)
-            print(self.departure_date)
             return self.ozon_article_amount
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -907,7 +919,7 @@ class OzonFbsMode():
             white_A4.save(save_folder_docs_pdf, 'PDF', quality=100)
 
             folder = (
-                f'{self.dropbox_current_assembling_folder}/OZON-{self.file_add_name} акт {now_date}.pdf')
+                f'{self.dropbox_current_assembling_folder}/OZON - {self.file_add_name} акт {now_date}.pdf')
             with open(save_folder_docs_pdf, 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
         except Exception as e:
@@ -979,7 +991,7 @@ class OzonFbsMode():
             create.column_dimensions['C'].width = 18
             create.column_dimensions['D'].width = 10
 
-            name_for_file = f'{self.main_save_folder_server}/ozon_docs/OZON-{self.file_add_name} лист подбора {self.date_for_files}'
+            name_for_file = f'{self.main_save_folder_server}/ozon_docs/OZON - {self.file_add_name} лист подбора {self.date_for_files}'
 
             ozone_selection_sheet_xls.save(f'{name_for_file}.xlsx')
             w_b2 = load_workbook(f'{name_for_file}.xlsx')
@@ -1093,8 +1105,6 @@ class OzonFbsMode():
                     'Функция check_status_formed_invoice сработала. Спать 5 мин не нужно')
                 self.receive_barcode_delivery()
                 self.get_box_tickets()
-                self.forming_package_ticket_with_article()
-                self.create_ozone_selection_sheet_pdf()
             else:
                 print('уснули на 5 мин в функции check_status_formed_invoice')
                 time.sleep(300)
@@ -1118,7 +1128,6 @@ class OzonFbsMode():
             payload = json.dumps(
                 {
                     "id": self.delivery_id
-                    # "id": 35275670
                 }
             )
             response = requests.request(
@@ -1131,7 +1140,7 @@ class OzonFbsMode():
             with open(save_folder_docs, 'wb') as f:
                 f.write(pdf_data)
             folder = (
-                f'{self.dropbox_current_assembling_folder}/OZON-{self.file_add_name} ШК на 1 коробку {self.date_for_files}.pdf')
+                f'{self.dropbox_current_assembling_folder}/OZON - {self.file_add_name} ШК на 1 коробку {self.date_for_files}.pdf')
             with open(save_folder_docs, 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
         except Exception as e:
@@ -1176,7 +1185,7 @@ class OzonFbsMode():
             # Адрес и имя конечного файла
             file_name = f'{self.main_save_folder_server}/package_tickets/done/done_tickets.pdf'
             merge_barcode_for_ozon_two_on_two(list_filename, file_name)
-            folder = f'{self.dropbox_current_assembling_folder}/OZON-{self.file_add_name} этикетки.pdf'
+            folder = f'{self.dropbox_current_assembling_folder}/OZON - {self.file_add_name} этикетки.pdf'
             with open(file_name, 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
         except Exception as e:
@@ -1188,13 +1197,18 @@ class OzonFbsMode():
 
 
 class YandexMarketFbsMode():
-    """Класс отвечает за работу с заказами Wildberries"""
+    """Класс отвечает за работу с заказами Yandex"""
 
     def __init__(self, yandex_headers, db_folder, file_add_name):
         """Основные данные класса"""
         self.yandex_headers = yandex_headers
         self.dropbox_main_fbs_folder = db_folder
         self.file_add_name = file_add_name
+
+        if self.file_add_name == 'ООО':
+            self.compaign_id = 23746359
+        elif self.file_add_name == 'ИП':
+            self.compaign_id = 74448338
 
         self.amount_articles = {}
         self.shipment_id = ''
@@ -1203,10 +1217,11 @@ class YandexMarketFbsMode():
         self.date_for_files = datetime.now().strftime('%Y-%m-%d %H-%M')
         hour = datetime.now().hour
         date_folder = datetime.today().strftime('%Y-%m-%d')
-        if hour >= 18 or hour <= 6:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
-        else:
+
+        if hour >= 6 and hour < 18:
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+        else:
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
 
     def check_folder_exists(self, path):
         try:
@@ -1223,10 +1238,9 @@ class YandexMarketFbsMode():
         Создает список с данными каждого заказа: [{Заказ: [{артикул_продавца: артикул, название_артикула: название,
         количество_в_заказе: количество}]}]
         """
-        url = "https://api.partner.market.yandex.ru/campaigns/23746359/orders?status=PROCESSING&substatus=STARTED"
+        url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders?status=PROCESSING&substatus=STARTED"
         response = requests.request(
-            "GET", url, headers=yandex_headers_karavaev)
-
+            "GET", url, headers=self.yandex_headers)
         orders_list = json.loads(response.text)['orders']
 
         main_orders_list = []
@@ -1259,7 +1273,7 @@ class YandexMarketFbsMode():
         """
         orders_list = self.receive_orders_data()
         for order in orders_list:
-            status_url = f"https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order['order_id']}/status"
+            status_url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order['order_id']}/status"
 
             payload = json.dumps(
                 {
@@ -1268,17 +1282,16 @@ class YandexMarketFbsMode():
                         "substatus": "READY_TO_SHIP",
                     }
                 }
-
             )
             response_data = requests.request(
-                "PUT", status_url, headers=yandex_headers_karavaev, data=payload)
+                "PUT", status_url, headers=self.yandex_headers, data=payload)
 
     def receive_delivery_number(self):
         """
         YANDEXMARKET
         Определяет id поставки для подтверждения отгрузки.
         """
-        url_delivery = 'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments'
+        url_delivery = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments'
 
         date_for_delivery = datetime.now() + timedelta(days=1)
         date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
@@ -1286,12 +1299,13 @@ class YandexMarketFbsMode():
             "dateFrom": date_for_delivery,
             "dateTo": date_for_delivery,
             "statuses": [
-                "OUTBOUND_READY_FOR_CONFIRMATION"
+                "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
+                "OUTBOUND_READY_FOR_CONFIRMATION", "FINISHED"
             ]
         })
 
         response_delivery = requests.request(
-            "PUT", url_delivery, headers=yandex_headers_karavaev, data=payload)
+            "PUT", url_delivery, headers=self.yandex_headers, data=payload)
 
         shipments_list = json.loads(response_delivery.text)[
             'result']['shipments']
@@ -1312,23 +1326,25 @@ class YandexMarketFbsMode():
         Получает информацию о предстоящей отгрузке.
         """
         shipment_data = self.receive_delivery_number()
+        if shipment_data:
+            shipment_id = shipment_data['shipment_id']
 
-        # shipment_id = shipment_data['shipment_id']
+            # shipment_id = 45793720
+            url_info = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}'
 
-        shipment_id = 45793720
-        url_info = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}'
+            response = requests.request(
+                "GET", url_info, headers=self.yandex_headers)
+            info_main_data = json.loads(response.text)['result']
 
-        response = requests.request(
-            "GET", url_info, headers=yandex_headers_karavaev)
-        info_main_data = json.loads(response.text)['result']
+            orders_list = info_main_data['orderIds']
 
-        orders_list = info_main_data['orderIds']
+            shipment_data = {}
+            shipment_data['shipment_id'] = shipment_id
+            shipment_data['orders_list'] = orders_list
 
-        shipment_data = {}
-        shipment_data['shipment_id'] = shipment_id
-        shipment_data['orders_list'] = orders_list
-
-        return shipment_data
+            return shipment_data
+        else:
+            return shipment_data
 
     def check_actual_orders(self):
         """
@@ -1336,32 +1352,35 @@ class YandexMarketFbsMode():
         Проверяет все ордеры в поставке и исключает отмененнные
         """
         shipment_data = self.received_info_about_delivery()
+        if shipment_data:
 
-        orders_info_list = []
-        inner_info_dict = {}
-        raw_orders_list = shipment_data['orders_list']
-        for order in raw_orders_list:
+            orders_info_list = []
+            inner_info_dict = {}
+            raw_orders_list = shipment_data['orders_list']
+            for order in raw_orders_list:
 
-            inner_info_list = []
-            url_check = f'https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order}'
-            response = requests.request(
-                "GET", url_check, headers=yandex_headers_karavaev)
-            check_main_data = json.loads(response.text)['order']
-            if check_main_data['status'] != 'CANCELLED':
-                self.orders_list.append(order)
-                for article in check_main_data['items']:
-                    inner_article_list = {}
-                    inner_article_list['seller_article'] = article['offerId']
-                    inner_article_list['name'] = article['offerName']
-                    inner_article_list['amount'] = article['count']
+                inner_info_list = []
+                url_check = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}'
+                response = requests.request(
+                    "GET", url_check, headers=self.yandex_headers)
+                check_main_data = json.loads(response.text)['order']
+                if check_main_data['status'] != 'CANCELLED':
+                    self.orders_list.append(order)
+                    for article in check_main_data['items']:
+                        inner_article_list = {}
+                        inner_article_list['seller_article'] = article['offerId']
+                        inner_article_list['name'] = article['offerName']
+                        inner_article_list['amount'] = article['count']
 
-                    inner_info_list.append(inner_article_list)
+                        inner_info_list.append(inner_article_list)
 
-                inner_info_dict[order] = inner_info_list
+                    inner_info_dict[order] = inner_info_list
 
-                orders_info_list.append(inner_info_dict)
+                    orders_info_list.append(inner_info_dict)
 
-        return inner_info_dict
+            return inner_info_dict
+        else:
+            return None
 
     def yandex_prepare_data(self):
         """
@@ -1369,17 +1388,21 @@ class YandexMarketFbsMode():
         Готовит данные для общего файла для производства"""
         raw_data = self.check_actual_orders()
 
-        article_count_dict = {}
+        if raw_data:
 
-        for order_id, article_list in raw_data.items():
-            for article_dict in article_list:
-                if article_dict['seller_article'] in article_count_dict.keys():
-                    article_count_dict[article_dict['seller_article']] = int(
-                        article_dict['amount']) + int(article_count_dict[article_dict['seller_article']])
-                else:
-                    article_count_dict[article_dict['seller_article']] = int(
-                        article_dict['amount'])
-        return article_count_dict
+            article_count_dict = {}
+
+            for order_id, article_list in raw_data.items():
+                for article_dict in article_list:
+                    if article_dict['seller_article'] in article_count_dict.keys():
+                        article_count_dict[article_dict['seller_article']] = int(
+                            article_dict['amount']) + int(article_count_dict[article_dict['seller_article']])
+                    else:
+                        article_count_dict[article_dict['seller_article']] = int(
+                            article_dict['amount'])
+            return article_count_dict
+        else:
+            return None
 
     def approve_shipment(self):
         """
@@ -1389,13 +1412,13 @@ class YandexMarketFbsMode():
         shipment_data = self.received_info_about_delivery()
         shipment_id = shipment_data['shipment_id']
 
-        approve_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{shipment_id}/confirm'
+        approve_url = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}/confirm'
         payload_approve = json.dumps({
             "externalShipmentId": f'{shipment_id}',
             "orderIds": self.orders_list
         })
         response = requests.request(
-            "POST", approve_url, headers=yandex_headers_karavaev, data=payload_approve)
+            "POST", approve_url, headers=self.yandex_headers, data=payload_approve)
 
     def check_docs_for_shipment(self):
         """
@@ -1405,10 +1428,10 @@ class YandexMarketFbsMode():
         shipment_dict = self.receive_delivery_number()
         if shipment_dict:
             shipment_id = shipment_dict['shipment_id']
-            check_url = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/orders/info'
+            check_url = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{self.shipment_id}/orders/info'
 
             response_check = requests.request(
-                "GET", check_url, headers=yandex_headers_karavaev)
+                "GET", check_url, headers=self.yandex_headers)
 
             shipment_docs_dict = {}
 
@@ -1431,10 +1454,10 @@ class YandexMarketFbsMode():
         Сохраняет акт приема - передачи в PDF формате.
         """
         # self.shipment_id = 45554272
-        url_act = f'https://api.partner.market.yandex.ru/campaigns/23746359/first-mile/shipments/{self.shipment_id}/act'
+        url_act = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{self.shipment_id}/act'
 
         response_act = requests.request(
-            "GET", url_act, headers=yandex_headers_karavaev)
+            "GET", url_act, headers=self.yandex_headers)
 
         # print(response_act.text)
         pdf_data = response_act.content  # замените на фактические входные данные
@@ -1458,9 +1481,9 @@ class YandexMarketFbsMode():
         """
         orders_info_list = self.check_actual_orders()
         for order in self.orders_list:
-            url_tickets = f'https://api.partner.market.yandex.ru/campaigns/23746359/orders/{order}/delivery/labels'
+            url_tickets = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}/delivery/labels'
             response_tickets = requests.request(
-                "GET", url_tickets, headers=yandex_headers_karavaev)
+                "GET", url_tickets, headers=self.yandex_headers)
 
             pdf_data = response_tickets.content  # замените на фактические входные данные
             folder_path = os.path.join(
@@ -1483,10 +1506,10 @@ class YandexMarketFbsMode():
         folder_summary_file_name = f'{self.main_save_folder_server}/yandex/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
         merge_barcode_for_yandex_two_on_two(
             list_filenames, folder_summary_file_name)
-        # folder = (
-        #    f'{self.dropbox_current_assembling_folder}/YANDEX - ИП акт {self.date_for_files}.pdf')
-        # with open(save_folder_docs, 'rb') as f:
-        #    dbx_db.files_upload(f.read(), folder)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
+        with open(folder_summary_file_name, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
     def create_yandex_selection_sheet_pdf(self):
         """
@@ -1599,12 +1622,29 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         self.headers_ozon = headers_ozon
         self.headers_yandex = headers_yandex
 
+        # Получаем текущую дату
+        today = datetime.today()
+        hour = today.hour
+        wb_ip_days = ['Friday']
+        # Используем метод strftime() для форматирования даты и вывода дня недели
+        day_of_week = today.strftime('%A')
+
         self.amount_articles = WildberriesFbsMode(
             self.headers_wb, self.dropbox_main_fbs_folder, self.file_add_name).article_data_for_tickets()
-        self.ozon_article_amount = OzonFbsMode(
-            self.headers_ozon, self.dropbox_main_fbs_folder, self.file_add_name).prepare_data_for_confirm_delivery()
-        self.yandex_article_amount = YandexMarketFbsMode(
-            self.headers_yandex, self.dropbox_main_fbs_folder, self.file_add_name).yandex_prepare_data()
+        if self.file_add_name == 'ИП' and day_of_week in wb_ip_days and hour >= 20:
+            self.ozon_article_amount = None
+            self.yandex_article_amount = None
+        else:
+            self.ozon_article_amount = OzonFbsMode(
+                self.headers_ozon, self.dropbox_main_fbs_folder, self.file_add_name).prepare_data_for_confirm_delivery()
+            self.yandex_article_amount = YandexMarketFbsMode(
+                self.headers_yandex, self.dropbox_main_fbs_folder, self.file_add_name).yandex_prepare_data()
+        if self.file_add_name == 'ООО':
+            self.warehouse_dict = {
+                'day_stock': 1020001030027000, 'night_stock': 22676408482000}
+        elif self.file_add_name == 'ИП':
+            self.warehouse_dict = {
+                'day_stock': 1020000089903000, 'night_stock': 22655170176000}
 
     def create_pivot_xls(self):
         '''
@@ -1617,31 +1657,32 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             wb_article_amount = self.amount_articles.copy()
             hour = datetime.now().hour
             date_folder = datetime.today().strftime('%Y-%m-%d')
-            if hour >= 18 or hour <= 6:
-                self.delivary_method_id = 22655170176000
+
+            if hour >= 6 and hour < 18:
+                self.delivary_method_id = self.warehouse_dict['day_stock']
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+            else:
+                self.delivary_method_id = self.warehouse_dict['night_stock']
                 self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
 
-            else:
-                self.delivary_method_id = 1020000089903000
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
             CELL_LIMIT = 16
             COUNT_HELPER = 2
-
-            for article in self.ozon_article_amount.keys():
-                if article in self.amount_articles.keys():
-                    self.amount_articles[article] = int(
-                        self.amount_articles[article]) + int(self.ozon_article_amount[article])
-                else:
-                    self.amount_articles[article] = int(
-                        self.ozon_article_amount[article])
-
-            for article in self.yandex_article_amount.keys():
-                if article in self.amount_articles.keys():
-                    self.amount_articles[article] = int(
-                        self.amount_articles[article]) + int(self.yandex_article_amount[article])
-                else:
-                    self.amount_articles[article] = int(
-                        self.yandex_article_amount[article])
+            if self.ozon_article_amount:
+                for article in self.ozon_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.ozon_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.ozon_article_amount[article])
+            if self.yandex_article_amount:
+                for article in self.yandex_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.yandex_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.yandex_article_amount[article])
 
             sorted_data_for_pivot_xls = dict(
                 sorted(self.amount_articles.items(), key=lambda v: v[0].upper()))
@@ -1697,15 +1738,16 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             amount_all_fbs = source_page['D']
 
             for i in range(1, len(name_article)):
-                for j in self.ozon_article_amount.keys():
-                    if name_article[i].value == j:
-                        source_page.cell(
-                            row=i+1, column=6).value = self.ozon_article_amount[j]
-
-                for k in self.yandex_article_amount.keys():
-                    if name_article[i].value == k:
-                        source_page.cell(
-                            row=i+1, column=7).value = self.yandex_article_amount[k]
+                if self.ozon_article_amount:
+                    for j in self.ozon_article_amount.keys():
+                        if name_article[i].value == j:
+                            source_page.cell(
+                                row=i+1, column=6).value = self.ozon_article_amount[j]
+                if self.yandex_article_amount:
+                    for k in self.yandex_article_amount.keys():
+                        if name_article[i].value == k:
+                            source_page.cell(
+                                row=i+1, column=7).value = self.yandex_article_amount[k]
 
                 if name_article[i].value in wb_article_amount.keys():
                     source_page.cell(
@@ -1860,13 +1902,22 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         """
         try:
             wb_article_amount = self.amount_articles.copy()
-            for article in self.ozon_article_amount.keys():
-                if article in self.amount_articles.keys():
-                    self.amount_articles[article] = int(
-                        self.amount_articles[article]) + int(self.ozon_article_amount[article])
-                else:
-                    self.amount_articles[article] = int(
-                        self.ozon_article_amount[article])
+            if self.ozon_article_amount:
+                for article in self.ozon_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.ozon_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.ozon_article_amount[article])
+            if self.yandex_article_amount:
+                for article in self.yandex_article_amount.keys():
+                    if article in self.amount_articles.keys():
+                        self.amount_articles[article] = int(
+                            self.amount_articles[article]) + int(self.yandex_article_amount[article])
+                    else:
+                        self.amount_articles[article] = int(
+                            self.yandex_article_amount[article])
             sum_all_fbs = sum(self.amount_articles.values())
             sum_fbs_wb = 0
             if len(wb_article_amount.values()) != 0:
@@ -1920,129 +1971,11 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         for chat_id in list_chat_id_tg:
             bot.send_message(chat_id=chat_id, text=message)
 
-
-# # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
-# def common_action_wb_pivot_ozon_morning():
-#     wb_actions = WildberriesFbsMode()
-#     ozon_actions = OzonFbsMode()
-
-#     clearning_folders()
-#     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-#     # 1. Создаю сводный файл для производства
-#     pivot_file = CreatePivotFile()
-#     pivot_file.create_pivot_xls()
-#     # 2. Отправляю данные по сборке FBS
-#     pivot_file.sender_message_to_telegram()
-#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-#     # 1. Обрабатываю новые сборочные задания.
-#     wb_actions.article_data_for_tickets()
-#     # 3. Создаю поставку
-#     wb_actions.create_delivery()
-#     # 2. Создаю шрихкоды для артикулов
-#     wb_actions.create_barcode_tickets()
-#     # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-#     # задания и сохраняю его в папку
-#     wb_actions.qrcode_order()
-#     # 5. Создаю лист сборки
-#     wb_actions.create_selection_list()
-#     # 6. Добавляю поставку в доставку, получаю QR код поставки
-#     # и преобразует этот QR код в необходимый формат.
-#     wb_actions.qrcode_supply()
-#     # 7. Создаю список с полными именами файлов, которые нужно объединить
-#     wb_actions.list_for_print_create()
-
-#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-#     # 1. Готовлю данные для подтверждения отгрузки
-#     ozon_actions.prepare_data_for_confirm_delivery()
-#     # 2. Создаем лист подбора для ОЗОН
-#     ozon_actions.create_ozone_selection_sheet_pdf()
-#     # Очищаем все папки на сервере
-#     clearning_folders()
-#     message_text = 'Утренняя сборка WB сформирована'
-#     bot.send_message(chat_id=CHAT_ID_MANAGER,
-#                      text=message_text, parse_mode='HTML')
+# ==================== Сборка WILDBERRIES =================== #
 
 
-# def common_action_ozon_morning():
-
-#     ozon_actions = OzonFbsMode()
-#     clearning_folders()
-#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-#     # 1. Собираю информацию о новых заказах с Озон.
-#     ozon_actions.awaiting_packaging_orders()
-#     # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-#     ozon_actions.awaiting_deliver_orders()
-#     # 3. Готовлю данные для подтверждения отгрузки
-#     ozon_actions.prepare_data_for_confirm_delivery()
-#     # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-#     ozon_actions.confirm_delivery_create_document()
-#     # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-#     ozon_actions.check_delivery_create()
-#     # 6. Проверяю статус формирования накладной.
-#     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-#     ozon_actions.check_status_formed_invoice()
-#     # Очищаем все папки на сервере
-#     clearning_folders()
-#     message_text = 'Утренняя сборка ОЗОН сформирована'
-#     bot.send_message(chat_id=CHAT_ID_MANAGER,
-#                      text=message_text, parse_mode='HTML')
-
-
-def common_action_evening():
-
-    # clearning_folders()
-    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile()
-    pivot_file.create_pivot_xls()
-    # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
-
-    # # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # wb_actions = WildberriesFbsMode()
-    # # 1. Обрабатываю новые сборочные задания.
-    # wb_actions.article_data_for_tickets()
-    # wb_actions.create_barcode_tickets()
-    # 3. Создаю поставку
-    # wb_actions.create_delivery()
-    # # 2. Создаю шрихкоды для артикулов
-    # wb_actions.create_barcode_tickets()
-    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
-    # # 5. Создаю лист сборки
-    # wb_actions.create_selection_list()
-    # # 6. Добавляю поставку в доставку, получаю QR код поставки
-    # # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
-    # # 7. Создаю список с полными именами файлов, которые нужно объединить
-    # wb_actions.list_for_print_create()
-
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-    # ozon_actions = OzonFbsMode()
-    # # 1. Собираю информацию о новых заказах с Озон.
-    # ozon_actions.awaiting_packaging_orders()
-    # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    # ozon_actions.awaiting_deliver_orders()
-    # # 3. Готовлю данные для подтверждения отгрузки
-    # ozon_actions.prepare_data_for_confirm_delivery()
-    # # 4. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    # ozon_actions.confirm_delivery_create_document()
-    # # 5. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    # ozon_actions.check_delivery_create()
-    # # 6. Проверяю статус формирования накладной.
-    # # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    # ozon_actions.check_status_formed_invoice()
-    # # Очищаем все папки на сервере
-    # clearning_folders()
-    # message_text = 'Вечерняя сборка ФБС сформирована'
-    # bot.send_message(chat_id=CHAT_ID_MANAGER,
-    #                  text=message_text, parse_mode='HTML')
-
-
-# ==================== TEST =================== #
-def common_action_wb_pivot_ozon_morning(db_folder, file_add_name, headers_wb,
-                                        headers_ozon, headers_yandex):
+def action_wb(db_folder, file_add_name, headers_wb,
+              headers_ozon, headers_yandex):
     wb_actions = WildberriesFbsMode(
         headers_wb, db_folder, file_add_name)
 
@@ -2054,28 +1987,156 @@ def common_action_wb_pivot_ozon_morning(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
+    pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
     # 3. Создаю поставку
-    # wb_actions.create_delivery()
+    wb_actions.create_delivery()
     # 2. Создаю шрихкоды для артикулов
     wb_actions.create_barcode_tickets()
     # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
+    wb_actions.qrcode_order()
     # 5. Создаю лист сборки
     wb_actions.create_selection_list()
     # 6. Добавляю поставку в доставку, получаю QR код поставки
     # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
+    wb_actions.qrcode_supply()
     # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
-    # clearning_folders()
+    clearning_folders()
+
+# =========== Сборка ОЗОН ========== #
 
 
-common_action_wb_pivot_ozon_morning(
-    db_ooo_folder, file_add_name_ooo, wb_headers_ooo,
-    ozon_headers_ooo, yandex_headers_karavaev)
+def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
+    ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
+    # 1. Собираю информацию о новых заказах с Озон.
+    ozon_actions.awaiting_packaging_orders()
+    # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+    ozon_actions.awaiting_deliver_orders()
+    # 3. Готовлю данные для подтверждения отгрузки
+    ozon_actions.prepare_data_for_confirm_delivery()
+    # 4. Создает лист подбора для отправки
+    ozon_actions.create_ozone_selection_sheet_pdf()
+    # 5. Сохраняет этикетки для каждой отправки
+    ozon_actions.forming_package_ticket_with_article()
+    # 6. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    ozon_actions.confirm_delivery_create_document()
+    # 7. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    ozon_actions.check_delivery_create()
+    # 8. Проверяю статус формирования накладной.
+    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    ozon_actions.check_status_formed_invoice()
+    # Очищаем все папки на сервере
+    clearning_folders()
+
+
+def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
+    ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
+    # 1. Собираю информацию о новых заказах с Озон.
+    ozon_actions.awaiting_packaging_orders()
+    # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+    ozon_actions.awaiting_deliver_orders()
+    # 3. Готовлю данные для подтверждения отгрузки
+    ozon_actions.prepare_data_for_confirm_delivery()
+    # 4. Создает лист подбора для отправки
+    ozon_actions.create_ozone_selection_sheet_pdf()
+    # 5. Сохраняет этикетки для каждой отправки
+    ozon_actions.forming_package_ticket_with_article()
+
+    # # Очищаем все папки на сервере
+    clearning_folders()
+
+
+def action_ozon_ip_day(ozon_headers, db_folder, file_add_name):
+    ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
+    # 1. Готовлю данные для подтверждения отгрузки
+    ozon_actions.prepare_data_for_confirm_delivery()
+    # 2. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
+    ozon_actions.confirm_delivery_create_document()
+    # 3. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
+    ozon_actions.check_delivery_create()
+    # 4. Проверяю статус формирования накладной.
+    # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
+    ozon_actions.check_status_formed_invoice()
+    # Очищаем все папки на сервере
+    clearning_folders()
+
+
+# =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
+def action_yandex(yandex_headers, db_folder, file_add_name):
+    clearning_folders()
+    yandex_actions = YandexMarketFbsMode(
+        yandex_headers, db_folder, file_add_name)
+    # 1. Меняет статус ордеров
+    yandex_actions.change_orders_status()
+    # 2. Формирует файл подбора
+    yandex_actions.create_yandex_selection_sheet_pdf()
+    # 3. Подтверждение отгрузки
+    yandex_actions.approve_shipment()
+    # 4. Сохраняем акт
+    yandex_actions.saving_act()
+    # 5. Сохраняем этикетки
+    yandex_actions.saving_tickets()
+
+    # Очищаем все папки на сервере
+    clearning_folders()
+    message_text = f'Сборка {file_add_name} сформирована'
+    bot.send_message(chat_id=CHAT_ID_MANAGER,
+                     text=message_text, parse_mode='HTML')
+    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                     text=message_text, parse_mode='HTML')
+
+
+def ooo_wb_action():
+    action_wb(
+        db_ooo_folder, file_add_name_ooo, wb_headers_ooo,
+        ozon_headers_ooo, yandex_headers_ooo)
+
+
+# ooo_wb_action()
+
+
+def ooo_ozon_action():
+    action_ozon_ooo(ozon_headers_ooo, db_ooo_folder, file_add_name_ooo)
+
+
+# ooo_ozon_action()
+
+
+def ooo_yandex_action():
+    action_yandex(yandex_headers_ooo, db_ooo_folder, file_add_name_ooo)
+
+
+# ooo_yandex_action()
+
+
+def ip_wb_action():
+    action_wb(
+        db_ip_folder, file_add_name_ip, wb_headers_karavaev,
+        ozon_headers_karavaev, yandex_headers_karavaev)
+
+
+# ip_wb_action()
+
+
+def ip_ozon_action_morning():
+    action_ozon_ip_morning(ozon_headers_karavaev,
+                           db_ip_folder, file_add_name_ip)
+
+
+ip_ozon_action_morning()
+
+
+def ip_ozon_action_day():
+    action_ozon_ip_day(ozon_headers_karavaev, db_ip_folder, file_add_name_ip)
+
+
+def ip_yandex_action():
+    action_yandex(yandex_headers_karavaev, db_ip_folder, file_add_name_ip)
+
+
+# ip_yandex_action()
