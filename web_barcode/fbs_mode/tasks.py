@@ -1706,7 +1706,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         self.headers_wb = headers_wb
         self.headers_ozon = headers_ozon
         self.headers_yandex = headers_yandex
-
+        self.main_save_folder_server = 'fbs_mode/data_for_barcodes'
         # Получаем текущую дату
         today = datetime.today()
         hour = today.hour
@@ -1787,7 +1787,11 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 create.cell(row=COUNT_HELPER, column=4).value = value
                 COUNT_HELPER += 1
-            name_pivot_xls = 'fbs_mode/data_for_barcodes/pivot_excel/На производство.xlsx'
+            select_file_folder = os.path.join(
+                os.getcwd(), f'{self.main_save_folder_server}/pivot_excel')
+            if not os.path.exists(select_file_folder):
+                os.makedirs(select_file_folder)
+            name_pivot_xls = f'{select_file_folder}/На производство.xlsx'
             path_file = os.path.abspath(name_pivot_xls)
             # file_name_dir = path.parent
 

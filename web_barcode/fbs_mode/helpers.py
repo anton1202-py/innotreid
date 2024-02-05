@@ -499,7 +499,10 @@ def supply_qrcode_to_standart_view():
     filename - название файла с qr-кодами. Для создания промежуточной папки.
     """
 
-    dir = 'fbs_mode/data_for_barcodes/qrcode_supply/'
+    dir = os.path.join(
+        os.getcwd(), 'fbs_mode/data_for_barcodes/qrcode_supply/')
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     filelist = glob.glob(os.path.join(dir, "*.png"))
     filelist.sort(key=natural_keys)
 

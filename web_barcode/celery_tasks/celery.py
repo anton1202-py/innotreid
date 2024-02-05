@@ -86,7 +86,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=5, minute=45)
     },
     "yandex_ip_action": {
-        "task": "fbs_mode.tasks.ip_yandex_action()",
+        "task": "fbs_mode.tasks.ip_yandex_action",
         "schedule": crontab(hour=5, minute=52)
     },
     "ozon_ip_day": {
@@ -103,7 +103,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=17, minute=45)
     },
     "yandex_ooo_action": {
-        "task": "fbs_mode.tasks.ooo_yandex_action()",
+        "task": "fbs_mode.tasks.ooo_yandex_action",
         "schedule": crontab(hour=17, minute=52)
     },
 
