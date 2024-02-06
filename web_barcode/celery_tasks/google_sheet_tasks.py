@@ -11,7 +11,7 @@ import gspread
 import pandas as pd
 import requests
 import telegram
-# from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from gspread_formatting import *
 from helpers_func import error_message
@@ -100,7 +100,7 @@ def wb_data():
                          text=message_text, parse_mode='HTML')
 
 
-# @app.task
+@app.task
 def google_sheet():
     """Заполняет Гугл таблицу"""
     try:
@@ -147,4 +147,4 @@ def google_sheet():
                          text=message_text, parse_mode='HTML')
 
 
-google_sheet()
+# google_sheet()
