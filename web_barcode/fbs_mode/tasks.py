@@ -1955,7 +1955,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
             folder_path = os.path.dirname(os.path.abspath(path_file))
             name_for_file = f'Общий файл производство {self.file_add_name} {delivery_date}'
-            name_xls_dropbox = f'На производство {self.file_add_name} {delivery_date}'
+            name_xls_dropbox = f'For production {self.file_add_name} {delivery_date}'
 
             output = convert(source=path_file, output_dir=folder_path, soft=1)
 
@@ -2073,26 +2073,26 @@ def action_wb(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
-    # 3. Создаю поставку
-    wb_actions.create_delivery()
-    # 2. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
-    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
-    wb_actions.create_selection_list()
-    # 6. Добавляю поставку в доставку, получаю QR код поставки
-    # и преобразует этот QR код в необходимый формат.
-    wb_actions.qrcode_supply()
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+    # # 3. Создаю поставку
+    # wb_actions.create_delivery()
+    # # 2. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+    # # 5. Создаю лист сборки
+    # wb_actions.create_selection_list()
+    # # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
+    # # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
 
-    clearning_folders()
+    # clearning_folders()
 
 # =========== Сборка ОЗОН ========== #
 

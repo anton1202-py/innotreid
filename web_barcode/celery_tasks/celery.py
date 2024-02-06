@@ -75,7 +75,7 @@ app.conf.beat_schedule = {
     },
     "wb_ip_action": {
         "task": "fbs_mode.tasks.ip_wb_action",
-        "schedule": crontab(hour=16, minute=25)
+        "schedule": crontab(hour=16, minute=50)
     },
     "wb_ip_action_friday": {
         "task": "fbs_mode.tasks.ip_wb_action",
