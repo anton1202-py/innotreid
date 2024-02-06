@@ -14,7 +14,7 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-from celery_tasks.celery import app
+# from celery_tasks.celery import app
 from django.conf import settings
 from dotenv import load_dotenv
 from gspread_formatting import *
@@ -34,12 +34,11 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
-API_KEY_WB = os.getenv('API_KEY_WB_IP')
+YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
+YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
 
-headers = {
-    'Client-Id': OZON_OOO_CLIENT_ID,
-    'Api-Key': OZON_OOO_API_TOKEN,
-    'Content-Type': 'application/json',
+yandex_headers_ooo = {
+    'Authorization': YANDEX_OOO_KEY,
 }
 
 
@@ -62,35 +61,44 @@ def create_stop_article_list():
     return stop_list
 
 
-def request_info_stocks_data(last_id='', main_stock_data=None):
+def request_info_stocks_data():
     """
     Функция делает запросы на эндпоинт:
-    https://api-seller.ozon.ru/v3/product/info/stocks
-    и возвращает список со словарями о данных по количеству на складе
+    https://api.partner.market.yandex.ru/campaigns/42494921/offers/stocks
+    и возвращает список со словарями о данных по количеству на складе FBY ООО
+    Возвращает словарь main_stock_data_dict {Артикул: Остаток}
     """
-    if main_stock_data is None:
-        main_stock_data = []
-    url = "https://api-seller.ozon.ru/v3/product/info/stocks"
+    # Словарь с данными {Артикул: Остаток}
+    main_stock_data_dict = {}
+    url = "https://api.partner.market.yandex.ru/campaigns/42494921/offers/stocks"
 
     payload = json.dumps({
-        "filter": {
-            "offer_id": [],
-            "product_id": [],
-            "visibility": "ALL"
-        },
-        "last_id": last_id,
-        "limit": 1000
+        "withTurnover": False,
+        "archived": False,
+        "offerIds": []
     })
 
-    response = requests.request("POST", url, headers=headers, data=payload)
-    stocks_data = json.loads(response.text)['result']['items']
-    for data in stocks_data:
-        main_stock_data.append(data)
+    response = requests.request(
+        "POST", url, headers=yandex_headers_ooo, data=payload)
+    stocks_data = json.loads(response.text)['result']['warehouses']
 
-    if len(stocks_data) == 1000:
-        request_info_stocks_data(json.loads(
-            response.text)['result']['last_id'], main_stock_data)
-    return main_stock_data
+    for data in stocks_data:
+        for article_stock in data['offers']:
+            if article_stock['stocks']:
+
+                for available_stock in article_stock['stocks']:
+                    if available_stock['type'] == 'AVAILABLE':
+                        if article_stock['offerId'] in main_stock_data_dict.keys():
+                            main_stock_data_dict[article_stock['offerId']
+                                                 ] += int(available_stock['count'])
+                        else:
+                            main_stock_data_dict[article_stock['offerId']
+                                                 ] = int(available_stock['count'])
+    print(main_stock_data_dict)
+    return main_stock_data_dict
+
+
+request_info_stocks_data()
 
 
 def product_id_list():
@@ -119,7 +127,7 @@ def sku_article_data():
             "product_id": big_info_list
         })
         response = requests.request(
-            "POST", info_url, headers=headers, data=payload)
+            "POST", info_url, headers=yandex_headers_ooo, data=payload)
         article_data = json.loads(response.text)['result']['items']
         for data in article_data:
             if data['fbs_sku'] != 0:
@@ -145,7 +153,8 @@ def balance_on_fbs_night_stock():
         payload = json.dumps({
             "sku": data_sku_list
         })
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request(
+            "POST", url, headers=yandex_headers_ooo, data=payload)
         stocks_data = json.loads(response.text)['result']
         for data in stocks_data:
             if data['warehouse_id'] == 22676408482000:
@@ -176,7 +185,7 @@ def article_with_big_balance():
     return article_big_balance_dict, article_small_balance_dict
 
 
-@app.task
+# @app.task
 def fbs_balance_maker():
     """Обновляет остаток на FBS в зависимости от остатка на FBO складе"""
     try:
@@ -212,7 +221,7 @@ def fbs_balance_maker():
                 "stocks": request_list
             })
             response = requests.request(
-                "POST", update_balance_url, headers=headers, data=payload)
+                "POST", update_balance_url, headers=yandex_headers_ooo, data=payload)
 
         for i in range(koef_small_balance+1):
             # Лист для запроса в эндпоинту ОЗОНа
@@ -234,7 +243,7 @@ def fbs_balance_maker():
             })
 
             response = requests.request(
-                "POST", update_balance_url, headers=headers, data=payload)
+                "POST", update_balance_url, headers=yandex_headers_ooo, data=payload)
         message_text = f'Артикулы для обнуления остатков FBS: {list(article_big_balance_dict.keys())}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
