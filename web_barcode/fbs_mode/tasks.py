@@ -622,9 +622,10 @@ class WildberriesFbsMode():
                         os.makedirs(folder_path)
                     file_name = (f'{folder_path}/Наклейки для комплектовщиков '
                                  f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
+                    saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
                     print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                           file_name,
-                                          self.dropbox_current_assembling_folder)
+                                          saved_on_dropbox_filename)
             else:
                 text = 'не сработала list_for_print_create потому что нет данных'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -1678,7 +1679,7 @@ class YandexMarketFbsMode():
                 os.getcwd(), f'{self.main_save_folder_server}/yandex')
             if not os.path.exists(select_file_folder):
                 os.makedirs(select_file_folder)
-            name_for_file = f'{select_file_folder}/YANDEX - {self.file_add_name} лист подбора {self.date_for_files}.xlsx'
+            name_for_file = f'{select_file_folder}/YANDEX - {self.file_add_name} selection_sheet {self.date_for_files}.xlsx'
             yandex_selection_sheet_xls.save(name_for_file)
 
             folder_path = os.path.dirname(
