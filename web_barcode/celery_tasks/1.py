@@ -244,6 +244,3 @@ def fbs_balance_maker():
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
-
-
-fbs_balance_maker()
