@@ -1,27 +1,14 @@
-import io
 import json
 import math
 import os
-import sys
-import time
-from contextlib import closing
-from datetime import date, datetime, timedelta
-from time import sleep
+from datetime import datetime
 
-import dropbox
-import gspread
 import pandas as pd
-import psycopg2
 import requests
 import telegram
-# from celery_tasks.celery import app
-from django.conf import settings
+from celery_tasks.celery import app
 from dotenv import load_dotenv
-from gspread_formatting import *
 from helpers_func import error_message, stream_dropbox_file
-from oauth2client.service_account import ServiceAccountCredentials
-from psycopg2 import Error
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -43,7 +30,7 @@ CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 yandex_headers_ooo = {
     'Authorization': YANDEX_OOO_KEY,
 }
-tg_accounts = [CHAT_ID_EU, CHAT_ID_AN, CHAT_ID_ADMIN]
+tg_accounts = [CHAT_ID_EU, CHAT_ID_AN]
 
 
 def create_stop_article_list():
@@ -129,6 +116,7 @@ def request_info_fby_stocks_data():
 
 
 def fbs_stocks_data(nextPageToken='', fbs_sku_data=None):
+    """Создает и возвращает словарь с данными fbs_sku_data {артикул: остаток_fbs}"""
     stop_list = create_stop_article_list()
     if fbs_sku_data == None:
         fbs_sku_data = {}
@@ -159,6 +147,7 @@ def fbs_stocks_data(nextPageToken='', fbs_sku_data=None):
 
 
 def create_action_lists():
+    """Создает списки для обнуления FBS остатков и для их увеличения"""
     fby_stock_dict = request_info_fby_stocks_data()
     fbs_stock_dict = fbs_stocks_data()
 
@@ -172,18 +161,15 @@ def create_action_lists():
                 article_for_greate_list.append(key_fby)
     return article_for_null_list, article_for_greate_list
 
-# @app.task
 
-
+@app.task
 def fbs_balance_maker():
     """Обновляет остаток на FBS в зависимости от остатка на FBY складе"""
     try:
         update_balance_url = 'https://api.partner.market.yandex.ru/campaigns/23746359/offers/stocks'
         time_now = datetime.now()
-
         now = time_now.strftime('%Y-%m-%dT%H:%M:%SZ')
         article_for_null_list, article_for_greate_list = create_action_lists()
-
         # Обнуляем остатки на FBS
         for article in article_for_null_list:
             payload = json.dumps({
@@ -203,7 +189,6 @@ def fbs_balance_maker():
             })
             response = requests.request(
                 "PUT", update_balance_url, headers=yandex_headers_ooo, data=payload)
-
         # Увеличиваем остатки на FBS
         for article in article_for_greate_list:
             payload = json.dumps({
@@ -223,7 +208,6 @@ def fbs_balance_maker():
             })
             response = requests.request(
                 "PUT", update_balance_url, headers=yandex_headers_ooo, data=payload)
-
         if len(article_for_null_list) != 0:
             message_text = f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}'
             for chat_id in tg_accounts:
@@ -238,12 +222,8 @@ def fbs_balance_maker():
             for chat_id in tg_accounts:
                 bot.send_message(chat_id=chat_id,
                                  text=message_text, parse_mode='HTML')
-
     except Exception as e:
         # обработка ошибки и отправка сообщения через бота
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
-
-
-fbs_balance_maker()
