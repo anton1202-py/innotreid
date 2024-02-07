@@ -61,193 +61,169 @@ def create_stop_article_list():
     return stop_list
 
 
-def request_info_stocks_data():
+def sku_data_function(nextPageToken='', main_sku_data=None):
+    """Возвращает список sku продавца, которые готовы к продаже и остаток которых = 0"""
+    stop_list = create_stop_article_list()
+    if main_sku_data is None:
+        main_sku_data = []
+    url = f'https://api.partner.market.yandex.ru/campaigns/42494921/offers?limit=200&page_token={nextPageToken}'
+    payload = json.dumps({
+        "statuses": ["PUBLISHED", "NO_STOCKS"]
+    })
+    response = requests.request(
+        "POST", url, headers=yandex_headers_ooo, data=payload)
+    sku_main_data = json.loads(response.text)['result']
+
+    sku_article_data = sku_main_data['offers']
+
+    for article in sku_article_data:
+        if article['offerId'] not in stop_list:
+            main_sku_data.append(article['offerId'])
+    if sku_main_data['paging']:
+        sku_data_function(sku_main_data['paging']
+                          ['nextPageToken'], main_sku_data)
+    else:
+        print(len(main_sku_data))
+    return main_sku_data
+
+
+def request_info_fby_stocks_data():
     """
     Функция делает запросы на эндпоинт:
-    https://api.partner.market.yandex.ru/campaigns/42494921/offers/stocks
-    и возвращает список со словарями о данных по количеству на складе FBY ООО
+    https://api.partner.market.yandex.ru/campaigns/42494921/stats/skus
+    и возвращает словарь с данными по количеству товара на складе FBY ООО
     Возвращает словарь main_stock_data_dict {Артикул: Остаток}
     """
     # Словарь с данными {Артикул: Остаток}
     main_stock_data_dict = {}
-    url = "https://api.partner.market.yandex.ru/campaigns/42494921/offers/stocks"
-
-    payload = json.dumps({
-        "withTurnover": False,
-        "archived": False,
-        "offerIds": []
-    })
-
-    response = requests.request(
-        "POST", url, headers=yandex_headers_ooo, data=payload)
-    stocks_data = json.loads(response.text)['result']['warehouses']
-
-    for data in stocks_data:
-        for article_stock in data['offers']:
-            if article_stock['stocks']:
-
-                for available_stock in article_stock['stocks']:
-                    if available_stock['type'] == 'AVAILABLE':
-                        if article_stock['offerId'] in main_stock_data_dict.keys():
-                            main_stock_data_dict[article_stock['offerId']
-                                                 ] += int(available_stock['count'])
-                        else:
-                            main_stock_data_dict[article_stock['offerId']
-                                                 ] = int(available_stock['count'])
-    print(main_stock_data_dict)
-    return main_stock_data_dict
-
-
-request_info_stocks_data()
-
-
-def product_id_list():
-    """Выдает список списков product_id"""
-    stocks_data = request_info_stocks_data()
-    product_id_list = []
-    for data in stocks_data:
-        product_id_list.append(data['product_id'])
-    return product_id_list
-
-
-def sku_article_data():
-    """Берет SKU FBS артикула по его offer_id
-    Возвращает словарь вида {offer_id: sku}"""
-    product_list = product_id_list()
-    koef_product = math.ceil(len(product_list)//900)
-    info_url = 'https://api-seller.ozon.ru/v2/product/info/list'
-    main_info_dict = {}
+    # Список артикулов в магазине.
+    seller_sku_list = sku_data_function()
+    koef_product = math.ceil(len(seller_sku_list)//400)
+    url = "https://api.partner.market.yandex.ru/campaigns/42494921/stats/skus"
     for i in range(koef_product+1):
-        start_point = i*900
-        finish_point = (i+1)*900
-        big_info_list = product_list[
-            start_point:finish_point]
-        payload = json.dumps({
-            "offer_id": [],
-            "product_id": big_info_list
-        })
-        response = requests.request(
-            "POST", info_url, headers=yandex_headers_ooo, data=payload)
-        article_data = json.loads(response.text)['result']['items']
-        for data in article_data:
-            if data['fbs_sku'] != 0:
-                main_info_dict[data['offer_id']] = data['fbs_sku']
-            else:
-                main_info_dict[data['offer_id']] = data['sku']
-    return main_info_dict
-
-
-def balance_on_fbs_night_stock():
-    """Возвращет остаток на складе Иннотрейд Ночь"""
-    main_info_dict = sku_article_data()
-    sku_list = list(main_info_dict.values())
-    koef_sku = math.ceil(
-        len(sku_list)//400)
-    sku_stock_dict = {}
-    url = "https://api-seller.ozon.ru/v1/product/info/stocks-by-warehouse/fbs"
-    for i in range(koef_sku):
         start_point = i*400
         finish_point = (i+1)*400
-        data_sku_list = sku_list[
+        sku_list = seller_sku_list[
             start_point:finish_point]
         payload = json.dumps({
-            "sku": data_sku_list
+            "shopSkus": sku_list
         })
         response = requests.request(
             "POST", url, headers=yandex_headers_ooo, data=payload)
-        stocks_data = json.loads(response.text)['result']
-        for data in stocks_data:
-            if data['warehouse_id'] == 22676408482000:
-                sku_stock_dict[data['product_id']] = data['present']
-    return sku_stock_dict
+        sku_data = json.loads(response.text)['result']['shopSkus']
+        for sku in sku_data:
+            count = 0
+            try:
+                for stock in sku['warehouses']:
+                    for article_count in stock['stocks']:
+                        if article_count['type'] == 'AVAILABLE':
+                            count += article_count['count']
+                main_stock_data_dict[sku['shopSku']] = count
+            except:
+                main_stock_data_dict[sku['shopSku']] = 0
+    return main_stock_data_dict
 
 
-def article_with_big_balance():
-    """Функция ищет артикулы, остаток которых на складах FBO >= 20"""
-    stocks_data = request_info_stocks_data()
-    article_big_balance_dict = {}
-    article_small_balance_dict = {}
+def fbs_stocks_data(nextPageToken='', fbs_sku_data=None):
     stop_list = create_stop_article_list()
-    stock_night_dict = balance_on_fbs_night_stock()
+    if fbs_sku_data == None:
+        fbs_sku_data = {}
+    url = f'https://api.partner.market.yandex.ru/campaigns/23746359/offers/stocks?limit=200&page_token={nextPageToken}'
+    payload = json.dumps({
+        "withTurnover": False,
+        "archived": False
+    })
+    response = requests.request(
+        "POST", url, headers=yandex_headers_ooo, data=payload)
+    fbs_main_data = json.loads(response.text)['result']
+    sku_article_data = fbs_main_data['warehouses']
+    for article in sku_article_data:
+        for stocks in article['offers']:
+            count = 0
+            if stocks['offerId'] not in stop_list:
+                for stocks_count in stocks['stocks']:
+                    if stocks_count['type'] == 'AVAILABLE':
+                        count = stocks_count['count']
+                if stocks['offerId'] in fbs_sku_data.keys():
+                    fbs_sku_data[stocks['offerId']
+                                 ] = fbs_sku_data[stocks['offerId']] + count
+                else:
+                    fbs_sku_data[stocks['offerId']] = count
+    if fbs_main_data['paging']:
+        fbs_stocks_data(fbs_main_data['paging']['nextPageToken'], fbs_sku_data)
+    return fbs_sku_data
 
-    for article_data in stocks_data:
-        fbo_value = next(
-            (dictionary["present"] for dictionary in article_data['stocks'] if dictionary["type"] == "fbo"), None)
-        if article_data['offer_id'] not in stop_list:
-            if article_data['product_id'] in stock_night_dict.keys():
-                stock_night = stock_night_dict[article_data['product_id']]
-                if fbo_value < 5 and stock_night < 50:
-                    article_small_balance_dict[article_data['offer_id']
-                                               ] = article_data['product_id']
-                elif fbo_value >= 20 and stock_night != 0:
-                    article_big_balance_dict[article_data['offer_id']
-                                             ] = article_data['product_id']
-    return article_big_balance_dict, article_small_balance_dict
 
+def create_action_lists():
+    fby_stock_dict = request_info_fby_stocks_data()
+    fbs_stock_dict = fbs_stocks_data()
+
+    article_for_null_list = []
+    article_for_greate_list = []
+    for key_fby, value_fby in fby_stock_dict.items():
+        if key_fby in fbs_stock_dict.keys():
+            if value_fby > 2 and fbs_stock_dict[key_fby] != 0:
+                article_for_null_list.append(key_fby)
+            elif value_fby <= 2 and fbs_stock_dict[key_fby] < 50:
+                article_for_greate_list.append(key_fby)
+    return article_for_null_list, article_for_greate_list
 
 # @app.task
+
+
 def fbs_balance_maker():
-    """Обновляет остаток на FBS в зависимости от остатка на FBO складе"""
+    """Обновляет остаток на FBS в зависимости от остатка на FBY складе"""
     try:
-        warehouse_id = 22676408482000
-        update_balance_url = 'https://api-seller.ozon.ru/v2/products/stocks'
+        update_balance_url = 'https://api.partner.market.yandex.ru/campaigns/23746359/offers/stocks'
+        time_now = datetime.now()
 
-        article_big_balance_dict, article_small_balance_dict = article_with_big_balance()
+        now = time_now.strftime('%Y-%m-%dT%H:%M:%SZ')
+        article_for_null_list, article_for_greate_list = create_action_lists()
 
-        # В ОЗОН стоит ограничение на 100 артикулов в запросе. На всякий случай сделал 90
-        koef_small_balance = math.ceil(
-            len(article_small_balance_dict.keys())//90)
-        koef_big_balance = math.ceil(len(article_big_balance_dict.keys())//90)
-
-        for i in range(koef_big_balance+1):
-            # Лист для запроса в эндпоинту ОЗОНа
-            request_list = []
-            start_point = i*90
-            finish_point = (i+1)*90
-            big_info_list = list(article_big_balance_dict.keys())[
-                start_point:finish_point]
-            for article in big_info_list:
-                inner_request_dict = {}
-                inner_request_dict['offer_id'] = article
-                print('Обнуляем остаток на FBS',
-                      inner_request_dict['offer_id'])
-                inner_request_dict['product_id'] = article_big_balance_dict[article]
-                inner_request_dict['stock'] = 0
-                inner_request_dict['warehouse_id'] = warehouse_id
-
-                request_list.append(inner_request_dict)
-
+        # Обнуляем остатки на FBS
+        for article in article_for_null_list:
             payload = json.dumps({
-                "stocks": request_list
+                "skus": [
+                    {
+                        "sku": article,
+                        "warehouseId": 250643,
+                        "items": [
+                            {
+                                "count": 0,
+                                "type": "FIT",
+                                "updatedAt": now
+                            }
+                        ]
+                    }
+                ]
             })
             response = requests.request(
-                "POST", update_balance_url, headers=yandex_headers_ooo, data=payload)
+                "PUT", update_balance_url, headers=yandex_headers_ooo, data=payload)
 
-        for i in range(koef_small_balance+1):
-            # Лист для запроса в эндпоинту ОЗОНа
-            request_list = []
-            start_point = i*90
-            finish_point = (i+1)*90
-            small_info_list = list(article_small_balance_dict.keys())[
-                start_point:finish_point]
-            for article in small_info_list:
-                inner_request_dict = {}
-                inner_request_dict['offer_id'] = article
-                # print('Делаем остаток 100 на FBS', inner_request_dict['offer_id'])
-                inner_request_dict['product_id'] = article_small_balance_dict[article]
-                inner_request_dict['stock'] = 100
-                inner_request_dict['warehouse_id'] = warehouse_id
-                request_list.append(inner_request_dict)
+        # Увеличиваем остатки на FBS
+        for article in article_for_greate_list:
             payload = json.dumps({
-                "stocks": request_list
+                "skus": [
+                    {
+                        "sku": article,
+                        "warehouseId": 250643,
+                        "items": [
+                            {
+                                "count": 100,
+                                "type": "FIT",
+                                "updatedAt": now
+                            }
+                        ]
+                    }
+                ]
             })
-
             response = requests.request(
-                "POST", update_balance_url, headers=yandex_headers_ooo, data=payload)
-        message_text = f'Артикулы для обнуления остатков FBS: {list(article_big_balance_dict.keys())}'
+                "PUT", update_balance_url, headers=yandex_headers_ooo, data=payload)
+
+        message_text = f'Артикулы для обнуления остатков Yandex FBS: {article_for_null_list}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
-        message_text = f'Артикулы для увеличения остатков FBS: {list(article_small_balance_dict.keys())}'
+        message_text = f'Артикулы для увеличения остатков Yandex FBS: {article_for_greate_list}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
     except Exception as e:

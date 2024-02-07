@@ -498,11 +498,12 @@ class WildberriesFbsMode():
         и преобразует этот QR код в необходимый формат.
         """
         try:
+            self.supply_id = 'WB-GI-74520301'
             if self.supply_id:
                 # Переводим поставку в доставку
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-                response_to_supply = requests.request(
-                    "PATCH", url_to_supply, headers=self.headers)
+                # response_to_supply = requests.request(
+                #    "PATCH", url_to_supply, headers=self.headers)
 
                 # Получаем QR код поставки:
                 url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
@@ -2069,31 +2070,31 @@ def action_wb(db_folder, file_add_name, headers_wb,
     clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile(db_folder, file_add_name,
-                                 headers_wb, headers_ozon,
-                                 headers_yandex)
-    pivot_file.create_pivot_xls()
-    # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
-    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
-    # 3. Создаю поставку
-    wb_actions.create_delivery()
-    # 2. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
-    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
-    wb_actions.create_selection_list()
+    # pivot_file = CreatePivotFile(db_folder, file_add_name,
+    #                              headers_wb, headers_ozon,
+    #                              headers_yandex)
+    # pivot_file.create_pivot_xls()
+    # # 2. Отправляю данные по сборке FBS
+    # pivot_file.sender_message_to_telegram()
+    # # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+    # # 1. Обрабатываю новые сборочные задания.
+    # wb_actions.article_data_for_tickets()
+    # # 3. Создаю поставку
+    # wb_actions.create_delivery()
+    # # 2. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+    # # 5. Создаю лист сборки
+    # wb_actions.create_selection_list()
     # 6. Добавляю поставку в доставку, получаю QR код поставки
     # и преобразует этот QR код в необходимый формат.
     wb_actions.qrcode_supply()
     # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+    # wb_actions.list_for_print_create()
 
-    clearning_folders()
+    # clearning_folders()
 
 # =========== Сборка ОЗОН ========== #
 
