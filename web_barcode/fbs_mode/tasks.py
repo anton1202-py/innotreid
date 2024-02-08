@@ -222,7 +222,8 @@ class WildberriesFbsMode():
                 })
                 response_data = requests.request(
                     "POST", url_data, headers=self.headers, data=payload)
-                print('json.loads(response_data.text)', json.loads(response_data.text))
+                print('json.loads(response_data.text)',
+                      json.loads(response_data.text))
                 if json.loads(response_data.text)[
                         'data']['cards'][0]['object'] == "Ночники":
                     self.clear_article_list.append(article)
@@ -322,6 +323,7 @@ class WildberriesFbsMode():
                     add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
                     response_add_orders = requests.request(
                         "PATCH", add_url, headers=self.headers)
+
                 # Создаем qr коды добавленных ордеров.
                 for order in self.article_id_dict.keys():
                     ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
@@ -476,7 +478,6 @@ class WildberriesFbsMode():
 
                 output = convert(source=path_file,
                                  output_dir=folder_path, soft=1)
-
                 # Сохраняем на DROPBOX
                 with open(output, 'rb') as f:
                     dbx_db.files_upload(
@@ -504,17 +505,11 @@ class WildberriesFbsMode():
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
                 response_to_supply = requests.request(
                     "PATCH", url_to_supply, headers=self.headers)
-                text = f'Переводим поставку в доставку response_to_supply статус: {response_to_supply}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
                 time.sleep(30)
                 # Получаем QR код поставки:
                 url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
                 response_supply_qrcode = requests.request(
                     "GET", url_supply_qrcode, headers=self.headers)
-                text = f'Получаем QR код поставки {self.file_add_name} response_supply_qrcode статус: {response_supply_qrcode}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
 
                 # Создаем QR код поставки
                 qrcode_base64_data = json.loads(
@@ -577,11 +572,12 @@ class WildberriesFbsMode():
                         while self.amount_articles[str(Path(j).stem)] > 0:
                             list_pdf_file_ticket_for_complect.append(j)
                             self.amount_articles[str(Path(j).stem)] -= 1
-                    for file in qrcode_list:
-                        list_pdf_file_ticket_for_complect.append(file)
                     # Определяем число qr кодов для поставки.
                     amount_of_supply_qrcode = math.ceil(
                         len(list_pdf_file_ticket_for_complect)/20)
+                    for file in qrcode_list:
+                        list_pdf_file_ticket_for_complect.append(file)
+
                     outer_list = []  # Внешний список для процесса сортировки
                     for i in list_pdf_file_ticket_for_complect:
                         # Разделяю полное название файла на путь к файлу и имя файла
@@ -2083,21 +2079,19 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # 2. Отправляю данные по сборке FBS
     pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Обрабатываю новые сборочные задания.
-    #wb_actions.article_data_for_tickets()
-    # 3. Создаю поставку
+    # 1. Создаю поставку
     wb_actions.create_delivery()
     # 2. Создаю шрихкоды для артикулов
     wb_actions.create_barcode_tickets()
-    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
     wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
+    # 4. Создаю лист сборки
     wb_actions.create_selection_list()
-    # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # 5. Добавляю поставку в доставку, получаю QR код поставки
     # и преобразует этот QR код в необходимый формат.
     wb_actions.qrcode_supply()
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # 6. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
     clearning_folders()
