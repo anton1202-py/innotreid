@@ -477,6 +477,7 @@ class WildberriesFbsMode():
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
                 # response_to_supply = requests.request(
                 #    "PATCH", url_to_supply, headers=self.headers)
+
                 print()
 
                 # Получаем QR код поставки:

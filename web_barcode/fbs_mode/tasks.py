@@ -222,8 +222,6 @@ class WildberriesFbsMode():
                 })
                 response_data = requests.request(
                     "POST", url_data, headers=self.headers, data=payload)
-                print('json.loads(response_data.text)',
-                      json.loads(response_data.text))
                 if json.loads(response_data.text)[
                         'data']['cards'][0]['object'] == "Ночники":
                     self.clear_article_list.append(article)
@@ -267,7 +265,6 @@ class WildberriesFbsMode():
                 # Заполняем словарь данными для Листа подбора
                 self.selection_dict[order_id] = [
                     photo, brand, title_article, seller_article]
-            print('self.amount_articles', self.amount_articles)
             return self.amount_articles
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -733,11 +730,7 @@ class OzonFbsMode():
         try:
             url = 'https://api-seller.ozon.ru/v4/posting/fbs/ship'
             for data_dict in self.posting_data:
-                # print('posting_number', posting_number)
-                # print('data_list', data_list)
                 for sku_data in data_dict['products']:
-                    # print('sku_data[sku]', sku_data['sku'])
-                    # print('sku_data[quantity]', sku_data['quantity'])
                     payload = json.dumps({
                         "packages": [
                             {
