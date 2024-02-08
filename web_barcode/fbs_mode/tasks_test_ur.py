@@ -294,6 +294,7 @@ class WildberriesFbsMode():
                     "POST", url_data, headers=self.headers, data=payload)
                 # print(response_data)
                 self.supply_id = json.loads(response_data.text)['id']
+                # self.supply_id = 'WB-GI-74650567'
             else:
                 text = f'Не артикулов на WB для сборки {self.file_add_name}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -392,7 +393,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
-                create.cell(row=COUNT_HELPER, column=6).value = value[4]
+                # create.cell(row=COUNT_HELPER, column=6).value = value[4]
                 COUNT_HELPER += 1
             name_selection_file = 'fbs_mode/data_for_barcodes/pivot_excel/Лист подбора.xlsx'
             path_file = os.path.abspath(name_selection_file)
@@ -469,11 +470,14 @@ class WildberriesFbsMode():
         и преобразует этот QR код в необходимый формат.
         """
         try:
+            print(self.supply_id)
             if self.supply_id:
+                print(self.supply_id)
                 # Переводим поставку в доставку
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-                response_to_supply = requests.request(
-                    "PATCH", url_to_supply, headers=self.headers)
+                # response_to_supply = requests.request(
+                #    "PATCH", url_to_supply, headers=self.headers)
+                print()
 
                 # Получаем QR код поставки:
                 url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
@@ -1982,12 +1986,12 @@ def action_wb(db_folder, file_add_name, headers_wb,
     clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile(db_folder, file_add_name,
-                                 headers_wb, headers_ozon,
-                                 headers_yandex)
-    pivot_file.create_pivot_xls()
+    # pivot_file = CreatePivotFile(db_folder, file_add_name,
+    #                             headers_wb, headers_ozon,
+    #                             headers_yandex)
+    # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.article_data_for_tickets()
@@ -1997,7 +2001,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.create_barcode_tickets()
     # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
+    # wb_actions.qrcode_order()
     # 5. Создаю лист сборки
     wb_actions.create_selection_list()
     # 6. Добавляю поставку в доставку, получаю QR код поставки
@@ -2006,7 +2010,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
-    clearning_folders()
+    # clearning_folders()
 
 # =========== Сборка ОЗОН ========== #
 
@@ -2120,7 +2124,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-# ip_wb_action()
+ip_wb_action()
 
 
 def ip_ozon_action_morning():
@@ -2128,7 +2132,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-ip_ozon_action_morning()
+# ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

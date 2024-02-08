@@ -503,11 +503,17 @@ class WildberriesFbsMode():
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
                 response_to_supply = requests.request(
                     "PATCH", url_to_supply, headers=self.headers)
-
+                text = f'Переводим поставку в доставку response_to_supply статус: {response_to_supply}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+                time.sleep(30)
                 # Получаем QR код поставки:
                 url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
                 response_supply_qrcode = requests.request(
                     "GET", url_supply_qrcode, headers=self.headers)
+                text = f'Получаем QR код поставки {self.file_add_name} response_supply_qrcode статус: {response_supply_qrcode}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
 
                 # Создаем QR код поставки
                 qrcode_base64_data = json.loads(
