@@ -93,7 +93,7 @@ app.conf.beat_schedule = {
 
     "wb_ooo_action": {
         "task": "fbs_mode.tasks.ooo_wb_action",
-        "schedule": crontab(hour=19, minute=12)
+        "schedule": crontab(hour=19, minute=25)
     },
     "ozon_ooo_action": {
         "task": "fbs_mode.tasks.ooo_ozon_action",

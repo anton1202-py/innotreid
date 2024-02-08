@@ -222,7 +222,7 @@ class WildberriesFbsMode():
                 })
                 response_data = requests.request(
                     "POST", url_data, headers=self.headers, data=payload)
-                # print(json.loads(response_data.text))
+                print('json.loads(response_data.text)', json.loads(response_data.text))
                 if json.loads(response_data.text)[
                         'data']['cards'][0]['object'] == "Ночники":
                     self.clear_article_list.append(article)
@@ -266,6 +266,7 @@ class WildberriesFbsMode():
                 # Заполняем словарь данными для Листа подбора
                 self.selection_dict[order_id] = [
                     photo, brand, title_article, seller_article]
+            print('self.amount_articles', self.amount_articles)
             return self.amount_articles
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -2083,7 +2084,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
+    #wb_actions.article_data_for_tickets()
     # 3. Создаю поставку
     wb_actions.create_delivery()
     # 2. Создаю шрихкоды для артикулов
