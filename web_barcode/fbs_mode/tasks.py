@@ -222,16 +222,21 @@ class WildberriesFbsMode():
                 })
                 response_data = requests.request(
                     "POST", url_data, headers=self.headers, data=payload)
-                if json.loads(response_data.text)[
-                        'data']['cards'][0]['object'] == "Ночники":
-                    self.clear_article_list.append(article)
-                    # Достаем баркод артикула (первый из списка, если их несколько)
-                    barcode = json.loads(response_data.text)[
-                        'data']['cards'][0]['sizes'][0]['skus'][0]
-                    # Достаем название артикула
-                    title = json.loads(response_data.text)[
-                        'data']['cards'][0]['title']
-                    self.data_article_info_dict[article] = [title, barcode]
+                if response_data.status_code == 200:
+                    if json.loads(response_data.text)[
+                            'data']['cards'][0]['object'] == "Ночники":
+                        self.clear_article_list.append(article)
+                        # Достаем баркод артикула (первый из списка, если их несколько)
+                        barcode = json.loads(response_data.text)[
+                            'data']['cards'][0]['sizes'][0]['skus'][0]
+                        # Достаем название артикула
+                        title = json.loads(response_data.text)[
+                            'data']['cards'][0]['title']
+                        self.data_article_info_dict[article] = [title, barcode]
+                else:
+                    text = f'Статус код = {response_data.status_code} у артикула {article}'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=text, parse_mode='HTML')
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
             for order in orders_data:
@@ -1736,7 +1741,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         try:
             delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
             # Задаем словарь с данными WB, а входящий становится общим для всех маркетплейсов
-            wb_article_amount = self.amount_articles.copy()
+            if self.amount_articles:
+                wb_article_amount = self.amount_articles.copy()
+            else:
+                wb_article_amount = {}
             hour = datetime.now().hour
             date_folder = datetime.today().strftime('%Y-%m-%d')
 
@@ -2070,7 +2078,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю поставку
     wb_actions.create_delivery()
@@ -2087,7 +2095,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # 6. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
-    clearning_folders()
+    # clearning_folders()
 
 # =========== Сборка ОЗОН ========== #
 
