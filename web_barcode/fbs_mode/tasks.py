@@ -2078,7 +2078,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
+    pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю поставку
     wb_actions.create_delivery()

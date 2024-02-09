@@ -56,6 +56,7 @@ cover/
 *.pot
 
 # Django stuff:
+data_for_barcodes/
 migrations/
 *.log
 local_settings.py
