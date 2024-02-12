@@ -1986,15 +1986,15 @@ def action_wb(db_folder, file_add_name, headers_wb,
     clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    # pivot_file = CreatePivotFile(db_folder, file_add_name,
-    #                             headers_wb, headers_ozon,
-    #                             headers_yandex)
-    # pivot_file.create_pivot_xls()
+    pivot_file = CreatePivotFile(db_folder, file_add_name,
+                                 headers_wb, headers_ozon,
+                                 headers_yandex)
+    pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    wb_actions.article_data_for_tickets()
+    # wb_actions.article_data_for_tickets()
     # # 3. Создаю поставку
     # wb_actions.create_delivery()
     # # 2. Создаю шрихкоды для артикулов
@@ -2040,16 +2040,16 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
 
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
-    # 1. Собираю информацию о новых заказах с Озон.
-    ozon_actions.awaiting_packaging_orders()
-    # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    ozon_actions.awaiting_deliver_orders()
+    # # 1. Собираю информацию о новых заказах с Озон.
+    # ozon_actions.awaiting_packaging_orders()
+    # # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
+    # ozon_actions.awaiting_deliver_orders()
     # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
     # 4. Создает лист подбора для отправки
     ozon_actions.create_ozone_selection_sheet_pdf()
-    # 5. Сохраняет этикетки для каждой отправки
-    ozon_actions.forming_package_ticket_with_article()
+    # # 5. Сохраняет этикетки для каждой отправки
+    # ozon_actions.forming_package_ticket_with_article()
 
     # # Очищаем все папки на сервере
     clearning_folders()
@@ -2132,7 +2132,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-# ip_ozon_action_morning()
+ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

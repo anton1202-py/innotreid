@@ -237,6 +237,7 @@ class WildberriesFbsMode():
                     text = f'Статус код = {response_data.status_code} у артикула {article}'
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=text, parse_mode='HTML')
+                time.sleep(5)
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
             for order in orders_data:
@@ -270,6 +271,7 @@ class WildberriesFbsMode():
                 # Заполняем словарь данными для Листа подбора
                 self.selection_dict[order_id] = [
                     photo, brand, title_article, seller_article]
+                time.sleep(2)
             return self.amount_articles
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
