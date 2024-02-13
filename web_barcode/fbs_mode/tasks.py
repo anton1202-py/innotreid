@@ -5,6 +5,7 @@ import json
 import math
 import os
 import shutil
+import textwrap
 import time
 import traceback
 from collections import Counter
@@ -1015,6 +1016,11 @@ class OzonFbsMode():
                     upd_name_for_print_oz.append(data['Артикул продавца'])
                     upd_amount_for_print_oz.append(data['Количество'])
 
+            create.column_dimensions['A'].width = 18
+            create.column_dimensions['B'].width = 38
+            create.column_dimensions['C'].width = 18
+            create.column_dimensions['D'].width = 10
+
             for i in range(len(upd_number_of_departure_oz)):
                 create.cell(
                     row=i+2, column=1).value = upd_number_of_departure_oz[i]
@@ -1023,6 +1029,11 @@ class OzonFbsMode():
                 create.cell(
                     row=i+2, column=4).value = upd_amount_for_print_oz[i]
             for i in range(1, len(upd_number_of_departure_oz)+2):
+                wrapped_lines = textwrap.wrap(create.cell(
+                    row=i, column=2).value, width=38)
+                num_lines = len(wrapped_lines)
+                row_height = 18 * num_lines
+                create.row_dimensions[i].height = row_height
                 for c in create[f'A{i}:D{i}']:
                     c[0].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
@@ -1035,11 +1046,6 @@ class OzonFbsMode():
                     c[3].alignment = al
                     for j in range(3):
                         c[j].alignment = al2
-
-            create.column_dimensions['A'].width = 18
-            create.column_dimensions['B'].width = 38
-            create.column_dimensions['C'].width = 18
-            create.column_dimensions['D'].width = 10
 
             folder_path_docs = os.path.join(
                 os.getcwd(), f'{self.main_save_folder_server}/ozon_docs')
@@ -1653,6 +1659,11 @@ class YandexMarketFbsMode():
                     upd_name_for_print_ya.append(data['seller_article'])
                     upd_amount_for_print_ya.append(data['amount'])
 
+            create.column_dimensions['A'].width = 18
+            create.column_dimensions['B'].width = 38
+            create.column_dimensions['C'].width = 18
+            create.column_dimensions['D'].width = 12
+
             for i in range(len(upd_number_of_departure_ya)):
                 create.cell(
                     row=i+4, column=1).value = upd_number_of_departure_ya[i]
@@ -1661,6 +1672,11 @@ class YandexMarketFbsMode():
                 create.cell(
                     row=i+4, column=4).value = upd_amount_for_print_ya[i]
             for i in range(3, len(upd_number_of_departure_ya)+4):
+                wrapped_lines = textwrap.wrap(create.cell(
+                    row=i, column=2).value, width=38)
+                num_lines = len(wrapped_lines)
+                row_height = 18 * num_lines
+                create.row_dimensions[i].height = row_height
                 for c in create[f'A{i}:D{i}']:
                     c[0].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
@@ -1673,10 +1689,7 @@ class YandexMarketFbsMode():
                     c[3].alignment = al
                     for j in range(4):
                         c[j].alignment = al
-            create.column_dimensions['A'].width = 18
-            create.column_dimensions['B'].width = 38
-            create.column_dimensions['C'].width = 18
-            create.column_dimensions['D'].width = 12
+
             select_file_folder = os.path.join(
                 os.getcwd(), f'{self.main_save_folder_server}/yandex')
             if not os.path.exists(select_file_folder):
