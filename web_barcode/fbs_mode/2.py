@@ -21,7 +21,7 @@ import requests
 import telegram
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
-from msoffice2pdf import convert
+from msoffice2pdf import MSOffice2PDF, convert
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -226,7 +226,13 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     path_file = os.path.abspath(f'{name_for_file}.xlsx')
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
+    converter = MSOffice2PDF()
     output = convert(source=path_file, output_dir=folder_path, soft=1)
+    # Устанавливаем высоту строки 1 на 30 (это пример значения)
+    converter.set_row_height(1, 30)
+
+    # Сохраняем PDF файл с установленными высотами строк
+    converter.save(output)
     now_date = datetime.now().strftime(("%d.%m"))
     folder_xls = (
         f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора {now_date}.xlsx')
