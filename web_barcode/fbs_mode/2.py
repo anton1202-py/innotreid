@@ -157,7 +157,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             c[1].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
             wrapped_lines = textwrap.wrap(create.cell(
-                row=i+1, column=2).value, width=38)
+                row=i, column=2).value, width=38)
             num_lines = len(wrapped_lines)
             print('num_lines', num_lines)
             row_height = 12 * num_lines
