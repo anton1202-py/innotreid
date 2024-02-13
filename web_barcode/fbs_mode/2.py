@@ -158,7 +158,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             c[3].alignment = al
             for j in range(3):
                 c[j].alignment = al2
-    create.row_dimensions['1'].height = 18
+    create.row_dimensions[1].height = 18
     create.column_dimensions['A'].width = 18
     create.column_dimensions['B'].width = 38
     create.column_dimensions['C'].width = 18
