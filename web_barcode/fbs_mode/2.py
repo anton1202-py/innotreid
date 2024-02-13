@@ -228,8 +228,8 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
         f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.pdf')
     with open(output, 'rb') as f:
         dbx_db.files_upload(f.read(), folder)
-    with open(path_file, 'rb') as f:
-        dbx_db.files_upload(f.read(), folder_xls)
+    # with open(path_file, 'rb') as f:
+    #    dbx_db.files_upload(f.read(), folder_xls)
 
 
 fbs_ozon_common_data_buils_dict = {'88215326-0005-1': [{'Артикул продавца': 'V451', 'Наименование': 'Ночник "Куки Синобу"', 'Количество': 1}], '88215343526-0005-1': [{'Артикул продавца': 'V4512', 'Наименование': 'Ночник "Куки Синобу sfsfkhsfksdhfsdkflhsdfksdfbskfjsdhfklsdhfsdkfhsdfs"', 'Количество': 1}], '882s15343526-0005-1': [{'Артикул продавца': 'V4512',
