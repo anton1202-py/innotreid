@@ -117,7 +117,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     sheet['B1'] = 'Наименование товара'
     sheet['C1'] = 'Артикул'
     sheet['D1'] = 'Количество'
-    sheet.row_dimensions[1].auto_size = True
+    sheet.row_dimensions[0].auto_size = True
     al = Alignment(horizontal="center",
                    vertical="center", wrap_text=True)
     al2 = Alignment(vertical="center", wrap_text=True)
@@ -158,7 +158,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             c[3].alignment = al
             for j in range(3):
                 c[j].alignment = al2
-    create.row_dimensions[1].height = 180
+    create.row_dimensions[2].height = 180
     create.column_dimensions['A'].width = 18
     create.column_dimensions['B'].width = 38
     create.column_dimensions['C'].width = 18
