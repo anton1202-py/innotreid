@@ -90,8 +90,7 @@ yandex_headers_ooo = {
     'Authorization': YANDEX_OOO_KEY,
 }
 
-db_ip_folder = '/DATABASE/beta/ИП'
-db_ooo_folder = '/DATABASE/beta/ООО'
+db_folder = '/!На производство'
 
 file_add_name_ip = 'ИП'
 file_add_name_ooo = 'ООО'
@@ -178,9 +177,9 @@ class WildberriesFbsMode():
             date_folder = datetime.today().strftime('%Y-%m-%d')
 
             if hour >= 6 and hour < 18:
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
             else:
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
             # Создаем папку на dropbox, если ее еще нет
             if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
                 dbx_db.files_create_folder_v2(
@@ -791,10 +790,10 @@ class OzonFbsMode():
 
             if hour >= 6 and hour < 18:
                 self.delivary_method_id = self.warehouse_dict['day_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
             else:
                 self.delivary_method_id = self.warehouse_dict['night_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
             self.departure_date = date_confirm_delivery + 'T10:00:00Z'
 
             # Создаем папку на dropbox, если ее еще нет
@@ -1273,9 +1272,9 @@ class YandexMarketFbsMode():
         date_folder = datetime.today().strftime('%Y-%m-%d')
 
         if hour >= 6 and hour < 18:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
         else:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
 
     def check_folder_exists(self, path):
         try:
@@ -1752,10 +1751,10 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
             if hour >= 6 and hour < 18:
                 self.delivary_method_id = self.warehouse_dict['day_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
             else:
                 self.delivary_method_id = self.warehouse_dict['night_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
 
             CELL_LIMIT = 16
             COUNT_HELPER = 2
@@ -2185,7 +2184,7 @@ def action_yandex(yandex_headers, db_folder, file_add_name):
 @app.task
 def ooo_wb_action():
     action_wb(
-        db_ooo_folder, file_add_name_ooo, wb_headers_ooo,
+        db_folder, file_add_name_ooo, wb_headers_ooo,
         ozon_headers_ooo, yandex_headers_ooo)
 
 
@@ -2193,14 +2192,14 @@ def ooo_wb_action():
 
 @app.task
 def ooo_ozon_action():
-    action_ozon_ooo(ozon_headers_ooo, db_ooo_folder, file_add_name_ooo)
+    action_ozon_ooo(ozon_headers_ooo, db_folder, file_add_name_ooo)
 
 
 # ooo_ozon_action()
 
 @app.task
 def ooo_yandex_action():
-    action_yandex(yandex_headers_ooo, db_ooo_folder, file_add_name_ooo)
+    action_yandex(yandex_headers_ooo, db_folder, file_add_name_ooo)
 
 
 # ooo_yandex_action()
@@ -2208,7 +2207,7 @@ def ooo_yandex_action():
 @app.task
 def ip_wb_action():
     action_wb(
-        db_ip_folder, file_add_name_ip, wb_headers_karavaev,
+        db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
@@ -2217,19 +2216,19 @@ def ip_wb_action():
 @app.task
 def ip_ozon_action_morning():
     action_ozon_ip_morning(ozon_headers_karavaev,
-                           db_ip_folder, file_add_name_ip)
+                           db_folder, file_add_name_ip)
 
 
 # ip_ozon_action_morning()
 
 @app.task
 def ip_ozon_action_day():
-    action_ozon_ip_day(ozon_headers_karavaev, db_ip_folder, file_add_name_ip)
+    action_ozon_ip_day(ozon_headers_karavaev, db_folder, file_add_name_ip)
 
 
 @app.task
 def ip_yandex_action():
-    action_yandex(yandex_headers_karavaev, db_ip_folder, file_add_name_ip)
+    action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
 
 
 # ip_yandex_action()
