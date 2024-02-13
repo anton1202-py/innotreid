@@ -139,7 +139,8 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
         create.cell(
             row=i+2, column=1).value = upd_number_of_departure_oz[i]
         wrapped_lines = textwrap.wrap(create.cell(
-            row=i+2, column=1).value, width=cell.column_width)
+            row=i+2, column=1).value, width=create.cell(
+            row=i+2, column=1).column_width)
         num_lines = len(wrapped_lines)
         row_height = 12 * num_lines
         print('row_height', row_height)
