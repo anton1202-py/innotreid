@@ -5,6 +5,7 @@ import json
 import math
 import os
 import shutil
+import textwrap
 import time
 import traceback
 from collections import Counter
@@ -137,7 +138,13 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     for i in range(len(upd_number_of_departure_oz)):
         create.cell(
             row=i+2, column=1).value = upd_number_of_departure_oz[i]
+        wrapped_lines = textwrap.wrap(create.cell(
+            row=i+2, column=1).value, width=cell.column_width)
+        num_lines = len(wrapped_lines)
+        row_height = 12 * num_lines
+        print('row_height', row_height)
         create.cell(row=i+2, column=2).value = upd_product_name_oz[i]
+
         create.cell(row=i+2, column=3).value = upd_name_for_print_oz[i]
         create.cell(
             row=i+2, column=4).value = upd_amount_for_print_oz[i]
@@ -156,7 +163,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
                                  bottom=thin, right=thin)
 
             c[3].alignment = al
-            create.row_dimensions[i].auto_size = True
+            create.row_dimensions[i].height = row_height
             for j in range(3):
                 c[j].alignment = al2
     create.row_dimensions[2].height = 180
