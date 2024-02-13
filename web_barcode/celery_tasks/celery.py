@@ -113,7 +113,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=5, minute=0)
     },
     "yandex_balance_task": {
-        "task": "celery_tasks.yandex_tasks.fbs_balance_maker",
+        "task": "celery_tasks.yandex_tasks.fbs_balance_updater",
         "schedule": crontab(hour=5, minute=5)
     },
 }
