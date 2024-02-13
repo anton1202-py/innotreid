@@ -135,11 +135,10 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             upd_product_name_oz.append(data['Наименование'])
             upd_name_for_print_oz.append(data['Артикул продавца'])
             upd_amount_for_print_oz.append(data['Количество'])
-    create.row_dimensions[2].height = 180
     create.column_dimensions['A'].width = 18
     create.column_dimensions['B'].width = 38
     create.column_dimensions['C'].width = 18
-    create.column_dimensions['D'].width = 10
+    create.column_dimensions['D'].width = 12
     for i in range(len(upd_number_of_departure_oz)):
         create.cell(
             row=i+2, column=1).value = upd_number_of_departure_oz[i]
@@ -160,7 +159,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
                 row=i, column=2).value, width=38)
             num_lines = len(wrapped_lines)
             print('num_lines', num_lines)
-            row_height = 12 * num_lines
+            row_height = 15 * num_lines
             print('row_height', row_height)
 
             c[2].border = Border(top=thin, left=thin,
