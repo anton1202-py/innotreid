@@ -19,7 +19,7 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-from celery_tasks.celery import app
+# from celery_tasks.celery import app
 from dotenv import load_dotenv
 from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
