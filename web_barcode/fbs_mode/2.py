@@ -159,7 +159,6 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             for j in range(3):
                 c[j].alignment = al2
     create.column_dimensions['A'].width = 18
-    create.row_dimensions['1'].height = 18
     create.column_dimensions['B'].width = 38
     create.column_dimensions['C'].width = 18
     create.column_dimensions['D'].width = 10
@@ -227,7 +226,6 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     path_file = os.path.abspath(f'{name_for_file}.xlsx')
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
-    # Load Excel file
 
     output = convert(source=path_file, output_dir=folder_path, soft=0)
 
