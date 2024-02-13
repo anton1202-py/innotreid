@@ -231,7 +231,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     ws = wb.active
 
     # Получаем высоту строки и ширину столбца для конкретной ячейки (например, A1)
-    cell = ws["A1"]
+    cell = ws["A2"]
     row_height = ws.row_dimensions[cell.row].height
     column_width = ws.column_dimensions[cell.column_letter].width
 
