@@ -225,6 +225,18 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
                     for j in range(4):
                         c[j].fill = pattern
     w_b2.save(f'{name_for_file}.xlsx')
+    wb = load_workbook(f'{name_for_file}.xlsx')
+
+    # Выбираем активный лист
+    ws = wb.active
+
+    # Получаем высоту строки и ширину столбца для конкретной ячейки (например, A1)
+    cell = ws["A1"]
+    row_height = ws.row_dimensions[cell.row].height
+    column_width = ws.column_dimensions[cell.column_letter].width
+
+    print(f"Высота строки: {row_height}")
+    print(f"Ширина столбца: {column_width}")
     path_file = os.path.abspath(f'{name_for_file}.xlsx')
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
