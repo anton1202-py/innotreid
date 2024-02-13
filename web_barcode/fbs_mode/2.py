@@ -149,18 +149,19 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
         create.cell(
             row=i+2, column=4).value = upd_amount_for_print_oz[i]
     for i in range(1, len(upd_number_of_departure_oz)+2):
+        wrapped_lines = textwrap.wrap(create.cell(
+            row=i, column=2).value, width=38)
+        num_lines = len(wrapped_lines)
+        print('num_lines', num_lines)
+        row_height = 18 * num_lines
+        print('row_height', row_height)
+        create.row_dimensions[i].height = row_height
         for c in create[f'A{i}:D{i}']:
             c[0].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
 
             c[1].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
-            wrapped_lines = textwrap.wrap(create.cell(
-                row=i, column=2).value, width=38)
-            num_lines = len(wrapped_lines)
-            print('num_lines', num_lines)
-            row_height = 18 * num_lines
-            print('row_height', row_height)
 
             c[2].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
@@ -169,7 +170,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
                                  bottom=thin, right=thin)
 
             c[3].alignment = al
-            create.row_dimensions[i].height = row_height
+
             for j in range(3):
                 c[j].alignment = al2
 
@@ -240,12 +241,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     ws = wb.active
 
     # Получаем высоту строки и ширину столбца для конкретной ячейки (например, A1)
-    cell = ws["A2"]
-    row_height = ws.row_dimensions[cell.row].height
-    column_width = ws.column_dimensions[cell.column_letter].width
 
-    print(f"Высота строки: {row_height}")
-    print(f"Ширина столбца: {column_width}")
     path_file = os.path.abspath(f'{name_for_file}.xlsx')
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
