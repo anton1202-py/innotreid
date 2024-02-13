@@ -229,7 +229,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
 
     output = convert(source=path_file, output_dir=folder_path, soft=0)
 
-    now_date = datetime.now().strftime(("%d.%m"))
+    now_date = datetime.now().strftime(("%d.%m %H-%M"))
     folder_xls = (
         f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора {now_date}.xlsx')
     folder = (
