@@ -222,9 +222,9 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
     output = convert(source=path_file, output_dir=folder_path, soft=1)
-    folder = (
-        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.xls')
     folder_xls = (
+        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.xls')
+    folder = (
         f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.pdf')
     with open(output, 'rb') as f:
         dbx_db.files_upload(f.read(), folder)
