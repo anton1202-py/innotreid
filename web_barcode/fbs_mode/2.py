@@ -156,7 +156,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
                                  bottom=thin, right=thin)
 
             c[3].alignment = al
-            c.row_dimensions[2].height = 180
+            create.row_dimensions[c].height = 180
             for j in range(3):
                 c[j].alignment = al2
     create.row_dimensions[2].height = 180
