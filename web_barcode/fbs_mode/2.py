@@ -135,12 +135,16 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             upd_product_name_oz.append(data['Наименование'])
             upd_name_for_print_oz.append(data['Артикул продавца'])
             upd_amount_for_print_oz.append(data['Количество'])
+    create.row_dimensions[2].height = 180
+    create.column_dimensions['A'].width = 18
+    create.column_dimensions['B'].width = 38
+    create.column_dimensions['C'].width = 18
+    create.column_dimensions['D'].width = 10
     for i in range(len(upd_number_of_departure_oz)):
         create.cell(
             row=i+2, column=1).value = upd_number_of_departure_oz[i]
         wrapped_lines = textwrap.wrap(create.cell(
-            row=i+2, column=1).value, width=sheet(
-            row=i+2, column=1).column_width)
+            row=i+2, column=1).value, width=create.column_dimensions['A'].width)
         num_lines = len(wrapped_lines)
         row_height = 12 * num_lines
         print('row_height', row_height)
@@ -167,11 +171,7 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
             create.row_dimensions[i].height = row_height
             for j in range(3):
                 c[j].alignment = al2
-    create.row_dimensions[2].height = 180
-    create.column_dimensions['A'].width = 18
-    create.column_dimensions['B'].width = 38
-    create.column_dimensions['C'].width = 18
-    create.column_dimensions['D'].width = 10
+
     folder_path_docs = os.path.join(
         os.getcwd(), f'{main_save_folder_server}/ozon_docs')
     if not os.path.exists(folder_path_docs):
