@@ -144,12 +144,16 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
         for c in create[f'A{i}:D{i}']:
             c[0].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
+            c[0].row_dimensions[1].auto_size = True
             c[1].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
+            c[1].row_dimensions[1].auto_size = True
             c[2].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
+            c[2].row_dimensions[1].auto_size = True
             c[3].border = Border(top=thin, left=thin,
                                  bottom=thin, right=thin)
+            c[3].row_dimensions[1].auto_size = True
             c[3].alignment = al
             for j in range(3):
                 c[j].alignment = al2
@@ -222,10 +226,11 @@ def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
     only_file_name = os.path.splitext(os.path.basename(path_file))[0]
     folder_path = os.path.dirname(os.path.abspath(path_file))
     output = convert(source=path_file, output_dir=folder_path, soft=1)
+    now_date = datetime.now().strftime(("%d.%m"))
     folder_xls = (
         f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.xls')
     folder = (
-        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора.pdf')
+        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} {now_date} лист подбора.pdf')
     with open(output, 'rb') as f:
         dbx_db.files_upload(f.read(), folder)
     # with open(path_file, 'rb') as f:
