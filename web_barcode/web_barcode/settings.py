@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'production',
     'price_control',
     'fbs_mode',
+    'price_system',
 ]
 
 MIDDLEWARE = [

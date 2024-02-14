@@ -510,14 +510,14 @@ class WildberriesFbsMode():
                 response_to_supply = requests.request(
                     "PATCH", url_to_supply, headers=self.headers)
 
-                if response_to_supply.status_code != 200 and numb < 10:
+                if response_to_supply.status_code != 204 and numb < 10:
                     numb += 1
                     self.supply_to_delivery(numb)
-                elif response_to_supply.status_code != 200 and numb >= 10:
+                elif response_to_supply.status_code != 204 and numb >= 10:
                     text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=text, parse_mode='HTML')
-                elif response_to_supply.status_code == 200:
+                elif response_to_supply.status_code == 204:
                     text = 'Поставку перевел в доставку'
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=text, parse_mode='HTML')
