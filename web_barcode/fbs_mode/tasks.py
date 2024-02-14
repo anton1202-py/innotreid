@@ -497,19 +497,50 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
-    def qrcode_supply(self):
+    def supply_to_delivery(self, numb=0):
         """
         WILDBERRIES.
-        Функция добавляет поставку в доставку, получает QR код поставки
-        и преобразует этот QR код в необходимый формат.
+        Функция добавляет поставку в доставку.
         """
         try:
             if self.supply_id:
+                time.sleep(30)
                 # Переводим поставку в доставку
                 url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
                 response_to_supply = requests.request(
                     "PATCH", url_to_supply, headers=self.headers)
-                time.sleep(30)
+
+                if response_to_supply.status_code != 200 and numb < 10:
+                    numb += 1
+                    self.supply_to_delivery(numb)
+                elif response_to_supply.status_code != 200 and numb >= 10:
+                    text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=text, parse_mode='HTML')
+                elif response_to_supply.status_code == 200:
+                    text = 'Поставку перевел в доставку'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=text, parse_mode='HTML')
+            else:
+                text = 'Поставка не добавлена в доставку (supply_to_delivery), так как нет артикулов'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'supply_to_delivery', self.supply_to_delivery, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
+
+    def qrcode_supply(self):
+        """
+        WILDBERRIES.
+        Функция получает QR код поставки
+        и преобразует этот QR код в необходимый формат.
+        """
+        try:
+            if self.supply_id:
+                time.sleep(60)
                 # Получаем QR код поставки:
                 url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
                 response_supply_qrcode = requests.request(
@@ -2093,6 +2124,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     pivot_file.sender_message_to_telegram()
+
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю поставку
     wb_actions.create_delivery()
@@ -2103,10 +2135,12 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.qrcode_order()
     # 4. Создаю лист сборки
     wb_actions.create_selection_list()
-    # 5. Добавляю поставку в доставку, получаю QR код поставки
+    # 5. Добавляю поставку в доставку.
+    wb_actions.supply_to_delivery()
+    # 6. Получаю QR код поставки
     # и преобразует этот QR код в необходимый формат.
     wb_actions.qrcode_supply()
-    # 6. Создаю список с полными именами файлов, которые нужно объединить
+    # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
     # clearning_folders()
