@@ -1558,13 +1558,10 @@ class YandexMarketFbsMode():
         """
         try:
             self.check_dropbox_folder_exist()
-            # self.shipment_id = 45554272
             url_act = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{self.shipment_id}/act'
             response_act = requests.request(
                 "GET", url_act, headers=self.yandex_headers)
-
-            # print(response_act.text)
-            pdf_data = response_act.content  # замените на фактические входные данные
+            pdf_data = response_act.content
             folder_path = os.path.join(
                 os.getcwd(), f'{self.main_save_folder_server}/yandex')
             if not os.path.exists(folder_path):
@@ -1592,31 +1589,29 @@ class YandexMarketFbsMode():
         try:
             orders_info_list = self.check_actual_orders()
             self.check_dropbox_folder_exist()
-            for order in self.orders_list:
-                url_tickets = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}/delivery/labels'
-                response_tickets = requests.request(
-                    "GET", url_tickets, headers=self.yandex_headers)
-
-                pdf_data = response_tickets.content  # замените на фактические входные данные
-                folder_path = os.path.join(
-                    os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets')
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                save_folder_docs = f'{folder_path}/{order}.pdf'
-
-                # сохранение PDF-файла
-                with open(save_folder_docs, 'wb') as f:
-                    f.write(pdf_data)
-
+            # Проверка существования папок
+            raw_ticket_folder = os.path.join(
+                os.getcwd(), f'{self.main_save_folder_server}/yandex')
+            if not os.path.exists(raw_ticket_folder):
+                os.makedirs(raw_ticket_folder)
+            folder_path = os.path.join(
+                os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets')
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
             done_tickets_folder = os.path.join(
                 os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets/done')
             if not os.path.exists(done_tickets_folder):
                 os.makedirs(done_tickets_folder)
 
-            raw_ticket_folder = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex')
-            if not os.path.exists(raw_ticket_folder):
-                os.makedirs(raw_ticket_folder)
+            for order in self.orders_list:
+                url_tickets = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}/delivery/labels'
+                response_tickets = requests.request(
+                    "GET", url_tickets, headers=self.yandex_headers)
+                pdf_data = response_tickets.content  # замените на фактические входные данные
+                save_folder_docs = f'{folder_path}/{order}.pdf'
+                # сохранение PDF-файла
+                with open(save_folder_docs, 'wb') as f:
+                    f.write(pdf_data)
 
             new_data_for_yandex_ticket(folder_path, orders_info_list)
             list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
@@ -1627,7 +1622,6 @@ class YandexMarketFbsMode():
                 f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
             with open(folder_summary_file_name, 'rb') as f:
                 dbx_db.files_upload(f.read(), folder)
-
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1642,12 +1636,9 @@ class YandexMarketFbsMode():
         """
         try:
             date_for_files = datetime.now().strftime('%Y-%m-%d')
-
             main_shipment_data = self.check_actual_orders()
             number_of_departure_ya = main_shipment_data.keys()
-
             yandex_selection_sheet_xls = openpyxl.Workbook()
-
             create = yandex_selection_sheet_xls.create_sheet(
                 title='pivot_list', index=0)
             create.page_setup.paperSize = create.PAPERSIZE_A4

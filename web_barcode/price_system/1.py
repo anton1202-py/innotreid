@@ -24,12 +24,13 @@ article_list = []
 all_data = json.loads(response.text)["cards"]
 for data in all_data:
     if data["subjectName"] == "Ночники":
-        article_list.append(data["vendorCode"])
+        # article = data["vendorCode"].split('-')[0]
+        article = data["vendorCode"]
+        article_list.append(article.capitalize())
     # print(data["vendorCode"])
 # sorted_list = sorted(article_list)
 # print(sorted_list)
 article_list.sort()
-print(article_list)
 # print(json.loads(response.text)["cards"])
 
 
@@ -78,9 +79,51 @@ def ozon_cleaning_articles():
     ozon_data = json.loads(response.text)["result"]["items"]
     for dat in ozon_data:
         if 'Ночник' in dat["name"]:
-            article_ozon_list.append(dat["offer_id"])
-            if dat["offer_id"] not in article_list:
-                print(dat["offer_id"])
+            # article = dat["offer_id"].split('-')[0]
+            article = dat["offer_id"]
+            article_ozon_list.append(article)
+            if article not in article_list:
+                print(article)
 
 
-ozon_cleaning_articles()
+def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
+    """Создает и возвращает словарь с данными fbs_sku_data {артикул: остаток_fbs}"""
+
+    if raw_articles_list == None:
+        raw_articles_list = []
+    url = f'https://api.partner.market.yandex.ru/businesses/3345369/offer-mappings?limit=200&page_token={nextPageToken}'
+    payload = json.dumps({})
+    headers = {
+        'Authorization': 'Bearer y0_AgAEA7qjt7KxAAsqvwAAAAD41FbqtbLtPHKuSHe9_Q5iz130Eo1Ir9s',
+        'Cookie': '_yasc=PVZzFPGthzxlBhvs7JA8idi5lDzgWZM5Tzm8VVzj8iGV3tc4nX35mfkgMaNdqE1gUu4=; i=taeeJze90AT1AWruvCjlwy5bT+Vrl9GJGmXAonQTIVL6H9bohd38CHzQOHsneNihABKN+WiduMPJPM1bsf1WFaoYFPA=; yandexuid=9102588391705520143'
+    }
+    response = requests.request(
+        "POST", url, headers=headers, data=payload)
+    main_articles_data = json.loads(response.text)['result']
+    articles_data = main_articles_data['offerMappings']
+    for article in articles_data:
+        # print(article['offer']['offerId'])
+        if article['offer']['vendor'] == '3Д-НОЧНИК':
+            raw_articles_list.append(article['offer']['offerId'])
+    if main_articles_data['paging']:
+        yandex_raw_articles_data(
+            main_articles_data['paging']['nextPageToken'], raw_articles_list)
+    return raw_articles_list
+
+
+def yandex_articles():
+    raw_articles_list = yandex_raw_articles_data()
+
+    cleaning_yandex_list = []
+    for article in raw_articles_list:
+        # art = article.split('-')[0]
+        art = article
+        cleaning_yandex_list.append(art)
+        if art not in article_list:
+            print(art)
+
+
+yandex_articles()
+
+
+# ozon_cleaning_articles()
