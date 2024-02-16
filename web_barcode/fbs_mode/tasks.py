@@ -2249,7 +2249,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-ip_wb_action()
+#ip_wb_action()
 
 @app.task
 def ip_ozon_action_morning():
