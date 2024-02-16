@@ -95,7 +95,7 @@ def database_home(request):
         return redirect('login')
     # if request.user.is_staff == True:
     wb_article_data = wb_article_compare()
-    ozon_data = 
+    ozon_data = ozon_cleaning_articles()
     data = Articles.objects.all()
     context = {
         'data': data,
