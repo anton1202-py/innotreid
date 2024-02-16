@@ -280,6 +280,23 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
+    def create_barcode_tickets(self):
+        """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
+        try:
+            if self.clear_article_list and self.data_article_info_dict:
+                design_barcodes_dict_spec(
+                    self.clear_article_list, self.data_article_info_dict)
+            else:
+                text = 'не сработала create_barcode_tickets так как нет данных'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'create_barcode_tickets', self.create_barcode_tickets, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
+
     def create_delivery(self):
         """WILDBERRIES. Создание поставки"""
         try:
@@ -572,22 +589,7 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
-    def create_barcode_tickets(self):
-        """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
-        try:
-            if self.clear_article_list and self.data_article_info_dict:
-                design_barcodes_dict_spec(
-                    self.clear_article_list, self.data_article_info_dict)
-            else:
-                text = 'не сработала create_barcode_tickets так как нет данных'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message_text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_barcode_tickets', self.create_barcode_tickets, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+    
 
     def list_for_print_create(self):
         """
@@ -601,6 +603,9 @@ class WildberriesFbsMode():
                 qrcode_list = qrcode_print_for_products()
                 pdf_filenames = glob.glob(
                     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=mes_text, parse_mode='HTML')
                 list_pdf_file_ticket_for_complect = []
                 if self.amount_articles:
                     for j in pdf_filenames:
@@ -647,7 +652,9 @@ class WildberriesFbsMode():
                         last_sorted_list.append(i)
 
                     list_pdf_file_ticket_for_complect = last_sorted_list
-
+                    mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=mes_text, parse_mode='HTML')
                     qrcode_supply_amount = supply_qrcode_to_standart_view()
                     if len(qrcode_supply_amount) != 0:
                         while amount_of_supply_qrcode > 0:
@@ -2114,7 +2121,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    #pivot_file.sender_message_to_telegram()
+    pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю поставку
