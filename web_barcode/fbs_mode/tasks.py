@@ -2127,14 +2127,14 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.create_barcode_tickets()
     # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
-    # # 4. Создаю лист сборки
-    # wb_actions.create_selection_list()
-    # # 5. Добавляю поставку в доставку.
-    # wb_actions.supply_to_delivery()
-    # # 6. Получаю QR код поставки
-    # # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
+    wb_actions.qrcode_order()
+    # 4. Создаю лист сборки
+    wb_actions.create_selection_list()
+    # 5. Добавляю поставку в доставку.
+    wb_actions.supply_to_delivery()
+    # 6. Получаю QR код поставки
+    # и преобразует этот QR код в необходимый формат.
+    wb_actions.qrcode_supply()
     # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
