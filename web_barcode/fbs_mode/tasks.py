@@ -2,6 +2,7 @@ import base64
 import glob
 import io
 import json
+import logging
 import math
 import os
 import shutil
@@ -99,6 +100,10 @@ file_add_name_ooo = 'ООО'
 dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_key=APP_KEY_DB,
                          app_secret=APP_SECRET_DB)
+
+logging.basicConfig(level=logging.DEBUG,
+                    filename="tasks_log.log",
+                    format="%(asctime)s %(levelname)s %(message)s")
 
 
 def stream_dropbox_file(path):
@@ -601,6 +606,7 @@ class WildberriesFbsMode():
                 qrcode_list = qrcode_print_for_products()
                 pdf_filenames = glob.glob(
                     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
                 mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=mes_text, parse_mode='HTML')
@@ -610,11 +616,15 @@ class WildberriesFbsMode():
                         while self.amount_articles[str(Path(j).stem)] > 0:
                             list_pdf_file_ticket_for_complect.append(j)
                             self.amount_articles[str(Path(j).stem)] -= 1
+                    logging.info(
+                        f"list_pdf_file_ticket_for_complect после добавления колоичества: {list_pdf_file_ticket_for_complect}")
                     # Определяем число qr кодов для поставки.
                     amount_of_supply_qrcode = math.ceil(
                         len(list_pdf_file_ticket_for_complect)/20)
                     for file in qrcode_list:
                         list_pdf_file_ticket_for_complect.append(file)
+                    logging.info(
+                        f"list_pdf_file_ticket_for_complect после добавления qr кодов: {list_pdf_file_ticket_for_complect}")
                     outer_list = []  # Внешний список для процесса сортировки
                     for i in list_pdf_file_ticket_for_complect:
                         # Разделяю полное название файла на путь к файлу и имя файла
@@ -649,6 +659,8 @@ class WildberriesFbsMode():
                         last_sorted_list.append(i)
 
                     list_pdf_file_ticket_for_complect = last_sorted_list
+                    logging.info(
+                        f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
                     mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=mes_text, parse_mode='HTML')
