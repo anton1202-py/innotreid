@@ -1,37 +1,51 @@
+import importlib
 import json
+import os
 
+#from web_barcode.wsgi import *
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web_barcode.settings')
+import django
 import requests
+from django.core.files.base import ContentFile
 
-url = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+django.setup()
+from models import Articles
 
-payload = json.dumps({
-    "settings": {
-        "cursor": {
-            "limit": 1000
-        },
-        "filter": {
-            "withPhoto": -1
+articles = Articles.objects.all().values_list('common_article')
+print(articles)
+
+
+def wb_article_compare():
+    url = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+    payload = json.dumps({
+        "settings": {
+            "cursor": {
+                "limit": 1000
+            },
+            "filter": {
+                "withPhoto": -1
+            }
         }
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjMxMDI1djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTcxNzgwNTUzNywiaWQiOiI1ZGVlMDU0Ni03NzVkLTRjNDUtYmQyZC0wYzUwYTZjN2VkMmMiLCJpaWQiOjY1NzgwMzAxLCJvaWQiOjQ4NDkxNSwicyI6NTEwLCJzaWQiOiI4NTE3NTJjYi0xZDY1LTRhYmEtYWZjNC03NDJhMjVlMTAwYzkiLCJ1aWQiOjY1NzgwMzAxfQ.IY9GEI-AghSxGt6JYyjTVULI83UuzGGuL6Q3NZhWSa1ks7quDwXdhWePRcGr7RoMZCAZP9oduWJ9h5U-q2fd-w'
     }
-})
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjMxMDI1djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTcxNzgwNTUzNywiaWQiOiI1ZGVlMDU0Ni03NzVkLTRjNDUtYmQyZC0wYzUwYTZjN2VkMmMiLCJpaWQiOjY1NzgwMzAxLCJvaWQiOjQ4NDkxNSwicyI6NTEwLCJzaWQiOiI4NTE3NTJjYi0xZDY1LTRhYmEtYWZjNC03NDJhMjVlMTAwYzkiLCJ1aWQiOjY1NzgwMzAxfQ.IY9GEI-AghSxGt6JYyjTVULI83UuzGGuL6Q3NZhWSa1ks7quDwXdhWePRcGr7RoMZCAZP9oduWJ9h5U-q2fd-w'
-}
 
-response = requests.request("POST", url, headers=headers, data=payload)
-article_list = []
-all_data = json.loads(response.text)["cards"]
-for data in all_data:
-    if data["subjectName"] == "Ночники":
-        # article = data["vendorCode"].split('-')[0]
-        article = data["vendorCode"]
-        article_list.append(article.capitalize())
-    # print(data["vendorCode"])
-# sorted_list = sorted(article_list)
-# print(sorted_list)
-article_list.sort()
-# print(json.loads(response.text)["cards"])
+    response = requests.request("POST", url, headers=headers, data=payload)
+    article_list = []
+    all_data = json.loads(response.text)["cards"]
+    for data in all_data:
+        if data["subjectName"] == "Ночники":
+            # article = data["vendorCode"].split('-')[0]
+            article = data["vendorCode"]
+            article_list.append(article.capitalize())
+        # print(data["vendorCode"])
+    # sorted_list = sorted(article_list)
+    # print(sorted_list)
+    article_list.sort()
+    # print(json.loads(response.text)["cards"])
 
 
 def ozon_raw_articles():

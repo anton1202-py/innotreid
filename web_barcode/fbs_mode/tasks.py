@@ -2114,7 +2114,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
                                  headers_yandex)
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
-    pivot_file.sender_message_to_telegram()
+    #pivot_file.sender_message_to_telegram()
 
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю поставку
@@ -2123,14 +2123,14 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.create_barcode_tickets()
     # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
-    wb_actions.qrcode_order()
-    # 4. Создаю лист сборки
-    wb_actions.create_selection_list()
-    # 5. Добавляю поставку в доставку.
-    wb_actions.supply_to_delivery()
-    # 6. Получаю QR код поставки
-    # и преобразует этот QR код в необходимый формат.
-    wb_actions.qrcode_supply()
+    # wb_actions.qrcode_order()
+    # # 4. Создаю лист сборки
+    # wb_actions.create_selection_list()
+    # # 5. Добавляю поставку в доставку.
+    # wb_actions.supply_to_delivery()
+    # # 6. Получаю QR код поставки
+    # # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
     # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
@@ -2249,7 +2249,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-# ip_wb_action()
+ip_wb_action()
 
 @app.task
 def ip_ozon_action_morning():

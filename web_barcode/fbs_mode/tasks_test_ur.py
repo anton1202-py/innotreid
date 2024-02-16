@@ -528,6 +528,7 @@ class WildberriesFbsMode():
         """
         try:
             if self.amount_articles:
+                print(self.amount_articles)
                 qrcode_list = qrcode_print_for_products()
                 pdf_filenames = glob.glob(
                     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
@@ -543,6 +544,7 @@ class WildberriesFbsMode():
                 amount_of_supply_qrcode = math.ceil(
                     len(list_pdf_file_ticket_for_complect)/20)
                 outer_list = []  # Внешний список для процесса сортировки
+                print('list_pdf_file_ticket_for_complect', list_pdf_file_ticket_for_complect)
                 for i in list_pdf_file_ticket_for_complect:
                     # Разделяю полное название файла на путь к файлу и имя файла
                     # Оказывается в python знаком \ отделяется последняя папка перед файлом
@@ -572,19 +574,22 @@ class WildberriesFbsMode():
                 for i in new_sort:
                     i = '/'.join(i)
                     last_sorted_list.append(i)
-
+                print('last_sorted_list', last_sorted_list)
                 list_pdf_file_ticket_for_complect = last_sorted_list
+                
+                qrcode_supply_amount = supply_qrcode_to_standart_view()
+                if qrcode_supply_amount:
+                    qrcode_supply_amount = qrcode_supply_amount[0]
 
-                qrcode_supply_amount = supply_qrcode_to_standart_view()[0]
-
-                while amount_of_supply_qrcode > 0:
-                    list_pdf_file_ticket_for_complect.append(
-                        qrcode_supply_amount)
-                    amount_of_supply_qrcode -= 1
+                    while amount_of_supply_qrcode > 0:
+                        list_pdf_file_ticket_for_complect.append(
+                            qrcode_supply_amount)
+                        amount_of_supply_qrcode -= 1
 
                 file_name = (f'fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                              f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
                 saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
+                print('list_pdf_file_ticket_for_complect', list_pdf_file_ticket_for_complect)
                 print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                       file_name,
                                       saved_on_dropbox_filename)
@@ -1994,11 +1999,11 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
-    # wb_actions.article_data_for_tickets()
+    wb_actions.article_data_for_tickets()
     # # 3. Создаю поставку
     # wb_actions.create_delivery()
     # # 2. Создаю шрихкоды для артикулов
-    # wb_actions.create_barcode_tickets()
+    wb_actions.create_barcode_tickets()
     # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # # задания и сохраняю его в папку
     # wb_actions.qrcode_order()
@@ -2008,7 +2013,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # # и преобразует этот QR код в необходимый формат.
     # wb_actions.qrcode_supply()
     # # 7. Создаю список с полными именами файлов, которые нужно объединить
-    # wb_actions.list_for_print_create()
+    wb_actions.list_for_print_create()
 
     # clearning_folders()
 
@@ -2132,7 +2137,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-ip_ozon_action_morning()
+#ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():
