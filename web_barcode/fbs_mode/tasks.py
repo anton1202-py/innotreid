@@ -885,13 +885,14 @@ class OzonFbsMode():
                         amount_products += product['quantity']
                         inner_article_amount_dict[product['offer_id']
                                                   ] = product['quantity']
+                        inner_bilding_list.append(inner_bilding_dict)
                         if product['offer_id'] not in self.ozon_article_amount.keys():
                             self.ozon_article_amount[product['offer_id']] = int(
                                 product['quantity'])
                         else:
                             self.ozon_article_amount[product['offer_id']
                                                      ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
-                    inner_bilding_list.append(inner_bilding_dict)
+
                     self.fbs_ozon_common_data[data['posting_number']
                                               ] = inner_article_amount_dict
 

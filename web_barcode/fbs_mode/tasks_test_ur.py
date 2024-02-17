@@ -826,7 +826,7 @@ class OzonFbsMode():
                         else:
                             self.ozon_article_amount[product['offer_id']
                                                      ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
-                    inner_bilding_list.append(inner_bilding_dict)
+                        inner_bilding_list.append(inner_bilding_dict)
                     self.fbs_ozon_common_data[data['posting_number']
                                               ] = inner_article_amount_dict
 
@@ -836,6 +836,22 @@ class OzonFbsMode():
             containers_count = math.ceil(amount_products/20)
             self.ware_house_amount_dict[self.delivary_method_id] = {
                 'quantity': amount_products, 'containers_count': containers_count}
+            fbs_common_data_amount = 0
+            for key, values in self.fbs_ozon_common_data.items():
+                for _, amount in values.items():
+                    fbs_common_data_amount += amount
+            # print('fbs_common_data_amount', fbs_common_data_amount)
+
+            ozon_article__amount = 0
+            for key, values in self.ozon_article_amount.items():
+                ozon_article__amount += values
+            # print('self.fbs_ozon_common_data_buils_dict',
+            #       self.fbs_ozon_common_data_buils_dict)
+            # print('******************************')
+            # print('ozon_article__amount', ozon_article__amount)
+            # print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
+            # print('***************************')
+            # print('self.ozon_article_amount', self.ozon_article_amount)
             return self.ozon_article_amount
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -2041,22 +2057,22 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
     # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
-    ozon_actions.awaiting_deliver_orders()
+    # ozon_actions.awaiting_deliver_orders()
     # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
     # 4. Создает лист подбора для отправки
     ozon_actions.create_ozone_selection_sheet_pdf()
     # 5. Сохраняет этикетки для каждой отправки
-    ozon_actions.forming_package_ticket_with_article()
+    # ozon_actions.forming_package_ticket_with_article()
     # 6. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
-    ozon_actions.confirm_delivery_create_document()
+    # ozon_actions.confirm_delivery_create_document()
     # 7. Проверяю, что отгрузка создана. Формирую список отправлений для дальнейшей работы
-    ozon_actions.check_delivery_create()
+    # ozon_actions.check_delivery_create()
     # 8. Проверяю статус формирования накладной.
     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
-    ozon_actions.check_status_formed_invoice()
+    # ozon_actions.check_status_formed_invoice()
     # Очищаем все папки на сервере
-    clearning_folders()
+    # clearning_folders()
 
 
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
@@ -2129,7 +2145,7 @@ def ooo_ozon_action():
     action_ozon_ooo(ozon_headers_ooo, db_ooo_folder, file_add_name_ooo)
 
 
-# ooo_ozon_action()
+ooo_ozon_action()
 
 
 def ooo_yandex_action():
