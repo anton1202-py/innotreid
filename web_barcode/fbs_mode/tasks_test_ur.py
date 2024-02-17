@@ -2,6 +2,7 @@ import base64
 import glob
 import io
 import json
+import logging
 import math
 import os
 import shutil
@@ -99,6 +100,10 @@ dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_key=APP_KEY_DB,
                          app_secret=APP_SECRET_DB)
 
+logging.basicConfig(level=logging.DEBUG, encoding='utf-8',
+                    filename="fbs_mode/tasks_log.log", filemode="a",
+                    format="%(asctime)s %(levelname)s %(message)s")
+
 
 def stream_dropbox_file(path):
     _, res = dbx_db.files_download(path)
@@ -194,6 +199,7 @@ class WildberriesFbsMode():
         orders_id_list = []
         # Список с артикулами_продавца соборочных заданий
         order_articles_list = []
+        test_order_articles_list = []
         # Словарь с данными {id_задания: артикул_продавца}
         self.article_id_dict = {}
         response = requests.request(
@@ -205,8 +211,10 @@ class WildberriesFbsMode():
             create_order_time = datetime.strptime(
                 order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
             delta_order_time = now_time - create_order_time
+            test_order_articles_list.append(order['article'])
             if delta_order_time > timedelta(hours=1):
                 order_articles_list.append(order['article'])
+        print('test_order_articles_list', len(test_order_articles_list))
         # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
         self.data_article_info_dict = {}
         url_data = "https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list"
@@ -226,7 +234,6 @@ class WildberriesFbsMode():
             })
             response_data = requests.request(
                 "POST", url_data, headers=self.headers, data=payload)
-            print((response_data.status_code))
             # print(json.loads(response_data.text))
             if json.loads(response_data.text)[
                     'data']['cards'][0]['object'] == "Ночники":
@@ -529,22 +536,30 @@ class WildberriesFbsMode():
         try:
             if self.amount_articles:
                 print(self.amount_articles)
+                amount = 0
+                for key, values in self.amount_articles.items():
+                    amount += values
+                print('amount', amount)
                 qrcode_list = qrcode_print_for_products()
                 pdf_filenames = glob.glob(
                     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+                logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
                 list_pdf_file_ticket_for_complect = []
 
                 for j in pdf_filenames:
                     while self.amount_articles[str(Path(j).stem)] > 0:
                         list_pdf_file_ticket_for_complect.append(j)
                         self.amount_articles[str(Path(j).stem)] -= 1
+                logging.info(
+                    f"list_pdf_file_ticket_for_complect после добавления колоичества: {list_pdf_file_ticket_for_complect}")
                 for file in qrcode_list:
                     list_pdf_file_ticket_for_complect.append(file)
                 # Определяем число qr кодов для поставки.
                 amount_of_supply_qrcode = math.ceil(
                     len(list_pdf_file_ticket_for_complect)/20)
                 outer_list = []  # Внешний список для процесса сортировки
-                print('list_pdf_file_ticket_for_complect', list_pdf_file_ticket_for_complect)
+                print('list_pdf_file_ticket_for_complect',
+                      len(list_pdf_file_ticket_for_complect))
                 for i in list_pdf_file_ticket_for_complect:
                     # Разделяю полное название файла на путь к файлу и имя файла
                     # Оказывается в python знаком \ отделяется последняя папка перед файлом
@@ -574,9 +589,9 @@ class WildberriesFbsMode():
                 for i in new_sort:
                     i = '/'.join(i)
                     last_sorted_list.append(i)
-                print('last_sorted_list', last_sorted_list)
+                print('last_sorted_list', len(last_sorted_list))
                 list_pdf_file_ticket_for_complect = last_sorted_list
-                
+
                 qrcode_supply_amount = supply_qrcode_to_standart_view()
                 if qrcode_supply_amount:
                     qrcode_supply_amount = qrcode_supply_amount[0]
@@ -589,7 +604,8 @@ class WildberriesFbsMode():
                 file_name = (f'fbs_mode/data_for_barcodes/done_data/Наклейки для комплектовщиков '
                              f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
                 saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
-                print('list_pdf_file_ticket_for_complect', list_pdf_file_ticket_for_complect)
+                print('list_pdf_file_ticket_for_complect',
+                      len(list_pdf_file_ticket_for_complect))
                 print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
                                       file_name,
                                       saved_on_dropbox_filename)
@@ -2106,7 +2122,7 @@ def ooo_wb_action():
         ozon_headers_ooo, yandex_headers_ooo)
 
 
-# ooo_wb_action()
+ooo_wb_action()
 
 
 def ooo_ozon_action():
@@ -2129,7 +2145,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-ip_wb_action()
+# ip_wb_action()
 
 
 def ip_ozon_action_morning():
@@ -2137,7 +2153,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-#ip_ozon_action_morning()
+# ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

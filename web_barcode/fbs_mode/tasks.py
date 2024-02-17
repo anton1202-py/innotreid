@@ -611,75 +611,71 @@ class WildberriesFbsMode():
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=mes_text, parse_mode='HTML')
                 list_pdf_file_ticket_for_complect = []
-                if self.amount_articles:
-                    for j in pdf_filenames:
-                        while self.amount_articles[str(Path(j).stem)] > 0:
-                            list_pdf_file_ticket_for_complect.append(j)
-                            self.amount_articles[str(Path(j).stem)] -= 1
-                    logging.info(
-                        f"list_pdf_file_ticket_for_complect после добавления колоичества: {list_pdf_file_ticket_for_complect}")
-                    # Определяем число qr кодов для поставки.
-                    amount_of_supply_qrcode = math.ceil(
-                        len(list_pdf_file_ticket_for_complect)/20)
-                    for file in qrcode_list:
-                        list_pdf_file_ticket_for_complect.append(file)
-                    logging.info(
-                        f"list_pdf_file_ticket_for_complect после добавления qr кодов: {list_pdf_file_ticket_for_complect}")
-                    outer_list = []  # Внешний список для процесса сортировки
-                    for i in list_pdf_file_ticket_for_complect:
-                        # Разделяю полное название файла на путь к файлу и имя файла
-                        # Оказывается в python знаком \ отделяется последняя папка перед файлом
-                        # А все внешние отделяются знаком /
-                        last_slash_index = i.rfind("/")
-                        result = [i[:last_slash_index], i[last_slash_index+1:]]
-                        new_name = result
-                        full_new_name = []  # Список с полным именени файла после разделения
-                        # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
-                        # В этом цикле разделяю имена из предыдущих списков по пробелу.
-                        for j in new_name:
-                            split_name = j.split(' ')
-                            full_new_name.append(split_name)
-                        outer_list.append(full_new_name)
-                    # Сортирую самый внешний список по последнему элемену самого внутреннего списка
-                    sorted_list = sorted(outer_list, key=lambda x: x[-1][-1])
-
-                    # Далее идет обратный процесс - процесс объединения элементов списка
-                    # в первоначальные имена файлов, но уже отсортированные
-                    new_sort = []
-                    for i in sorted_list:
-                        inner_new_sort = []
-                        for j in i:
-                            j = ' '.join(j)
-                            inner_new_sort.append(j)
-                        new_sort.append(inner_new_sort)
-
-                    last_sorted_list = []
-                    for i in new_sort:
-                        i = '/'.join(i)
-                        last_sorted_list.append(i)
-
-                    list_pdf_file_ticket_for_complect = last_sorted_list
-                    logging.info(
-                        f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
-                    mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=mes_text, parse_mode='HTML')
-                    qrcode_supply_amount = supply_qrcode_to_standart_view()
-                    if len(qrcode_supply_amount) != 0:
-                        while amount_of_supply_qrcode > 0:
-                            list_pdf_file_ticket_for_complect.append(
-                                qrcode_supply_amount[0])
-                            amount_of_supply_qrcode -= 1
-                    folder_path = os.path.join(
-                        os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
-                    if not os.path.exists(folder_path):
-                        os.makedirs(folder_path)
-                    file_name = (f'{folder_path}/Наклейки для комплектовщиков '
-                                 f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
-                    saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
-                    print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
-                                          file_name,
-                                          saved_on_dropbox_filename)
+                for j in pdf_filenames:
+                    while self.amount_articles[str(Path(j).stem)] > 0:
+                        list_pdf_file_ticket_for_complect.append(j)
+                        self.amount_articles[str(Path(j).stem)] -= 1
+                logging.info(
+                    f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
+                # Определяем число qr кодов для поставки.
+                amount_of_supply_qrcode = math.ceil(
+                    len(list_pdf_file_ticket_for_complect)/20)
+                for file in qrcode_list:
+                    list_pdf_file_ticket_for_complect.append(file)
+                logging.info(
+                    f"list_pdf_file_ticket_for_complect после добавления qr кодов: {list_pdf_file_ticket_for_complect}")
+                outer_list = []  # Внешний список для процесса сортировки
+                for i in list_pdf_file_ticket_for_complect:
+                    # Разделяю полное название файла на путь к файлу и имя файла
+                    # Оказывается в python знаком \ отделяется последняя папка перед файлом
+                    # А все внешние отделяются знаком /
+                    last_slash_index = i.rfind("/")
+                    result = [i[:last_slash_index], i[last_slash_index+1:]]
+                    new_name = result
+                    full_new_name = []  # Список с полным именени файла после разделения
+                    # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
+                    # В этом цикле разделяю имена из предыдущих списков по пробелу.
+                    for j in new_name:
+                        split_name = j.split(' ')
+                        full_new_name.append(split_name)
+                    outer_list.append(full_new_name)
+                # Сортирую самый внешний список по последнему элемену самого внутреннего списка
+                sorted_list = sorted(outer_list, key=lambda x: x[-1][-1])
+                # Далее идет обратный процесс - процесс объединения элементов списка
+                # в первоначальные имена файлов, но уже отсортированные
+                new_sort = []
+                for i in sorted_list:
+                    inner_new_sort = []
+                    for j in i:
+                        j = ' '.join(j)
+                        inner_new_sort.append(j)
+                    new_sort.append(inner_new_sort)
+                last_sorted_list = []
+                for i in new_sort:
+                    i = '/'.join(i)
+                    last_sorted_list.append(i)
+                list_pdf_file_ticket_for_complect = last_sorted_list
+                logging.info(
+                    f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
+                mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=mes_text, parse_mode='HTML')
+                qrcode_supply_amount = supply_qrcode_to_standart_view()
+                if len(qrcode_supply_amount) != 0:
+                    while amount_of_supply_qrcode > 0:
+                        list_pdf_file_ticket_for_complect.append(
+                            qrcode_supply_amount[0])
+                        amount_of_supply_qrcode -= 1
+                folder_path = os.path.join(
+                    os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+                file_name = (f'{folder_path}/Наклейки для комплектовщиков '
+                             f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
+                saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
+                print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
+                                      file_name,
+                                      saved_on_dropbox_filename)
             else:
                 text = 'не сработала list_for_print_create потому что нет данных'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
