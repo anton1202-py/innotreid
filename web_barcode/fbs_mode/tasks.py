@@ -2108,7 +2108,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
-# ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
+# ========== ВЫЗЫВАЕМ ФУНКЦИИ ПО ОЧЕРЕДИ ========== #
 
 
 # ==================== Сборка WILDBERRIES =================== #
@@ -2147,11 +2147,8 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
 
-    # clearning_folders()
 
 # =========== Сборка ОЗОН ========== #
-
-
 def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
@@ -2171,8 +2168,6 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     # 8. Проверяю статус формирования накладной.
     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     ozon_actions.check_status_formed_invoice()
-    # Очищаем все папки на сервере
-    clearning_folders()
 
 
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
@@ -2188,9 +2183,6 @@ def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     # 5. Сохраняет этикетки для каждой отправки
     ozon_actions.forming_package_ticket_with_article()
 
-    # # Очищаем все папки на сервере
-    clearning_folders()
-
 
 def action_ozon_ip_day(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
@@ -2204,12 +2196,10 @@ def action_ozon_ip_day(ozon_headers, db_folder, file_add_name):
     # Получаю файлы с этикетками для коробок и этикетки для каждой отправки
     ozon_actions.check_status_formed_invoice()
     # Очищаем все папки на сервере
-    clearning_folders()
 
 
 # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
 def action_yandex(yandex_headers, db_folder, file_add_name):
-    clearning_folders()
     yandex_actions = YandexMarketFbsMode(
         yandex_headers, db_folder, file_add_name)
     # 1. Меняет статус ордеров
@@ -2223,8 +2213,6 @@ def action_yandex(yandex_headers, db_folder, file_add_name):
     # 5. Сохраняем этикетки
     yandex_actions.saving_tickets()
 
-    # Очищаем все папки на сервере
-    clearning_folders()
     message_text = f'Сборка {file_add_name} сформирована'
     bot.send_message(chat_id=CHAT_ID_MANAGER,
                      text=message_text, parse_mode='HTML')

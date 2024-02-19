@@ -48,7 +48,7 @@ app.conf.beat_schedule = {
     },
     "send_tg_message": {
         "task": "celery_tasks.tasks_yandex_fby_fbs.sender_zero_balance",
-        "schedule": crontab(hour=10, minute=0)
+        "schedule": crontab(hour=7, minute=10)
     },
     "add_article_price_info_to_database": {
         "task": "celery_tasks.tasks.add_article_price_info_to_database",
@@ -80,11 +80,11 @@ app.conf.beat_schedule = {
     },
     "ozon_ip_morning": {
         "task": "fbs_mode.tasks.ip_ozon_action_morning",
-        "schedule": crontab(hour=5, minute=45)
+        "schedule": crontab(hour=5, minute=50)
     },
     "yandex_ip_action": {
         "task": "fbs_mode.tasks.ip_yandex_action",
-        "schedule": crontab(hour=5, minute=52)
+        "schedule": crontab(hour=5, minute=57)
     },
     "ozon_ip_day": {
         "task": "fbs_mode.tasks.ip_ozon_action_day",
@@ -97,11 +97,11 @@ app.conf.beat_schedule = {
     },
     "ozon_ooo_action": {
         "task": "fbs_mode.tasks.ooo_ozon_action",
-        "schedule": crontab(hour=17, minute=45)
+        "schedule": crontab(hour=17, minute=50)
     },
     "yandex_ooo_action": {
         "task": "fbs_mode.tasks.ooo_yandex_action",
-        "schedule": crontab(hour=17, minute=52)
+        "schedule": crontab(hour=17, minute=57)
     },
 
     "google_sheet_task": {
