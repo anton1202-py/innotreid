@@ -243,14 +243,28 @@ class WildberriesFbsMode():
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=text, parse_mode='HTML')
                 time.sleep(5)
+            self.clear_article_list
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=f'len(self.clear_article_list) {len(self.clear_article_list)}',
+                             parse_mode='HTML')
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
+            sum_from_amount_articles = 0
+            for article, amount in self.amount_articles.items():
+                sum_from_amount_articles += amount
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=f'sum_from_amount_articles {sum_from_amount_articles}',
+                             parse_mode='HTML')
+
             for order in orders_data:
                 if order['article'] in self.clear_article_list:
                     self.article_id_dict[order['id']] = order['article']
                     orders_id_list.append(order['id'])
             # Словарь для данных листа подбора.
             self.selection_dict = {}
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=f'len(self.article_id_dict.keys()) {len(list(self.article_id_dict.keys()))}',
+                             parse_mode='HTML')
             # Собирам данные для Листа подбора
             for order_id in self.article_id_dict.keys():
                 payload_order = json.dumps({

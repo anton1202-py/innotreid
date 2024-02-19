@@ -211,10 +211,11 @@ class WildberriesFbsMode():
             create_order_time = datetime.strptime(
                 order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
             delta_order_time = now_time - create_order_time
-            test_order_articles_list.append(order['article'])
+
             if delta_order_time > timedelta(hours=1):
+                # test_order_articles_list.append(order['article'])
                 order_articles_list.append(order['article'])
-        print('test_order_articles_list', len(test_order_articles_list))
+        # print('test_order_articles_list', len(test_order_articles_list))
         # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
         self.data_article_info_dict = {}
         url_data = "https://suppliers-api.wildberries.ru/content/v1/cards/cursor/list"
@@ -246,7 +247,12 @@ class WildberriesFbsMode():
                     'data']['cards'][0]['title']
                 self.data_article_info_dict[article] = [title, barcode]
         # Словарь с данными: {артикул_продавца: количество}
+        print('len(self.clear_article_list)', len(self.clear_article_list))
         self.amount_articles = dict(Counter(self.clear_article_list))
+        su = 0
+        for key, value in self.amount_articles.items():
+            su += value
+        print('su', su)
         for order in orders_data:
             if order['article'] in self.clear_article_list:
                 self.article_id_dict[order['id']] = order['article']
@@ -278,6 +284,7 @@ class WildberriesFbsMode():
             # Заполняем словарь данными для Листа подбора
             self.selection_dict[order_id] = [
                 photo, brand, title_article, seller_article]
+        print(self.selection_dict)
         return self.amount_articles
 
     def create_delivery(self):
@@ -2023,10 +2030,10 @@ def action_wb(db_folder, file_add_name, headers_wb,
     clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile(db_folder, file_add_name,
-                                 headers_wb, headers_ozon,
-                                 headers_yandex)
-    pivot_file.create_pivot_xls()
+    # pivot_file = CreatePivotFile(db_folder, file_add_name,
+    #                              headers_wb, headers_ozon,
+    #                              headers_yandex)
+    # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
@@ -2035,7 +2042,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # # 3. Создаю поставку
     # wb_actions.create_delivery()
     # # 2. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
+    # wb_actions.create_barcode_tickets()
     # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # # задания и сохраняю его в папку
     # wb_actions.qrcode_order()
@@ -2045,7 +2052,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # # и преобразует этот QR код в необходимый формат.
     # wb_actions.qrcode_supply()
     # # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+    # wb_actions.list_for_print_create()
 
     # clearning_folders()
 
@@ -2059,9 +2066,9 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     # 2. Делю заказ на отправления и перевожу его в статус awaiting_deliver.
     # ozon_actions.awaiting_deliver_orders()
     # 3. Готовлю данные для подтверждения отгрузки
-    ozon_actions.prepare_data_for_confirm_delivery()
-    # 4. Создает лист подбора для отправки
-    ozon_actions.create_ozone_selection_sheet_pdf()
+    # ozon_actions.prepare_data_for_confirm_delivery()
+    # # 4. Создает лист подбора для отправки
+    # ozon_actions.create_ozone_selection_sheet_pdf()
     # 5. Сохраняет этикетки для каждой отправки
     # ozon_actions.forming_package_ticket_with_article()
     # 6. Подтверждаю отгрузку и запускаю создание документов на стороне ОЗОН
@@ -2138,14 +2145,14 @@ def ooo_wb_action():
         ozon_headers_ooo, yandex_headers_ooo)
 
 
-ooo_wb_action()
+# ooo_wb_action()
 
 
 def ooo_ozon_action():
     action_ozon_ooo(ozon_headers_ooo, db_ooo_folder, file_add_name_ooo)
 
 
-ooo_ozon_action()
+# ooo_ozon_action()
 
 
 def ooo_yandex_action():
@@ -2161,7 +2168,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-# ip_wb_action()
+ip_wb_action()
 
 
 def ip_ozon_action_morning():
