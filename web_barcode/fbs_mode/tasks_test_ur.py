@@ -5,6 +5,7 @@ import json
 import logging
 import math
 import os
+import pprint
 import shutil
 import time
 import traceback
@@ -643,7 +644,7 @@ class OzonFbsMode():
                 'day_stock': 1020001030027000, 'night_stock': 22676408482000}
         elif self.file_add_name == 'ИП':
             self.warehouse_dict = {
-                'day_stock': 1020000089903000, 'night_stock': 22655170176000}
+                'day_stock': 1020000089903000, 'night_stock': 1020000089903000}
         self.date_for_files = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         self.main_save_folder_server = 'fbs_mode/data_for_barcodes'
         self.date_before = datetime.now() - timedelta(days=20)
@@ -790,6 +791,7 @@ class OzonFbsMode():
             # Проверяем все отгрузки, которые буду завтра
             url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
             amount_products = 0
+            print('to_date_for_filter', to_date_for_filter)
             payload = json.dumps(
                 {
                     "dir": "asc",
@@ -813,6 +815,7 @@ class OzonFbsMode():
             )
             response = requests.request(
                 "POST", url, headers=self.ozon_headers, data=payload)
+            # pprint.pprint(json.loads(response.text)['result']['postings'])
             for data in json.loads(response.text)['result']['postings']:
                 inner_article_amount_dict = {}
                 inner_bilding_list = []
@@ -827,12 +830,12 @@ class OzonFbsMode():
                         amount_products += product['quantity']
                         inner_article_amount_dict[product['offer_id']
                                                   ] = product['quantity']
-                        if product['offer_id'] not in self.ozon_article_amount.keys():
+                        if product['offer_id'] not in self.ozon_article_amount:
                             self.ozon_article_amount[product['offer_id']] = int(
                                 product['quantity'])
                         else:
                             self.ozon_article_amount[product['offer_id']
-                                                     ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
+                                                     ] += int(product['quantity'])
                         inner_bilding_list.append(inner_bilding_dict)
                     self.fbs_ozon_common_data[data['posting_number']
                                               ] = inner_article_amount_dict
@@ -849,16 +852,17 @@ class OzonFbsMode():
                     fbs_common_data_amount += amount
             # print('fbs_common_data_amount', fbs_common_data_amount)
 
-            ozon_article__amount = 0
+            ozon_article_amount = 0
             for key, values in self.ozon_article_amount.items():
-                ozon_article__amount += values
+                ozon_article_amount += values
+            print(len(self.fbs_ozon_common_data_buils_dict.keys()))
             # print('self.fbs_ozon_common_data_buils_dict',
             #       self.fbs_ozon_common_data_buils_dict)
             # print('******************************')
             # print('ozon_article__amount', ozon_article__amount)
             # print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
-            # print('***************************')
-            # print('self.ozon_article_amount', self.ozon_article_amount)
+            print('***************************')
+            print('self.ozon_article_amount', self.ozon_article_amount)
             return self.ozon_article_amount
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -2091,7 +2095,7 @@ def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     # 3. Готовлю данные для подтверждения отгрузки
     ozon_actions.prepare_data_for_confirm_delivery()
     # 4. Создает лист подбора для отправки
-    ozon_actions.create_ozone_selection_sheet_pdf()
+    # ozon_actions.create_ozone_selection_sheet_pdf()
     # # 5. Сохраняет этикетки для каждой отправки
     # ozon_actions.forming_package_ticket_with_article()
 
@@ -2168,7 +2172,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-ip_wb_action()
+# ip_wb_action()
 
 
 def ip_ozon_action_morning():
@@ -2176,7 +2180,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-# ip_ozon_action_morning()
+ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

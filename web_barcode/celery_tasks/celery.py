@@ -80,11 +80,11 @@ app.conf.beat_schedule = {
     },
     "ozon_ip_morning": {
         "task": "fbs_mode.tasks.ip_ozon_action_morning",
-        "schedule": crontab(hour=5, minute=50)
+        "schedule": crontab(hour=5, minute=34)
     },
     "yandex_ip_action": {
         "task": "fbs_mode.tasks.ip_yandex_action",
-        "schedule": crontab(hour=5, minute=57)
+        "schedule": crontab(hour=5, minute=52)
     },
     "ozon_ip_day": {
         "task": "fbs_mode.tasks.ip_ozon_action_day",
@@ -97,11 +97,11 @@ app.conf.beat_schedule = {
     },
     "ozon_ooo_action": {
         "task": "fbs_mode.tasks.ooo_ozon_action",
-        "schedule": crontab(hour=17, minute=50)
+        "schedule": crontab(hour=17, minute=34)
     },
     "yandex_ooo_action": {
         "task": "fbs_mode.tasks.ooo_yandex_action",
-        "schedule": crontab(hour=17, minute=57)
+        "schedule": crontab(hour=17, minute=52)
     },
 
     "google_sheet_task": {
