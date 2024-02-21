@@ -2133,7 +2133,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions = WildberriesFbsMode(
         headers_wb, db_folder, file_add_name)
 
-    clearning_folders()
+    # clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile(db_folder, file_add_name,
@@ -2164,6 +2164,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
 
 # =========== Сборка ОЗОН ========== #
 def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
+    clearning_folders()
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
@@ -2185,6 +2186,7 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
 
 
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
+    clearning_folders()
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
