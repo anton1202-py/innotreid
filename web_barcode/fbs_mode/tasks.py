@@ -236,8 +236,35 @@ class WildberriesFbsMode():
             delta_order_time = now_time - create_order_time
             if delta_order_time > timedelta(hours=1):
                 filters_order_data.append(order)
-
         return filters_order_data
+
+    def article_info(self, article):
+        """
+        WILDBERRIES
+        Получает развернутый ответ про каждый артикул. 
+        """
+        url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+        payload = json.dumps({
+            "settings": {
+                "cursor": {
+                    "limit": 1
+                },
+                "filter": {
+                    "textSearch": article,
+                    "withPhoto": -1
+                }
+            }
+        })
+        response_data = requests.request(
+            "POST", url_data, headers=self.headers, data=payload)
+        if response_data.status_code == 200:
+            return response_data.text
+        else:
+            text = f'Статус код = {response_data.status_code} у артикула {article}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                text=text, parse_mode='HTML')
+            time.sleep(5)
+            return self.article_info(article)
 
     def article_data_for_tickets(self):
         """
@@ -248,55 +275,36 @@ class WildberriesFbsMode():
         """
         try:
             orders_data = self.time_filter_orders()
-
             # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
             self.data_article_info_dict = {}
             # Список только для артикулов ночников. Остальные отфильтровывает
             self.clear_article_list = []
             # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
             self.selection_dict = {}
-
-            url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
             for data in orders_data:
-                payload = json.dumps({
-                    "settings": {
-                        "cursor": {
-                            "limit": 1
-                        },
-                        "filter": {
-                            "textSearch": data['article'],
-                            "withPhoto": -1
-                        }
-                    }
-                })
-                response_data = requests.request(
-                    "POST", url_data, headers=self.headers, data=payload)
-                if response_data.status_code == 200:
-                    if json.loads(response_data.text)['cards'][0]['subjectName'] == "Ночники":
-                        self.clear_article_list.append(data['article'])
-                        # Достаем баркод артикула (первый из списка, если их несколько)
-                        barcode = json.loads(response_data.text)[
-                            'cards'][0]['sizes'][0]['skus'][0]
-                        # Достаем название артикула
-                        title = json.loads(response_data.text)[
-                            'cards'][0]['title']
-                        self.data_article_info_dict[data['article']] = [
-                            title, barcode]
-                        photo = json.loads(response_data.text)[
-                            'cards'][0]['photos'][0]['big']
-                        brand = json.loads(response_data.text)[
-                            'cards'][0]['brand']
-                        title_article = json.loads(response_data.text)[
-                            'cards'][0]['title']
-                        seller_article = data['article']
-                        # Заполняем словарь данными для Листа подбора
-                        self.selection_dict[data['id']] = [
-                            photo, brand, title_article, seller_article]
-                else:
-                    text = f'Статус код = {response_data.status_code} у артикула {data["article"]}'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=text, parse_mode='HTML')
-                time.sleep(5)
+                answer = self.article_info(data['article'])
+
+                if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                    self.clear_article_list.append(data['article'])
+                    # Достаем баркод артикула (первый из списка, если их несколько)
+                    barcode = json.loads(answer)[
+                        'cards'][0]['sizes'][0]['skus'][0]
+                    # Достаем название артикула
+                    title = json.loads(answer)[
+                        'cards'][0]['title']
+                    self.data_article_info_dict[data['article']] = [
+                        title, barcode]
+                    photo = json.loads(answer)[
+                        'cards'][0]['photos'][0]['big']
+                    brand = json.loads(answer)[
+                        'cards'][0]['brand']
+                    title_article = json.loads(answer)[
+                        'cards'][0]['title']
+                    seller_article = data['article']
+                    # Заполняем словарь данными для Листа подбора
+                    self.selection_dict[data['id']] = [
+                        photo, brand, title_article, seller_article]
+                time.sleep(2)
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
             return self.amount_articles
@@ -1810,7 +1818,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
     def delivery_data(self, next_number=0, limit_number=1000):
         url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
         response_data = requests.request(
-            "GET", url_data, headers=wb_headers_karavaev)
+            "GET", url_data, headers=self.headers_wb)
         if response_data.status_code == 200:
             if len(json.loads(response_data.text)['supplies']) >= limit_number:
                 next_number_new = json.loads(response_data.text)['next']
@@ -1827,7 +1835,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         supply_id = self.delivery_data()
         url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
         response_data = requests.request(
-            "GET", url, headers=wb_headers_karavaev)
+            "GET", url, headers=self.headers_wb)
         if response_data.status_code == 200:
             article_amount = {}
             orders_data = json.loads(response_data.text)['orders']
@@ -2180,16 +2188,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions = WildberriesFbsMode(
         headers_wb, db_folder, file_add_name)
 
-    # # clearning_folders()
-    # # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # # 1. Создаю сводный файл для производства
-    # pivot_file = CreatePivotFile(db_folder, file_add_name,
-    #                              headers_wb, headers_ozon,
-    #                              headers_yandex)
-    # pivot_file.create_pivot_xls()
-    # # 2. Отправляю данные по сборке FBS
-    # pivot_file.sender_message_to_telegram()
-
+    clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Создаю папку на dropbox для документов
     wb_actions.create_dropbox_folder()
@@ -2209,12 +2208,10 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.qrcode_supply()
     # 8. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
-    # wb_clearning_folders()
 
 
 # =========== Сборка ОЗОН ========== #
 def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
-    clearning_folders()
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
@@ -2236,7 +2233,6 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
 
 
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
-    clearning_folders()
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
     ozon_actions.awaiting_packaging_orders()
@@ -2279,21 +2275,15 @@ def action_yandex(yandex_headers, db_folder, file_add_name):
     # 5. Сохраняем этикетки
     yandex_actions.saving_tickets()
 
-    # message_text = f'Сборка {file_add_name} сформирована'
-    # bot.send_message(chat_id=CHAT_ID_MANAGER,
-    #                  text=message_text, parse_mode='HTML')
-    # bot.send_message(chat_id=CHAT_ID_ADMIN,
-    #                  text=message_text, parse_mode='HTML')
-
 
 def production_file(db_folder, file_add_name, headers_wb,
                     headers_ozon, headers_yandex):
 
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-    # 1. Создаю сводный файл для производства
     pivot_file = CreatePivotFile(db_folder, file_add_name,
                                  headers_wb, headers_ozon,
                                  headers_yandex)
+    # 1. Создаю сводный файл для производства
     pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     pivot_file.sender_message_to_telegram()

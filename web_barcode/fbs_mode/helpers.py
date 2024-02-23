@@ -157,7 +157,13 @@ def special_design_light(dict_barcode_print):
     font_version = ImageFont.truetype("arial.ttf", size=35)
 
     current_date = datetime.now().strftime("%d.%m.%Y")
-    eac_file = 'programm_data/eac light.png'
+    EAC_FILE = '/DATABASE/web_barcode_data/programm_data/eac light.png'
+
+    metadata, response = dbx_db.files_download(EAC_FILE)
+    if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+        os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
+    with open('fbs_mode/data_for_barcodes/eac light.png', 'wb') as eac_file:
+        eac_file.write(response.content)
 
     for key, value in dict_barcode_print.items():
 
@@ -173,7 +179,7 @@ def special_design_light(dict_barcode_print):
             writer=ImageWriter()
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#fff'))
-        eac_image = Image.open(f'{eac_file}')
+        eac_image = Image.open('fbs_mode/data_for_barcodes/eac light.png')
         cat_image = Image.open(f'programm_data/{key}.png')
         draw_text = ImageDraw.Draw(im)
 
@@ -235,7 +241,13 @@ def special_design_dark(dict_barcode_print):
     font_version = ImageFont.truetype("arial.ttf", size=35)
 
     current_date = datetime.now().strftime("%d.%m.%Y")
-    eac_file = 'programm_data/eac dark.png'
+    EAC_FILE = '/DATABASE/web_barcode_data/programm_data/eac dark.png'
+
+    metadata, response = dbx_db.files_download(EAC_FILE)
+    if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+        os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
+    with open('fbs_mode/data_for_barcodes/eac dark.png', 'wb') as eac_file:
+        eac_file.write(response.content)
 
     for key, value in dict_barcode_print.items():
 
@@ -251,7 +263,7 @@ def special_design_dark(dict_barcode_print):
             writer=ImageWriter()
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#000'))
-        eac_image = Image.open(f'{eac_file}')
+        eac_image = Image.open('fbs_mode/data_for_barcodes/eac dark.png')
         cat_image = Image.open(f'programm_data/{key}.png')
         draw_text = ImageDraw.Draw(im)
 
