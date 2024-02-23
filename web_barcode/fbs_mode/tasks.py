@@ -632,6 +632,9 @@ class WildberriesFbsMode():
                 mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=mes_text, parse_mode='HTML')
+                text = str(self.amount_articles)
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
                 list_pdf_file_ticket_for_complect = []
                 for j in pdf_filenames:
                     while self.amount_articles[str(Path(j).stem)] > 0:
@@ -2206,7 +2209,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
     wb_actions.qrcode_supply()
     # 8. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
-    wb_clearning_folders()
+    # wb_clearning_folders()
 
 
 # =========== Сборка ОЗОН ========== #
