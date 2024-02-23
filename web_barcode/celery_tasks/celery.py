@@ -78,6 +78,10 @@ app.conf.beat_schedule = {
         "task": "fbs_mode.tasks.ip_wb_action",
         "schedule": crontab(hour=17, minute=30, day_of_week=5)
     },
+    "file_ip_action_friday": {
+        "task": "fbs_mode.tasks.ip_production_file",
+        "schedule": crontab(hour=17, minute=45, day_of_week=5)
+    },
     "ozon_ip_morning": {
         "task": "fbs_mode.tasks.ip_ozon_action_morning",
         "schedule": crontab(hour=5, minute=32)
@@ -85,6 +89,10 @@ app.conf.beat_schedule = {
     "yandex_ip_action": {
         "task": "fbs_mode.tasks.ip_yandex_action",
         "schedule": crontab(hour=5, minute=52)
+    },
+    "file_ip_action": {
+        "task": "fbs_mode.tasks.ip_production_file",
+        "schedule": crontab(hour=5, minute=55)
     },
     "ozon_ip_day": {
         "task": "fbs_mode.tasks.ip_ozon_action_day",
@@ -103,7 +111,10 @@ app.conf.beat_schedule = {
         "task": "fbs_mode.tasks.ooo_yandex_action",
         "schedule": crontab(hour=17, minute=52)
     },
-
+    "file_ooo_action": {
+        "task": "fbs_mode.tasks.ooo_production_file",
+        "schedule": crontab(hour=17, minute=55)
+    },
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=18, minute=0, day_of_week=1)
