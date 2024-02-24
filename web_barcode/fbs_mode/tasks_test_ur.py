@@ -197,15 +197,22 @@ class WildberriesFbsMode():
         WILDBERRIES
         Функция обрабатывает новые сборочные задания.
         """
-        url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
-        response = requests.request(
-            "GET", url, headers=self.headers)
-        orders_data = json.loads(response.text)['orders']
-        if response.status_code == 200:
-            return orders_data
-        else:
-            time.sleep(10)
-            self.process_new_orders()
+        try:
+            url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
+            response = requests.request(
+                "GET", url, headers=self.headers)
+            orders_data = json.loads(response.text)['orders']
+            if response.status_code == 200:
+                return orders_data
+            else:
+                time.sleep(10)
+                return self.process_new_orders()
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'process_new_orders', self.process_new_orders, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
     def time_filter_orders(self):
         """
@@ -213,18 +220,59 @@ class WildberriesFbsMode():
         Функция фильтрует новые заказы по времени.
         Если заказ создан меньше, чем 1 час назад, в работу он не берется
         """
-        orders_data = self.process_new_orders()
-        filters_order_data = []
-        now_time = datetime.now()
-        for order in orders_data:
-            # Время создания заказа в переводе с UTC на московское
-            create_order_time = datetime.strptime(
-                order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
-            delta_order_time = now_time - create_order_time
-            if delta_order_time > timedelta(hours=1):
-                filters_order_data.append(order)
+        try:
+            orders_data = self.process_new_orders()
+            filters_order_data = []
+            now_time = datetime.now()
+            for order in orders_data:
+                # Время создания заказа в переводе с UTC на московское
+                create_order_time = datetime.strptime(
+                    order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+                delta_order_time = now_time - create_order_time
+                if delta_order_time > timedelta(hours=1):
+                    filters_order_data.append(order)
+            return filters_order_data
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'time_filter_orders', self.time_filter_orders, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
-        return filters_order_data
+    def article_info(self, article):
+        """
+        WILDBERRIES
+        Получает развернутый ответ про каждый артикул. 
+        """
+        try:
+            url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+            payload = json.dumps({
+                "settings": {
+                    "cursor": {
+                        "limit": 1
+                    },
+                    "filter": {
+                        "textSearch": article,
+                        "withPhoto": -1
+                    }
+                }
+            })
+            response_data = requests.request(
+                "POST", url_data, headers=self.headers, data=payload)
+            if response_data.status_code == 200:
+                return response_data.text
+            else:
+                text = f'Статус код = {response_data.status_code} у артикула {article}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+                time.sleep(5)
+                return self.article_info(article)
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'article_info', self.article_info, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
     def article_data_for_tickets(self):
         """
@@ -235,55 +283,36 @@ class WildberriesFbsMode():
         """
         try:
             orders_data = self.time_filter_orders()
-
             # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
             self.data_article_info_dict = {}
             # Список только для артикулов ночников. Остальные отфильтровывает
             self.clear_article_list = []
             # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
             self.selection_dict = {}
-
-            url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
             for data in orders_data:
-                payload = json.dumps({
-                    "settings": {
-                        "cursor": {
-                            "limit": 1
-                        },
-                        "filter": {
-                            "textSearch": data['article'],
-                            "withPhoto": -1
-                        }
-                    }
-                })
-                response_data = requests.request(
-                    "POST", url_data, headers=self.headers, data=payload)
-                if response_data.status_code == 200:
-                    if json.loads(response_data.text)['cards'][0]['subjectName'] == "Ночники":
-                        self.clear_article_list.append(data['article'])
-                        # Достаем баркод артикула (первый из списка, если их несколько)
-                        barcode = json.loads(response_data.text)[
-                            'cards'][0]['sizes'][0]['skus'][0]
-                        # Достаем название артикула
-                        title = json.loads(response_data.text)[
-                            'cards'][0]['title']
-                        self.data_article_info_dict[data['article']] = [
-                            title, barcode]
-                        photo = json.loads(response_data.text)[
-                            'cards'][0]['photos'][0]['big']
-                        brand = json.loads(response_data.text)[
-                            'cards'][0]['brand']
-                        title_article = json.loads(response_data.text)[
-                            'cards'][0]['title']
-                        seller_article = data['article']
-                        # Заполняем словарь данными для Листа подбора
-                        self.selection_dict[data['id']] = [
-                            photo, brand, title_article, seller_article]
-                else:
-                    text = f'Статус код = {response_data.status_code} у артикула {data["article"]}'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=text, parse_mode='HTML')
-                time.sleep(5)
+                answer = self.article_info(data['article'])
+
+                if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                    self.clear_article_list.append(data['article'])
+                    # Достаем баркод артикула (первый из списка, если их несколько)
+                    barcode = json.loads(answer)[
+                        'cards'][0]['sizes'][0]['skus'][0]
+                    # Достаем название артикула
+                    title = json.loads(answer)[
+                        'cards'][0]['title']
+                    self.data_article_info_dict[data['article']] = [
+                        title, barcode]
+                    photo = json.loads(answer)[
+                        'cards'][0]['photos'][0]['big']
+                    brand = json.loads(answer)[
+                        'cards'][0]['brand']
+                    title_article = json.loads(answer)[
+                        'cards'][0]['title']
+                    seller_article = data['article']
+                    # Заполняем словарь данными для Листа подбора
+                    self.selection_dict[data['id']] = [
+                        photo, brand, title_article, seller_article]
+                time.sleep(2)
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
             return self.amount_articles
@@ -1708,36 +1737,48 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
         response_data = requests.request(
             "GET", url_data, headers=wb_headers_karavaev)
+        delivery_date = datetime.today().strftime("%d.%m.%Y")
+        hour = datetime.now().hour
+        delivery_name = ''
+        if hour >= 6 and hour < 18:
+            delivery_name = f'День {delivery_date}'
+        else:
+            delivery_name = f'Ночь {delivery_date}'
         if response_data.status_code == 200:
             if len(json.loads(response_data.text)['supplies']) >= limit_number:
                 next_number_new = json.loads(response_data.text)['next']
                 return self.delivery_data(next_number_new)
             else:
                 last_sup = json.loads(response_data.text)['supplies'][-1]
-                supply_id = last_sup['id']
-                return supply_id
+                if delivery_name in last_sup['name']:
+                    print('имя нашлось')
+                    supply_id = last_sup['id']
+                    return supply_id
+                else:
+                    return ''
         else:
             time.sleep(5)
-            self.delivery_data()
+            return self.delivery_data()
 
     def data_for_production_list(self):
         supply_id = self.delivery_data()
-        url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
-        response_data = requests.request(
-            "GET", url, headers=wb_headers_karavaev)
-        if response_data.status_code == 200:
-            article_amount = {}
-            orders_data = json.loads(response_data.text)['orders']
-            for data in orders_data:
-                if data['article'] in article_amount:
-                    article_amount[data['article']] += 1
-                else:
-                    article_amount[data['article']] = 1
-            return article_amount
+        article_amount = {}
+        if supply_id:
+            url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
+            response_data = requests.request(
+                "GET", url, headers=wb_headers_karavaev)
+            if response_data.status_code == 200:
 
-        else:
-            time.sleep(5)
-            self.data_for_production_list()
+                orders_data = json.loads(response_data.text)['orders']
+                for data in orders_data:
+                    if data['article'] in article_amount:
+                        article_amount[data['article']] += 1
+                    else:
+                        article_amount[data['article']] = 1
+            else:
+                time.sleep(5)
+                return self.data_for_production_list()
+        return article_amount
 
     def create_pivot_xls(self):
         '''
@@ -2085,11 +2126,10 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
     # 1. Обрабатываю новые сборочные задания.
     wb_actions.create_dropbox_folder()
-    wb_actions.article_data_for_tickets()
-    # # 3. Создаю поставку
-    # wb_actions.create_delivery()
-    # # 2. Создаю шрихкоды для артикулов
-    # wb_actions.create_barcode_tickets()
+    # 3. Создаю поставку
+    wb_actions.create_delivery()
+    # 2. Создаю шрихкоды для артикулов
+    wb_actions.create_barcode_tickets()
     # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # # задания и сохраняю его в папку
     # wb_actions.qrcode_order()
@@ -2098,8 +2138,8 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # # 6. Добавляю поставку в доставку, получаю QR код поставки
     # # и преобразует этот QR код в необходимый формат.
     # wb_actions.qrcode_supply()
-    # # 7. Создаю список с полными именами файлов, которые нужно объединить
-    # wb_actions.list_for_print_create()
+    # 7. Создаю список с полными именами файлов, которые нужно объединить
+    wb_actions.list_for_print_create()
 
     # clearning_folders()
 

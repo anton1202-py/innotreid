@@ -210,15 +210,22 @@ class WildberriesFbsMode():
         WILDBERRIES
         Функция обрабатывает новые сборочные задания.
         """
-        url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
-        response = requests.request(
-            "GET", url, headers=self.headers)
-        orders_data = json.loads(response.text)['orders']
-        if response.status_code == 200:
-            return orders_data
-        else:
-            time.sleep(10)
-            self.process_new_orders()
+        try:
+            url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
+            response = requests.request(
+                "GET", url, headers=self.headers)
+            orders_data = json.loads(response.text)['orders']
+            if response.status_code == 200:
+                return orders_data
+            else:
+                time.sleep(10)
+                return self.process_new_orders()
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'process_new_orders', self.process_new_orders, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
     def time_filter_orders(self):
         """
@@ -226,45 +233,59 @@ class WildberriesFbsMode():
         Функция фильтрует новые заказы по времени.
         Если заказ создан меньше, чем 1 час назад, в работу он не берется
         """
-        orders_data = self.process_new_orders()
-        filters_order_data = []
-        now_time = datetime.now()
-        for order in orders_data:
-            # Время создания заказа в переводе с UTC на московское
-            create_order_time = datetime.strptime(
-                order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
-            delta_order_time = now_time - create_order_time
-            if delta_order_time > timedelta(hours=1):
-                filters_order_data.append(order)
-        return filters_order_data
+        try:
+            orders_data = self.process_new_orders()
+            filters_order_data = []
+            now_time = datetime.now()
+            for order in orders_data:
+                # Время создания заказа в переводе с UTC на московское
+                create_order_time = datetime.strptime(
+                    order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+                delta_order_time = now_time - create_order_time
+                if delta_order_time > timedelta(hours=1):
+                    filters_order_data.append(order)
+            return filters_order_data
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'time_filter_orders', self.time_filter_orders, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
     def article_info(self, article):
         """
         WILDBERRIES
         Получает развернутый ответ про каждый артикул. 
         """
-        url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
-        payload = json.dumps({
-            "settings": {
-                "cursor": {
-                    "limit": 1
-                },
-                "filter": {
-                    "textSearch": article,
-                    "withPhoto": -1
+        try:
+            url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+            payload = json.dumps({
+                "settings": {
+                    "cursor": {
+                        "limit": 1
+                    },
+                    "filter": {
+                        "textSearch": article,
+                        "withPhoto": -1
+                    }
                 }
-            }
-        })
-        response_data = requests.request(
-            "POST", url_data, headers=self.headers, data=payload)
-        if response_data.status_code == 200:
-            return response_data.text
-        else:
-            text = f'Статус код = {response_data.status_code} у артикула {article}'
+            })
+            response_data = requests.request(
+                "POST", url_data, headers=self.headers, data=payload)
+            if response_data.status_code == 200:
+                return response_data.text
+            else:
+                text = f'Статус код = {response_data.status_code} у артикула {article}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+                time.sleep(5)
+                return self.article_info(article)
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'article_info', self.article_info, e)
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                text=text, parse_mode='HTML')
-            time.sleep(5)
-            return self.article_info(article)
+                             text=message_text, parse_mode='HTML')
 
     def article_data_for_tickets(self):
         """
@@ -1784,6 +1805,8 @@ class YandexMarketFbsMode():
 
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
+    """Создает общий файл для производства"""
+
     def __init__(self, db_folder, file_add_name, headers_wb, headers_ozon, headers_yandex):
         self.dropbox_main_fbs_folder = db_folder
         self.file_add_name = file_add_name
@@ -1798,8 +1821,6 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         # Используем метод strftime() для форматирования даты и вывода дня недели
         day_of_week = today.strftime('%A')
 
-        # self.amount_articles = WildberriesFbsMode(
-        # self.headers_wb, self.dropbox_main_fbs_folder, self.file_add_name).article_data_for_tickets()
         if self.file_add_name == 'ИП' and day_of_week in wb_ip_days and hour >= 20:
             self.ozon_article_amount = None
             self.yandex_article_amount = None
@@ -1816,39 +1837,73 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                 'day_stock': 1020000089903000, 'night_stock': 22655170176000}
 
     def delivery_data(self, next_number=0, limit_number=1000):
-        url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
-        response_data = requests.request(
-            "GET", url_data, headers=self.headers_wb)
-        if response_data.status_code == 200:
-            if len(json.loads(response_data.text)['supplies']) >= limit_number:
-                next_number_new = json.loads(response_data.text)['next']
-                return self.delivery_data(next_number_new)
+        """
+        СВОДНЫЙ ФАЙЛ
+        Собирает данные по поставке, которая уже создалась
+        """
+        try:
+            url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
+            response_data = requests.request(
+                "GET", url_data, headers=wb_headers_karavaev)
+            delivery_date = datetime.today().strftime("%d.%m.%Y")
+            hour = datetime.now().hour
+            delivery_name = ''
+            if hour >= 6 and hour < 18:
+                delivery_name = f'День {delivery_date}'
             else:
-                last_sup = json.loads(response_data.text)['supplies'][-1]
-                supply_id = last_sup['id']
-                return supply_id
-        else:
-            time.sleep(5)
-            self.delivery_data()
+                delivery_name = f'Ночь {delivery_date}'
+            if response_data.status_code == 200:
+                if len(json.loads(response_data.text)['supplies']) >= limit_number:
+                    next_number_new = json.loads(response_data.text)['next']
+                    return self.delivery_data(next_number_new)
+                else:
+                    last_sup = json.loads(response_data.text)['supplies'][-1]
+                    if delivery_name in last_sup['name']:
+                        supply_id = last_sup['id']
+                        return supply_id
+                    else:
+                        return ''
+            else:
+                time.sleep(5)
+                return self.delivery_data()
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'delivery_data', self.delivery_data, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
 
     def data_for_production_list(self):
-        supply_id = self.delivery_data()
-        url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
-        response_data = requests.request(
-            "GET", url, headers=self.headers_wb)
-        if response_data.status_code == 200:
+        """
+        СВОДНЫЙ ФАЙЛ
+        Сводит данные из данных о поставке к словарю: {артикул: количество}
+        """
+        try:
+            supply_id = self.delivery_data()
             article_amount = {}
-            orders_data = json.loads(response_data.text)['orders']
-            for data in orders_data:
-                if data['article'] in article_amount:
-                    article_amount[data['article']] += 1
-                else:
-                    article_amount[data['article']] = 1
-            return article_amount
+            if supply_id:
+                url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
+                response_data = requests.request(
+                    "GET", url, headers=wb_headers_karavaev)
+                if response_data.status_code == 200:
 
-        else:
-            time.sleep(5)
-            self.data_for_production_list()
+                    orders_data = json.loads(response_data.text)['orders']
+                    for data in orders_data:
+                        if data['article'] in article_amount:
+                            article_amount[data['article']] += 1
+                        else:
+                            article_amount[data['article']] = 1
+                else:
+                    time.sleep(5)
+                    return self.data_for_production_list()
+            return article_amount
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'data_for_production_list', self.data_for_production_list, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
+            return article_amount
 
     def create_pivot_xls(self):
         '''
