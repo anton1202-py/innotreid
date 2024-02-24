@@ -1,0 +1,75 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Работа с базой данных{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Таблица сопоставления артикулов</h1>
+            {% if request.user.is_staff %}
+            <div class="add-data">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="label-button">
+                        <button type="submit" class="custom-button-delete-add">
+                            Сопоставить
+                        </button> 
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th>Артикул</th>
+                    <th>Статус</th>
+                    <th>Компания</th>
+
+                    <th>WB арт пост</th>
+                    <th>WB баркод</th>
+                    <th>WB номенк</th>
+
+                    <th>OZON арт пост</th>
+                    <th>OZON баркод</th>
+                    <th>OZON Product ID</th>
+                    <th>OZON SKU</th>
+                    <th>OZON FBO SKU ID</th>
+                    <th>OZON FBS SKU ID</th>
+
+                    <th>YANDEX арт пост</th>
+                    <th>YANDEX баркод</th>
+                    <th>YANDEX SKU</th>
+
+                    <th>Кратность</th>
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    <td>{{ el.common_article }}</td>
+                    <td>{{ el.status }}</td>
+                    <td>{{ el.company }}</td>
+
+                    <td>{{ el.wb_seller_article }}</td>
+                    <td>{{ el.wb_barcode }}</td>
+                    <td>{{ el.wb_nomenclature }}</td>
+
+                    <td>{{ el.ozon_seller_article }}</td>
+                    <td>{{ el.ozon_barcode }}</td>
+                    <td>{{ el.ozon_product_id }}</td>
+                    <td>{{ el.ozon_sku }}</td>
+                    <td>{{ el.ozon_fbo_sku_id }}</td>
+                    <td>{{ el.ozon_fbs_sku_id }}</td>
+
+                    <td>{{ el.yandex_seller_article }}</td>
+                    <td>{{ el.yandex_barcode }}</td>
+                    <td>{{ el.yandex_sku }}</td>
+
+                    <td>{{ el.multiplicity }}</td>
+
+                </tr>
+                {% endfor %}
+            </table>
+    </div>    
+        
+{% endblock %}

@@ -1736,7 +1736,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
     def delivery_data(self, next_number=0, limit_number=1000):
         url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
         response_data = requests.request(
-            "GET", url_data, headers=wb_headers_karavaev)
+            "GET", url_data, headers=self.headers_wb)
         delivery_date = datetime.today().strftime("%d.%m.%Y")
         hour = datetime.now().hour
         delivery_name = ''
@@ -1750,6 +1750,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                 return self.delivery_data(next_number_new)
             else:
                 last_sup = json.loads(response_data.text)['supplies'][-1]
+                print('last_sup', last_sup)
                 if delivery_name in last_sup['name']:
                     print('имя нашлось')
                     supply_id = last_sup['id']
@@ -1762,11 +1763,12 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
     def data_for_production_list(self):
         supply_id = self.delivery_data()
+        print('supply_id', supply_id)
         article_amount = {}
         if supply_id:
             url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
             response_data = requests.request(
-                "GET", url, headers=wb_headers_karavaev)
+                "GET", url, headers=self.headers_wb)
             if response_data.status_code == 200:
 
                 orders_data = json.loads(response_data.text)['orders']
@@ -2124,22 +2126,22 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Обрабатываю новые сборочные задания.
-    wb_actions.create_dropbox_folder()
-    # 3. Создаю поставку
-    wb_actions.create_delivery()
-    # 2. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
-    # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
-    # 5. Создаю лист сборки
-    wb_actions.create_selection_list()
-    # # 6. Добавляю поставку в доставку, получаю QR код поставки
-    # # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
-    # 7. Создаю список с полными именами файлов, которые нужно объединить
-    wb_actions.list_for_print_create()
+    # # 1. Обрабатываю новые сборочные задания.
+    # wb_actions.create_dropbox_folder()
+    # # 3. Создаю поставку
+    # wb_actions.create_delivery()
+    # # 2. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+    # # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # # задания и сохраняю его в папку
+    # # wb_actions.qrcode_order()
+    # # 5. Создаю лист сборки
+    # wb_actions.create_selection_list()
+    # # # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # # # и преобразует этот QR код в необходимый формат.
+    # # wb_actions.qrcode_supply()
+    # # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
 
     # clearning_folders()
 
@@ -2232,7 +2234,7 @@ def ooo_wb_action():
         ozon_headers_ooo, yandex_headers_ooo)
 
 
-# ooo_wb_action()
+ooo_wb_action()
 
 
 def ooo_ozon_action():
@@ -2255,7 +2257,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-ip_wb_action()
+# ip_wb_action()
 
 
 def ip_ozon_action_morning():

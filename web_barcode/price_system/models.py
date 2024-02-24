@@ -55,6 +55,11 @@ class Articles(models.Model):
         blank=True,
         null=True,
     )
+    ozon_sku = models.PositiveBigIntegerField(
+        verbose_name='OZON SKU',
+        blank=True,
+        null=True,
+    )
     ozon_fbo_sku_id = models.PositiveBigIntegerField(
         verbose_name='OZON FBO SKU ID',
         blank=True,
@@ -66,7 +71,7 @@ class Articles(models.Model):
         null=True,
     )
 
-    yandex_article_seller = models.CharField(
+    yandex_seller_article = models.CharField(
         verbose_name='YANDEX арт пост',
         max_length=50,
         blank=True,

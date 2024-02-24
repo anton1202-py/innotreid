@@ -197,9 +197,9 @@ class WildberriesFbsMode():
         date_folder = datetime.today().strftime('%Y-%m-%d')
 
         if hour >= 6 and hour < 18:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
         else:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
         # Создаем папку на dropbox, если ее еще нет
         if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
             dbx_db.files_create_folder_v2(
@@ -1844,7 +1844,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         try:
             url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
             response_data = requests.request(
-                "GET", url_data, headers=wb_headers_karavaev)
+                "GET", url_data, headers=self.headers_wb)
             delivery_date = datetime.today().strftime("%d.%m.%Y")
             hour = datetime.now().hour
             delivery_name = ''
@@ -1884,7 +1884,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
             if supply_id:
                 url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
                 response_data = requests.request(
-                    "GET", url, headers=wb_headers_karavaev)
+                    "GET", url, headers=self.headers_wb)
                 if response_data.status_code == 200:
 
                     orders_data = json.loads(response_data.text)['orders']

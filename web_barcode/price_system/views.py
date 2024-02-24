@@ -1,15 +1,65 @@
 import importlib
 import json
 import os
-from django.shortcuts import redirect, render
 
 import requests
+from django.shortcuts import redirect, render
+from dotenv import load_dotenv
 
 from .models import Articles
 
-articles = Articles.objects.all().values_list('common_article')
+dotenv_path = os.path.join(os.path.dirname(
+    __file__), '..', 'web_barcode', '.env')
+load_dotenv(dotenv_path)
 
-def wb_article_compare():
+
+API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
+YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
+API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
+CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
+
+OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
+OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
+YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
+WB_OOO_API_KEY = os.getenv('WB_OOO_API_KEY')
+
+
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
+CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
+CHAT_ID_EU = os.getenv('CHAT_ID_EU')
+CHAT_ID_AN = os.getenv('CHAT_ID_AN')
+
+wb_headers_karavaev = {
+    'Content-Type': 'application/json',
+    'Authorization': API_KEY_WB_IP
+}
+wb_headers_ooo = {
+    'Content-Type': 'application/json',
+    'Authorization': WB_OOO_API_KEY
+}
+
+ozon_headers_karavaev = {
+    'Api-Key': API_KEY_OZON_KARAVAEV,
+    'Content-Type': 'application/json',
+    'Client-Id': CLIENT_ID_OZON_KARAVAEV
+}
+ozon_headers_ooo = {
+    'Api-Key': OZON_OOO_API_TOKEN,
+    'Content-Type': 'application/json',
+    'Client-Id': OZON_OOO_CLIENT_ID
+}
+
+yandex_headers_karavaev = {
+    'Authorization': YANDEX_IP_KEY,
+}
+yandex_headers_ooo = {
+    'Authorization': YANDEX_OOO_KEY,
+}
+
+
+def wb_article_data():
+    """Получаем данные всех артикулов в ВБ"""
     url = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
     payload = json.dumps({
         "settings": {
@@ -21,22 +71,21 @@ def wb_article_compare():
             }
         }
     })
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjMxMDI1djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTcxNzgwNTUzNywiaWQiOiI1ZGVlMDU0Ni03NzVkLTRjNDUtYmQyZC0wYzUwYTZjN2VkMmMiLCJpaWQiOjY1NzgwMzAxLCJvaWQiOjQ4NDkxNSwicyI6NTEwLCJzaWQiOiI4NTE3NTJjYi0xZDY1LTRhYmEtYWZjNC03NDJhMjVlMTAwYzkiLCJ1aWQiOjY1NzgwMzAxfQ.IY9GEI-AghSxGt6JYyjTVULI83UuzGGuL6Q3NZhWSa1ks7quDwXdhWePRcGr7RoMZCAZP9oduWJ9h5U-q2fd-w'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    article_dict = {}
+    response = requests.request(
+        "POST", url, headers=wb_headers_karavaev, data=payload)
     all_data = json.loads(response.text)["cards"]
+    return all_data
+
+
+def wb_article_compare():
+    """Достаем данные всех артиуклов ВБ, необходимые для сверки"""
+    all_data = wb_article_data()
+    article_dict = {}
     for data in all_data:
         if data["subjectName"] == "Ночники":
             article = data["vendorCode"].split('-')[0]
-            #article = data["vendorCode"]
-            article_dict[article.capitalize()] = data["vendorCode"]
-        # print(data["vendorCode"])
-    # sorted_list = sorted(article_list)
-    # print(sorted_list)
+            article_dict[article.capitalize()] = [data["vendorCode"],
+                                                  data["sizes"][0]["skus"][0], data["nmID"]]
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
@@ -49,20 +98,15 @@ def ozon_raw_articles():
         "last_id": "",
         "limit": 1000
     })
-    headers = {
-        'Client-Id': '282094',
-        'Api-Key': '27bd60c7-00b0-4598-ba54-ab501513734e',
-        'Content-Type': 'application/json',
-        'Cookie': 'abt_data=248d06066a90f9d41616b68cd971eea9:83ce6c51b2873456ca7c9ea3873e75483542035bc44882e97c1838536ed37e8c972db7aa69a111d01c253df2dc80750d9eae1133efd45ca44f4ccfda9cd283f77ffd7991d45b80b19232832359e29d6941a0cc3b31460f01e5ffbdacf6bed574e2e31e827de37aa8be87162ef6c206eb8d022771b24ee536d9497a71e26aec54d8e8d27c826ec8878dd418b7bc3ed7e5efbe2d59a13f9b139c348ea601520a1a; __cf_bm=nRa8cb6NTbL_DQw4ahY2rl7iRAPK1v91qWJm30Rv2Qk-1707920614-1.0-AY3MqUURVtHnqylYy1Vox3xEzjmSxk5QUkWR9dp2kZAMhd54k4h3uHpVEqGvKIYc0B/Z1uaQwkD2sex67/jUfZk='
-    }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request(
+        "POST", url, headers=ozon_headers_karavaev, data=payload)
     ozon_data = json.loads(response.text)["result"]["items"]
 
     raw_article_ozon_list = []
     for dat in ozon_data:
-        raw_article_ozon_list.append(dat["offer_id"])
-
+        raw_article_ozon_list.append(dat["product_id"])
+    # print(raw_article_ozon_list)
     return raw_article_ozon_list
 
 
@@ -71,42 +115,20 @@ def ozon_cleaning_articles():
     raw_article_ozon_list = ozon_raw_articles()
 
     payload = json.dumps({
-        "offer_id": raw_article_ozon_list,
-        "product_id": [],
+        "offer_id": [],
+        "product_id": raw_article_ozon_list,
         "sku": []
     })
-    headers = {
-        'Client-Id': '282094',
-        'Api-Key': '27bd60c7-00b0-4598-ba54-ab501513734e',
-        'Content-Type': 'application/json',
-        'Cookie': 'abt_data=248d06066a90f9d41616b68cd971eea9:83ce6c51b2873456ca7c9ea3873e75483542035bc44882e97c1838536ed37e8c972db7aa69a111d01c253df2dc80750d9eae1133efd45ca44f4ccfda9cd283f77ffd7991d45b80b19232832359e29d6941a0cc3b31460f01e5ffbdacf6bed574e2e31e827de37aa8be87162ef6c206eb8d022771b24ee536d9497a71e26aec54d8e8d27c826ec8878dd418b7bc3ed7e5efbe2d59a13f9b139c348ea601520a1a; __cf_bm=nRa8cb6NTbL_DQw4ahY2rl7iRAPK1v91qWJm30Rv2Qk-1707920614-1.0-AY3MqUURVtHnqylYy1Vox3xEzjmSxk5QUkWR9dp2kZAMhd54k4h3uHpVEqGvKIYc0B/Z1uaQwkD2sex67/jUfZk='
-    }
     article_ozon_dict = {}
-    response = requests.request("POST", urls, headers=headers, data=payload)
+    response = requests.request(
+        "POST", urls, headers=ozon_headers_karavaev, data=payload)
     ozon_data = json.loads(response.text)["result"]["items"]
     for dat in ozon_data:
         if 'Ночник' in dat["name"]:
             article = dat["offer_id"].split('-')[0]
-            article_ozon_dict[article] = dat["offer_id"]
+            article_ozon_dict[article] = [
+                dat["offer_id"], int(dat["barcode"]), dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
     return article_ozon_dict
-
-def database_home(request):
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    # if request.user.is_staff == True:
-    wb_article_data = wb_article_compare()
-    ozon_data = ozon_cleaning_articles()
-    data = Articles.objects.all()
-    context = {
-        'data': data,
-    }
-    if request.method == 'POST':
-
-    return render(request, 'database/database_home.html', context)
-
-
-
-
 
 
 def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
@@ -116,18 +138,22 @@ def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
         raw_articles_list = []
     url = f'https://api.partner.market.yandex.ru/businesses/3345369/offer-mappings?limit=200&page_token={nextPageToken}'
     payload = json.dumps({})
-    headers = {
-        'Authorization': 'Bearer y0_AgAEA7qjt7KxAAsqvwAAAAD41FbqtbLtPHKuSHe9_Q5iz130Eo1Ir9s',
-        'Cookie': '_yasc=PVZzFPGthzxlBhvs7JA8idi5lDzgWZM5Tzm8VVzj8iGV3tc4nX35mfkgMaNdqE1gUu4=; i=taeeJze90AT1AWruvCjlwy5bT+Vrl9GJGmXAonQTIVL6H9bohd38CHzQOHsneNihABKN+WiduMPJPM1bsf1WFaoYFPA=; yandexuid=9102588391705520143'
-    }
+
     response = requests.request(
-        "POST", url, headers=headers, data=payload)
+        "POST", url, headers=yandex_headers_karavaev, data=payload)
     main_articles_data = json.loads(response.text)['result']
     articles_data = main_articles_data['offerMappings']
     for article in articles_data:
-        # print(article['offer']['offerId'])
-        if article['offer']['vendor'] == '3Д-НОЧНИК':
-            raw_articles_list.append(article['offer']['offerId'])
+
+        if 'Ночник' in article['offer']['name']:
+            inner_list = []
+            # print(article['offer'].keys())
+            if article['offer']['barcodes']:
+                # print(article['offer']['offerId'])
+                inner_list.append(article['offer']['offerId'])
+                inner_list.append(article['offer']['barcodes'][0])
+                inner_list.append(article['mapping']['marketSku'])
+                raw_articles_list.append(inner_list)
     if main_articles_data['paging']:
         yandex_raw_articles_data(
             main_articles_data['paging']['nextPageToken'], raw_articles_list)
@@ -135,19 +161,136 @@ def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
 
 
 def yandex_articles():
+    """Формирует данные для сопоставления"""
     raw_articles_list = yandex_raw_articles_data()
-
-    cleaning_yandex_list = []
+    article_yandex_dict = {}
     for article in raw_articles_list:
-        # art = article.split('-')[0]
-        art = article
-        cleaning_yandex_list.append(art)
-        if art not in article_list:
-            print(art)
+        common_article = article[0].split('-')[0]
+        article_yandex_dict[common_article] = article
+    return article_yandex_dict
 
 
-yandex_articles()
+def wb_matching_articles():
+    """Функция сопоставляет артикулы с WB с общей базой"""
+    wb_article_data = wb_article_compare()
+    for common_article, wb_data in wb_article_data.items():
+        if Articles.objects.filter(common_article=common_article).exists() == True:
+            wb_article = Articles.objects.get(
+                common_article=common_article)
+            if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or wb_article.wb_nomenclature != wb_data[2]:
+                wb_article.status = 'Не сопоставлено'
+                wb_article.save()
+                print(
+                    f'проверьте артикул {common_article} на вб вручную. Не совпали данные')
+            else:
+                wb_article.status = 'Сопоставлено'
+                wb_article.save()
+        else:
+            wb = Articles(
+                common_article=common_article,
+                status='Сопоставлено',
+                wb_seller_article=wb_data[0],
+                wb_barcode=wb_data[1],
+                wb_nomenclature=wb_data[2]
+            )
+            wb.save()
+
+
+def ozon_matching_articles():
+    """Функция сопоставляет артикулы с Ozon с общей базой"""
+    ozon_article_data = ozon_cleaning_articles()
+    for common_article, ozon_data in ozon_article_data.items():
+        if Articles.objects.filter(common_article=common_article).exists() == True:
+            ozon_article = Articles.objects.get(
+                common_article=common_article)
+            if (ozon_article.ozon_seller_article != ozon_data[0] and ozon_article.ozon_seller_article != None
+                or str(ozon_article.ozon_barcode) != str(ozon_data[1]) and ozon_article.ozon_barcode != None
+                or ozon_article.ozon_product_id != ozon_data[2] and ozon_article.ozon_product_id != None
+                or ozon_article.ozon_sku != ozon_data[3] and ozon_article.ozon_sku != None
+                or ozon_article.ozon_fbo_sku_id != ozon_data[4] and ozon_article.ozon_fbo_sku_id != None
+                    or ozon_article.ozon_fbs_sku_id != ozon_data[5] and ozon_article.ozon_fbs_sku_id != None):
+                ozon_article.status = 'Не сопоставлено'
+                ozon_article.save()
+                print(
+                    f'проверьте артикул {common_article} на ozon вручную. Не совпали данные')
+            elif ozon_article.ozon_barcode == None:
+                print('alarm**************', type(ozon_data[1]))
+                ozon = Articles.objects.get(common_article=common_article)
+                ozon.status = 'Сопоставлено'
+                ozon.ozon_seller_article = ozon_data[0]
+                ozon.ozon_barcode = ozon_data[1]
+                ozon.ozon_product_id = int(ozon_data[2])
+                ozon.ozon_sku = int(ozon_data[3])
+                ozon.ozon_fbo_sku_id = int(ozon_data[4])
+                ozon.ozon_fbs_sku_id = int(ozon_data[5])
+                ozon.save()
+            else:
+                ozon_article.status = 'Сопоставлено'
+                ozon_article.save()
+        else:
+            ozon = Articles(
+                common_article=common_article,
+                status='Сопоставлено',
+                ozon_seller_article=ozon_data[0],
+                ozon_barcode=int(ozon_data[1]),
+                ozon_product_id=int(ozon_data[2]),
+                ozon_sku=int(ozon_data[3]),
+                ozon_fbo_sku_id=int(ozon_data[4]),
+                ozon_fbs_sku_id=int(ozon_data[5])
+            )
+            ozon.save()
+
+
+def yandex_matching_articles():
+    """Функция сопоставляет артикулы с Яндекса с общей базой"""
+    yandex_article_data = yandex_articles()
+    for common_article, yandex_data in yandex_article_data.items():
+        if Articles.objects.filter(common_article=common_article).exists() == True:
+            yandex_article = Articles.objects.get(
+                common_article=common_article)
+            if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
+                or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
+                    or yandex_article.yandex_sku != yandex_data[2] and yandex_article.yandex_sku != None):
+                yandex_article.status = 'Не сопоставлено'
+                yandex_article.save()
+                print(
+                    f'проверьте артикул {common_article} на ozon вручную. Не совпали данные')
+            elif yandex_article.yandex_barcode == None:
+                yandex = Articles.objects.get(common_article=common_article)
+                yandex.status = 'Сопоставлено'
+                yandex.yandex_seller_article = yandex_data[0]
+                yandex.yandex_barcode = yandex_data[1]
+                yandex.yandex_sku = int(yandex_data[2])
+
+                yandex.save()
+            else:
+                yandex_article.status = 'Сопоставлено'
+                yandex_article.save()
+        else:
+            yandex = Articles(
+                common_article=common_article,
+                status='Сопоставлено',
+                yandex_seller_article=yandex_data[0],
+                yandex_barcode=int(yandex_data[1]),
+                yandex_sku=int(yandex_data[2])
+            )
+            yandex.save()
+
+
+def article_compare(request):
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    data = Articles.objects.all().order_by("common_article")
+
+    if request.method == 'POST':
+        wb_matching_articles()
+        ozon_matching_articles()
+        yandex_matching_articles()
+    context = {
+        'data': data,
+    }
+    return render(request, 'price_system/article_compare.html', context)
+# yandex_articles()
 
 
 # ozon_cleaning_articles()
-

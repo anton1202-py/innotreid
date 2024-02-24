@@ -11,5 +11,6 @@ urlpatterns = [
     path('production/', include('production.urls')),
     path('price_control/', include('price_control.urls')),
     path('ozon_system/', include('ozon_system.urls')),
+    path('price_system/', include('price_system.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

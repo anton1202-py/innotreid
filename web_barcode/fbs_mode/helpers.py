@@ -166,6 +166,12 @@ def special_design_light(dict_barcode_print):
         eac_file.write(response.content)
 
     for key, value in dict_barcode_print.items():
+        ARTICLE_FILE = f'/DATABASE/web_barcode_data/programm_data/{key}.png'
+        metadata, response = dbx_db.files_download(ARTICLE_FILE)
+        if not os.path.exists('fbs_mode/data_for_barcodes/programm_data/'):
+            os.makedirs('fbs_mode/data_for_barcodes/programm_data/')
+        with open(f'fbs_mode/data_for_barcodes/programm_data/{key}.png', 'wb') as eac_file:
+            eac_file.write(response.content)
 
         render_options = {
             "module_width": 1.2,
@@ -180,7 +186,8 @@ def special_design_light(dict_barcode_print):
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#fff'))
         eac_image = Image.open('fbs_mode/data_for_barcodes/eac light.png')
-        cat_image = Image.open(f'programm_data/{key}.png')
+        cat_image = Image.open(
+            f'fbs_mode/data_for_barcodes/programm_data/{key}.png')
         draw_text = ImageDraw.Draw(im)
 
         # Длина подложки
@@ -250,6 +257,12 @@ def special_design_dark(dict_barcode_print):
         eac_file.write(response.content)
 
     for key, value in dict_barcode_print.items():
+        ARTICLE_FILE = f'/DATABASE/web_barcode_data/programm_data/{key}.png'
+        metadata, response = dbx_db.files_download(ARTICLE_FILE)
+        if not os.path.exists('fbs_mode/data_for_barcodes/programm_data/'):
+            os.makedirs('fbs_mode/data_for_barcodes/programm_data/')
+        with open(f'fbs_mode/data_for_barcodes/programm_data/{key}.png', 'wb') as eac_file:
+            eac_file.write(response.content)
 
         render_options = {
             "module_width": 1.13,
@@ -264,7 +277,8 @@ def special_design_dark(dict_barcode_print):
         ).render(render_options)
         im = Image.new('RGB', (1980, 1400), color=('#000'))
         eac_image = Image.open('fbs_mode/data_for_barcodes/eac dark.png')
-        cat_image = Image.open(f'programm_data/{key}.png')
+        cat_image = Image.open(
+            f'fbs_mode/data_for_barcodes/programm_data/{key}.png')
         draw_text = ImageDraw.Draw(im)
 
         # Длина подложки
