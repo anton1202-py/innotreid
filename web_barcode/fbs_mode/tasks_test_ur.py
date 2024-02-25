@@ -812,10 +812,10 @@ class OzonFbsMode():
 
             if hour >= 6 and hour < 18:
                 self.delivary_method_id = self.warehouse_dict['day_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/ДЕНЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
             else:
                 self.delivary_method_id = self.warehouse_dict['night_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/НОЧЬ СБОРКА ФБС/{date_folder}'
+                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
             self.departure_date = date_confirm_delivery + 'T10:00:00Z'
 
             # Создаем папку на dropbox, если ее еще нет
@@ -826,7 +826,6 @@ class OzonFbsMode():
             # Проверяем все отгрузки, которые буду завтра
             url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
             amount_products = 0
-            print('to_date_for_filter', to_date_for_filter)
             payload = json.dumps(
                 {
                     "dir": "asc",
@@ -850,7 +849,6 @@ class OzonFbsMode():
             )
             response = requests.request(
                 "POST", url, headers=self.ozon_headers, data=payload)
-            # pprint.pprint(json.loads(response.text)['result']['postings'])
             for data in json.loads(response.text)['result']['postings']:
                 inner_article_amount_dict = {}
                 inner_bilding_list = []
@@ -865,13 +863,14 @@ class OzonFbsMode():
                         amount_products += product['quantity']
                         inner_article_amount_dict[product['offer_id']
                                                   ] = product['quantity']
-                        if product['offer_id'] not in self.ozon_article_amount:
+                        inner_bilding_list.append(inner_bilding_dict)
+                        if product['offer_id'] not in self.ozon_article_amount.keys():
                             self.ozon_article_amount[product['offer_id']] = int(
                                 product['quantity'])
                         else:
                             self.ozon_article_amount[product['offer_id']
-                                                     ] += int(product['quantity'])
-                        inner_bilding_list.append(inner_bilding_dict)
+                                                     ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
+
                     self.fbs_ozon_common_data[data['posting_number']
                                               ] = inner_article_amount_dict
 
@@ -881,23 +880,9 @@ class OzonFbsMode():
             containers_count = math.ceil(amount_products/20)
             self.ware_house_amount_dict[self.delivary_method_id] = {
                 'quantity': amount_products, 'containers_count': containers_count}
-            fbs_common_data_amount = 0
-            for key, values in self.fbs_ozon_common_data.items():
-                for _, amount in values.items():
-                    fbs_common_data_amount += amount
-            # print('fbs_common_data_amount', fbs_common_data_amount)
-
-            ozon_article_amount = 0
-            for key, values in self.ozon_article_amount.items():
-                ozon_article_amount += values
-            print(len(self.fbs_ozon_common_data_buils_dict.keys()))
-            # print('self.fbs_ozon_common_data_buils_dict',
-            #       self.fbs_ozon_common_data_buils_dict)
-            # print('******************************')
-            # print('ozon_article__amount', ozon_article__amount)
-            # print('self.fbs_ozon_common_data', self.fbs_ozon_common_data)
-            print('***************************')
-            print('self.ozon_article_amount', self.ozon_article_amount)
+            print(len(self.fbs_ozon_common_data_buils_dict))
+            print('self.fbs_ozon_common_data_buils_dict',
+                  self.fbs_ozon_common_data_buils_dict)
             return self.ozon_article_amount
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -2181,7 +2166,7 @@ def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     ozon_actions.prepare_data_for_confirm_delivery()
     # 4. Создает лист подбора для отправки
     # ozon_actions.create_ozone_selection_sheet_pdf()
-    # # 5. Сохраняет этикетки для каждой отправки
+    # # # 5. Сохраняет этикетки для каждой отправки
     # ozon_actions.forming_package_ticket_with_article()
 
     # # Очищаем все папки на сервере
@@ -2234,7 +2219,7 @@ def ooo_wb_action():
         ozon_headers_ooo, yandex_headers_ooo)
 
 
-ooo_wb_action()
+# ooo_wb_action()
 
 
 def ooo_ozon_action():
@@ -2265,7 +2250,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-# ip_ozon_action_morning()
+ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

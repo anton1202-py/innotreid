@@ -853,6 +853,7 @@ class OzonFbsMode():
                     })
                     response = requests.request(
                         "POST", url, headers=self.ozon_headers, data=payload)
+                time.sleep(5)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -929,27 +930,23 @@ class OzonFbsMode():
                 inner_article_amount_dict = {}
                 inner_bilding_list = []
                 if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
-                    # if '29' in data["shipment_date"]:
                     for product in data['products']:
                         inner_bilding_dict = {}
                         inner_bilding_dict['Артикул продавца'] = product['offer_id']
                         inner_bilding_dict['Наименование'] = product['name']
                         inner_bilding_dict['Количество'] = product['quantity']
-
                         amount_products += product['quantity']
                         inner_article_amount_dict[product['offer_id']
                                                   ] = product['quantity']
                         inner_bilding_list.append(inner_bilding_dict)
-                        if product['offer_id'] not in self.ozon_article_amount.keys():
+                        if product['offer_id'] not in self.ozon_article_amount:
                             self.ozon_article_amount[product['offer_id']] = int(
                                 product['quantity'])
                         else:
                             self.ozon_article_amount[product['offer_id']
-                                                     ] = self.ozon_article_amount[product['offer_id']] + int(product['quantity'])
-
+                                                     ] += int(product['quantity'])
                     self.fbs_ozon_common_data[data['posting_number']
                                               ] = inner_article_amount_dict
-
                     # Словарь для файла сборки
                     self.fbs_ozon_common_data_buils_dict[data['posting_number']
                                                          ] = inner_bilding_list
@@ -978,7 +975,6 @@ class OzonFbsMode():
                 })
                 response = requests.request(
                     "POST", url, headers=self.ozon_headers, data=payload)
-
                 self.delivery_id = json.loads(response.text)['result']['id']
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -999,15 +995,12 @@ class OzonFbsMode():
             payload = json.dumps(
                 {
                     "id": self.delivery_id
-                    # "id": 35178630
                 }
             )
             response = requests.request(
                 "POST", url, headers=self.ozon_headers, data=payload)
-
             data = json.loads(response.text)['result']
             if data['status'] == "ready":
-
                 self.delivery_number_list = data["added_to_act"]
                 print('Функция check_delivery_create сработала. Спать 5 мин не нужно')
             else:
@@ -1032,7 +1025,6 @@ class OzonFbsMode():
             )
             response = requests.request(
                 "POST", url, headers=self.ozon_headers, data=payload)
-
             image = Image.open(io.BytesIO(response.content))
             folder_path = os.path.join(
                 os.getcwd(), f'{self.main_save_folder_server}/ozon_delivery_barcode')
