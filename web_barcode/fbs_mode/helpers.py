@@ -173,6 +173,9 @@ def special_design_light(dict_barcode_print):
         with open(f'fbs_mode/data_for_barcodes/programm_data/{key}.png', 'wb') as eac_file:
             eac_file.write(response.content)
 
+        if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+            os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
+
         render_options = {
             "module_width": 1.2,
             "module_height": 29,
@@ -228,12 +231,12 @@ def special_design_light(dict_barcode_print):
             font=font_version,
             fill=('#000')
         )
-        im.save(f'cache_dir/{key}.png')
+        im.save(f'fbs_mode/data_for_barcodes/cache_dir/{key}.png')
         im.close()
         pdf = img2pdf.convert(
-            f'cache_dir/{key}.png',
+            f'fbs_mode/data_for_barcodes/cache_dir/{key}.png',
             layout_fun=layout_function)
-        with open(f'cache_dir/{key}.pdf', 'wb') as f:
+        with open(f'fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
             f.write(pdf)
 
 
@@ -263,6 +266,9 @@ def special_design_dark(dict_barcode_print):
             os.makedirs('fbs_mode/data_for_barcodes/programm_data/')
         with open(f'fbs_mode/data_for_barcodes/programm_data/{key}.png', 'wb') as eac_file:
             eac_file.write(response.content)
+
+        if not os.path.exists('fbs_mode/data_for_barcodes/cache_dir/'):
+            os.makedirs('fbs_mode/data_for_barcodes/cache_dir/')
 
         render_options = {
             "module_width": 1.13,
@@ -319,12 +325,12 @@ def special_design_dark(dict_barcode_print):
             font=font_version,
             fill=('#ffffff')
         )
-        im.save(f'cache_dir/{key}.png')
+        im.save(f'fbs_mode/data_for_barcodes/cache_dir/{key}.png')
         im.close()
         pdf = img2pdf.convert(
-            f'cache_dir/{key}.png',
+            f'fbs_mode/data_for_barcodes/cache_dir/{key}.png',
             layout_fun=layout_function)
-        with open(f'cache_dir/{key}.pdf', 'wb') as f:
+        with open(f'fbs_mode/data_for_barcodes/cache_dir/{key}.pdf', 'wb') as f:
             f.write(pdf)
 
 
