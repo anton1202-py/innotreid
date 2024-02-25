@@ -430,7 +430,7 @@ class WildberriesFbsMode():
                     if not os.path.exists(folder_path):
                         os.makedirs(folder_path)
                     img.save(
-                        f"{folder_path}/{order} {self.selection_dict[order][-1]}.png")
+                        f"{folder_path}/{order} {self.selection_dict[order][-2]}.png")
             else:
                 text = 'не сработала qrcode_order из за отсутвия self.supply_id'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
