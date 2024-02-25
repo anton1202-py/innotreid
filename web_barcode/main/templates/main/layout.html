@@ -76,6 +76,13 @@
                                 <h3>Таблица сопоставления</h3>
                             </a>
                         </li>
+                        {% url 'price_groups' as url_price_groups %}
+                        <li>
+                            <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Ценовые группы</h3>
+                            </a>
+                        </li>
                         {% url 'database_stock' as url_database_stock %}
                         <li>
                             <a href="{{ url_database_stock }}" {% if request.path == url_database_stock %}class="active"{% endif %}>

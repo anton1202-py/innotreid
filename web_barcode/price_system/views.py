@@ -3,10 +3,11 @@ import json
 import os
 
 import requests
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from dotenv import load_dotenv
 
-from .models import Articles
+from .models import ArticleGroup, Articles, Groups
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -290,7 +291,41 @@ def article_compare(request):
         'data': data,
     }
     return render(request, 'price_system/article_compare.html', context)
-# yandex_articles()
 
 
-# ozon_cleaning_articles()
+def groups_view(request):
+    """Отвечает за представление страницы с добавлением артикула в БД"""
+    data = Groups.objects.all().order_by('name')
+    context = {
+        'data': data,
+    }
+    if request.method == 'POST' and 'add_button' in request.POST.keys():
+        request_data = request.POST
+        print(request_data)
+        if Groups.objects.filter(Q(name=request_data['name'])).exists():
+            Groups.objects.filter(name=request_data['name']).update(
+                name=request_data['name'],
+                wb_price=request_data['wb_price'],
+                ozon_price=request_data['ozon_price'],
+                yandex_price=request_data['yandex_price']
+            )
+        else:
+            obj, created = Groups.objects.get_or_create(
+                name=request_data['name'],
+                wb_price=request_data['wb_price'],
+                ozon_price=request_data['ozon_price'],
+                yandex_price=request_data['yandex_price']
+            )
+        return redirect('price_groups')
+    elif request.method == 'POST' and 'change_button' in request.POST.keys():
+        request_data = request.POST
+        Groups.objects.filter(id=request_data['change_button']).update(
+            name=request_data['name'],
+        )
+        return redirect('price_groups')
+    elif request.method == 'POST' and 'del-button' in request.POST.keys():
+        print(request.POST)
+        Groups.objects.get(
+            name=request.POST['del-button']).delete()
+        return redirect('price_groups')
+    return render(request, 'price_system/groups.html', context)

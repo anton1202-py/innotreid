@@ -99,3 +99,53 @@ class Articles(models.Model):
     class Meta:
         verbose_name = 'Таблица сверки'
         verbose_name_plural = 'Таблица сверки'
+
+
+class Groups(models.Model):
+    name = models.CharField(
+        verbose_name='Артикул',
+        max_length=50,
+        unique=True,
+        null=True
+    )
+    wb_price = models.FloatField(
+        verbose_name='WB стоимость',
+        unique=True,
+        null=True
+    )
+    ozon_price = models.FloatField(
+        verbose_name='OZON стоимость',
+        unique=True,
+        null=True
+    )
+    yandex_price = models.FloatField(
+        verbose_name='YANDEX стоимость',
+        unique=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Ценовые группы'
+        verbose_name_plural = 'Ценовые группы'
+
+
+class ArticleGroup(models.Model):
+    common_article = models.ForeignKey(
+        Articles,
+        verbose_name='Общий артикул',
+        on_delete=models.CASCADE,
+        null=True
+    )
+    group = models.ForeignKey(
+        Groups,
+        verbose_name='Ценовая группа',
+        on_delete=models.CASCADE,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Соответствие артикул - группа'
+        verbose_name_plural = 'Соответствие артикул - группа'
