@@ -493,12 +493,37 @@ form{
 .add-data form {
     margin: 0;
 }
-
+.big-filter-form {
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 0.2rem;
+}
+.big-filter-form input, button, label,
+.big-filter-form select{
+	border-radius: var(--border-radius-1);
+	-webkit-border-radius: var(--border-radius-1);
+	-moz-border-radius: var(--border-radius-1);
+	border: 1px solid var(--color-table-separator);
+	outline: none;
+	color: var(--color-dark);
+	padding: 5px 8px 5px 8px;
+	background: var(--color-background);
+}
 .label-button {
     margin: 0px;
     margin-bottom: -20px;
     padding-bottom: 0px;
-
+}
+.two_button_label {
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    gap: 1rem;
+}
+.two_button_label button {
+    margin: 0px;
+    padding: 0px;
 }
 
 .label-button button {
@@ -570,6 +595,7 @@ form {
 /* ==========ЗАГРУЗКА ИЗ EXCEL ========= */
 
 .input-file {
+    display: none;
     visibility: hidden;
 }
 /* ==========ИМПОРТ В EXCEL ==========*/

@@ -3,11 +3,13 @@ import json
 import os
 
 import requests
-from django.db.models import Q
+from django.db.models import F, Q
 from django.shortcuts import redirect, render
 from dotenv import load_dotenv
 
+from .forms import XlsxImportForm
 from .models import ArticleGroup, Articles, Groups
+from .supplyment import excel_creating_mod, excel_import_data
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -329,3 +331,26 @@ def groups_view(request):
             name=request.POST['del-button']).delete()
         return redirect('price_groups')
     return render(request, 'price_system/groups.html', context)
+
+
+def article_groups_view(request):
+    """Отвечает за сопоставление артикула и группы"""
+    articles_data = Articles.objects.all().values('pk')
+    group_data = Groups.objects.all()
+    for article_id in articles_data:
+        if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
+            obj = ArticleGroup(
+                common_article=Articles.objects.get(id=article_id['pk']))
+            obj.save()
+    data = ArticleGroup.objects.all().order_by('common_article')
+    if request.method == 'POST':
+        if request.POST.get('export') == 'create_file':
+            return excel_creating_mod(data)
+        elif request.FILES['import_file']:
+            excel_import_data(request.FILES['import_file'])
+
+    context = {
+        'data': data,
+        'group_data': group_data,
+    }
+    return render(request, 'price_system/article_groups.html', context)

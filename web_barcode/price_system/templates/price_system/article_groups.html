@@ -1,0 +1,66 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Работа с базой данных{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Таблица соответствия группе</h1>
+            {% if request.user.is_staff %}
+            <div class="add-data">
+                <div class="inner-form-data-button">
+                    <br>
+                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                        {% csrf_token %}
+                        <div class="two_button_label">
+                            <button type="submit" name="export" value="create_file">
+                                Импортировать в Excel
+                            </button>
+                            <label for="import_data">EXCEL для сопоставления</label>
+                            <input type="file" id="import_data" name="import_file" class="input-file">
+                            <button type="submit">
+                                Загрузить
+                            </button> 
+                        </div>
+                        <div class="label-button">
+                            
+                        </div>
+                    </form>
+                </div>
+                <!-- <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="label-button">
+                        <button type="submit" class="custom-button-delete-add">
+                            Сопоставить
+                        </button> 
+                    </div>
+                </form> -->
+                
+            </div>
+            {% endif %}
+        </div>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th>Артикул</th>
+                    <th>Название группы</th>
+                    <th>Цена на WB</th>
+                    <th>Цена на OZON</th>
+                    <th>Цена на YANDEX</th>
+                    
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    <td>{{ el.common_article }}</td>
+                    {% if el.group|stringformat:"s" == 'None' %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.group }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+    </div>    
+        
+{% endblock %}

@@ -106,6 +106,7 @@ def database_home(request):
         'data': data,
     }
     if request.method == 'POST' and request.FILES['myarticles']:
+        print(request.FILES)
         myfile = request.FILES['myarticles']
         empexceldata = pd.read_excel(myfile)
         load_excel_data_wb_stock = pd.DataFrame(

@@ -7,4 +7,6 @@ urlpatterns = [
          name='price_system_article_compare'),
     path('price_groups', views.groups_view,
          name='price_groups'),
+    path('article_groups', views.article_groups_view,
+         name='article_groups'),
 ]

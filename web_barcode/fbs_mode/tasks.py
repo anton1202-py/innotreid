@@ -762,7 +762,7 @@ class OzonFbsMode():
                 'day_stock': 1020000089903000, 'night_stock': 22655170176000}
         self.date_for_files = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         self.main_save_folder_server = 'fbs_mode/data_for_barcodes'
-        self.date_before = datetime.now() - timedelta(days=20)
+        self.date_before = datetime.now() - timedelta(days=30)
         self.tomorrow_date = datetime.now() + timedelta(days=1)
         self.future_date = datetime.now() + timedelta(days=20)
 
@@ -786,23 +786,12 @@ class OzonFbsMode():
                 '%Y-%m-%d') + 'T08:00:00Z'
 
             payload = json.dumps({
-                "dir": "ASC",
                 "filter": {
                     "cutoff_from": self.since_date_for_filter,
                     "cutoff_to": future_date_for_filter,
-                    "delivery_method_id": [],
-                    "provider_id": [],
-                    "status": "awaiting_packaging",
-                    "warehouse_id": []
+                    "status": "awaiting_packaging"
                 },
-                "limit": 100,
-                "offset": 0,
-                "with": {
-                    "analytics_data": True,
-                    "barcodes": True,
-                    "financial_data": True,
-                    "translit": True
-                }
+                "limit": 100
             })
 
             response = requests.request(
@@ -823,6 +812,32 @@ class OzonFbsMode():
                 'awaiting_packaging_orders', self.awaiting_packaging_orders, e)
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
+    
+    def form_delivery_request(self, posting_data):
+        """
+        OZON.
+        Формирую данные для запроса на перевод отрпавления в поставку
+        Каждый элемент в products_data — это товар, включённый в данное отправление.
+        """
+        try:
+            posting_info_dict = {}
+            for data_dict in posting_data:
+                products_data = []
+                for sku_data in data_dict['products']:
+                    raw_dict = {
+                        "product_id": sku_data['sku'],
+                        "quantity": sku_data['quantity']
+                    }
+                    products_data.append(raw_dict)
+                posting_info_dict[data_dict['posting_number']] = products_data
+            return posting_info_dict
+        except Exception as e:
+            # обработка ошибки и отправка сообщения через бота
+            message_text = error_message(
+                'form_delivery_request', self.form_delivery_request, e)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message_text, parse_mode='HTML')
+
 
     def awaiting_deliver_orders(self):
         """
@@ -832,27 +847,22 @@ class OzonFbsMode():
         Каждый элемент в products — это товар, включённый в данное отправление.
         """
         try:
+            posting_info_dict = self.form_delivery_request(self.posting_data)
             url = 'https://api-seller.ozon.ru/v4/posting/fbs/ship'
             for data_dict in self.posting_data:
-                for sku_data in data_dict['products']:
-                    payload = json.dumps({
-                        "packages": [
-                            {
-                                "products": [
-                                    {
-                                        "product_id": sku_data['sku'],
-                                        "quantity": sku_data['quantity']
-                                    }
-                                ]
-                            }
-                        ],
-                        "posting_number": data_dict['posting_number'],
-                        "with": {
-                            "additional_data": True
+                payload = json.dumps({
+                    "packages": [
+                        {
+                            "products": posting_info_dict[data_dict['posting_number']]
                         }
-                    })
-                    response = requests.request(
-                        "POST", url, headers=self.ozon_headers, data=payload)
+                    ],
+                    "posting_number": data_dict['posting_number']
+                })
+                response = requests.request(
+                   "POST", url, headers=self.ozon_headers, data=payload)
+                text = f'Статус код поставки {data_dict['posting_number']}: {response.status_code}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                        text=text, parse_mode='HTML')
                 time.sleep(5)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
