@@ -812,7 +812,7 @@ class OzonFbsMode():
                 'awaiting_packaging_orders', self.awaiting_packaging_orders, e)
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
-    
+
     def form_delivery_request(self, posting_data):
         """
         OZON.
@@ -838,7 +838,6 @@ class OzonFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
-
     def awaiting_deliver_orders(self):
         """
         OZON.
@@ -859,10 +858,10 @@ class OzonFbsMode():
                     "posting_number": data_dict['posting_number']
                 })
                 response = requests.request(
-                   "POST", url, headers=self.ozon_headers, data=payload)
-                text = f'Статус код поставки {data_dict['posting_number']}: {response.status_code}'
+                    "POST", url, headers=self.ozon_headers, data=payload)
+                text = f'Статус код поставки {data_dict["posting_number"]}: {response.status_code}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
-                        text=text, parse_mode='HTML')
+                                 text=text, parse_mode='HTML')
                 time.sleep(5)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
