@@ -207,7 +207,6 @@ def excel_import_data(xlsx_file):
         if list(worksheet.rows)[row][1].value == 'None' or list(worksheet.rows)[row][1].value == '':
             continue
         else:
-            print(list(worksheet.rows)[row][1].value)
             new_obj = ArticleGroup.objects.filter(
                 common_article=Articles.objects.get(
                     common_article=list(worksheet.rows)[row][0].value)
@@ -218,8 +217,8 @@ def wb_price_changer(info_list: list):
     """Изменяет цену входящего списка артикулов на WB"""
     url = 'https://suppliers-api.wildberries.ru/public/api/v1/prices'
     payload = json.dumps(info_list)
-    # response_data = requests.request(
-    #    "POST", url, headers=wb_headers_karavaev, data=payload)
+    response_data = requests.request(
+        "POST", url, headers=wb_headers_karavaev, data=payload)
 
 
 def wilberries_price_change(articles_list: list, price: float):
@@ -245,8 +244,8 @@ def ozon_price_changer(info_list: list):
     """Изменяет цену входящего списка артикулов на OZON"""
     url = 'https://api-seller.ozon.ru/v1/product/import/prices'
     payload = json.dumps({"prices": info_list})
-    # response_data = requests.request(
-    #   "POST", url, headers=ozon_headers_karavaev, data=payload)
+    response_data = requests.request(
+        "POST", url, headers=ozon_headers_karavaev, data=payload)
 
 
 def ozon_price_change(articles_list: list, price: float, min_price: float, old_price=0):
@@ -278,8 +277,8 @@ def yandex_price_changer(info_list: list):
     """Изменяет цену входящего списка артикулов на OZON"""
     url = 'https://api.partner.market.yandex.ru/businesses/3345369/offer-prices/updates'
     payload = json.dumps({"offers": info_list})
-    # response_data = requests.request(
-    #   "POST", url, headers=ozon_headers_karavaev, data=payload)
+    response_data = requests.request(
+        "POST", url, headers=yandex_headers_karavaev, data=payload)
 
 
 def yandex_price_change(articles_list: list, price: float, old_price=0):
@@ -302,5 +301,4 @@ def yandex_price_change(articles_list: list, price: float, old_price=0):
                     }
                 }
                 data_for_change.append(inner_data_dict)
-        print('yandex data_for_change', data_for_change)
         yandex_price_changer(data_for_change)
