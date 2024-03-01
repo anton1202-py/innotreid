@@ -97,7 +97,7 @@ def sku_article_data():
     """Берет SKU FBS артикула по его offer_id
     Возвращает словарь вида {offer_id: sku}"""
     product_list = product_id_list()
-    koef_product = math.ceil(len(product_list)//900)
+    koef_product = math.ceil(len(product_list)/900)
     info_url = 'https://api-seller.ozon.ru/v2/product/info/list'
     main_info_dict = {}
     for i in range(koef_product+1):
@@ -125,7 +125,7 @@ def balance_on_fbs_night_stock():
     main_info_dict = sku_article_data()
     sku_list = list(main_info_dict.values())
     koef_sku = math.ceil(
-        len(sku_list)//400)
+        len(sku_list)/400)
     sku_stock_dict = {}
     url = "https://api-seller.ozon.ru/v1/product/info/stocks-by-warehouse/fbs"
     for i in range(koef_sku):
@@ -178,8 +178,8 @@ def fbs_balance_maker():
 
         # В ОЗОН стоит ограничение на 100 артикулов в запросе. На всякий случай сделал 90
         koef_small_balance = math.ceil(
-            len(article_small_balance_dict.keys())//90)
-        koef_big_balance = math.ceil(len(article_big_balance_dict.keys())//90)
+            len(article_small_balance_dict.keys())/90)
+        koef_big_balance = math.ceil(len(article_big_balance_dict.keys())/90)
 
         for i in range(koef_big_balance+1):
             # Лист для запроса в эндпоинту ОЗОНа

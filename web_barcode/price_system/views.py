@@ -5,11 +5,14 @@ import os
 import requests
 from django.db.models import F, Q
 from django.shortcuts import redirect, render
+from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 
 from .forms import XlsxImportForm
 from .models import ArticleGroup, Articles, Groups
-from .supplyment import excel_creating_mod, excel_import_data
+from .supplyment import (excel_compare_table, excel_creating_mod,
+                         excel_import_data, ozon_price_change,
+                         wilberries_price_change, yandex_price_change)
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -184,7 +187,7 @@ def wb_matching_articles():
                 wb_article.status = 'Не сопоставлено'
                 wb_article.save()
                 print(
-                    f'проверьте артикул {common_article} на вб вручную. Не совпали данные')
+                    f'проверьте артикул {common_article} на вб вручную. Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. Баркоды: {wb_article.wb_barcode} {wb_data[1]}. Ном номера: {wb_article.wb_nomenclature} {wb_data[2]}')
             else:
                 wb_article.status = 'Сопоставлено'
                 wb_article.save()
@@ -217,7 +220,6 @@ def ozon_matching_articles():
                 print(
                     f'проверьте артикул {common_article} на ozon вручную. Не совпали данные')
             elif ozon_article.ozon_barcode == None:
-                print('alarm**************', type(ozon_data[1]))
                 ozon = Articles.objects.get(common_article=common_article)
                 ozon.status = 'Сопоставлено'
                 ozon.ozon_seller_article = ozon_data[0]
@@ -227,9 +229,6 @@ def ozon_matching_articles():
                 ozon.ozon_fbo_sku_id = int(ozon_data[4])
                 ozon.ozon_fbs_sku_id = int(ozon_data[5])
                 ozon.save()
-            else:
-                ozon_article.status = 'Сопоставлено'
-                ozon_article.save()
         else:
             ozon = Articles(
                 common_article=common_article,
@@ -257,18 +256,14 @@ def yandex_matching_articles():
                 yandex_article.status = 'Не сопоставлено'
                 yandex_article.save()
                 print(
-                    f'проверьте артикул {common_article} на ozon вручную. Не совпали данные')
+                    f'проверьте артикул {common_article} на яндекс вручную. Не совпали данные')
             elif yandex_article.yandex_barcode == None:
                 yandex = Articles.objects.get(common_article=common_article)
                 yandex.status = 'Сопоставлено'
                 yandex.yandex_seller_article = yandex_data[0]
                 yandex.yandex_barcode = yandex_data[1]
                 yandex.yandex_sku = int(yandex_data[2])
-
                 yandex.save()
-            else:
-                yandex_article.status = 'Сопоставлено'
-                yandex_article.save()
         else:
             yandex = Articles(
                 common_article=common_article,
@@ -281,14 +276,29 @@ def yandex_matching_articles():
 
 
 def article_compare(request):
+    """Отображает страницу с таблицей сопоставления"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     data = Articles.objects.all().order_by("common_article")
 
-    if request.method == 'POST':
-        wb_matching_articles()
-        ozon_matching_articles()
-        yandex_matching_articles()
+    if request.POST:
+        if "compare" in request.POST:
+            wb_matching_articles()
+            ozon_matching_articles()
+            yandex_matching_articles()
+        elif 'excel_export' in request.POST:
+            return excel_compare_table(data)
+        elif 'filter' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            status_filter = filter_data.get("status")
+
+            if article_filter:
+                data = data.filter(
+                    Q(common_article=article_filter)).order_by('id')
+            if status_filter:
+                data = data.filter(
+                    Q(status=status_filter)).order_by('id')
     context = {
         'data': data,
     }
@@ -296,39 +306,55 @@ def article_compare(request):
 
 
 def groups_view(request):
-    """Отвечает за представление страницы с добавлением артикула в БД"""
+    """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.all().order_by('name')
     context = {
         'data': data,
     }
     if request.method == 'POST' and 'add_button' in request.POST.keys():
         request_data = request.POST
-        print(request_data)
-        if Groups.objects.filter(Q(name=request_data['name'])).exists():
-            Groups.objects.filter(name=request_data['name']).update(
-                name=request_data['name'],
-                wb_price=request_data['wb_price'],
-                ozon_price=request_data['ozon_price'],
-                yandex_price=request_data['yandex_price']
-            )
-        else:
-            obj, created = Groups.objects.get_or_create(
-                name=request_data['name'],
-                wb_price=request_data['wb_price'],
-                ozon_price=request_data['ozon_price'],
-                yandex_price=request_data['yandex_price']
-            )
+        obj, created = Groups.objects.get_or_create(
+            name=request_data['name'],
+            wb_price=request_data['wb_price'],
+            ozon_price=request_data['ozon_price'],
+            yandex_price=request_data['yandex_price'],
+            min_price=request_data['min_price'],
+            old_price=request_data['old_price']
+        )
         return redirect('price_groups')
     elif request.method == 'POST' and 'change_button' in request.POST.keys():
         request_data = request.POST
         Groups.objects.filter(id=request_data['change_button']).update(
             name=request_data['name'],
+            wb_price=request_data['wb_price'],
+            ozon_price=request_data['ozon_price'],
+            yandex_price=request_data['yandex_price'],
+            min_price=request_data['min_price'],
+            old_price=request_data['old_price']
         )
         return redirect('price_groups')
     elif request.method == 'POST' and 'del-button' in request.POST.keys():
-        print(request.POST)
         Groups.objects.get(
             name=request.POST['del-button']).delete()
+        return redirect('price_groups')
+    elif request.method == 'POST' and 'action_price' in request.POST:
+        names = ArticleGroup.objects.filter(
+            group=request.POST['action_price'])
+        wb_price = names[0].group.wb_price
+        ozon_price = names[0].group.ozon_price
+        yandex_price = names[0].group.yandex_price
+        min_price = names[0].group.min_price
+        old_price = names[0].group.old_price
+        wb_nom_list = []
+        oz_nom_list = []
+        yandex_nom_list = []
+        for art in names:
+            wb_nom_list.append(art.common_article.wb_nomenclature)
+            oz_nom_list.append(art.common_article.ozon_product_id)
+            yandex_nom_list.append(art.common_article.yandex_seller_article)
+        wilberries_price_change(wb_nom_list, wb_price)
+        ozon_price_change(oz_nom_list, ozon_price, min_price, old_price)
+        yandex_price_change(yandex_nom_list, yandex_price, old_price)
         return redirect('price_groups')
     return render(request, 'price_system/groups.html', context)
 
@@ -336,21 +362,68 @@ def groups_view(request):
 def article_groups_view(request):
     """Отвечает за сопоставление артикула и группы"""
     articles_data = Articles.objects.all().values('pk')
-    group_data = Groups.objects.all()
     for article_id in articles_data:
         if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
             obj = ArticleGroup(
                 common_article=Articles.objects.get(id=article_id['pk']))
             obj.save()
     data = ArticleGroup.objects.all().order_by('common_article')
-    if request.method == 'POST':
+    if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_creating_mod(data)
-        elif request.FILES['import_file']:
+        elif 'import_file' in request.FILES:
             excel_import_data(request.FILES['import_file'])
+        elif 'filter' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            group_filter = filter_data.get("groups")
 
+            if article_filter:
+                data = data.filter(
+                    Q(common_article=Articles.objects.get(common_article=article_filter))).order_by('id')
+            if group_filter:
+                data = data.filter(
+                    Q(group=Groups.objects.get(name=group_filter))).order_by('id')
     context = {
         'data': data,
-        'group_data': group_data,
     }
     return render(request, 'price_system/article_groups.html', context)
+
+
+class ArticleCompareDetailView(ListView):
+    model = Articles
+    template_name = 'price_system/article_compare_detail.html'
+    context_object_name = 'data'
+
+    def get_context_data(self, **kwargs):
+        context = super(ArticleCompareDetailView,
+                        self).get_context_data(**kwargs)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST:
+            post_data = request.POST
+            article = Articles.objects.get(
+                common_article=self.kwargs['common_article'])
+            article.status = 'Сопоставлено'
+            article.wb_seller_article = post_data.get('wb_seller_article')
+            article.wb_barcode = post_data.get('wb_barcode')
+            article.wb_nomenclature = post_data.get('wb_nomenclature')
+
+            article.ozon_seller_article = post_data.get('ozon_seller_article')
+            article.ozon_barcode = post_data.get('ozon_barcode')
+            article.ozon_product_id = post_data.get('ozon_product_id')
+            article.ozon_sku = post_data.get('ozon_sku')
+            article.ozon_fbo_sku_id = post_data.get('ozon_fbo_sku_id')
+            article.ozon_fbs_sku_id = post_data.get('ozon_fbs_sku_id')
+
+            article.yandex_seller_article = post_data.get(
+                'yandex_seller_article')
+            article.yandex_barcode = post_data.get('yandex_barcode')
+            article.yandex_sku = post_data.get('yandex_sku')
+            article.save()
+        return redirect('article_compare_detail', self.kwargs['common_article'])
+
+    def get_queryset(self):
+        return Articles.objects.filter(
+            common_article=self.kwargs['common_article'])

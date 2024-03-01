@@ -108,18 +108,28 @@ class Groups(models.Model):
         unique=True,
         null=True
     )
-    wb_price = models.FloatField(
+    wb_price = models.IntegerField(
         verbose_name='WB стоимость',
         unique=True,
         null=True
     )
-    ozon_price = models.FloatField(
+    ozon_price = models.IntegerField(
         verbose_name='OZON стоимость',
         unique=True,
         null=True
     )
-    yandex_price = models.FloatField(
+    yandex_price = models.IntegerField(
         verbose_name='YANDEX стоимость',
+        unique=True,
+        null=True
+    )
+    min_price = models.IntegerField(
+        verbose_name='Минимальная цена',
+        unique=True,
+        null=True
+    )
+    old_price = models.IntegerField(
+        verbose_name='Старая цена',
         unique=True,
         null=True
     )

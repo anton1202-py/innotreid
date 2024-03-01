@@ -9,17 +9,41 @@
         <div class="top-befor-header">
             <h1>Таблица сопоставления артикулов</h1>
             {% if request.user.is_staff %}
+            
             <div class="add-data">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="label-button">
-                        <button type="submit" class="custom-button-delete-add">
+                        <button type="submit" name="compare" class="custom-button-delete-add">
                             Сопоставить
+                        </button>
+                        <button type="submit" name="excel_export" class="custom-button-choose">
+                            Выгрузить в Excel
                         </button> 
                     </div>
                 </form>
             </div>
             {% endif %}
+        </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field">
+                </label>
+                <label for="status" class="rand">
+                    <span>Статус</span><br>
+                    <select id="status" name="status">
+                        <option value="Сопоставлено">Сопоставлено</option>
+                        <option value="Не сопоставлено">Не сопоставлено</option>
+                    </select>
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+            </form>
         </div>
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
@@ -46,7 +70,7 @@
                 </tr>
                 {% for el in data %}   
                 <tr>
-                    <td>{{ el.common_article }}</td>
+                    <td><a href="{% url 'article_compare_detail' el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
 

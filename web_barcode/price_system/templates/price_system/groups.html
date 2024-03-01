@@ -17,6 +17,9 @@
                     <th>Цена на WB</th>
                     <th>Цена на OZON</th>
                     <th>Цена на YANDEX</th>
+                    <th>Минимальная цена</th>
+                    <th>Старая цена OZON</th>
+                    <th>Применить цены</th>
                     <th>del</th>
                 </tr>
                 {% for el in data %}
@@ -25,20 +28,35 @@
                     <form method="post" name="name" enctype="multipart/form-data" action="{% url 'price_groups' %}">
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
-                        <td><input value="{{ el.wb_price }}" type="text" name="wb_price" required/></td>
-                        <td><input value="{{ el.ozon_price }}" type="text" name="ozon_price" required/></td>
-                        <td><input value="{{ el.yandex_price }}" type="text" name="yandex_price" required/></td>
+                        <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
+                        <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
+                        <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
+                        <td><input value="{{ el.min_price }}" type="number" name="min_price" required/></td>
+                        <td><input value="{{ el.old_price }}" type="number" name="old_price" required/></td>
                         <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
                     </form>
+
+                    <td>
+                        <form method="post" class="" name="action_price" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <button type="Submit" name="action_price" method="POST" value="{{ el.id }}">
+                                    Применить
+                            </button>
+                        </form>
+                    </td>
+
                     <td class="td_with_del_button">
                         <form method="post" class="del_article" name="del_article" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <button type="Submit" class="del-button" name="del-button" method="POST" value="{{ el.name }}">
-                            <span id="del_icons_in_article_table" class="material-symbols-outlined">
-                                delete
-                            </span>
-                        </button>
-                    </form></td>
+                            {% csrf_token %}
+                            <button type="Submit" class="del-button" name="del-button" method="POST" value="{{ el.name }}">
+                                <span id="del_icons_in_article_table" class="material-symbols-outlined">
+                                    delete
+                                </span>
+                            </button>
+                        </form>
+                    </td>
+                    
+
                 </tr>
                 {% endfor %}
                 <tr>
@@ -49,13 +67,19 @@
                             <input class="form-control" type="text" name="name" required/>
                         </td>
                         <td class="table_times_amount">
-                            <input class="form-control" type="text" name="wb_price" required/>
+                            <input class="form-control" type="number" name="wb_price" required/>
                         </td>
                         <td class="table_times_amount">
-                            <input class="form-control" type="text" name="ozon_price" required/>
+                            <input class="form-control" type="number" name="ozon_price" required/>
                         </td>
                         <td class="table_times_amount">
-                            <input class="form-control" type="text" name="yandex_price" required/>
+                            <input class="form-control" type="number" name="yandex_price" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            <input class="form-control" type="number" name="min_price" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            <input class="form-control" type="number" name="old_price" required/>
                         </td>
                 </tr>
             </table>

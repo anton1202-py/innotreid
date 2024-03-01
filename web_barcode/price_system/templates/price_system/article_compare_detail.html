@@ -1,0 +1,69 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Работа с базой данных{% endblock %}
+
+
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Таблица сопоставления артикулов</h1>
+        </div>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th>Артикул</th>
+                    <th>Статус</th>
+                    <th>Компания</th>
+
+                    <th>WB арт пост</th>
+                    <th>WB баркод</th>
+                    <th>WB номенк</th>
+
+                    <th>OZON арт пост</th>
+                    <th>OZON баркод</th>
+                    <th>OZON Product ID</th>
+                    <th>OZON SKU</th>
+                    <th>OZON FBO SKU ID</th>
+                    <th>OZON FBS SKU ID</th>
+
+                    <th>YANDEX арт пост</th>
+                    <th>YANDEX баркод</th>
+                    <th>YANDEX SKU</th>
+
+                    <th>Кратность</th>
+                </tr>
+                {% for el in data %}   
+                <tr>
+                    <form method="post" name="name" enctype="multipart/form-data" action="">
+                        {% csrf_token %}
+                        <td>{{ el.common_article }}</td>
+                        <td>{{ el.status }}</td>
+                        <td>{{ el.company }}</td>
+
+                        <td><input value="{{ el.wb_seller_article }}" type="text" name="wb_seller_article" required/></td>
+                        <td><input value="{{ el.wb_barcode }}" type="text" name="wb_barcode" required/></td>
+                        <td><input value="{{ el.wb_nomenclature }}" type="text" name="wb_nomenclature" required/></td>
+
+                        <td><input value="{{ el.ozon_seller_article }}" type="text" name="ozon_seller_article" required/></td>
+                        <td><input value="{{ el.ozon_barcode }}" type="text" name="ozon_barcode" required/></td>
+                        <td><input value="{{ el.ozon_product_id }}" type="text" name="ozon_product_id" required/></td>
+                        <td><input value="{{ el.ozon_sku }}" type="text" name="ozon_sku" required/></td>
+                        <td><input value="{{ el.ozon_fbo_sku_id }}" type="text" name="ozon_fbo_sku_id" required/></td>
+                        <td><input value="{{ el.ozon_fbs_sku_id }}" type="text" name="ozon_fbs_sku_id" required/></td>
+
+                        <td><input value="{{ el.yandex_seller_article }}" type="text" name="yandex_seller_article" required/></td>
+                        <td><input value="{{ el.yandex_barcode }}" type="text" name="yandex_barcode" required/></td>
+                        <td><input value="{{ el.yandex_sku }}" type="text" name="yandex_sku" required/></td>
+
+                        <td><input value="{{ el.multiplicity }}" type="text" name="multiplicity" required/></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                        <button type="Submit" name="action_price" method="POST" value="{{ el.wb_seller_article }}">
+                            Применить
+                    </button>
+                    </form>
+            
+    </div>    
+        
+{% endblock %}

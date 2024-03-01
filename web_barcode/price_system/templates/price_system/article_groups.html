@@ -1,10 +1,7 @@
 {% extends 'main/layout.html' %}
-
-
 {% block title%}Работа с базой данных{% endblock %}
-
-
 {% block content%}
+
     <div class="features">
         <div class="top-befor-header">
             <h1>Таблица соответствия группе</h1>
@@ -24,22 +21,27 @@
                                 Загрузить
                             </button> 
                         </div>
-                        <div class="label-button">
-                            
-                        </div>
                     </form>
                 </div>
-                <!-- <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="label-button">
-                        <button type="submit" class="custom-button-delete-add">
-                            Сопоставить
-                        </button> 
-                    </div>
-                </form> -->
-                
             </div>
             {% endif %}
+        </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field">
+                </label>
+                <label for="status" class="rand">
+                    <span>Группа</span><br>
+                    <input type="text" id="groups_id" name="groups" class="input-field">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+            </form>
         </div>
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
@@ -48,17 +50,19 @@
                     <th>Цена на WB</th>
                     <th>Цена на OZON</th>
                     <th>Цена на YANDEX</th>
-                    
                 </tr>
-                {% for el in data %}   
-                <tr>
-                    <td>{{ el.common_article }}</td>
-                    {% if el.group|stringformat:"s" == 'None' %}
-                        <td></td>
-                    {% else %}
-                        <td>{{ el.group }}</td>
-                    {% endif %}
-                </tr>
+                {% for el in data %}
+                    <tr>
+                        <td>{{ el.common_article }}</td>
+                        {% if el.group|stringformat:"s" == 'None' %}
+                            <td></td>
+                        {% else %}
+                            <td>{{ el.group.name }}</td>
+                        {% endif %}
+                        <td>{{ el.group.wb_price }}</td>
+                        <td>{{ el.group.ozon_price }}</td>
+                        <td>{{ el.group.yandex_price }}</td>
+                    </tr>
                 {% endfor %}
             </table>
     </div>    
