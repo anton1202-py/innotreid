@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 
-from .forms import XlsxImportForm
+from .forms import FilterChooseGroupForm, XlsxImportForm
 from .models import ArticleGroup, Articles, Groups
 from .supplyment import (excel_compare_table, excel_creating_mod,
                          excel_import_data, ozon_price_change,
@@ -362,6 +362,8 @@ def groups_view(request):
 def article_groups_view(request):
     """Отвечает за сопоставление артикула и группы"""
     articles_data = Articles.objects.all().values('pk')
+    filter_data = Groups.objects.all().values('name')
+    form = FilterChooseGroupForm(request.POST)
     for article_id in articles_data:
         if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
             obj = ArticleGroup(
@@ -376,16 +378,33 @@ def article_groups_view(request):
         elif 'filter' in request.POST:
             filter_data = request.POST
             article_filter = filter_data.get("common_article")
-            group_filter = filter_data.get("groups")
+            group_filter = filter_data.get("group_name")
 
             if article_filter:
                 data = data.filter(
                     Q(common_article=Articles.objects.get(common_article=article_filter))).order_by('id')
             if group_filter:
                 data = data.filter(
-                    Q(group=Groups.objects.get(name=group_filter))).order_by('id')
+                    Q(group=Groups.objects.get(id=group_filter))).order_by('id')
+        elif 'group_name' in request.POST:
+            # ArticleGroup.objects.filter(id=request.POST['group_name']).update(
+            #    group=Groups.objects.get(id=request.POST['group_name'])
+            # )
+            if request.POST['change_group']:
+                print('Не пустая')
+                ArticleGroup.objects.filter(id=request.POST['group_name']).update(
+                    group=Groups.objects.get(name=request.POST['change_group'])
+                )
+            elif len(request.POST['change_group']) == 0:
+                article = ArticleGroup.objects.get(
+                    id=request.POST['group_name'])
+                article.group = None
+                article.save()
+
     context = {
         'data': data,
+        'form': form,
+        'filter_data': filter_data,
     }
     return render(request, 'price_system/article_groups.html', context)
 

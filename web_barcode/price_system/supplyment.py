@@ -102,7 +102,9 @@ def excel_creating_mod(data):
 
     # Сохраняем книгу Excel в память
     response = HttpResponse(content_type='application/xlsx')
-    response['Content-Disposition'] = 'attachment; filename=table.xlsx'
+    name = f'Articles_groups_{datetime.now().strftime("%Y.%m.%d")}.xlsx'
+    file_data = 'attachment; filename=' + name
+    response['Content-Disposition'] = file_data
     wb.save(response)
 
     return response
@@ -199,13 +201,15 @@ def excel_compare_table(data):
 
 def excel_import_data(xlsx_file):
     """Импортирует данные о группе артикула из Excel"""
-    # xlsx_file = request.FILES['xlsx_file']
     workbook = load_workbook(filename=xlsx_file, read_only=True)
     worksheet = workbook.active
     # Читаем файл построчно и создаем объекты.
     for row in range(1, len(list(worksheet.rows))):
-        if list(worksheet.rows)[row][1].value == 'None' or list(worksheet.rows)[row][1].value == '':
-            continue
+        if list(worksheet.rows)[row][1].value == None or list(worksheet.rows)[row][1].value == 'None':
+            article = ArticleGroup.objects.get(
+                common_article=Articles.objects.get(common_article=list(worksheet.rows)[row][0].value))
+            article.group = None
+            article.save()
         else:
             new_obj = ArticleGroup.objects.filter(
                 common_article=Articles.objects.get(
@@ -244,8 +248,10 @@ def ozon_price_changer(info_list: list):
     """Изменяет цену входящего списка артикулов на OZON"""
     url = 'https://api-seller.ozon.ru/v1/product/import/prices'
     payload = json.dumps({"prices": info_list})
+
     response_data = requests.request(
         "POST", url, headers=ozon_headers_karavaev, data=payload)
+    print(response_data.text)
 
 
 def ozon_price_change(articles_list: list, price: float, min_price: float, old_price=0):
@@ -262,14 +268,15 @@ def ozon_price_change(articles_list: list, price: float, min_price: float, old_p
                 inner_data_dict = {
                     "auto_action_enabled": "UNKNOWN",
                     "currency_code": "RUB",
-                    "min_price": min_price,
+                    "min_price": str(min_price),
                     "offer_id": "",
-                    "old_price": old_price,
-                    "price": price,
+                    "old_price": str(old_price),
+                    "price": str(price),
                     "price_strategy_enabled": "UNKNOWN",
                     "product_id": article
                 }
                 data_for_change.append(inner_data_dict)
+        print(data_for_change)
         ozon_price_changer(data_for_change)
 
 

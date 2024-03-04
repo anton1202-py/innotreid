@@ -13,7 +13,7 @@
                         {% csrf_token %}
                         <div class="two_button_label">
                             <button type="submit" name="export" value="create_file">
-                                Импортировать в Excel
+                                Экспортировать в Excel
                             </button>
                             <label for="import_data">EXCEL для сопоставления</label>
                             <input type="file" id="import_data" name="import_file" class="input-file">
@@ -35,7 +35,7 @@
                 </label>
                 <label for="status" class="rand">
                     <span>Группа</span><br>
-                    <input type="text" id="groups_id" name="groups" class="input-field">
+                    {{ form.group_name }}
                 </label>
                 <div class="inner-form-data">
                     <br>
@@ -54,11 +54,26 @@
                 {% for el in data %}
                     <tr>
                         <td>{{ el.common_article }}</td>
-                        {% if el.group|stringformat:"s" == 'None' %}
-                            <td></td>
-                        {% else %}
-                            <td>{{ el.group.name }}</td>
-                        {% endif %}
+                        <!-- <td>
+                            <form method="post" name="name" enctype="multipart/form-data" action="">
+                                {% csrf_token %}
+                                 {{ form.group_name }}
+                                <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST">Добавить</button>
+                            </form>
+                        </td> -->
+                        <form method="post" name="name" enctype="multipart/form-data" action="">
+                            {% csrf_token %}
+                            <td>
+                                <input value="{{el.group.name}}" type="text" name="change_group"/>
+                                <!-- <select name="pets" id="pet-select">
+                                    <option value="{{el.group.name}}">{{el.group.name}}</option>
+                                    {% for data in filter_data %}
+                                        <option value="{{data.name}}">{{data.name}}</option>
+                                    {% endfor %}
+                                  </select> -->
+                                <button type="Submit" value="{{el.id}}" class="custom-button" name="group_name" method="POST" style="display: none;">Добавить</button>
+                            </td>
+                        </form>
                         <td>{{ el.group.wb_price }}</td>
                         <td>{{ el.group.ozon_price }}</td>
                         <td>{{ el.group.yandex_price }}</td>
