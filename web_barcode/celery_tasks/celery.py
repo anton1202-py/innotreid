@@ -130,6 +130,6 @@ app.conf.beat_schedule = {
     },
     "price_system_wb_task": {
         "task": "price_system.periodical_tasks.wb_articles_list",
-        "schedule": crontab(hour=18, minute=18)
+        "schedule": crontab(hour=18, minute=16)
     },
 }
