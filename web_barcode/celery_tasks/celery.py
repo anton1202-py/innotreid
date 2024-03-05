@@ -14,6 +14,7 @@ app = Celery('celery_tasks',
                       'celery_tasks.yandex_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
+                      'price_system',
                       'celery_tasks.tasks_yandex_fby_fbs'
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
@@ -126,5 +127,9 @@ app.conf.beat_schedule = {
     "yandex_balance_task": {
         "task": "celery_tasks.yandex_tasks.fbs_balance_updater",
         "schedule": crontab(hour=5, minute=5)
+    },
+    "price_system_wb_task": {
+        "task": "price_system.periodical_tasks.wb_articles_list",
+        "schedule": crontab(hour=18, minute=18)
     },
 }

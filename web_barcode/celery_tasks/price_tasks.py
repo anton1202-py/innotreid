@@ -1,10 +1,35 @@
+import base64
+import glob
+import io
 import json
+import logging
+import math
 import os
+import shutil
+import textwrap
+import time
+import traceback
+from collections import Counter
+from contextlib import closing
+from datetime import datetime, timedelta
+from io import BytesIO
+from pathlib import Path
 
+import dropbox
+import openpyxl
+import pandas as pd
+import psycopg2
 import requests
 import telegram
+from celery_tasks.celery import app
 from dotenv import load_dotenv
-from price_system.models import Articles
+from msoffice2pdf import convert
+from openpyxl import Workbook, load_workbook
+from openpyxl.drawing import image
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from PIL import Image, ImageDraw, ImageFont
+from sqlalchemy import create_engine
+
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -36,13 +61,3 @@ ozon_headers_karavaev = {
 yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
-
-
-def wb_articles_list():
-    """Получаем массив арткулов с ценами и скидками для ВБ"""
-    url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
-    response = requests.request("GET", url, headers=wb_headers_karavaev)
-
-    print(json.loads(response.text))
-
-wb_articles_list()

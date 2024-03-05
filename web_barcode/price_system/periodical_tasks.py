@@ -3,6 +3,7 @@ import os
 
 import requests
 import telegram
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles
 
@@ -37,7 +38,7 @@ yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
 
-
+@app.task
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
@@ -45,4 +46,4 @@ def wb_articles_list():
 
     print(json.loads(response.text))
 
-wb_articles_list()
+#wb_articles_list()
