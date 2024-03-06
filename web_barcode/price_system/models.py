@@ -178,8 +178,13 @@ class ArticlesPrice(models.Model):
         blank=True,
         null=True
     )
-    price_date = models.DateTimeField(
+    price_date = models.DateField(
         verbose_name='Дата изменения цены',
+        blank=True,
+        null=True
+    )
+    price = models.IntegerField(
+        verbose_name='Цена',
         blank=True,
         null=True
     )

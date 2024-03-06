@@ -129,7 +129,15 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=5, minute=5)
     },
     "price_system_wb_task": {
-        "task": "price_system.periodical_tasks.wb_articles_list",
-        "schedule": crontab(hour=18, minute=19)
+        "task": "price_system.periodical_tasks.wb_add_price_info",
+        "schedule": crontab(hour=18, minute=30)
+    },
+    "price_system_ozon_task": {
+        "task": "price_system.periodical_tasks.ozon_add_price_info",
+        "schedule": crontab(hour=18, minute=31)
+    },
+    "price_system_yandex_task": {
+        "task": "price_system.periodical_tasks.yandex_add_price_info",
+        "schedule": crontab(hour=18, minute=32)
     },
 }

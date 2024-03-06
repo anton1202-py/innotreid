@@ -13,4 +13,6 @@ urlpatterns = [
          name='price_groups'),
     path('article_groups', views.article_groups_view,
          name='article_groups'),
+    path('article_price_statistic', views.article_price_statistic,
+         name='article_price_statistic'),
 ]

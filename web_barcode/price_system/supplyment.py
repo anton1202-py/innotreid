@@ -2,9 +2,11 @@ import datetime
 import json
 import math
 import os
+import traceback
 from datetime import date, datetime
 
 import requests
+import telegram
 from django.http import FileResponse, HttpResponse, JsonResponse
 from dotenv import load_dotenv
 from openpyxl import Workbook
@@ -64,7 +66,21 @@ yandex_headers_karavaev = {
 yandex_headers_ooo = {
     'Authorization': YANDEX_OOO_KEY,
 }
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
+def sender_error_to_tg(func):
+    def wrapper():
+        try:
+            func()
+        except Exception as e:
+            tb_str = traceback.format_exc()
+            message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
+                     f'<b>Функция выполняет</b>: {func.__doc__}\n'
+                     f'<b>Ошибка</b>\n: {e}\n\n'
+                     f'<b>Техническая информация</b>:\n {tb_str}')
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                text=message_error, parse_mode='HTML')
+    return wrapper
 
 def excel_creating_mod(data):
     """Создает и скачивает excel файл"""
@@ -251,7 +267,6 @@ def ozon_price_changer(info_list: list):
 
     response_data = requests.request(
         "POST", url, headers=ozon_headers_karavaev, data=payload)
-    print(response_data.text)
 
 
 def ozon_price_change(articles_list: list, price: float, min_price: float, old_price=0):

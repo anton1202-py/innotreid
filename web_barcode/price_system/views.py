@@ -1,6 +1,7 @@
 import importlib
 import json
 import os
+from datetime import datetime, timedelta
 
 import requests
 from django.db.models import F, Q
@@ -9,7 +10,9 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 
 from .forms import FilterChooseGroupForm, XlsxImportForm
-from .models import ArticleGroup, Articles, Groups
+from .models import ArticleGroup, Articles, ArticlesPrice, Groups
+from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
+                               yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
                          excel_import_data, ozon_price_change,
                          wilberries_price_change, yandex_price_change)
@@ -352,9 +355,15 @@ def groups_view(request):
             wb_nom_list.append(art.common_article.wb_nomenclature)
             oz_nom_list.append(art.common_article.ozon_product_id)
             yandex_nom_list.append(art.common_article.yandex_seller_article)
+            
         wilberries_price_change(wb_nom_list, wb_price)
         ozon_price_change(oz_nom_list, ozon_price, min_price, old_price)
         yandex_price_change(yandex_nom_list, yandex_price, old_price)
+
+        # Записываем изененные цены в базу данных 
+        wb_add_price_info()
+        ozon_add_price_info()
+        yandex_add_price_info()
         return redirect('price_groups')
     return render(request, 'price_system/groups.html', context)
 
@@ -387,9 +396,6 @@ def article_groups_view(request):
                 data = data.filter(
                     Q(group=Groups.objects.get(id=group_filter))).order_by('id')
         elif 'group_name' in request.POST:
-            # ArticleGroup.objects.filter(id=request.POST['group_name']).update(
-            #    group=Groups.objects.get(id=request.POST['group_name'])
-            # )
             if request.POST['change_group']:
                 print('Не пустая')
                 ArticleGroup.objects.filter(id=request.POST['group_name']).update(
@@ -408,6 +414,44 @@ def article_groups_view(request):
     }
     return render(request, 'price_system/article_groups.html', context)
 
+def article_price_statistic(request):
+    """Отображает статистику по изменениею цен артикулов"""
+    
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=5)
+    data = ArticlesPrice.objects.filter(price_date__gte=start_date).order_by('common_article')
+    price_date = ArticlesPrice.objects.filter(price_date__gte=start_date).values('price_date').distinct()
+    article_list = Articles.objects.all().order_by('common_article')
+    date_list = []
+    for i in price_date:
+        date_list.append(i['price_date'])
+    date_list.sort(reverse=True)
+    data_for_user = {}
+    for article in article_list:
+        inner_dict = {}
+        for date in date_list:
+            mp_dict = {}
+            article_data = data.filter(
+                price_date = date,
+                common_article=Articles.objects.get(common_article=article))
+            for i in article_data:
+                if i.marketplace == 'Wildberries':
+                    mp_dict['wb_price'] = i.price
+                if i.marketplace == 'Ozon':
+                    mp_dict['ozon_price'] = i.price
+                if i.marketplace == 'Yandex':
+                     mp_dict['yandex_price'] = i.price
+            inner_dict[str(date)] = mp_dict
+        data_for_user[i.common_article.common_article] = inner_dict
+
+    
+    context = {
+        'data': data,
+        'date_list': date_list,
+        'article_list': article_list,
+        'data_for_user': data_for_user,
+    }
+    return render(request, 'price_system/article_price_statistic.html', context)
 
 class ArticleCompareDetailView(ListView):
     model = Articles

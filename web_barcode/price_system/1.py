@@ -1,10 +1,10 @@
 import json
 import os
+import traceback
 
 import requests
 import telegram
 from dotenv import load_dotenv
-from price_system.models import Articles
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -37,12 +37,25 @@ yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
 
+def uppercase(func):
+    def wrapper():
+        try:
+            func()
+        except Exception as e:
+            tb_str = traceback.format_exc()
+            message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
+                     f'<b>Функция выполняет</b>: {func.__doc__}\n'
+                     f'<b>Ошибка</b>\n: {e}\n\n'
+                     f'<b>Техническая информация</b>:\n {tb_str}')
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                text=message_error, parse_mode='HTML')
+    return wrapper
 
+
+
+@uppercase
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
-    url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
-    response = requests.request("GET", url, headers=wb_headers_karavaev)
-
-    print(json.loads(response.text))
+    print(1/0)
 
 wb_articles_list()
