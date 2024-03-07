@@ -2,7 +2,7 @@
 
 
 {% block title%}Артикулы для контроля цены{% endblock %}
-
+{% load price_system_util %}
 
 {% block content%}
     <div class="features">
@@ -16,6 +16,7 @@
                     <th>Название</th>
                     <th>Цена WB</th>
                     <th>Скидка продавца WB</th>
+                    <th>Цена после скидки WB</th>
                     <th>Цена OZON</th>
                     <th>Цена YANDEX</th>
                     <th>Минимальная цена</th>
@@ -30,7 +31,8 @@
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
                         <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
-                        <td><input value="{{ el.wb_discount }}" type="number" name="wb_price" required/></td>
+                        <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" required/></td>
+                        <td>{{100|sub:el.wb_discount|divide:100|multiplicity:el.wb_price}}</td>
                         <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
                         <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
                         <td><input value="{{ el.min_price }}" type="number" name="min_price" required/></td>
