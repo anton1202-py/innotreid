@@ -113,6 +113,11 @@ class Groups(models.Model):
         blank=True,
         null=True
     )
+    wb_discount = models.IntegerField(
+        verbose_name='WB скидка продавца',
+        blank=True,
+        null=True
+    )
     ozon_price = models.IntegerField(
         verbose_name='OZON стоимость',
         blank=True,

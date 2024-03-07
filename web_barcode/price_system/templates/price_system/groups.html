@@ -14,11 +14,12 @@
                 <tr>
                     <th>ID</th>
                     <th>Название</th>
-                    <th>Цена на WB</th>
-                    <th>Цена на OZON</th>
-                    <th>Цена на YANDEX</th>
+                    <th>Цена WB</th>
+                    <th>Скидка продавца WB</th>
+                    <th>Цена OZON</th>
+                    <th>Цена YANDEX</th>
                     <th>Минимальная цена</th>
-                    <th>Старая цена OZON</th>
+                    <th>Старая цена (Ozon, Yandex)</th>
                     <th>Применить цены</th>
                     <th>del</th>
                 </tr>
@@ -29,6 +30,7 @@
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
                         <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
+                        <td><input value="{{ el.wb_discount }}" type="number" name="wb_price" required/></td>
                         <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
                         <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
                         <td><input value="{{ el.min_price }}" type="number" name="min_price" required/></td>
@@ -68,6 +70,9 @@
                         </td>
                         <td class="table_times_amount">
                             <input class="form-control" type="number" name="wb_price" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            <input class="form-control" type="number" name="wb_discount" required/>
                         </td>
                         <td class="table_times_amount">
                             <input class="form-control" type="number" name="ozon_price" required/>

@@ -319,6 +319,7 @@ def groups_view(request):
         obj, created = Groups.objects.get_or_create(
             name=request_data['name'],
             wb_price=request_data['wb_price'],
+            wb_discount=request_data['wb_discount'],
             ozon_price=request_data['ozon_price'],
             yandex_price=request_data['yandex_price'],
             min_price=request_data['min_price'],
@@ -330,6 +331,7 @@ def groups_view(request):
         Groups.objects.filter(id=request_data['change_button']).update(
             name=request_data['name'],
             wb_price=request_data['wb_price'],
+            wb_discount=request_data['wb_discount'],
             ozon_price=request_data['ozon_price'],
             yandex_price=request_data['yandex_price'],
             min_price=request_data['min_price'],
@@ -344,6 +346,7 @@ def groups_view(request):
         names = ArticleGroup.objects.filter(
             group=request.POST['action_price'])
         wb_price = names[0].group.wb_price
+        wb_discount=names[0].group.wb_discount
         ozon_price = names[0].group.ozon_price
         yandex_price = names[0].group.yandex_price
         min_price = names[0].group.min_price
@@ -356,7 +359,7 @@ def groups_view(request):
             oz_nom_list.append(art.common_article.ozon_product_id)
             yandex_nom_list.append(art.common_article.yandex_seller_article)
             
-        wilberries_price_change(wb_nom_list, wb_price)
+        wilberries_price_change(wb_nom_list, wb_price, wb_discount)
         ozon_price_change(oz_nom_list, ozon_price, min_price, old_price)
         yandex_price_change(yandex_nom_list, yandex_price, old_price)
 

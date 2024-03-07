@@ -56,6 +56,7 @@ def uppercase(func):
 @uppercase
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
-    print(1/0)
+    n = 1 + '23'
+    print(n)
 
 wb_articles_list()

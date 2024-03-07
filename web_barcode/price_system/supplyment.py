@@ -235,13 +235,13 @@ def excel_import_data(xlsx_file):
 
 def wb_price_changer(info_list: list):
     """Изменяет цену входящего списка артикулов на WB"""
-    url = 'https://suppliers-api.wildberries.ru/public/api/v1/prices'
-    payload = json.dumps(info_list)
+    url = 'https://discounts-prices-api.wb.ru/api/v2/upload/task'
+    payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=wb_headers_karavaev, data=payload)
 
 
-def wilberries_price_change(articles_list: list, price: float):
+def wilberries_price_change(articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
     for i in range(koef_articles):
@@ -254,7 +254,8 @@ def wilberries_price_change(articles_list: list, price: float):
             if article != None:
                 inner_data_dict = {
                     "nmId": article,
-                    "price": price
+                    "price": price,
+                    "discount": discount
                 }
                 data_for_change.append(inner_data_dict)
         wb_price_changer(data_for_change)
