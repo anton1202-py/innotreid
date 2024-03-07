@@ -114,7 +114,7 @@ app.conf.beat_schedule = {
     },
     "file_ooo_action": {
         "task": "fbs_mode.tasks.ooo_production_file",
-        "schedule": crontab(hour=18, minute=15)
+        "schedule": crontab(hour=18, minute=18)
     },
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
