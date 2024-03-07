@@ -29,8 +29,9 @@ class Articles(models.Model):
         blank=True,
         null=True,
     )
-    wb_barcode = models.PositiveBigIntegerField(
+    wb_barcode = models.CharField(
         verbose_name='WB баркод',
+        max_length=15,
         blank=True,
         null=True,
     )
@@ -45,8 +46,9 @@ class Articles(models.Model):
         blank=True,
         null=True,
     )
-    ozon_barcode = models.PositiveBigIntegerField(
+    ozon_barcode = models.CharField(
         verbose_name='OZON баркод',
+        max_length=15,
         blank=True,
         null=True,
     )
@@ -77,8 +79,9 @@ class Articles(models.Model):
         blank=True,
         null=True,
     )
-    yandex_barcode = models.PositiveBigIntegerField(
+    yandex_barcode = models.CharField(
         verbose_name='YANDEX баркод',
+        max_length=15,
         blank=True,
         null=True,
     )

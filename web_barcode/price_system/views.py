@@ -94,7 +94,11 @@ def wb_article_compare():
         if data["subjectName"] == "Ночники":
             article = data["vendorCode"].split('-')[0]
             article_dict[article.capitalize()] = [data["vendorCode"],
-                                                  data["sizes"][0]["skus"][0], data["nmID"]]
+                data["sizes"][0]["skus"][0], data["nmID"]]
+        else:
+            article_dict[data["vendorCode"]] = [data["vendorCode"],
+                data["sizes"][0]["skus"][0], data["nmID"]]
+
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
@@ -136,13 +140,15 @@ def ozon_cleaning_articles():
         if 'Ночник' in dat["name"]:
             article = dat["offer_id"].split('-')[0]
             article_ozon_dict[article] = [
-                dat["offer_id"], int(dat["barcode"]), dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+                dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+        else:
+            article_ozon_dict[dat["offer_id"]] = [
+                dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
     return article_ozon_dict
 
 
 def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
     """Создает и возвращает словарь с данными fbs_sku_data {артикул: остаток_fbs}"""
-
     if raw_articles_list == None:
         raw_articles_list = []
     url = f'https://api.partner.market.yandex.ru/businesses/3345369/offer-mappings?limit=200&page_token={nextPageToken}'
@@ -153,16 +159,18 @@ def yandex_raw_articles_data(nextPageToken='', raw_articles_list=None):
     main_articles_data = json.loads(response.text)['result']
     articles_data = main_articles_data['offerMappings']
     for article in articles_data:
-
-        if 'Ночник' in article['offer']['name']:
+        if article['offer']['barcodes'] and 'marketSku' in article['mapping']:
             inner_list = []
-            # print(article['offer'].keys())
-            if article['offer']['barcodes']:
-                # print(article['offer']['offerId'])
-                inner_list.append(article['offer']['offerId'])
-                inner_list.append(article['offer']['barcodes'][0])
-                inner_list.append(article['mapping']['marketSku'])
-                raw_articles_list.append(inner_list)
+            # print(article['offer']['offerId'])
+            inner_list.append(article['offer']['offerId'])
+            inner_list.append(article['offer']['barcodes'][0])
+            inner_list.append(article['mapping']['marketSku'])
+            if 'Ночник' in article['offer']['name']:
+                inner_list.append('Ночник')
+            else:
+                inner_list.append('Грамота')
+            raw_articles_list.append(inner_list)
+
     if main_articles_data['paging']:
         yandex_raw_articles_data(
             main_articles_data['paging']['nextPageToken'], raw_articles_list)
@@ -174,8 +182,11 @@ def yandex_articles():
     raw_articles_list = yandex_raw_articles_data()
     article_yandex_dict = {}
     for article in raw_articles_list:
-        common_article = article[0].split('-')[0]
-        article_yandex_dict[common_article] = article
+        if article[-1] == 'Ночник':
+            common_article = article[0].split('-')[0]
+            article_yandex_dict[common_article] = article[:3]
+        else:
+            article_yandex_dict[article[0]] = article[:3]
     return article_yandex_dict
 
 
@@ -237,7 +248,7 @@ def ozon_matching_articles():
                 common_article=common_article,
                 status='Сопоставлено',
                 ozon_seller_article=ozon_data[0],
-                ozon_barcode=int(ozon_data[1]),
+                ozon_barcode=ozon_data[1],
                 ozon_product_id=int(ozon_data[2]),
                 ozon_sku=int(ozon_data[3]),
                 ozon_fbo_sku_id=int(ozon_data[4]),
@@ -250,6 +261,7 @@ def yandex_matching_articles():
     """Функция сопоставляет артикулы с Яндекса с общей базой"""
     yandex_article_data = yandex_articles()
     for common_article, yandex_data in yandex_article_data.items():
+        print('yandex_data', yandex_data)
         if Articles.objects.filter(common_article=common_article).exists() == True:
             yandex_article = Articles.objects.get(
                 common_article=common_article)
@@ -272,7 +284,7 @@ def yandex_matching_articles():
                 common_article=common_article,
                 status='Сопоставлено',
                 yandex_seller_article=yandex_data[0],
-                yandex_barcode=int(yandex_data[1]),
+                yandex_barcode=yandex_data[1],
                 yandex_sku=int(yandex_data[2])
             )
             yandex.save()
@@ -393,11 +405,15 @@ def article_groups_view(request):
             group_filter = filter_data.get("group_name")
 
             if article_filter:
-                data = data.filter(
-                    Q(common_article=Articles.objects.get(common_article=article_filter))).order_by('id')
+                if Articles.objects.filter(common_article=article_filter).exists():
+                    data = data.filter(
+                        Q(common_article=Articles.objects.filter(common_article=article_filter)[0])).order_by('id')
+                else:
+                    data = data.filter(
+                        Q(common_article=0)).order_by('id')
             if group_filter:
                 data = data.filter(
-                    Q(group=Groups.objects.get(id=group_filter))).order_by('id')
+                    Q(group=Groups.objects.filter(id=group_filter)[0])).order_by('id')
         elif 'group_name' in request.POST:
             if request.POST['change_group']:
                 print('Не пустая')

@@ -292,7 +292,6 @@ def ozon_price_change(articles_list: list, price: float, min_price: float, old_p
                     "product_id": article
                 }
                 data_for_change.append(inner_data_dict)
-        print(data_for_change)
         ozon_price_changer(data_for_change)
 
 
