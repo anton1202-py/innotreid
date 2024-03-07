@@ -52,8 +52,9 @@ def wb_articles_list():
         return wb_articles_list()
 
 
-@app.task
+
 @sender_error_to_tg
+@app.task
 def wb_add_price_info():
     """
     Проверяет изменилась ли цена в базе данных.
@@ -116,8 +117,9 @@ def ozon_articles_list(last_id='', main_price_data=None):
         return ozon_articles_list()
 
 
-@app.task
+
 @sender_error_to_tg
+@app.task
 def ozon_add_price_info():
     """
     Проверяет изменилась ли цена в базе данных на артикул ОЗОН.
@@ -176,8 +178,9 @@ def yandex_articles_list(page_token='', main_price_data=None):
         return yandex_articles_list()
 
 
-@app.task
+
 @sender_error_to_tg
+@app.task
 def yandex_add_price_info():
     """
     Проверяет изменилась ли цена в базе данных на артикул YANDEX.

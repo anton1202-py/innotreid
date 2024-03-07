@@ -20,7 +20,7 @@ app = Celery('celery_tasks',
 app.config_from_object('celery_tasks.celeryconfig')
 
 # настройка логирования
-logging.basicConfig(filename='celery.log', level=logging.INFO,
+logging.basicConfig(filename='celery_tasks/celery.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 today = datetime.date.today()
@@ -130,14 +130,14 @@ app.conf.beat_schedule = {
     },
     "price_system_wb_task": {
         "task": "price_system.periodical_tasks.wb_add_price_info",
-        "schedule": crontab(hour=7, minute=4)
+        "schedule": crontab(hour=7, minute=11)
     },
     "price_system_ozon_task": {
         "task": "price_system.periodical_tasks.ozon_add_price_info",
-        "schedule": crontab(hour=7, minute=5)
+        "schedule": crontab(hour=7, minute=12)
     },
     "price_system_yandex_task": {
         "task": "price_system.periodical_tasks.yandex_add_price_info",
-        "schedule": crontab(hour=7, minute=6)
+        "schedule": crontab(hour=7, minute=13)
     },
 }
