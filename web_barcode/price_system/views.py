@@ -442,7 +442,7 @@ def article_price_statistic(request):
                 if i.marketplace == 'Yandex':
                      mp_dict['yandex_price'] = i.price
             inner_dict[str(date)] = mp_dict
-        data_for_user[i.common_article.common_article] = inner_dict
+            data_for_user[i.common_article.common_article] = inner_dict
 
     
     context = {
