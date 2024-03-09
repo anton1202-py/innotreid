@@ -5,9 +5,10 @@ import os
 import pandas as pd
 import requests
 import telegram
-#from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
-from helpers_func import error_message, stream_dropbox_file
+
+from .helpers_func import error_message, stream_dropbox_file
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -165,7 +166,7 @@ def article_with_big_balance():
     return article_big_balance_dict, article_small_balance_dict
 
 
-#@app.task
+@app.task
 def fbs_balance_maker():
     """Обновляет остаток на FBS в зависимости от остатка на FBO складе"""
     try:
