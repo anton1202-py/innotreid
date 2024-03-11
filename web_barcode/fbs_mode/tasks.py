@@ -2447,6 +2447,7 @@ def ip_morning_task():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
+@app.task
 def ip_friday_task():
     action_wb(
         db_folder, file_add_name_ip, wb_headers_karavaev,
