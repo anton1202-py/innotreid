@@ -155,6 +155,6 @@ app.conf.beat_schedule = {
     },
     "reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=0, minute=1)
+        "schedule": crontab(hour=21, minute=1)
     },
 }
