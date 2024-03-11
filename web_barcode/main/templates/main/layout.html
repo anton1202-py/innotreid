@@ -132,15 +132,14 @@
             {% endif %}
             {% if request.user.is_staff %}
             <li>
-                
-                    <a href="" class="expanded">
-                        <span class="material-symbols-sharp">receipt_long</span>
-                        <h3>Работа с ценами</h3>
-                        <span class="material-symbols-outlined">
-                            chevron_right
-                        </span>
-                    </a>
-                    <ul>
+                <a href="" class="expanded">
+                    <span class="material-symbols-sharp">receipt_long</span>
+                    <h3>Работа с ценами</h3>
+                    <span class="material-symbols-outlined">
+                        chevron_right
+                    </span>
+                </a>
+                <ul>
                     {% url 'price_system_article_compare' as url_article_compare %}
                         <li>
                             <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
@@ -169,6 +168,24 @@
                                 <h3>Статистика изменения цен</h3>
                             </a>
                         </li>
+                </ul>
+            </li>
+            <li>
+                <a href="" class="expanded">
+                    <span class="material-symbols-sharp">receipt_long</span>
+                    <h3>Реклама</h3>
+                    <span class="material-symbols-outlined">
+                        chevron_right
+                    </span>
+                </a>
+                <ul>
+                    {% url 'ad_campaigns' as url_ad_campaigns %}
+                    <li>
+                        <a href="{{ url_ad_campaigns }}" {% if request.path == url_ad_campaigns %}class="active"{% endif %}>
+                            <span class="material-symbols-sharp">filter_list</span>
+                            <h3>Список кампаний</h3>
+                        </a>
+                    </li>
                 </ul>
             </li>
                 <li> 

@@ -1,0 +1,64 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Добавление рекламной кампании{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Добавление рекламной кампании</h1>
+        </div>
+        <p>{{ test }}</p>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th>Номер кампании WB</th>
+                    <th>Юр. лицо</th>
+                    <th>Процент на рекламу</th>
+                    <th>Дата добавления кампании</th>
+                    <th>Дата изменения процента</th>
+                    <th>del</th>
+                </tr>
+                {% for el in data %}
+                <tr>
+                    <td>{{ el.campaign_number }}</td>
+                    <td>{{ el.ur_lico.ur_lice_name }}</td>
+                    
+                    <form method="post" name="name" enctype="multipart/form-data" action="{% url 'ad_campaigns' %}">
+                        {% csrf_token %}
+                        <td><input value="{{ koef_dict|get_item:el.id|list_position:0 }}" type="number" name="ad_koefficient" required/></td>
+                        <button type="Submit" value="{{koef_dict|get_item:el.id|list_position:2}}" class="custom-button" name="change-button" method="POST" style="display: none;">Добавить</button>
+                    </form>
+                    <td>{{ el.create_date }}</td>
+                    <td>{{ koef_dict|get_item:el.id|list_position:1 }}</td>
+    
+                    <td class="td_with_del_button">
+                        <form method="post" class="del_article" name="del_article" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <button type="Submit" class="del-button" name="del-button" method="POST" value="{{ el.campaign_number }}">
+                                <span id="del_icons_in_article_table" class="material-symbols-outlined">
+                                    delete
+                                </span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <form method="post" name="add_article" enctype="multipart/form-data" action="{% url 'ad_campaigns' %}">
+                        {% csrf_token %}
+                        <td>
+                            <input class="form-control" type="text" name="campaign_number" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            {{form.ur_lico_name}}
+                        </td>
+                        <td>
+                            <input class="form-control" type="number" name="ad_koefficient"/>
+                        </td>
+                </tr>
+            </table>
+            <button type="Submit" class="custom-button" name="add_button" method="POST">Добавить</button>
+                    </form>
+    </div>    
+        
+{% endblock %}

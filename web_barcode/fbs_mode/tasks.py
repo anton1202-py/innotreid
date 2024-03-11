@@ -590,10 +590,10 @@ class WildberriesFbsMode():
                     text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=text, parse_mode='HTML')
-                elif response_to_supply.status_code == 204:
-                    text = 'Поставку перевел в доставку'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=text, parse_mode='HTML')
+                # elif response_to_supply.status_code == 204:
+                #     text = 'Поставку перевел в доставку'
+                #     bot.send_message(chat_id=CHAT_ID_ADMIN,
+                #                      text=text, parse_mode='HTML')
             else:
                 text = 'Поставка не добавлена в доставку (supply_to_delivery), так как нет артикулов'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -658,12 +658,12 @@ class WildberriesFbsMode():
                 pdf_filenames = glob.glob(
                     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
                 logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
-                mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=mes_text, parse_mode='HTML')
-                text = str(self.amount_articles)
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
+                # mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
+                # bot.send_message(chat_id=CHAT_ID_ADMIN,
+                #                  text=mes_text, parse_mode='HTML')
+                # text = str(self.amount_articles)
+                # bot.send_message(chat_id=CHAT_ID_ADMIN,
+                #                  text=text, parse_mode='HTML')
                 list_pdf_file_ticket_for_complect = []
                 for j in pdf_filenames:
                     while self.amount_articles[str(Path(j).stem)] > 0:
@@ -711,9 +711,9 @@ class WildberriesFbsMode():
                 list_pdf_file_ticket_for_complect = last_sorted_list
                 logging.info(
                     f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
-                mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=mes_text, parse_mode='HTML')
+                # mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
+                # bot.send_message(chat_id=CHAT_ID_ADMIN,
+                #                  text=mes_text, parse_mode='HTML')
                 qrcode_supply_amount = supply_qrcode_to_standart_view()
                 if len(qrcode_supply_amount) != 0:
                     while amount_of_supply_qrcode > 0:
@@ -859,9 +859,10 @@ class OzonFbsMode():
                 })
                 response = requests.request(
                     "POST", url, headers=self.ozon_headers, data=payload)
-                text = f'Статус код поставки {data_dict["posting_number"]}: {response.status_code}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
+                if response.status_code != 200:
+                    text = f'Статус код поставки {data_dict["posting_number"]}: {response.status_code}'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=text, parse_mode='HTML')
                 time.sleep(5)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
@@ -2351,14 +2352,14 @@ def production_file(db_folder, file_add_name, headers_wb,
                      text=message_text, parse_mode='HTML')
 
 
-@app.task
+# @app.task
 def ooo_production_file():
     production_file(
         db_folder, file_add_name_ooo, wb_headers_ooo,
         ozon_headers_ooo, yandex_headers_ooo)
 
 
-@app.task
+# @app.task
 def ooo_wb_action():
     action_wb(
         db_folder, file_add_name_ooo, wb_headers_ooo,
@@ -2367,28 +2368,28 @@ def ooo_wb_action():
 
 # ooo_wb_action()
 
-@app.task
+# @app.task
 def ooo_ozon_action():
     action_ozon_ooo(ozon_headers_ooo, db_folder, file_add_name_ooo)
 
 
 # ooo_ozon_action()
 
-@app.task
+# @app.task
 def ooo_yandex_action():
     action_yandex(yandex_headers_ooo, db_folder, file_add_name_ooo)
 
 
 # ooo_yandex_action()
 
-@app.task
+# @app.task
 def ip_wb_action():
     action_wb(
         db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-@app.task
+# @app.task
 def ip_production_file():
     production_file(
         db_folder, file_add_name_ip, wb_headers_karavaev,
@@ -2397,7 +2398,7 @@ def ip_production_file():
 # ip_wb_action()
 
 
-@app.task
+# @app.task
 def ip_ozon_action_morning():
     action_ozon_ip_morning(ozon_headers_karavaev,
                            db_folder, file_add_name_ip)
@@ -2410,9 +2411,48 @@ def ip_ozon_action_day():
     action_ozon_ip_day(ozon_headers_karavaev, db_folder, file_add_name_ip)
 
 
-@app.task
+# @app.task
 def ip_yandex_action():
     action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
 
 
+@app.task
+def ooo_common_task():
+    action_wb(
+        db_folder, file_add_name_ooo, wb_headers_ooo,
+        ozon_headers_ooo, yandex_headers_ooo)
+    time.sleep(60)
+    action_ozon_ooo(ozon_headers_ooo, db_folder, file_add_name_ooo)
+    time.sleep(60)
+    action_yandex(yandex_headers_ooo, db_folder, file_add_name_ooo)
+    time.sleep(60)
+    production_file(
+        db_folder, file_add_name_ooo, wb_headers_ooo,
+        ozon_headers_ooo, yandex_headers_ooo)
+
+
+@app.task
+def ip_morning_task():
+    action_wb(
+        db_folder, file_add_name_ip, wb_headers_karavaev,
+        ozon_headers_karavaev, yandex_headers_karavaev)
+    time.sleep(60)
+    action_ozon_ip_morning(ozon_headers_karavaev,
+                           db_folder, file_add_name_ip)
+    time.sleep(60)
+    action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
+    time.sleep(60)
+    production_file(
+        db_folder, file_add_name_ip, wb_headers_karavaev,
+        ozon_headers_karavaev, yandex_headers_karavaev)
+
+
+def ip_friday_task():
+    action_wb(
+        db_folder, file_add_name_ip, wb_headers_karavaev,
+        ozon_headers_karavaev, yandex_headers_karavaev)
+    time.sleep(60)
+    production_file(
+        db_folder, file_add_name_ip, wb_headers_karavaev,
+        ozon_headers_karavaev, yandex_headers_karavaev)
 # ip_yandex_action()

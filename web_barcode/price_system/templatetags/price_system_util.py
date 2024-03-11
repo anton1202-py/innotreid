@@ -18,6 +18,10 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 @register.filter
+def list_position(list_data, arg):
+    return list_data[arg]
+
+@register.filter
 def multiplicity(value, arg):
     return value * arg
 

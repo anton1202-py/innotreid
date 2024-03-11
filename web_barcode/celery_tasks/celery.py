@@ -71,51 +71,63 @@ app.conf.beat_schedule = {
         "task": "ozon_system.tasks.start_adv_company",
         'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
     },
-    "wb_ip_action": {
-        "task": "fbs_mode.tasks.ip_wb_action",
+    # "wb_ip_action": {
+    #     "task": "fbs_mode.tasks.ip_wb_action",
+    #     "schedule": crontab(hour=5, minute=40)
+    # },
+    # "wb_ip_action_friday": {
+    #     "task": "fbs_mode.tasks.ip_wb_action",
+    #     "schedule": crontab(hour=17, minute=20, day_of_week=5)
+    # },
+    # "file_ip_action_friday": {
+    #     "task": "fbs_mode.tasks.ip_production_file",
+    #     "schedule": crontab(hour=17, minute=26, day_of_week=5)
+    # },
+    # "ozon_ip_morning": {
+    #     "task": "fbs_mode.tasks.ip_ozon_action_morning",
+    #     "schedule": crontab(hour=5, minute=48)
+    # },
+    # "yandex_ip_action": {
+    #     "task": "fbs_mode.tasks.ip_yandex_action",
+    #     "schedule": crontab(hour=5, minute=55)
+    # },
+    # "file_ip_action": {
+    #     "task": "fbs_mode.tasks.ip_production_file",
+    #     "schedule": crontab(hour=5, minute=58)
+    # },
+    "ooo_fbs_action": {
+        "task": "fbs_mode.tasks.ooo_common_task",
+        "schedule": crontab(hour=17, minute=40)
+    },
+    "ip_fbs_morning_action": {
+        "task": "fbs_mode.tasks.ip_morning_task",
         "schedule": crontab(hour=5, minute=40)
     },
-    "wb_ip_action_friday": {
-        "task": "fbs_mode.tasks.ip_wb_action",
-        "schedule": crontab(hour=17, minute=20, day_of_week=5)
-    },
-    "file_ip_action_friday": {
-        "task": "fbs_mode.tasks.ip_production_file",
-        "schedule": crontab(hour=17, minute=26, day_of_week=5)
-    },
-    "ozon_ip_morning": {
-        "task": "fbs_mode.tasks.ip_ozon_action_morning",
-        "schedule": crontab(hour=5, minute=48)
-    },
-    "yandex_ip_action": {
-        "task": "fbs_mode.tasks.ip_yandex_action",
-        "schedule": crontab(hour=5, minute=55)
-    },
-    "file_ip_action": {
-        "task": "fbs_mode.tasks.ip_production_file",
-        "schedule": crontab(hour=5, minute=58)
-    },
-    "ozon_ip_day": {
+    "ip_ozon_day": {
         "task": "fbs_mode.tasks.ip_ozon_action_day",
         "schedule": crontab(hour=8, minute=10)
     },
+    "ip_fbs_friday_action": {
+        "task": "fbs_mode.tasks.ip_friday_task",
+        "schedule": crontab(hour=17, minute=20, day_of_week=5)
+    },
 
-    "wb_ooo_action": {
-        "task": "fbs_mode.tasks.ooo_wb_action",
-        "schedule": crontab(hour=17, minute=40)
-    },
-    "ozon_ooo_action": {
-        "task": "fbs_mode.tasks.ooo_ozon_action",
-        "schedule": crontab(hour=17, minute=48)
-    },
-    "yandex_ooo_action": {
-        "task": "fbs_mode.tasks.ooo_yandex_action",
-        "schedule": crontab(hour=17, minute=55)
-    },
-    "file_ooo_action": {
-        "task": "fbs_mode.tasks.ooo_production_file",
-        "schedule": crontab(hour=18, minute=18)
-    },
+    # "wb_ooo_action": {
+    #     "task": "fbs_mode.tasks.ooo_wb_action",
+    #     "schedule": crontab(hour=17, minute=40)
+    # },
+    # "ozon_ooo_action": {
+    #     "task": "fbs_mode.tasks.ooo_ozon_action",
+    #     "schedule": crontab(hour=17, minute=48)
+    # },
+    # "yandex_ooo_action": {
+    #     "task": "fbs_mode.tasks.ooo_yandex_action",
+    #     "schedule": crontab(hour=17, minute=55)
+    # },
+    # "file_ooo_action": {
+    #     "task": "fbs_mode.tasks.ooo_production_file",
+    #     "schedule": crontab(hour=18, minute=18)
+    # },
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=18, minute=0, day_of_week=1)

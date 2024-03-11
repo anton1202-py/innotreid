@@ -71,7 +71,7 @@ bot = telegram.Bot(token=TELEGRAM_TOKEN)
 def sender_error_to_tg(func):
     def wrapper():
         try:
-            func()
+            return func()
         except Exception as e:
             tb_str = traceback.format_exc()
             message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
