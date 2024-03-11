@@ -68,19 +68,21 @@ yandex_headers_ooo = {
 }
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
+
 def sender_error_to_tg(func):
-    def wrapper():
+    def wrapper(*args, **kwargs):
         try:
-            return func()
+            return func(*args, **kwargs)
         except Exception as e:
             tb_str = traceback.format_exc()
             message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
-                     f'<b>Функция выполняет</b>: {func.__doc__}\n'
-                     f'<b>Ошибка</b>\n: {e}\n\n'
-                     f'<b>Техническая информация</b>:\n {tb_str}')
+                             f'<b>Функция выполняет</b>: {func.__doc__}\n'
+                             f'<b>Ошибка</b>\n: {e}\n\n'
+                             f'<b>Техническая информация</b>:\n {tb_str}')
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                text=message_error, parse_mode='HTML')
+                             text=message_error, parse_mode='HTML')
     return wrapper
+
 
 def excel_creating_mod(data):
     """Создает и скачивает excel файл"""

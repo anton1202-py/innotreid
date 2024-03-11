@@ -12,9 +12,7 @@ from reklama.forms import FilterUrLicoForm
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             ProcentForAd, SalesArticleStatistic, UrLico,
                             WbArticleCommon, WbArticleCompany)
-from reklama.periodic_tasks import (campaign_article_add, count_sum_orders,
-                                    create_articles_company,
-                                    header_determinant)
+from reklama.periodic_tasks import create_articles_company, header_determinant
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -65,17 +63,18 @@ yandex_headers_ooo = {
     'Authorization': YANDEX_OOO_KEY,
 }
 
+
 def ad_campaign_add(request):
     """Отображает список рекламных компаний и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    test = count_sum_orders()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient')
     koef_dict = {}
     for koef in koef_campaign_data:
-        koef_dict[koef['campaign_number']] = [koef['koefficient'], koef['koef_date'], koef['latest_add']]
+        koef_dict[koef['campaign_number']] = [
+            koef['koefficient'], koef['koef_date'], koef['latest_add']]
     form = FilterUrLicoForm()
     if request.POST:
         request_data = request.POST
@@ -90,7 +89,8 @@ def ad_campaign_add(request):
                 koefficient=int(request_data['ad_koefficient'])
             )
             header = header_determinant(int(request_data['campaign_number']))
-            create_articles_company(int(request_data['campaign_number']), header)
+            create_articles_company(
+                int(request_data['campaign_number']), header)
         elif 'change-button' in request.POST:
             change_data = ProcentForAd.objects.get(
                 id=request_data['change-button']
@@ -106,7 +106,6 @@ def ad_campaign_add(request):
         return redirect('ad_campaigns')
 
     context = {
-        'test': test,
         'data': company_list,
         'form': form,
         'koef_dict': koef_dict

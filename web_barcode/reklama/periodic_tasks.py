@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import requests
 import telegram
-# from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
@@ -39,6 +39,8 @@ CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
 CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
+
+campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
@@ -75,6 +77,7 @@ wb_header = {
 }
 
 
+@sender_error_to_tg
 def create_articles_company(campaign_number, header):
     """При создании кампании записываются артикулы этой кампании в базу"""
     url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
@@ -83,6 +86,7 @@ def create_articles_company(campaign_number, header):
     ])
     response = requests.request("POST", url, headers=header, data=payload)
     articles_list = json.loads(response.text)[0]['autoParams']['nms']
+    print(articles_list)
     for article in articles_list:
         if not WbArticleCommon.objects.filter(wb_article=article).exists():
             WbArticleCommon(wb_article=article).save()
@@ -123,7 +127,7 @@ def db_articles_in_campaign(campaign_number):
     return articles_list
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def wb_articles_in_campaign(campaign_number, header):
     """Достает артикулы, которые есть у компании в Wildberries"""
     url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
@@ -133,8 +137,6 @@ def wb_articles_in_campaign(campaign_number, header):
     response = requests.request("POST", url, headers=header, data=payload)
     articles_list = json.loads(response.text)[0]['autoParams']['nms']
     return articles_list
-
-# @sender_error_to_tg
 
 
 def header_determinant(campaign_number):
@@ -146,7 +148,7 @@ def header_determinant(campaign_number):
     return header
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 # @app.task
 def campaign_article_add():
     """
@@ -187,6 +189,7 @@ def campaign_article_add():
                 print('Удалил артикул', article)
 
 
+@sender_error_to_tg
 def count_sum_adv_campaign(data_list: list):
     """
     Подсчитывает сумму в рублях одной рекламной кампании
@@ -200,6 +203,7 @@ def count_sum_adv_campaign(data_list: list):
     return sum
 
 
+@sender_error_to_tg
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
@@ -208,36 +212,47 @@ def count_sum_orders():
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
     # Словарь вида: {номер_компании: заказов_за_позавчера}
+    wb_koef = math.ceil(len(campaign_list)/3)
     url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
     campaign_orders_money_dict = {}
-    for campaign in campaign_list:
-        header = header_determinant(campaign)
-        article_list = wb_articles_in_campaign(campaign, header)
-        payload = json.dumps({
-            "brandNames": [],
-            "objectIDs": [],
-            "tagIDs": [],
-            "nmIDs": article_list,
-            "timezone": "Europe/Moscow",
-            "period": {
-                "begin": begin_date,
-                "end": end_date
-            },
-            "orderBy": {
-                "field": "ordersSumRub",
-                "mode": "asc"
-            },
-            "page": 1
-        })
-        response = requests.request("POST", url, headers=header, data=payload)
+    for i in range(wb_koef):
+        # Лист для запроса в эндпоинту ОЗОНа
+        start_point = i*3
+        finish_point = (i+1)*3
+        small_info_list = campaign_list[
+            start_point:finish_point]
 
-        data_list = json.loads(response.text)['data']['cards']
-        sum = count_sum_adv_campaign(data_list)
-        campaign_orders_money_dict[campaign] = sum
-    print(campaign_orders_money_dict)
+        for campaign in small_info_list:
+            header = header_determinant(campaign)
+            article_list = wb_articles_in_campaign(campaign, header)
+            payload = json.dumps({
+                "brandNames": [],
+                "objectIDs": [],
+                "tagIDs": [],
+                "nmIDs": article_list,
+                "timezone": "Europe/Moscow",
+                "period": {
+                    "begin": begin_date,
+                    "end": end_date
+                },
+                "orderBy": {
+                    "field": "ordersSumRub",
+                    "mode": "asc"
+                },
+                "page": 1
+            })
+            response = requests.request(
+                "POST", url, headers=header, data=payload)
+            # print(response.text)
+            data_list = json.loads(response.text)['data']['cards']
+            sum = count_sum_adv_campaign(data_list)
+            campaign_orders_money_dict[campaign] = sum
+        time.sleep(61)
+        # print(campaign_orders_money_dict)
     return campaign_orders_money_dict
 
 
+@sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
@@ -247,6 +262,7 @@ def replenish_campaign_budget(campaign, budget, header):
     ).koefficient
     campaign_budget = math.ceil(budget * koef / 100)
 
+    budget_for_action = campaign_budget
     if campaign_budget < 500:
         campaign_budget = 500
     elif campaign_budget > 10000:
@@ -257,13 +273,25 @@ def replenish_campaign_budget(campaign, budget, header):
         "type": 1,
         "return": True
     })
-    print(campaign_budget)
     response = requests.request("POST", url, headers=header, data=payload)
-    message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {response.text}"
+    message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
+    for user in campaign_budget_users_list:
+        bot.send_message(chat_id=user,
+                         text=message, parse_mode='HTML')
+
+
+@sender_error_to_tg
+def start_add_campaign(campaign, header):
+    """Запускает рекламную кампанию"""
+    url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
+    response = requests.request("GET", url, headers=header)
+    message = f"{response.text} {response.status_code}"
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=message, parse_mode='HTML')
 
 
+@sender_error_to_tg
+@app.task
 def budget_working():
     """Работа с бюджетом компании"""
     campaign_data = count_sum_orders()
@@ -271,3 +299,4 @@ def budget_working():
         header = header_determinant(campaign)
         replenish_campaign_budget(campaign, budget, header)
         time.sleep(2)
+        start_add_campaign(campaign, header)

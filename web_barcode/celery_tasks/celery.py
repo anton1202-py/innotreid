@@ -15,6 +15,7 @@ app = Celery('celery_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
                       'price_system.periodical_tasks',
+                      'reklama.periodic_tasks',
                       'celery_tasks.tasks_yandex_fby_fbs'
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
@@ -151,5 +152,9 @@ app.conf.beat_schedule = {
     "price_system_yandex_task": {
         "task": "price_system.periodical_tasks.yandex_add_price_info",
         "schedule": crontab(hour=7, minute=18)
+    },
+    "reklama_campaign_budget_add": {
+        "task": "reklama.periodic_tasks.budget_working",
+        "schedule": crontab(hour=0, minute=1)
     },
 }
