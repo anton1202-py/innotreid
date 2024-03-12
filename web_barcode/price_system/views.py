@@ -94,10 +94,10 @@ def wb_article_compare():
         if data["subjectName"] == "Ночники":
             article = data["vendorCode"].split('-')[0]
             article_dict[article.capitalize()] = [data["vendorCode"],
-                data["sizes"][0]["skus"][0], data["nmID"]]
+                                                  data["sizes"][0]["skus"][0], data["nmID"]]
         else:
             article_dict[data["vendorCode"]] = [data["vendorCode"],
-                data["sizes"][0]["skus"][0], data["nmID"]]
+                                                data["sizes"][0]["skus"][0], data["nmID"]]
 
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
@@ -358,7 +358,7 @@ def groups_view(request):
         names = ArticleGroup.objects.filter(
             group=request.POST['action_price'])
         wb_price = names[0].group.wb_price
-        wb_discount=names[0].group.wb_discount
+        wb_discount = names[0].group.wb_discount
         ozon_price = names[0].group.ozon_price
         yandex_price = names[0].group.yandex_price
         min_price = names[0].group.min_price
@@ -370,12 +370,12 @@ def groups_view(request):
             wb_nom_list.append(art.common_article.wb_nomenclature)
             oz_nom_list.append(art.common_article.ozon_product_id)
             yandex_nom_list.append(art.common_article.yandex_seller_article)
-            
+
         wilberries_price_change(wb_nom_list, wb_price, wb_discount)
         ozon_price_change(oz_nom_list, ozon_price, min_price, old_price)
         yandex_price_change(yandex_nom_list, yandex_price, old_price)
 
-        # Записываем изененные цены в базу данных 
+        # Записываем изененные цены в базу данных
         wb_add_price_info()
         ozon_add_price_info()
         yandex_add_price_info()
@@ -433,13 +433,16 @@ def article_groups_view(request):
     }
     return render(request, 'price_system/article_groups.html', context)
 
+
 def article_price_statistic(request):
     """Отображает статистику по изменениею цен артикулов"""
-    
+
     end_date = datetime.now()
     start_date = end_date - timedelta(days=5)
-    data = ArticlesPrice.objects.filter(price_date__gte=start_date).order_by('common_article')
-    price_date = ArticlesPrice.objects.filter(price_date__gte=start_date).values('price_date').distinct()
+    data = ArticlesPrice.objects.filter(
+        price_date__gte=start_date).order_by('common_article')
+    price_date = ArticlesPrice.objects.filter(
+        price_date__gte=start_date).values('price_date').distinct()
     article_list = Articles.objects.all().order_by('common_article')
     date_list = []
     for i in price_date:
@@ -451,7 +454,7 @@ def article_price_statistic(request):
         for date in date_list:
             mp_dict = {}
             article_data = data.filter(
-                price_date = date,
+                price_date=date,
                 common_article=Articles.objects.get(common_article=article))
             for i in article_data:
                 if i.marketplace == 'Wildberries':
@@ -459,11 +462,10 @@ def article_price_statistic(request):
                 if i.marketplace == 'Ozon':
                     mp_dict['ozon_price'] = i.price
                 if i.marketplace == 'Yandex':
-                     mp_dict['yandex_price'] = i.price
+                    mp_dict['yandex_price'] = i.price
             inner_dict[str(date)] = mp_dict
-            data_for_user[i.common_article.common_article] = inner_dict
+            data_for_user[article.common_article] = inner_dict
 
-    
     context = {
         'data': data,
         'date_list': date_list,
@@ -471,6 +473,7 @@ def article_price_statistic(request):
         'data_for_user': data_for_user,
     }
     return render(request, 'price_system/article_price_statistic.html', context)
+
 
 class ArticleCompareDetailView(ListView):
     model = Articles
