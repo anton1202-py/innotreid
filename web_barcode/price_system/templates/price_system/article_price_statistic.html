@@ -1,32 +1,12 @@
 {% extends 'main/layout.html' %}
-{% block title%}Работа с базой данных{% endblock %}
+{% block title%}Изменение цент на артикулы{% endblock %}
 {% block content%}
 {% load price_system_util %}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Таблица соответствия группе</h1>
-            {% if request.user.is_staff %}
-            <div class="add-data">
-                <div class="inner-form-data-button">
-                    <br>
-                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
-                        {% csrf_token %}
-                        <div class="two_button_label">
-                            <button type="submit" name="export" value="create_file">
-                                Экспортировать в Excel
-                            </button>
-                            <label for="import_data">EXCEL для сопоставления</label>
-                            <input type="file" id="import_data" name="import_file" class="input-file">
-                            <button type="submit">
-                                Загрузить
-                            </button> 
-                        </div>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
+            <h1>Изменение цент на артикулы</h1>
         </div>
-        <div class='filter-data'>
+        <!-- <div class='filter-data'>
             <form action="" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <label for="common_article_id" class="rand">
@@ -42,7 +22,7 @@
                     <input type="Submit" id="filter" name="filter" value="Фильтровать" />
                 </div>
             </form>
-        </div>
+        </div> -->
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
                     <th rowspan="2">Артикул</th>
@@ -62,9 +42,21 @@
                         <td>{{ el.common_article }}</td>
                         {% for date in date_list %}
                             {% with my_var=date|stringformat:"s" %}
-                                <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"wb_price" }} </td>
-                                <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"ozon_price" }} </td>
-                                <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"yandex_price" }} </td>
+                                {% if data_for_user|get_item:el.common_article|get_item:my_var|get_item:"wb_price" == None %}
+                                    <td></td>
+                                {% else %}
+                                    <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"wb_price" }} </td>
+                                {% endif %}
+                                {% if data_for_user|get_item:el.common_article|get_item:my_var|get_item:"ozon_price" == None %}
+                                    <td></td>
+                                {% else %}
+                                    <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"ozon_price" }} </td>
+                                {% endif %}
+                                {% if data_for_user|get_item:el.common_article|get_item:my_var|get_item:"yandex_price" == None %}
+                                    <td></td>
+                                {% else %}
+                                    <td>{{ data_for_user|get_item:el.common_article|get_item:my_var|get_item:"yandex_price" }} </td>
+                                {% endif %}
                             {% endwith %}
                         {% endfor %} 
                     </tr>
