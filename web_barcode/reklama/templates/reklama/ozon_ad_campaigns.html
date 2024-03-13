@@ -1,0 +1,56 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Кампании OZON{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Кампании OZON</h1>
+        </div>
+        <p>{{ test }}</p>
+            <table style="overflow-x: scroll; display: block; width: 100%;">
+                <tr>
+                    <th>Номер кампании OZON</th>
+                    <th>Юр. лицо</th>
+                    <th>Статус</th>
+                    <th>Дата добавления кампании</th>
+                    <th>del</th>
+                </tr>
+                {% for el in data %}
+                <tr>
+                    <td>{{ el.campaign_number }}</td>
+                    <td>{{ el.ur_lico.ur_lice_name }}</td>
+                    <td>{{ el.status }}</td>
+                    <td>{{ el.create_date }}</td>
+    
+                    <td class="td_with_del_button">
+                        <form method="post" class="del_article" name="del_article" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <button type="Submit" class="del-button" name="del-button" method="POST" value="{{ el.campaign_number }}">
+                                <span id="del_icons_in_article_table" class="material-symbols-outlined">
+                                    delete
+                                </span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <form method="post" name="add_article" enctype="multipart/form-data" action="{% url 'ozon_ad_campaigns' %}">
+                        {% csrf_token %}
+                        <td>
+                            <input class="form-control" type="text" name="campaign_number" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            {{form.ur_lico_name}}
+                        </td>
+                        <td></td>
+                        <td></td>
+                </tr>
+            </table>
+            <button type="Submit" class="custom-button" name="add_button" method="POST">Добавить</button>
+                    </form>
+    </div>    
+        
+{% endblock %}

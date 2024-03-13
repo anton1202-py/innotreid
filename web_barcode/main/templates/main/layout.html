@@ -183,7 +183,14 @@
                     <li>
                         <a href="{{ url_ad_campaigns }}" {% if request.path == url_ad_campaigns %}class="active"{% endif %}>
                             <span class="material-symbols-sharp">filter_list</span>
-                            <h3>Список кампаний</h3>
+                            <h3>Список кампаний WB</h3>
+                        </a>
+                    </li>
+                    {% url 'ozon_ad_campaigns' as url_ozon_ad_campaigns %}
+                    <li>
+                        <a href="{{ url_ozon_ad_campaigns }}" {% if request.path == url_ozon_ad_campaigns %}class="active"{% endif %}>
+                            <span class="material-symbols-sharp">filter_list</span>
+                            <h3>Список кампаний OZON</h3>
                         </a>
                     </li>
                 </ul>

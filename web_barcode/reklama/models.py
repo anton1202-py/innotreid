@@ -175,3 +175,37 @@ class SalesArticleStatistic(models.Model):
         verbose_name_plural = 'Статистика артикула на ВБ'
 
 
+class OzonCampaign(models.Model):
+    """Модель для рекламной кампании ОЗОН"""
+    campaign_number = models.CharField(
+        verbose_name='Рекламная компания ОЗОН',
+        max_length=20
+    )
+    ur_lico = models.ForeignKey(
+        UrLico,
+        on_delete=models.CASCADE,
+        verbose_name='Юр. лицо',
+        related_name='ozon_ad_campaign'
+    )
+    status = models.CharField(
+        verbose_name='Статус кампании',
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    article_amount = models.IntegerField(
+        verbose_name='Количество артикулов',
+        blank=True,
+        null=True
+    )
+    create_date = models.DateTimeField(
+        verbose_name='Дата создания',
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.campaign_number
+
+    class Meta:
+        verbose_name = 'Рекламная кампания ОЗОН'
+        verbose_name_plural = 'Рекламная кампания ОЗОН'

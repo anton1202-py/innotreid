@@ -37,6 +37,7 @@ yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
 
+
 def uppercase(func):
     def wrapper():
         try:
@@ -44,13 +45,12 @@ def uppercase(func):
         except Exception as e:
             tb_str = traceback.format_exc()
             message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
-                     f'<b>Функция выполняет</b>: {func.__doc__}\n'
-                     f'<b>Ошибка</b>\n: {e}\n\n'
-                     f'<b>Техническая информация</b>:\n {tb_str}')
+                             f'<b>Функция выполняет</b>: {func.__doc__}\n'
+                             f'<b>Ошибка</b>\n: {e}\n\n'
+                             f'<b>Техническая информация</b>:\n {tb_str}')
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                text=message_error, parse_mode='HTML')
+                             text=message_error, parse_mode='HTML')
     return wrapper
-
 
 
 @uppercase
@@ -58,5 +58,6 @@ def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     n = 1 + '23'
     print(n)
+
 
 wb_articles_list()

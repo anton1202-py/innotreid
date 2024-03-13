@@ -10,9 +10,11 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 from reklama.forms import FilterUrLicoForm
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            ProcentForAd, SalesArticleStatistic, UrLico,
-                            WbArticleCommon, WbArticleCompany)
-from reklama.periodic_tasks import create_articles_company, header_determinant
+                            OzonCampaign, ProcentForAd, SalesArticleStatistic,
+                            UrLico, WbArticleCommon, WbArticleCompany)
+from reklama.periodic_tasks import (create_articles_company,
+                                    header_determinant,
+                                    ozon_status_one_campaign)
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -65,7 +67,7 @@ yandex_headers_ooo = {
 
 
 def ad_campaign_add(request):
-    """Отображает список рекламных компаний и добавляет их"""
+    """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     company_list = AdvertisingCampaign.objects.all()
@@ -111,3 +113,34 @@ def ad_campaign_add(request):
         'koef_dict': koef_dict
     }
     return render(request, 'reklama/ad_campaign.html', context)
+
+
+def ozon_ad_campaigns(request):
+    """Отображает список рекламных компаний WB и добавляет их"""
+    company_list = OzonCampaign.objects.all().order_by('id')
+    form = FilterUrLicoForm()
+    # Словарь с текущим статусом рекламных кампаний вида {кампания: статус}
+    campaign_status = {}
+    if request.POST:
+        request_data = request.POST
+        if 'add_button' in request.POST:
+            ur_lico_obj = UrLico.objects.get(id=request_data['ur_lico_name'])
+            obj, created = OzonCampaign.objects.get_or_create(
+                campaign_number=request_data['campaign_number'],
+                ur_lico=ur_lico_obj
+            )
+            ozon_status_one_campaign(request_data['campaign_number'])
+
+        elif 'del-button' in request.POST:
+            OzonCampaign.objects.get(
+                campaign_number=request_data['del-button']).delete()
+
+            print(request.POST)
+        return redirect('ozon_ad_campaigns')
+
+    context = {
+        'data': company_list,
+        'form': form,
+        'campaign_status': campaign_status,
+    }
+    return render(request, 'reklama/ozon_ad_campaigns.html', context)
