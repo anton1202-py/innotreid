@@ -1,3 +1,5 @@
+import importlib
+import inspect
 import json
 import os
 import traceback
@@ -53,11 +55,25 @@ def uppercase(func):
     return wrapper
 
 
-@uppercase
+# @uppercase
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     n = 1 + '23'
     print(n)
 
 
-wb_articles_list()
+def doc_type(function_path):
+    module_name, function_name = function_path.rsplit('.', 1)
+    # Динамически импортируем модуль
+    module = importlib.import_module(module_name)
+
+    # Получаем объект функции
+    function = getattr(module, function_name)
+
+    # Получаем документацию функции
+    docstring = inspect.getdoc(function)
+
+    return docstring
+
+
+print(doc_type('fbs_mode.tasks.ip_friday_task'))

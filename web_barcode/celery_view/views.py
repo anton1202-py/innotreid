@@ -22,27 +22,28 @@ def doc_type(function_path):
     return docstring
 
 
+def wb_articles_list():
+    """Получаем массив арткулов с ценами и скидками для ВБ"""
+    n = 1 + '23'
+    print(n)
+
+
 def celery_tasks_view(request):
     """Показывает задачи celery на странице"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+
+    print(doc_type('celery_tasks.tasks_yandex_fby_fbs.sender_zero_balance'))
     tasks_info = []
     # print(celery_app.tasks)
-    counter = 0
-    counter_common = 0
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
-        # print(task_config['task'])
-        counter_common += 1
         inner_list.append(task_config['task'])
 
-        if task_config['task'] in celery_app.tasks:
-            inner_list.append(celery_app.tasks[task_config['task']].__doc__)
-            counter += 1
-        else:
-            inner_list.append(doc_type(task_config['task']))
-
-        # inner_dict['Описание'] = celery_app.tasks[task_config['task']].__doc__
+        # if task_config['task'] in celery_app.tasks:
+        inner_list.append(doc_type(task_config["task"]))
+        # else:
+        #     inner_list.append(doc_type(task_config["task"]))
 
         next_run_time = task_config['schedule']
         hour = list(next_run_time.hour)[0] + 3

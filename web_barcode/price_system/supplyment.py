@@ -71,6 +71,7 @@ bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 def sender_error_to_tg(func):
     def wrapper(*args, **kwargs):
+        f"""{func.__doc__}"""
         try:
             return func(*args, **kwargs)
         except Exception as e:
