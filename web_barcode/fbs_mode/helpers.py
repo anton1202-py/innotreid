@@ -20,6 +20,7 @@ from barcode.writer import ImageWriter
 from dotenv import load_dotenv
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
+from price_system.supplyment import sender_error_to_tg
 from PyPDF3 import PdfFileReader, PdfFileWriter
 from PyPDF3.pdf import PageObject
 from reportlab.lib.pagesizes import letter
@@ -50,6 +51,7 @@ def stream_dropbox_file(path):
         return io.BytesIO(byte_data)
 
 
+@sender_error_to_tg
 def common_barcode_design(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода {артикул: [название светильника, штрихкод]}
@@ -146,6 +148,7 @@ def common_barcode_design(dict_barcode_print):
             f.write(pdf)
 
 
+@sender_error_to_tg
 def special_design_light(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
@@ -240,6 +243,7 @@ def special_design_light(dict_barcode_print):
             f.write(pdf)
 
 
+@sender_error_to_tg
 def special_design_dark(dict_barcode_print):
     """
     dict_barcode_print - словарь с данными для штрихкода (артикул: [название светильника, штрихкод])
@@ -334,6 +338,7 @@ def special_design_dark(dict_barcode_print):
             f.write(pdf)
 
 
+@sender_error_to_tg
 def design_barcodes_dict_spec(names_for_print_barcodes, dict_barcode_print):
     """
     Создает дизайн штрихкода. Входящие файлы:
@@ -391,6 +396,7 @@ def design_barcodes_dict_spec(names_for_print_barcodes, dict_barcode_print):
         special_design_dark(dark_special_dict)
 
 
+@sender_error_to_tg
 def print_barcode_to_pdf2(list_filenames, folder_summary_file_name, dropbox_folder):
     """
     Создает pdf файл для печати. С возможностью удаления всего кеша.
@@ -461,6 +467,7 @@ def natural_keys(text):
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 
+@sender_error_to_tg
 def qrcode_print_for_products():
     """
     Создает QR коды в необходимом формате и добавляет к ним артикул и его название 
@@ -524,6 +531,7 @@ def qrcode_print_for_products():
     return pdf_filenames_qrcode
 
 
+@sender_error_to_tg
 def supply_qrcode_to_standart_view():
     """
     Создает QR коды в необходимом формате. Входящие файлы:
@@ -572,7 +580,7 @@ def supply_qrcode_to_standart_view():
     return pdf_filenames_qrcode
 
 
-# def new_data_for_ozon_ticket(pdf_orders_file, csv_orders_file, out_filename):
+@sender_error_to_tg
 def new_data_for_ozon_ticket(save_folder: str, fbs_ozon_common_data: dict):
     """
     Функция добавляет название артикула на этикетки с номером заказа в файле ОЗОН
@@ -624,6 +632,7 @@ def new_data_for_ozon_ticket(save_folder: str, fbs_ozon_common_data: dict):
         outputStream.close()
 
 
+@sender_error_to_tg
 def new_data_for_yandex_ticket(save_folder: str, fbs_yandex_common_data: dict):
     """
     Функция добавляет название артикула на этикетки с номером заказа в файле ОЗОН
@@ -679,6 +688,7 @@ def new_data_for_yandex_ticket(save_folder: str, fbs_yandex_common_data: dict):
         outputStream.close()
 
 
+@sender_error_to_tg
 def merge_barcode_for_ozon_two_on_two(list_filenames, folder_summary_file_name):
     """
     Создает pdf файл с штрихкодами для Озона со вставкой 2х2 этикетки
@@ -759,6 +769,7 @@ def merge_barcode_for_ozon_two_on_two(list_filenames, folder_summary_file_name):
     f.close()
 
 
+@sender_error_to_tg
 def merge_barcode_for_yandex_two_on_two(list_filenames, folder_summary_file_name):
     """
     Создает pdf файл с штрихкодами для Яндекса и Озона со вставкой 2х2 этикетки

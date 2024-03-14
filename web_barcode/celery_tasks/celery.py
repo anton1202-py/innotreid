@@ -134,7 +134,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=18, minute=0, day_of_week=1)
     },
     "ozon_balance_task": {
-        "task": "celery_tasks.ozon_tasks.fbs_balance_maker",
+        "task": "celery_tasks.ozon_tasks.fbs_balance_maker_for_all_company",
         "schedule": crontab(hour=5, minute=0)
     },
     "yandex_balance_task": {

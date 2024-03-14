@@ -28,6 +28,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
+from price_system.supplyment import sender_error_to_tg
 from sqlalchemy import create_engine
 
 from .helpers import (design_barcodes_dict_spec,
@@ -1650,6 +1651,28 @@ class YandexMarketFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
+    @sender_error_to_tg
+    def saving_tickets_from_yandex_server(self, order, folder_path):
+        """
+        YANDEXMARKET.
+        Сохраняет этикетки заказа с сервера Яндекс Маркета
+        """
+        url_tickets = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}/delivery/labels'
+        response_tickets = requests.request(
+            "GET", url_tickets, headers=self.yandex_headers)
+        if response_tickets.status_code == 200:
+            pdf_data = response_tickets.content  # замените на фактические входные данные
+            save_folder_docs = f'{folder_path}/{order}.pdf'
+            # сохранение PDF-файла
+            with open(save_folder_docs, 'wb') as f:
+                f.write(pdf_data)
+        else:
+            message = f'FBS сборка YANDEX. Статус код = {response_tickets.status_code} заказа {order}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
+            time.sleep(5)
+            self.saving_tickets_from_yandex_server(self, order, folder_path)
+
     def saving_tickets(self):
         """
         YANDEXMARKET
@@ -1673,14 +1696,8 @@ class YandexMarketFbsMode():
                 os.makedirs(done_tickets_folder)
 
             for order in self.orders_list:
-                url_tickets = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}/delivery/labels'
-                response_tickets = requests.request(
-                    "GET", url_tickets, headers=self.yandex_headers)
-                pdf_data = response_tickets.content  # замените на фактические входные данные
-                save_folder_docs = f'{folder_path}/{order}.pdf'
-                # сохранение PDF-файла
-                with open(save_folder_docs, 'wb') as f:
-                    f.write(pdf_data)
+                self.saving_tickets_from_yandex_server(order, folder_path)
+                time.sleep(3)
 
             new_data_for_yandex_ticket(folder_path, orders_info_list)
             list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
