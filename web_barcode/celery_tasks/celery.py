@@ -11,12 +11,12 @@ app = Celery('celery_tasks',
              include=['celery_tasks.google_sheet_tasks',
                       'celery_tasks.ozon_tasks',
                       'celery_tasks.tasks',
-                      'celery_tasks.tasks_yandex_fby_fbs'
+                      'celery_tasks.tasks_yandex_fby_fbs',
                       'celery_tasks.yandex_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
                       'price_system.periodical_tasks',
-                      'reklama.periodic_tasks'
+                      'reklama.periodic_tasks',
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
 

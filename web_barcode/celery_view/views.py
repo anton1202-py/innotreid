@@ -61,4 +61,4 @@ def celery_tasks_view(request):
         'data': tasks_info,
     }
 
-    return render(request, 'celery_view/celery_tasks.html', context)
+    return render(request, 'celery_view/celery_page.html', context)
