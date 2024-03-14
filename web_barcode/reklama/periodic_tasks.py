@@ -535,3 +535,4 @@ def ozon_start_stop_nessessary_campaign():
         start_capmaing = list(campaign_status_dict.keys())[0]
         header = ozon_header_determinant(start_capmaing)
         ozon_start_campaign(start_capmaing, header)
+    ozon_campaign_status()

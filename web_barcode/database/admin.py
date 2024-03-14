@@ -1,3 +1,4 @@
+from celery import current_app
 from django.contrib import admin
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget
@@ -15,6 +16,11 @@ class StocksAdmin(admin.ModelAdmin):
              'classes': ['collapse']}
          ),
     ]
+
+
+@admin.register(current_app.tasks)
+class CeleryTaskAdmin(admin.ModelAdmin):
+    list_display = ['name', 'run', 'apply_async']
 
 
 admin.site.register(Articles)
