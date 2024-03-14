@@ -40,7 +40,9 @@ yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
 
-#@sender_error_to_tg
+# @sender_error_to_tg
+
+
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
@@ -52,8 +54,6 @@ def wb_articles_list():
         return wb_articles_list()
 
 
-
-@sender_error_to_tg
 @app.task
 def wb_add_price_info():
     """
@@ -65,16 +65,19 @@ def wb_add_price_info():
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(wb_nomenclature=data['nmId']).exists():
             if ArticlesPrice.objects.filter(
-                   common_article=Articles.objects.get(wb_nomenclature=data['nmId']),
-                   marketplace='Wildberries'
-                   ).exists():
+                common_article=Articles.objects.get(
+                    wb_nomenclature=data['nmId']),
+                marketplace='Wildberries'
+            ).exists():
                 latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(wb_nomenclature=data['nmId']),
+                    common_article=Articles.objects.get(
+                        wb_nomenclature=data['nmId']),
                     marketplace='Wildberries'
-                    ).latest('id')
+                ).latest('id')
                 if latest_record.price != data['price']:
                     ArticlesPrice(
-                        common_article=Articles.objects.get(wb_nomenclature=data['nmId']),
+                        common_article=Articles.objects.get(
+                            wb_nomenclature=data['nmId']),
                         marketplace='Wildberries',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=data['price'],
@@ -82,29 +85,33 @@ def wb_add_price_info():
                     ).save()
             else:
                 ArticlesPrice(
-                    common_article=Articles.objects.get(wb_nomenclature=data['nmId']),
+                    common_article=Articles.objects.get(
+                        wb_nomenclature=data['nmId']),
                     marketplace='Wildberries',
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=data['price'],
                     basic_discount=data['discount']
                 ).save()
 
-#@sender_error_to_tg
+# @sender_error_to_tg
+
+
 def ozon_articles_list(last_id='', main_price_data=None):
     """Получаем массив арткулов с ценами и скидками для OZON"""
     if main_price_data is None:
         main_price_data = []
     url = 'https://api-seller.ozon.ru/v4/product/info/prices'
     payload = json.dumps({
-      "filter": {
-        "offer_id": [],
-        "product_id": [],
-        "visibility": "ALL"
-      },
-      "last_id": "",
-      "limit": 1000
+        "filter": {
+            "offer_id": [],
+            "product_id": [],
+            "visibility": "ALL"
+        },
+        "last_id": "",
+        "limit": 1000
     })
-    response = requests.request("POST", url, headers=ozon_headers_karavaev, data=payload)
+    response = requests.request(
+        "POST", url, headers=ozon_headers_karavaev, data=payload)
     if response.status_code == 200:
         article_price_data = json.loads(response.text)['result']['items']
         for data in article_price_data:
@@ -117,8 +124,6 @@ def ozon_articles_list(last_id='', main_price_data=None):
         return ozon_articles_list()
 
 
-
-@sender_error_to_tg
 @app.task
 def ozon_add_price_info():
     """
@@ -130,29 +135,35 @@ def ozon_add_price_info():
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(ozon_product_id=data['product_id']).exists():
             if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.get(ozon_product_id=data['product_id']),
+                common_article=Articles.objects.get(
+                    ozon_product_id=data['product_id']),
                 marketplace='Ozon'
-                ).exists():
+            ).exists():
                 latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(ozon_product_id=data['product_id']),
+                    common_article=Articles.objects.get(
+                        ozon_product_id=data['product_id']),
                     marketplace='Ozon'
-                    ).latest('id')
+                ).latest('id')
                 if latest_record.price != int(float(data['price']['price'])):
                     ArticlesPrice(
-                        common_article=Articles.objects.get(ozon_product_id=data['product_id']),
+                        common_article=Articles.objects.get(
+                            ozon_product_id=data['product_id']),
                         marketplace='Ozon',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=int(float(data['price']['price'])),
                     ).save()
             else:
                 ArticlesPrice(
-                    common_article=Articles.objects.get(ozon_product_id=data['product_id']),
+                    common_article=Articles.objects.get(
+                        ozon_product_id=data['product_id']),
                     marketplace='Ozon',
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=int(float(data['price']['price'])),
                 ).save()
 
-#@sender_error_to_tg
+# @sender_error_to_tg
+
+
 def yandex_articles_list(page_token='', main_price_data=None):
     """Получаем массив арткулов с ценами и скидками для OZON"""
     if main_price_data is None:
@@ -166,20 +177,21 @@ def yandex_articles_list(page_token='', main_price_data=None):
         "tags": [],
         "archived": False
     })
-    response = requests.request("POST", url, headers=yandex_headers_karavaev, data=payload)
+    response = requests.request(
+        "POST", url, headers=yandex_headers_karavaev, data=payload)
     if response.status_code == 200:
-        article_price_data = json.loads(response.text)['result']['offerMappings']
+        article_price_data = json.loads(response.text)[
+            'result']['offerMappings']
         for data in article_price_data:
             main_price_data.append(data)
         if len(article_price_data) == 200:
-            yandex_articles_list(json.loads(response.text)['result']['paging']['nextPageToken'], main_price_data)
+            yandex_articles_list(json.loads(response.text)[
+                                 'result']['paging']['nextPageToken'], main_price_data)
         return main_price_data
     else:
         return yandex_articles_list()
 
 
-
-@sender_error_to_tg
 @app.task
 def yandex_add_price_info():
     """
@@ -191,23 +203,27 @@ def yandex_add_price_info():
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(yandex_seller_article=data['offer']['offerId']).exists():
             if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.get(yandex_seller_article=data['offer']['offerId']),
+                common_article=Articles.objects.get(
+                    yandex_seller_article=data['offer']['offerId']),
                 marketplace='Yandex'
-                ).exists():
+            ).exists():
                 latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(yandex_seller_article=data['offer']['offerId']),
+                    common_article=Articles.objects.get(
+                        yandex_seller_article=data['offer']['offerId']),
                     marketplace='Yandex'
-                    ).latest('id')
+                ).latest('id')
                 if latest_record.price != data['offer']['basicPrice']['value']:
                     ArticlesPrice(
-                        common_article=Articles.objects.get(yandex_seller_article=data['offer']['offerId']),
+                        common_article=Articles.objects.get(
+                            yandex_seller_article=data['offer']['offerId']),
                         marketplace='Yandex',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=data['offer']['basicPrice']['value'],
                     ).save()
             else:
                 ArticlesPrice(
-                    common_article=Articles.objects.get(yandex_seller_article=data['offer']['offerId']),
+                    common_article=Articles.objects.get(
+                        yandex_seller_article=data['offer']['offerId']),
                     marketplace='Yandex',
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=data['offer']['basicPrice']['value'],
