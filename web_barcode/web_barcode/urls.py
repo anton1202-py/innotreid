@@ -13,6 +13,7 @@ urlpatterns = [
     path('ozon_system/', include('ozon_system.urls')),
     path('price_system/', include('price_system.urls')),
     path('reklama/', include('reklama.urls')),
+    path('celery_view/', include('celery_view.urls')),
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

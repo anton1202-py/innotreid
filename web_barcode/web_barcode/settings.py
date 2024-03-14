@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'fbs_mode',
     'price_system',
     'reklama',
+    'celery_tasks',
+    'celery_view'
 ]
 
 MIDDLEWARE = [

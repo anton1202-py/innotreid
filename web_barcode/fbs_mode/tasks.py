@@ -2369,72 +2369,15 @@ def production_file(db_folder, file_add_name, headers_wb,
                      text=message_text, parse_mode='HTML')
 
 
-# @app.task
-def ooo_production_file():
-    production_file(
-        db_folder, file_add_name_ooo, wb_headers_ooo,
-        ozon_headers_ooo, yandex_headers_ooo)
-
-
-# @app.task
-def ooo_wb_action():
-    action_wb(
-        db_folder, file_add_name_ooo, wb_headers_ooo,
-        ozon_headers_ooo, yandex_headers_ooo)
-
-
-# ooo_wb_action()
-
-# @app.task
-def ooo_ozon_action():
-    action_ozon_ooo(ozon_headers_ooo, db_folder, file_add_name_ooo)
-
-
-# ooo_ozon_action()
-
-# @app.task
-def ooo_yandex_action():
-    action_yandex(yandex_headers_ooo, db_folder, file_add_name_ooo)
-
-
-# ooo_yandex_action()
-
-# @app.task
-def ip_wb_action():
-    action_wb(
-        db_folder, file_add_name_ip, wb_headers_karavaev,
-        ozon_headers_karavaev, yandex_headers_karavaev)
-
-
-# @app.task
-def ip_production_file():
-    production_file(
-        db_folder, file_add_name_ip, wb_headers_karavaev,
-        ozon_headers_karavaev, yandex_headers_karavaev)
-
-# ip_wb_action()
-
-
-# @app.task
-def ip_ozon_action_morning():
-    action_ozon_ip_morning(ozon_headers_karavaev,
-                           db_folder, file_add_name_ip)
-
-
-# ip_ozon_action_morning()
-
 @app.task
 def ip_ozon_action_day():
+    """Запускает дневную FBS сборку ИП только документы ОЗОН"""
     action_ozon_ip_day(ozon_headers_karavaev, db_folder, file_add_name_ip)
-
-
-# @app.task
-def ip_yandex_action():
-    action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
 
 
 @app.task
 def ooo_common_task():
+    """Запускает общую FBS сборку ООО"""
     action_wb(
         db_folder, file_add_name_ooo, wb_headers_ooo,
         ozon_headers_ooo, yandex_headers_ooo)
@@ -2450,6 +2393,7 @@ def ooo_common_task():
 
 @app.task
 def ip_morning_task():
+    """Запускает утреннюю FBS сборку ИП (Без документов ОЗОН)"""
     action_wb(
         db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
@@ -2466,6 +2410,7 @@ def ip_morning_task():
 
 @app.task
 def ip_friday_task():
+    """Запускает вечернюю FBS сборку ИП в пятницу (только ВБ)"""
     action_wb(
         db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
@@ -2473,4 +2418,3 @@ def ip_friday_task():
     production_file(
         db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
-# ip_yandex_action()

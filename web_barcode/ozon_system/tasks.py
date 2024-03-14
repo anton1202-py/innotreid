@@ -58,6 +58,7 @@ def start_compaign(compaign_id):
 
 @app.task
 def start_adv_company():
+    """Запускает группу рекламных кампаний ОЗОН"""
     today = datetime.now().date()
     group_list = AdvGroup.objects.all().values_list(
         'group', flat=True)
@@ -79,6 +80,7 @@ def start_adv_company():
 
 @app.task
 def stop_adv_company():
+    """Останавливает группу рекламных кампаний ОЗОН"""
     compaigns_list = GroupCompaign.objects.all().values_list('compaign', flat=True)
     for compaign in compaigns_list:
         stop_compaign(compaign)

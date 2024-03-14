@@ -242,6 +242,13 @@
                     <h3>Контроль цен</h3>
                 </a>
             </li>
+            {% url 'celery_tasks_view' as url_celery_tasks_view %}
+            <li>
+                <a href="{{ url_celery_tasks_view }}" {% if request.path == url_celery_tasks_view %}class="active"{% endif %}>
+                    <span class="material-symbols-sharp">sell</span>
+                    <h3>Периодические задачи</h3>
+                </a>
+            </li>
         </ul>
         </nav>
         </div>
