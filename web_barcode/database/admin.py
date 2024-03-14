@@ -18,7 +18,7 @@ class StocksAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(current_app.tasks)
+@admin.register(current_app)
 class CeleryTaskAdmin(admin.ModelAdmin):
     list_display = ['name', 'run', 'apply_async']
 
