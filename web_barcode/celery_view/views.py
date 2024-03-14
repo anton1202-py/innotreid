@@ -34,7 +34,7 @@ def celery_tasks_view(request):
         return redirect('login')
 
     tasks_info = []
-
+    print(doc_type('celery_tasks.ozon_tasks.fbs_balance_maker_for_all_company'))
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
         inner_list.append(task_config['task'])
@@ -42,7 +42,7 @@ def celery_tasks_view(request):
         if task_config['task'] in celery_app.tasks:
             inner_list.append(celery_app.tasks[task_config['task']].__doc__)
         else:
-            inner_list.append(doc_type(task_config["task"]))
+            inner_list.append('doc_type(task_config["task"])')
 
         next_run_time = task_config['schedule']
         hour = list(next_run_time.hour)[0] + 3
