@@ -40,9 +40,8 @@ yandex_headers_karavaev = {
     'Authorization': YANDEX_IP_KEY,
 }
 
-# @sender_error_to_tg
 
-
+@sender_error_to_tg
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
@@ -54,6 +53,7 @@ def wb_articles_list():
         return wb_articles_list()
 
 
+@sender_error_to_tg
 @app.task
 def wb_add_price_info():
     """
@@ -93,9 +93,8 @@ def wb_add_price_info():
                     basic_discount=data['discount']
                 ).save()
 
-# @sender_error_to_tg
 
-
+@sender_error_to_tg
 def ozon_articles_list(last_id='', main_price_data=None):
     """Получаем массив арткулов с ценами и скидками для OZON"""
     if main_price_data is None:
@@ -124,6 +123,7 @@ def ozon_articles_list(last_id='', main_price_data=None):
         return ozon_articles_list()
 
 
+@sender_error_to_tg
 @app.task
 def ozon_add_price_info():
     """
@@ -161,9 +161,8 @@ def ozon_add_price_info():
                     price=int(float(data['price']['price'])),
                 ).save()
 
-# @sender_error_to_tg
 
-
+@sender_error_to_tg
 def yandex_articles_list(page_token='', main_price_data=None):
     """Получаем массив арткулов с ценами и скидками для OZON"""
     if main_price_data is None:
@@ -192,6 +191,7 @@ def yandex_articles_list(page_token='', main_price_data=None):
         return yandex_articles_list()
 
 
+@sender_error_to_tg
 @app.task
 def yandex_add_price_info():
     """

@@ -26,26 +26,21 @@ def celery_tasks_view(request):
     """Показывает задачи celery на странице"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    tasks = current_app.tasks
-    now_date = datetime.now().strftime('%d-%m-%Y 00:00:00')
     tasks_info = []
     # print(celery_app.tasks)
     counter = 0
     counter_common = 0
     for task_name, task_config in celery_app.conf.beat_schedule.items():
-        print(task_config['task'])
-        # print(task_name, '           ', task_config)
-        inner_dict = {}
         inner_list = []
         # print(task_config['task'])
         counter_common += 1
         inner_list.append(task_config['task'])
 
-        # if task_config['task'] in celery_app.tasks:
-        inner_list.append(doc_type(task_config['task']))
-        #     counter += 1
-        # else:
-        #     inner_list.append('')
+        if task_config['task'] in celery_app.tasks:
+            inner_list.append(celery_app.tasks[task_config['task']].__doc__)
+            counter += 1
+        else:
+            inner_list.append(doc_type(task_config['task']))
 
         # inner_dict['Описание'] = celery_app.tasks[task_config['task']].__doc__
 
