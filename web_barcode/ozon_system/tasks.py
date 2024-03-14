@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def stop_compaign(compaign_id):
+    """Останавливает рекламную кампанию ОЗОН"""
     from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())
@@ -39,6 +40,7 @@ def stop_compaign(compaign_id):
 
 @shared_task
 def start_compaign(compaign_id):
+    """Запускает рекламную кампанию ОЗОН"""
     from ozon_system.views import access_token
     logger.info("Функция my_task приняла задание для compaign_id %s в %s",
                 compaign_id, datetime.now())

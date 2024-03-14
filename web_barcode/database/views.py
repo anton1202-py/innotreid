@@ -2,6 +2,8 @@ from datetime import date, datetime, timedelta
 
 import pandas as pd
 import xlwt
+from celery import current_app
+from celery_tasks.celery import app as celery_app
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -100,6 +102,43 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    tasks = current_app.tasks
+    tasks_info = []
+    # print(celery_app.tasks)
+    counter = 0
+    counter_common = 0
+    for task_name, task_config in celery_app.conf.beat_schedule.items():
+        # print(task_name, '           ', task_config)
+        inner_dict = {}
+        # print(task_config['task'])
+        counter_common += 1
+        if task_config['task'] in celery_app.tasks:
+            # print(celery_app.tasks[task_config['task']].__doc__)
+            # print('***************')
+            counter += 1
+        else:
+            print(task_config['task'])
+        inner_dict['Задача'] = task_config['task']
+        # inner_dict['Описание'] = celery_app.tasks[task_config['task']].__doc__
+        inner_dict['время выполнения'] = task_config['schedule']
+
+        tasks_info.append(inner_dict)
+    print(counter, counter_common)
+    # for i in tasks_info:
+    #     print(i)
+    # for task_name, task_config in celery_app.conf.beat_schedule.items():
+    #     task_func = celery_app.tasks[task_config['task']]
+    #     schedule_time = task_config['schedule']
+    #     docstring = task_func.__doc__ if task_func.__doc__ else "Нет документации"
+
+    #     tasks_info.append({
+    #         'name': task_func.name,
+    #         'docstring': docstring,
+    #         'schedule_time': schedule_time
+    #     })
+    # print(tasks_info)
+    # for i, j in tasks.items():
+    #     print(i, '        ', current_app.tasks[i].__doc__)
     # if request.user.is_staff == True:
     data = Articles.objects.all()
     context = {
