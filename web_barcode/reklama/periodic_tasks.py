@@ -142,7 +142,7 @@ def ad_list():
     return campaign_list
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def db_articles_in_campaign(campaign_number):
     """Достает артикулы, которые есть у компании в базе данных"""
     campaign_obj = AdvertisingCampaign.objects.get(
@@ -169,6 +169,7 @@ def wb_articles_in_campaign(campaign_number, header):
     return articles_list
 
 
+@sender_error_to_tg
 def header_determinant(campaign_number):
     """Определяет какой header использовать"""
     header_common = AdvertisingCampaign.objects.get(
@@ -283,6 +284,16 @@ def count_sum_orders():
 
 
 @sender_error_to_tg
+def round_up_to_nearest_multiple(num, multiple):
+    """
+    Округляет до ближайшего заданного числа
+    num - входящее для округления число
+    multiple - число до которого нужно округлить
+    """
+    return math.ceil(num / multiple) * multiple
+
+
+@sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
@@ -291,6 +302,7 @@ def replenish_campaign_budget(campaign, budget, header):
         campaign_number=campaign_obj
     ).koefficient
     campaign_budget = math.ceil(budget * koef / 100)
+    campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
 
     if campaign_budget < 500:
         campaign_budget = 500
@@ -336,7 +348,7 @@ def start_add_campaign(campaign, header):
             message = f"{response.text} {response.status_code}"
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
-    else:
+    elif status != 4 and status != 11 and status != 9:
         message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
@@ -370,7 +382,12 @@ def ozon_adv_bearer_token(payload, header):
     """Получение Bearer токена ОЗОН"""
     url = "https://performance.ozon.ru/api/client/token"
     response = requests.request("POST", url, headers=header, data=payload)
-    return json.loads(response.text)['access_token']
+    if response.status_code == 200:
+        return json.loads(response.text)['access_token']
+    else:
+        message = f'Не получил Bearer токен. Ошибка: {response.text}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg
@@ -383,7 +400,10 @@ def ozon_url_for_status(campaign, header, bearer_token):
         return json.loads(response.text)['list'][0]['state']
     else:
         time.sleep(10)
-        return ozon_url_for_status(campaign, header, bearer_token)
+        # return ozon_url_for_status(campaign, header, bearer_token)
+        message = f'Реклама Озон. Статус кампании {campaign} не выдает. Ошибка: {response.text}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg
@@ -479,17 +499,13 @@ def ozon_campaign_info():
 
 
 @sender_error_to_tg
-def ozon_campaign_for_start(stopped_campaign, campaign_status, campaign_id_number):
+def ozon_campaign_for_start(stopped_campaign, campaign_id_number):
     """Определяет какую кампанию нужно запустить"""
-
-    stopping = ''
     start_id = ''
     sorted_dict = {k: v for k, v in sorted(
         campaign_id_number.items(), key=lambda item: item[1])}
-    print('sorted_dict', sorted_dict)
     if sorted_dict[stopped_campaign] == max(sorted_dict.values()):
         start_campaign = list(sorted_dict.keys())[0]
-
     else:
         for i in range(len(list(sorted_dict.values()))):
             if list(sorted_dict.values())[i] == sorted_dict[stopped_campaign]:
@@ -497,28 +513,25 @@ def ozon_campaign_for_start(stopped_campaign, campaign_status, campaign_id_numbe
         for camp, value in sorted_dict.items():
             if value == start_id:
                 start_campaign = camp
-    print(start_campaign)
     return start_campaign
 
 
 @sender_error_to_tg
+@app.task
 def ozon_start_stop_nessessary_campaign():
-    """Останавливает необходимую кампанию"""
-    campaign_status, campaign_id_number = ozon_campaign_info()
-    if 'CAMPAIGN_STATE_RUNNING' in campaign_status.values():
-        for campaign, status in campaign_status.items():
+    """Останавливает и запускает необходимые кампании"""
+    campaign_status_dict, campaign_id_number_dict = ozon_campaign_info()
+    if 'CAMPAIGN_STATE_RUNNING' in campaign_status_dict.values():
+        for campaign, status in campaign_status_dict.items():
 
             if status == 'CAMPAIGN_STATE_RUNNING':
                 header = ozon_header_determinant(campaign)
                 ozon_stop_campaign(campaign, header)
                 start_capmaing = ozon_campaign_for_start(
-                    campaign, campaign_status, campaign_id_number)
+                    campaign, campaign_id_number_dict)
                 ozon_start_campaign(start_capmaing, header)
                 break
     else:
-        start_capmaing = list(campaign_status.keys())[0]
+        start_capmaing = list(campaign_status_dict.keys())[0]
         header = ozon_header_determinant(start_capmaing)
         ozon_start_campaign(start_capmaing, header)
-
-
-963832

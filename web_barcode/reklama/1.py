@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import traceback
 
@@ -75,4 +76,10 @@ def wb_articles_list():
     print(n)
 
 
-wb_articles_list()
+def round_up_to_nearest_multiple(num, multiple):
+    return math.ceil(num / multiple) * multiple
+
+
+num = 101
+result = round_up_to_nearest_multiple(num, 50)
+print(result)

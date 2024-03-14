@@ -153,8 +153,12 @@ app.conf.beat_schedule = {
         "task": "price_system.periodical_tasks.yandex_add_price_info",
         "schedule": crontab(hour=7, minute=18)
     },
-    "reklama_campaign_budget_add": {
+    "wb_reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
         "schedule": crontab(hour=21, minute=1)
+    },
+    "ozon_reklama_stop_start_campaign": {
+        "task": "reklama.periodic_tasks.ozon_start_stop_nessessary_campaign",
+        "schedule": crontab(hour=21, minute=0)
     },
 }
