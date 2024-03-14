@@ -201,7 +201,7 @@ def sender_message():
     return sender_data
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 @app.task
 def sender_zero_balance():
     """

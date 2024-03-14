@@ -33,17 +33,16 @@ def celery_tasks_view(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
 
-    print(doc_type('celery_tasks.tasks_yandex_fby_fbs.sender_zero_balance'))
     tasks_info = []
-    # print(celery_app.tasks)
+
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
         inner_list.append(task_config['task'])
 
-        # if task_config['task'] in celery_app.tasks:
-        inner_list.append(doc_type(task_config["task"]))
-        # else:
-        #     inner_list.append(doc_type(task_config["task"]))
+        if task_config['task'] in celery_app.tasks:
+            inner_list.append(celery_app.tasks[task_config['task']].__doc__)
+        else:
+            inner_list.append(doc_type(task_config["task"]))
 
         next_run_time = task_config['schedule']
         hour = list(next_run_time.hour)[0] + 3
