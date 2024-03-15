@@ -51,29 +51,15 @@ def uppercase(func):
                              f'<b>Ошибка</b>\n: {e}\n\n'
                              f'<b>Техническая информация</b>:\n {tb_str}')
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_error, parse_mode='HTML')
+                             text=message_error[:4000], parse_mode='HTML')
     return wrapper
 
 
-# @uppercase
+@uppercase
 def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     n = 1 + '23'
     print(n)
 
 
-def doc_type(function_path):
-    module_name, function_name = function_path.rsplit('.', 1)
-    # Динамически импортируем модуль
-    module = importlib.import_module(module_name)
-
-    # Получаем объект функции
-    function = getattr(module, function_name)
-
-    # Получаем документацию функции
-    docstring = inspect.getdoc(function)
-
-    return docstring
-
-
-print(doc_type('fbs_mode.tasks.ip_friday_task'))
+wb_articles_list()

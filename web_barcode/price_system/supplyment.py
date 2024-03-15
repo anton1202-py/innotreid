@@ -80,7 +80,7 @@ def sender_error_to_tg(func):
                              f'<b>Ошибка</b>\n: {e}\n\n'
                              f'<b>Техническая информация</b>:\n {tb_str}')
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_error, parse_mode='HTML')
+                             text=message_error[:4000], parse_mode='HTML')
     return wrapper
 
 
