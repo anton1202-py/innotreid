@@ -314,6 +314,7 @@ def replenish_campaign_budget(campaign, budget, header):
         "type": 1,
         "return": True
     })
+    print('камапния:', campaign, 'бюджет:', campaign_budget)
     # response = requests.request("POST", url, headers=header, data=payload)
     # if response.status_code == 200:
     #     message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
@@ -335,6 +336,8 @@ def check_status_campaign(campaign, header):
     main_data = json.loads(response.text)[0]
     print(main_data)
     status = main_data['status']
+    print('*************************')
+    print(campaign, status)
     return status
 
 
@@ -343,6 +346,7 @@ def start_add_campaign(campaign, header):
     """Запускает рекламную кампанию"""
     url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
     status = check_status_campaign(campaign, header)
+    print('start_add_campaign', campaign, status)
     if status == 4 or status == 11:
         response = requests.request("GET", url, headers=header)
         if response.status_code != 200:
