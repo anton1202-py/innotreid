@@ -345,8 +345,9 @@ def replenish_campaign_budget(campaign, budget, header):
     else:
         # print(f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}")
         message = f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}"
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
+        for user in campaign_budget_users_list:
+            bot.send_message(chat_id=user,
+                             text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg

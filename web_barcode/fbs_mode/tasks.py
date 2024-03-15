@@ -1701,7 +1701,7 @@ class YandexMarketFbsMode():
 
             new_data_for_yandex_ticket(folder_path, orders_info_list)
             list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
-            folder_summary_file_name = f'{self.main_save_folder_server}/yandex/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
+            folder_summary_file_name = f'{raw_ticket_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
             merge_barcode_for_yandex_two_on_two(
                 list_filenames, folder_summary_file_name)
             folder = (
@@ -2256,7 +2256,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
 # ==================== Сборка WILDBERRIES =================== #
 
-
+@sender_error_to_tg
 def action_wb(db_folder, file_add_name, headers_wb,
               headers_ozon, headers_yandex):
     wb_actions = WildberriesFbsMode(
@@ -2285,6 +2285,7 @@ def action_wb(db_folder, file_add_name, headers_wb,
 
 
 # =========== Сборка ОЗОН ========== #
+@sender_error_to_tg
 def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
@@ -2306,6 +2307,7 @@ def action_ozon_ooo(ozon_headers, db_folder, file_add_name):
     ozon_actions.check_status_formed_invoice()
 
 
+@sender_error_to_tg
 def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Собираю информацию о новых заказах с Озон.
@@ -2320,6 +2322,7 @@ def action_ozon_ip_morning(ozon_headers, db_folder, file_add_name):
     ozon_actions.forming_package_ticket_with_article()
 
 
+@sender_error_to_tg
 def action_ozon_ip_day(ozon_headers, db_folder, file_add_name):
     ozon_actions = OzonFbsMode(ozon_headers, db_folder, file_add_name)
     # 1. Готовлю данные для подтверждения отгрузки
@@ -2335,6 +2338,7 @@ def action_ozon_ip_day(ozon_headers, db_folder, file_add_name):
 
 
 # =========== АЛГОРИТМ ДЕЙСТВИЙ С ЯНДЕКС ========== #
+@sender_error_to_tg
 def action_yandex(yandex_headers, db_folder, file_add_name):
     yandex_actions = YandexMarketFbsMode(
         yandex_headers, db_folder, file_add_name)
@@ -2350,6 +2354,7 @@ def action_yandex(yandex_headers, db_folder, file_add_name):
     yandex_actions.saving_tickets()
 
 
+@sender_error_to_tg
 def production_file(db_folder, file_add_name, headers_wb,
                     headers_ozon, headers_yandex):
 
