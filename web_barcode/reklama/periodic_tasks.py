@@ -356,12 +356,21 @@ def check_status_campaign(campaign, header):
     url = f'https://advert-api.wb.ru/adv/v1/promotion/adverts'
     payload = json.dumps([campaign])
     response = requests.request("POST", url, headers=header, data=payload)
-    main_data = json.loads(response.text)[0]
-    # print(main_data)
-    status = main_data['status']
-    # print('*************************')
-    # print(campaign, status)
-    return status
+    if response.status_code == 200:
+        main_data = json.loads(response.text)[0]
+        status = main_data['status']
+        return status
+    elif response.status_code == 504:
+        time.sleep(5)
+        message = f"РЕКЛАМА ВБ. Статус код на запрос статуса кампании {campaign} = {response.status_code}. Повторяю запрос"
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        return check_status_campaign(campaign, header)
+    else:
+        message = f"статус код на запрос статуса кампании {campaign} = {response.status_code}. Возвращаю статус код 11."
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        return 11
 
 
 @sender_error_to_tg
@@ -369,15 +378,20 @@ def start_add_campaign(campaign, header):
     """Запускает рекламную кампанию"""
     url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
     status = check_status_campaign(campaign, header)
-    # print('start_add_campaign', campaign, status)
-    if status == 4 or status == 11:
-        response = requests.request("GET", url, headers=header)
-        if response.status_code != 200:
-            message = f"{response.text} {response.status_code}"
+    if status:
+        if status == 4 or status == 11:
+            response = requests.request("GET", url, headers=header)
+            if response.status_code != 200:
+                message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=message, parse_mode='HTML')
+        elif status != 4 and status != 11 and status != 9:
+            message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
-    elif status != 4 and status != 11 and status != 9:
-        message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
+    else:
+        response = requests.request("GET", url, headers=header)
+        message = f"статус кампании {campaign} не пришел, но все равно пытаюсь ее запустить"
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
 
