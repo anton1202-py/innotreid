@@ -314,16 +314,16 @@ def replenish_campaign_budget(campaign, budget, header):
         "type": 1,
         "return": True
     })
-    response = requests.request("POST", url, headers=header, data=payload)
-    if response.status_code == 200:
-        message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
-        for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
-                             text=message, parse_mode='HTML')
-    else:
-        message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
+    # response = requests.request("POST", url, headers=header, data=payload)
+    # if response.status_code == 200:
+    #     message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
+    #     for user in campaign_budget_users_list:
+    #         bot.send_message(chat_id=user,
+    #                          text=message, parse_mode='HTML')
+    # else:
+    #     message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
+    #     bot.send_message(chat_id=CHAT_ID_ADMIN,
+    #                      text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg
@@ -333,6 +333,7 @@ def check_status_campaign(campaign, header):
     payload = json.dumps([campaign])
     response = requests.request("POST", url, headers=header, data=payload)
     main_data = json.loads(response.text)[0]
+    print(main_data)
     status = main_data['status']
     return status
 
@@ -366,7 +367,11 @@ def budget_working():
         start_add_campaign(campaign, header)
 
 
+budget_working()
+
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ OZON ========== #
+
+
 @sender_error_to_tg
 def ozon_campaign_list():
     """Возвращает список кампаний ОЗОН из базы данных"""

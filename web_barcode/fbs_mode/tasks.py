@@ -1820,7 +1820,7 @@ class YandexMarketFbsMode():
             message_text = error_message(
                 'create_yandex_selection_sheet_pdf', self.create_yandex_selection_sheet_pdf, e)
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=message_text[:4000], parse_mode='HTML')
 
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
