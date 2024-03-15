@@ -293,6 +293,17 @@ def round_up_to_nearest_multiple(num, multiple):
     return math.ceil(num / multiple) * multiple
 
 
+def wb_canpaign_budget(campaign, header):
+    """
+    WILDBERRIES.
+    Смотрит бюджет рекламной кампании ВБ.
+    """
+    url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign}'
+    response = requests.request("GET", url, headers=header)
+    budget = json.loads(response.text)['total']
+    return budget
+
+
 @sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
@@ -304,6 +315,10 @@ def replenish_campaign_budget(campaign, budget, header):
     campaign_budget = math.ceil(budget * koef / 100)
     campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
 
+    current_campaign_budget = wb_canpaign_budget(campaign, header)
+
+    print()
+
     if campaign_budget < 500:
         campaign_budget = 500
     elif campaign_budget > 10000:
@@ -314,7 +329,8 @@ def replenish_campaign_budget(campaign, budget, header):
         "type": 1,
         "return": True
     })
-    print('камапния:', campaign, 'бюджет:', campaign_budget)
+    print(
+        f'кампния: {campaign}, бюджет для пополнения: {campaign_budget}, текущий бюджет: {current_campaign_budget}')
     # response = requests.request("POST", url, headers=header, data=payload)
     # if response.status_code == 200:
     #     message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
