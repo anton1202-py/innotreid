@@ -155,3 +155,5 @@ def qrcode_supply():
 
 # create_delivery()
 qrcode_supply()
+
+""
