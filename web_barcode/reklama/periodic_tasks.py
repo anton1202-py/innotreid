@@ -278,6 +278,7 @@ def count_sum_orders():
             data_list = json.loads(response.text)['data']['cards']
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
+            time.sleep(1)
         time.sleep(61)
         # print(campaign_orders_money_dict)
     return campaign_orders_money_dict
@@ -293,7 +294,7 @@ def round_up_to_nearest_multiple(num, multiple):
     return math.ceil(num / multiple) * multiple
 
 
-def wb_canpaign_budget(campaign, header):
+def wb_campaign_budget(campaign, header):
     """
     WILDBERRIES.
     Смотрит бюджет рекламной кампании ВБ.
@@ -315,9 +316,7 @@ def replenish_campaign_budget(campaign, budget, header):
     campaign_budget = math.ceil(budget * koef / 100)
     campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
 
-    current_campaign_budget = wb_canpaign_budget(campaign, header)
-
-    print()
+    current_campaign_budget = wb_campaign_budget(campaign, header)
 
     if campaign_budget < 500:
         campaign_budget = 500
@@ -329,18 +328,22 @@ def replenish_campaign_budget(campaign, budget, header):
         "type": 1,
         "return": True
     })
-    print(
-        f'кампния: {campaign}, бюджет для пополнения: {campaign_budget}, текущий бюджет: {current_campaign_budget}')
-    # response = requests.request("POST", url, headers=header, data=payload)
-    # if response.status_code == 200:
-    #     message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
-    #     for user in campaign_budget_users_list:
-    #         bot.send_message(chat_id=user,
-    #                          text=message, parse_mode='HTML')
-    # else:
-    #     message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
-    #     bot.send_message(chat_id=CHAT_ID_ADMIN,
-    #                      text=message, parse_mode='HTML')
+
+    if campaign_budget > current_campaign_budget:
+        print(
+            f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Продаж за позавчера было на {budget}")
+        # response = requests.request("POST", url, headers=header, data=payload)
+        # if response.status_code == 200:
+        #     message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
+        #     for user in campaign_budget_users_list:
+        #         bot.send_message(chat_id=user,
+        #                          text=message, parse_mode='HTML')
+        # else:
+        #     message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
+        #     bot.send_message(chat_id=CHAT_ID_ADMIN,
+        #                      text=message, parse_mode='HTML')
+    else:
+        print(f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}")
 
 
 @sender_error_to_tg
@@ -383,7 +386,7 @@ def budget_working():
     for campaign, budget in campaign_data.items():
         header = header_determinant(campaign)
         replenish_campaign_budget(campaign, budget, header)
-        time.sleep(2)
+        time.sleep(3)
         start_add_campaign(campaign, header)
 
 
