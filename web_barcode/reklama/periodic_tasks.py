@@ -367,7 +367,7 @@ def budget_working():
         start_add_campaign(campaign, header)
 
 
-budget_working()
+# budget_working()
 
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ OZON ========== #
 
