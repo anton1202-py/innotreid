@@ -55,6 +55,10 @@ class ProcentForAd(models.Model):
         verbose_name='Дата коэффициента',
         auto_now_add=True
     )
+    virtual_budget = models.IntegerField(
+        verbose_name='Виртуальный бюджет',
+        default=0
+    )
 
     def __str__(self):
         return self.campaign_number.campaign_number, self.koefficient

@@ -323,16 +323,27 @@ def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
     campaign_obj = AdvertisingCampaign.objects.get(campaign_number=campaign)
-    koef = ProcentForAd.objects.get(
+    info_campaign_obj = ProcentForAd.objects.get(
         campaign_number=campaign_obj
-    ).koefficient
+    )
+    koef = info_campaign_obj.koefficient
+    virtual_budjet = info_campaign_obj.virtual_budget
+
     campaign_budget = math.ceil(budget * koef / 100)
     campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
 
     current_campaign_budget = wb_campaign_budget(campaign, header)
 
     if campaign_budget < 500:
-        campaign_budget = 500
+        common_budget = campaign_budget + virtual_budjet
+        if common_budget >= 500:
+            campaign_budget = common_budget
+            virtual_budjet = 0
+        else:
+            virtual_budjet = common_budget
+            campaign_budget = common_budget
+        info_campaign_obj.save()
+
     elif campaign_budget > 10000:
         campaign_budget = 10000
 
@@ -343,24 +354,18 @@ def replenish_campaign_budget(campaign, budget, header):
     })
 
     if campaign_budget >= current_campaign_budget:
-        # print(
-        #     f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Продаж за позавчера было на {budget}")
         response = requests.request("POST", url, headers=header, data=payload)
         if response.status_code == 200:
             message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
-            for user in campaign_budget_users_list:
-                bot.send_message(chat_id=user,
-                                 text=message, parse_mode='HTML')
         else:
             message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message, parse_mode='HTML')
+    elif campaign_budget < 500:
+        message = f"кампании {campaign} не пополнилась потому общий виртуальный счет  {campaign_budget} < 500. Продаж за позавчера было на {budget}"
     else:
-        # print(f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}")
         message = f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}"
-        for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
-                             text=message, parse_mode='HTML')
+    for user in campaign_budget_users_list:
+        bot.send_message(chat_id=user,
+                         text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg
