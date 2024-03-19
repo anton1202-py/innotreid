@@ -168,9 +168,11 @@ def wb_articles_in_campaign(campaign_number, header):
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
     else:
-        message = f'response.status_code, {campaign_number} {response.status_code}'
+        message = f'Статус код {response.status_code} - кампания {campaign_number}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
+        time.sleep(5)
+        return wb_articles_in_campaign(campaign_number, header)
 
 
 @sender_error_to_tg
@@ -305,8 +307,15 @@ def wb_campaign_budget(campaign, header):
     """
     url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign}'
     response = requests.request("GET", url, headers=header)
-    budget = json.loads(response.text)['total']
-    return budget
+    if response.status_code == 200:
+        budget = json.loads(response.text)['total']
+        return budget
+    else:
+        message = f'Статус код просмотра бюджета {response.status_code} - кампания {campaign}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        time.sleep(5)
+        return wb_campaign_budget(campaign, header)
 
 
 @sender_error_to_tg
