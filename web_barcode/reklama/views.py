@@ -71,14 +71,14 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    ooo_wb_articles_data()
+    # ooo_wb_articles_data()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
-        latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient')
+        latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
     koef_dict = {}
     for koef in koef_campaign_data:
         koef_dict[koef['campaign_number']] = [
-            koef['koefficient'], koef['koef_date'], koef['latest_add']]
+            koef['koefficient'], koef['koef_date'], koef['latest_add'], koef['virtual_budget']]
     form = FilterUrLicoForm()
     if request.POST:
         request_data = request.POST
@@ -118,7 +118,7 @@ def ad_campaign_add(request):
 
 
 def ozon_ad_campaigns(request):
-    """Отображает список рекламных компаний WB и добавляет их"""
+    """Отображает список рекламных компаний OZON и добавляет их"""
     company_list = OzonCampaign.objects.all().order_by('id')
     form = FilterUrLicoForm()
     # Словарь с текущим статусом рекламных кампаний вида {кампания: статус}

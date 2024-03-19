@@ -13,6 +13,7 @@
                     <th>Номер кампании WB</th>
                     <th>Юр. лицо</th>
                     <th>Процент на рекламу</th>
+                    <th>Виртуальный счет</th>
                     <th>Дата добавления кампании</th>
                     <th>Дата изменения процента</th>
                     <th>del</th>
@@ -27,6 +28,7 @@
                         <td><input value="{{ koef_dict|get_item:el.id|list_position:0 }}" type="number" name="ad_koefficient" required/></td>
                         <button type="Submit" value="{{koef_dict|get_item:el.id|list_position:2}}" class="custom-button" name="change-button" method="POST" style="display: none;">Добавить</button>
                     </form>
+                    <td>{{ koef_dict|get_item:el.id|list_position:3 }}</td>
                     <td>{{ el.create_date }}</td>
                     <td>{{ koef_dict|get_item:el.id|list_position:1 }}</td>
     
