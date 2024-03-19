@@ -164,8 +164,11 @@ def wb_articles_in_campaign(campaign_number, header):
         campaign_number
     ])
     response = requests.request("POST", url, headers=header, data=payload)
-    articles_list = json.loads(response.text)[0]['autoParams']['nms']
-    return articles_list
+    if response.status_code == 200:
+        articles_list = json.loads(response.text)[0]['autoParams']['nms']
+        return articles_list
+    else:
+        print(response.status_code)
 
 
 @sender_error_to_tg
@@ -290,6 +293,7 @@ def round_up_to_nearest_multiple(num, multiple):
     multiple - число до которого нужно округлить
     """
     return math.ceil(num / multiple) * multiple
+
 
 @sender_error_to_tg
 def wb_campaign_budget(campaign, header):
