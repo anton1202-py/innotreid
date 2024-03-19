@@ -130,7 +130,6 @@ def create_articles_company(campaign_number, header):
 
 
 @sender_error_to_tg
-# @app.task
 def ad_list():
     """
     Достает список номеров всех компании из базы данных.
@@ -180,7 +179,6 @@ def header_determinant(campaign_number):
 
 
 @sender_error_to_tg
-# @app.task
 def campaign_article_add():
     """
     Сравнивает списки артикулов в рекламной кампании WB и в рекламной кампании
@@ -293,7 +291,7 @@ def round_up_to_nearest_multiple(num, multiple):
     """
     return math.ceil(num / multiple) * multiple
 
-
+@sender_error_to_tg
 def wb_campaign_budget(campaign, header):
     """
     WILDBERRIES.

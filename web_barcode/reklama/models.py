@@ -209,3 +209,84 @@ class OzonCampaign(models.Model):
     class Meta:
         verbose_name = 'Рекламная кампания ОЗОН'
         verbose_name_plural = 'Рекламная кампания ОЗОН'
+
+
+class OooWbArticle(models.Model):
+    """Список артикулов ООО с Wildberries. Пока что без сопоставления"""
+    wb_article = models.CharField(
+        verbose_name='Артикул ООО ВБ',
+        max_length=50,
+        unique=True
+    )
+    wb_nomenclature = models.IntegerField(
+        verbose_name='Номенклатура ООО ВБ',
+        blank=True,
+        null=True
+    )
+    article_title = models.CharField(
+        verbose_name='Название артикула',
+        max_length=300,
+        blank=True,
+        null=True
+    )
+
+    # def __str__(self):
+    #     return str(self.pk)
+
+    class Meta:
+        verbose_name = 'Артикул ВБ ООО'
+        verbose_name_plural = 'Артикул ВБ ООО'
+
+
+class OooWbArticleInfo(models.Model):
+    """Содержит информацию артикулов ООО с Wildberries."""
+    wb_article = models.ForeignKey(
+        OooWbArticle,
+        verbose_name='Артикул ООО ВБ',
+        on_delete=models.CASCADE,
+        related_name='article_info',
+    )
+    fbo_amount = models.IntegerField(
+        verbose_name='Остаток на складе FBO',
+        blank=True,
+        null=True
+    )
+    ad_campaign = models.ForeignKey(
+        AdvertisingCampaign,
+        verbose_name='Кампания артикула',
+        on_delete=models.CASCADE,
+        related_name='article_info',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Информация артикула ВБ ООО'
+        verbose_name_plural = 'Информация артикула ВБ ООО'
+
+
+class DataOooWbArticle(models.Model):
+    """Содержит информацию артикулов ООО с Wildberries."""
+    wb_article = models.ForeignKey(
+        OooWbArticle,
+        verbose_name='Артикул ООО ВБ',
+        on_delete=models.CASCADE,
+        related_name='data_wb_article',
+    )
+    fbo_amount = models.IntegerField(
+        verbose_name='Остаток на складе FBO',
+        blank=True,
+        null=True
+    )
+    ad_campaign = models.ForeignKey(
+        AdvertisingCampaign,
+        verbose_name='Кампания артикула',
+        on_delete=models.CASCADE,
+        related_name='data_wb_article',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Информация артикулов ВБ ООО'
+        verbose_name_plural = 'Информация артикулов ВБ ООО'
