@@ -168,7 +168,8 @@ def wb_articles_in_campaign(campaign_number, header):
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
     else:
-        print(response.status_code)
+        print(
+            f'response.status_code, {campaign_number} {response.status_code}')
 
 
 @sender_error_to_tg
