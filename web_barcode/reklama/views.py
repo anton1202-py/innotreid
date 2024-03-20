@@ -10,12 +10,11 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 from reklama.forms import FilterUrLicoForm
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            OzonCampaign, ProcentForAd, SalesArticleStatistic,
-                            UrLico, WbArticleCommon, WbArticleCompany)
-from reklama.periodic_tasks import (create_articles_company,
-                                    header_determinant,
-                                    ozon_status_one_campaign)
-from reklama.supplyment import ooo_wb_articles_data
+                            DataOooWbArticle, OzonCampaign, ProcentForAd,
+                            SalesArticleStatistic, UrLico, WbArticleCommon,
+                            WbArticleCompany)
+from reklama.periodic_tasks import ozon_status_one_campaign
+from reklama.supplyment import create_articles_company, header_determinant
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -115,6 +114,17 @@ def ad_campaign_add(request):
         'koef_dict': koef_dict
     }
     return render(request, 'reklama/ad_campaign.html', context)
+
+
+def wb_article_campaign(request):
+    """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    data = DataOooWbArticle.objects.all()
+    context = {
+        'data': data,
+    }
+    return render(request, 'reklama/wb_article_campaign.html', context)
 
 
 def ozon_ad_campaigns(request):

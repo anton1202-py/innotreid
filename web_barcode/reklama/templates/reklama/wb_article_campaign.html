@@ -1,0 +1,37 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Добавление рекламной кампании{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Добавление рекламной кампании</h1>
+        </div>
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr>
+                <th>Артикул продавца WB</th>
+                <th>Название артикула</th>
+                <th>Остаток FBO</th>
+                <th>Рекламная кампания</th>
+            </tr>
+            {% for el in data %}
+                <tr>
+                    <td>{{ el.wb_article.wb_article }}</td>
+                    <td>{{ el.wb_article.article_title }}</td>
+                    {% if el.fbo_amount == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.fbo_amount }}</td>
+                    {% endif %}
+                    {% if el.ad_campaign == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ad_campaign }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>    
+        
+{% endblock %}

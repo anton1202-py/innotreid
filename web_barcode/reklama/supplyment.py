@@ -10,8 +10,8 @@ import telegram
 from dotenv import load_dotenv
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            OooWbArticle, OooWbArticleInfo, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
+                            DataOooWbArticle, OooWbArticle, OooWbArticleInfo,
+                            OzonCampaign, ProcentForAd, SalesArticleStatistic,
                             WbArticleCommon, WbArticleCompany)
 
 # Загрузка переменных окружения из файла .env
@@ -109,6 +109,315 @@ ozon_payload = {
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ WILDBERRIES ========== #
 
 
+def create_articles_company(campaign_number, header):
+    """При создании кампании записываются артикулы этой кампании в базу"""
+    url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
+    payload = json.dumps([
+        campaign_number
+    ])
+    response = requests.request("POST", url, headers=header, data=payload)
+    articles_list = json.loads(response.text)[0]['autoParams']['nms']
+    for article in articles_list:
+        if not WbArticleCommon.objects.filter(wb_article=article).exists():
+            WbArticleCommon(wb_article=article).save()
+        campaign_obj = AdvertisingCampaign.objects.get(
+            campaign_number=campaign_number)
+        article_obj = WbArticleCommon.objects.get(wb_article=article)
+        WbArticleCompany(
+            campaign_number=campaign_obj,
+            wb_article=article_obj
+        ).save()
+
+
+@sender_error_to_tg
+def ad_list():
+    """
+    Достает список номеров всех компании из базы данных.
+    """
+    campaign_data = AdvertisingCampaign.objects.all().values()
+    campaign_list = []
+    for i in campaign_data:
+        campaign_list.append(int(i['campaign_number']))
+    return campaign_list
+
+
+@sender_error_to_tg
+def db_articles_in_campaign(campaign_number):
+    """Достает артикулы, которые есть у компании в базе данных"""
+    campaign_obj = AdvertisingCampaign.objects.get(
+        campaign_number=campaign_number)
+    articles_data = WbArticleCompany.objects.filter(
+        campaign_number=campaign_obj
+    )
+    articles_list = []
+    for data in articles_data:
+        articles_list.append(int(data.wb_article.wb_article))
+
+    return articles_list
+
+
+@sender_error_to_tg
+def wb_articles_in_campaign(campaign_number, header):
+    """Достает артикулы, которые есть у компании в Wildberries"""
+    url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
+    payload = json.dumps([
+        campaign_number
+    ])
+    response = requests.request("POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        articles_list = json.loads(response.text)[0]['autoParams']['nms']
+        return articles_list
+    else:
+        message = f'Статус код {response.status_code} - кампания {campaign_number}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        time.sleep(5)
+        return wb_articles_in_campaign(campaign_number, header)
+
+
+@sender_error_to_tg
+def header_determinant(campaign_number):
+    """Определяет какой header использовать"""
+    header_common = AdvertisingCampaign.objects.get(
+        campaign_number=campaign_number).ur_lico.ur_lice_name
+    header = wb_header[header_common]
+
+    return header
+
+
+@sender_error_to_tg
+def campaign_article_add():
+    """
+    Сравнивает списки артикулов в рекламной кампании WB и в рекламной кампании
+    базы данных. Если есть расхождения - устранияет их.
+    """
+    campaign_list = ad_list()
+    # Сравниваю данные для каждой кампании между ВБ и Базой ДАнных.
+    # Если есть расхождения, устранияю их в базе данных
+    for campaign in campaign_list:
+        header = header_determinant(campaign)
+        campaign_obj = AdvertisingCampaign.objects.get(
+            campaign_number=campaign)
+        # Смотрю список артикулов на ВБ
+        wb_articles_list = wb_articles_in_campaign(campaign, header)
+        db_articles_list = db_articles_in_campaign(campaign)
+        # Если артикула нет в базе - добавляем
+        for article in wb_articles_list:
+            if article not in db_articles_list:
+                if not WbArticleCommon.objects.filter(wb_article=article).exists():
+                    WbArticleCommon(wb_article=article).save()
+
+                article_obj = WbArticleCommon.objects.get(wb_article=article)
+                WbArticleCompany(
+                    campaign_number=campaign_obj,
+                    wb_article=article_obj
+                ).save()
+        # Если артикула из базы нет в ВБ - удаляем
+        for db_article in db_articles_list:
+            if db_article not in wb_articles_list:
+                article_obj = WbArticleCommon.objects.get(
+                    wb_article=db_article)
+                wb = WbArticleCompany.objects.filter(
+                    campaign_number=campaign_obj,
+                    wb_article=article_obj
+                )
+                # print(wb)
+                print('Удалил артикул', article)
+
+
+@sender_error_to_tg
+def count_sum_adv_campaign(data_list: list):
+    """
+    Подсчитывает сумму в рублях одной рекламной кампании
+    data_list - входящий список данных по артикулвм в кампании
+    """
+    sum = 0
+
+    for data in data_list:
+        article_sum = data['statistics']['selectedPeriod']['ordersSumRub']
+        sum += article_sum
+    return sum
+
+
+@sender_error_to_tg
+def count_sum_orders():
+    """Считает сумму заказов каждой рекламной кампании за позавчера"""
+    campaign_list = ad_list()
+
+    calculate_data = datetime.now() - timedelta(days=2)
+    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
+    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+    # Словарь вида: {номер_компании: заказов_за_позавчера}
+    wb_koef = math.ceil(len(campaign_list)/3)
+    url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
+    campaign_orders_money_dict = {}
+    for i in range(wb_koef):
+        # Лист для запроса в эндпоинту ОЗОНа
+        start_point = i*3
+        finish_point = (i+1)*3
+        small_info_list = campaign_list[
+            start_point:finish_point]
+
+        for campaign in small_info_list:
+            header = header_determinant(campaign)
+            article_list = wb_articles_in_campaign(campaign, header)
+            payload = json.dumps({
+                "brandNames": [],
+                "objectIDs": [],
+                "tagIDs": [],
+                "nmIDs": article_list,
+                "timezone": "Europe/Moscow",
+                "period": {
+                    "begin": begin_date,
+                    "end": end_date
+                },
+                "orderBy": {
+                    "field": "ordersSumRub",
+                    "mode": "asc"
+                },
+                "page": 1
+            })
+            response = requests.request(
+                "POST", url, headers=header, data=payload)
+            # print(response.text)
+            data_list = json.loads(response.text)['data']['cards']
+            sum = count_sum_adv_campaign(data_list)
+            campaign_orders_money_dict[campaign] = sum
+            time.sleep(1)
+        time.sleep(61)
+        # print(campaign_orders_money_dict)
+    return campaign_orders_money_dict
+
+
+@sender_error_to_tg
+def round_up_to_nearest_multiple(num, multiple):
+    """
+    Округляет до ближайшего заданного числа
+    num - входящее для округления число
+    multiple - число до которого нужно округлить
+    """
+    return math.ceil(num / multiple) * multiple
+
+
+@sender_error_to_tg
+def wb_campaign_budget(campaign, header):
+    """
+    WILDBERRIES.
+    Смотрит бюджет рекламной кампании ВБ.
+    """
+    url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign}'
+    response = requests.request("GET", url, headers=header)
+    if response.status_code == 200:
+        budget = json.loads(response.text)['total']
+        return budget
+    else:
+        message = f'Статус код просмотра бюджета {response.status_code} - кампания {campaign}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        time.sleep(5)
+        return wb_campaign_budget(campaign, header)
+
+
+@sender_error_to_tg
+def replenish_campaign_budget(campaign, budget, header):
+    """Пополняет бюджет рекламной кампаний"""
+    url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
+    campaign_obj = AdvertisingCampaign.objects.get(campaign_number=campaign)
+    info_campaign_obj = ProcentForAd.objects.get(
+        campaign_number=campaign_obj
+    )
+    koef = info_campaign_obj.koefficient
+    virtual_budjet = info_campaign_obj.virtual_budget
+
+    campaign_budget = math.ceil(budget * koef / 100)
+    campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
+
+    current_campaign_budget = wb_campaign_budget(campaign, header)
+
+    if campaign_budget < 500:
+        common_budget = campaign_budget + virtual_budjet
+        if common_budget >= 500:
+            campaign_budget = common_budget
+            info_campaign_obj.save()
+            info_campaign_obj.virtual_budget = 0
+        else:
+            info_campaign_obj.virtual_budget = common_budget
+            info_campaign_obj.save()
+            campaign_budget = common_budget
+
+    elif campaign_budget > 10000:
+        campaign_budget = 10000
+
+    payload = json.dumps({
+        "sum": campaign_budget,
+        "type": 1,
+        "return": True
+    })
+
+    if campaign_budget > 500 and campaign_budget >= current_campaign_budget:
+        response = requests.request("POST", url, headers=header, data=payload)
+        if response.status_code == 200:
+            message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
+        else:
+            message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
+    elif campaign_budget < 500:
+        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньшне 500.'
+    else:
+        message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
+    for user in campaign_budget_users_list:
+        bot.send_message(chat_id=user,
+                         text=message, parse_mode='HTML')
+    # print(message)
+    # bot.send_message(chat_id=CHAT_ID_ADMIN,
+    #                  text=message, parse_mode='HTML')
+
+
+@sender_error_to_tg
+def check_status_campaign(campaign, header):
+    """WILDBERRIES. Проверяет статус рекламной кампаниию"""
+    url = f'https://advert-api.wb.ru/adv/v1/promotion/adverts'
+    payload = json.dumps([campaign])
+    response = requests.request("POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        main_data = json.loads(response.text)[0]
+        status = main_data['status']
+        return status
+    elif response.status_code == 504:
+        time.sleep(5)
+        message = f"РЕКЛАМА ВБ. Статус код на запрос статуса кампании {campaign} = {response.status_code}. Повторяю запрос"
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        return check_status_campaign(campaign, header)
+    else:
+        message = f"статус код на запрос статуса кампании {campaign} = {response.status_code}. Возвращаю статус код 11."
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        return 11
+
+
+@sender_error_to_tg
+def start_add_campaign(campaign, header):
+    """Запускает рекламную кампанию"""
+    url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
+    status = check_status_campaign(campaign, header)
+    if status:
+        if status == 4 or status == 11:
+            response = requests.request("GET", url, headers=header)
+            if response.status_code != 200:
+                message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=message, parse_mode='HTML')
+        elif status != 4 and status != 11 and status != 9:
+            message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
+    else:
+        response = requests.request("GET", url, headers=header)
+        message = f"статус кампании {campaign} не пришел, но все равно пытаюсь ее запустить"
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+
+
 def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
     """Получает информацию артикулов ООО ВБ от API WB"""
     if not common_data:
@@ -145,8 +454,6 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
         for data in article_info:
             inner_data = (data['vendorCode'], data['nmID'], data['title'])
             common_data.append(inner_data)
-        print(check_amount)
-        print(len(common_data))
         if len(article_info) == 1000:
             # time.sleep(5)
             ooo_wb_articles_info(
@@ -162,17 +469,58 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
 def ooo_wb_articles_data():
     """Записывает артикулы ООО ВБ в базу данных"""
     data = ooo_wb_articles_info()
-
+    article_list = []
     for entry in data:
         wb_article, wb_nomenclature, article_title = entry
+        article_list.append(wb_nomenclature)
         OooWbArticle.objects.get_or_create(
             wb_article=wb_article,
             wb_nomenclature=wb_nomenclature,
             article_title=article_title)
+    return article_list
 
-    # instances = [OooWbArticle(wb_article=entry[0], wb_nomenclature=entry[1],
-    #                           article_title=entry[2])
-    #              for entry in data]
 
-    # # Используем bulk_create() для эффективной записи всех экземпляров в базу данных
-    # OooWbArticle.objects.bulk_create(instances)
+def wb_ooo_fbo_stock_data():
+    """Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
+    article_list = ooo_wb_articles_data()
+    wb_koef = math.ceil(len(article_list)/900)
+    calculate_data = datetime.now() - timedelta(days=2)
+    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
+    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+    # Словарь вида: {номер_компании: заказов_за_позавчера}
+
+    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
+
+    main_article_data_list = []
+    headers = wb_header['ООО Иннотрейд']
+    for i in range(wb_koef):
+        # Лист для запроса в эндпоинту ОЗОНа
+        start_point = i*900
+        finish_point = (i+1)*900
+        small_info_list = article_list[
+            start_point:finish_point]
+        payload = json.dumps({
+            "brandNames": [],
+            "objectIDs": [],
+            "tagIDs": [],
+            "nmIDs": small_info_list,
+            "timezone": "Europe/Moscow",
+            "period": {
+                "begin": begin_date,
+                "end": end_date
+            },
+            "orderBy": {
+                "field": "ordersSumRub",
+                "mode": "asc"
+            },
+            "page": 1
+        })
+        response = requests.request(
+            "POST", url, headers=headers, data=payload)
+        # print(response.text)
+        data_list = json.loads(response.text)['data']['cards']
+        main_article_data_list.append(data_list)
+        time.sleep(21)
+    return main_article_data_list
+
+    # print(campaign_orders_money_dict)
