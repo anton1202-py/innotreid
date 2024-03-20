@@ -10,8 +10,8 @@ import telegram
 from dotenv import load_dotenv
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OooWbArticle, OooWbArticleInfo,
-                            OzonCampaign, ProcentForAd, SalesArticleStatistic,
+                            DataOooWbArticle, OooWbArticle, OzonCampaign,
+                            ProcentForAd, SalesArticleStatistic,
                             WbArticleCommon, WbArticleCompany)
 
 # Загрузка переменных окружения из файла .env
