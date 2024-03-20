@@ -318,7 +318,7 @@ def wb_campaign_budget(campaign, header):
         return wb_campaign_budget(campaign, header)
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
@@ -364,12 +364,12 @@ def replenish_campaign_budget(campaign, budget, header):
         message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньшне 500.'
     else:
         message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
-    # for user in campaign_budget_users_list:
-    #     bot.send_message(chat_id=user,
-    #                      text=message, parse_mode='HTML')
-    print(message)
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message, parse_mode='HTML')
+    for user in campaign_budget_users_list:
+        bot.send_message(chat_id=user,
+                         text=message, parse_mode='HTML')
+    # print(message)
+    # bot.send_message(chat_id=CHAT_ID_ADMIN,
+    #                  text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg
