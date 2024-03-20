@@ -358,11 +358,11 @@ def replenish_campaign_budget(campaign, budget, header):
         if response.status_code == 200:
             message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
         else:
-            message = f"Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}"
+            message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
     elif campaign_budget < 500:
-        message = f"кампании {campaign} не пополнилась потому общий виртуальный счет {campaign_budget} < 500. Продаж за позавчера было на {budget}"
+        message = f'кампании {campaign} не пополнилась потому общий виртуальный счет {campaign_budget} < 500. Продаж за позавчера было на {budget}'
     else:
-        message = f"кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}"
+        message = f'кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
     # for user in campaign_budget_users_list:
     #     bot.send_message(chat_id=user,
     #                      text=message, parse_mode='HTML')
