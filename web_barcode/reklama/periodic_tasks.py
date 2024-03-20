@@ -338,11 +338,12 @@ def replenish_campaign_budget(campaign, budget, header):
         common_budget = campaign_budget + virtual_budjet
         if common_budget >= 500:
             campaign_budget = common_budget
-            virtual_budjet = 0
+            info_campaign_obj.save()
+            info_campaign_obj.virtual_budget = 0
         else:
-            virtual_budjet = common_budget
+            info_campaign_obj.virtual_budget = common_budget
+            info_campaign_obj.save()
             campaign_budget = common_budget
-        info_campaign_obj.save()
 
     elif campaign_budget > 10000:
         campaign_budget = 10000
@@ -360,9 +361,9 @@ def replenish_campaign_budget(campaign, budget, header):
         else:
             message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
     elif campaign_budget < 500:
-        message = f'кампании {campaign} не пополнилась потому общий виртуальный счет {campaign_budget} < 500. Продаж за позавчера было на {budget}'
+        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньшне 500.'
     else:
-        message = f'кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
+        message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
     # for user in campaign_budget_users_list:
     #     bot.send_message(chat_id=user,
     #                      text=message, parse_mode='HTML')
