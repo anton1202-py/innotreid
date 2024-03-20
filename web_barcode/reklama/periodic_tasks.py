@@ -318,7 +318,7 @@ def wb_campaign_budget(campaign, header):
         return wb_campaign_budget(campaign, header)
 
 
-@sender_error_to_tg
+# @sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'

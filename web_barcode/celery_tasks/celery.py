@@ -114,7 +114,7 @@ app.conf.beat_schedule = {
     },
     "wb_reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=0, minute=59)
+        "schedule": crontab(hour=1, minute=21)
     },
     "ozon_reklama_stop_start_campaign": {
         "task": "reklama.periodic_tasks.ozon_start_stop_nessessary_campaign",
