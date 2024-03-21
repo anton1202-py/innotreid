@@ -418,6 +418,7 @@ def start_add_campaign(campaign, header):
                          text=message, parse_mode='HTML')
 
 
+@sender_error_to_tg
 def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
     """Получает информацию артикулов ООО ВБ от API WB"""
     if not common_data:
@@ -465,7 +466,7 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
 
 # print(ooo_wb_articles_info())
 
-
+@sender_error_to_tg
 def ooo_wb_articles_data():
     """Записывает артикулы ООО ВБ в базу данных"""
     data = ooo_wb_articles_info()
@@ -473,13 +474,15 @@ def ooo_wb_articles_data():
     for entry in data:
         wb_article, wb_nomenclature, article_title = entry
         article_list.append(wb_nomenclature)
-        OooWbArticle.objects.get_or_create(
-            wb_article=wb_article,
-            wb_nomenclature=wb_nomenclature,
-            article_title=article_title)
+        if not OooWbArticle.objects.filter(wb_article=wb_article).exists():
+            OooWbArticle.objects.get_or_create(
+                wb_article=wb_article,
+                wb_nomenclature=wb_nomenclature,
+                article_title=article_title)
     return article_list
 
 
+@sender_error_to_tg
 def wb_ooo_fbo_stock_data():
     """Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
     article_list = ooo_wb_articles_data()

@@ -120,7 +120,7 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    data = DataOooWbArticle.objects.all()
+    data = DataOooWbArticle.objects.all().order_by('wb_article')
     context = {
         'data': data,
     }
