@@ -10,9 +10,9 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
 from reklama.forms import FilterUrLicoForm
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OzonCampaign, ProcentForAd,
-                            SalesArticleStatistic, UrLico, WbArticleCommon,
-                            WbArticleCompany)
+                            DataOooWbArticle, OooWbArticle, OzonCampaign,
+                            ProcentForAd, SalesArticleStatistic, UrLico,
+                            WbArticleCommon, WbArticleCompany)
 from reklama.periodic_tasks import ozon_status_one_campaign
 from reklama.supplyment import create_articles_company, header_determinant
 
@@ -121,6 +121,27 @@ def wb_article_campaign(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     data = DataOooWbArticle.objects.all().order_by('wb_article')
+    if request.method == 'POST':
+        if 'filter' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            stock_filter = filter_data.get("stock_amount")
+            campaign_filter = filter_data.get("campaign")
+
+            if article_filter:
+                article_obj = OooWbArticle.objects.get(
+                    wb_article=article_filter)
+                data = data.filter(
+                    Q(wb_article=article_obj)).order_by('wb_article')
+            if stock_filter:
+                data = data.filter(
+                    Q(fbo_amount=int(stock_filter))).order_by('wb_article')
+            if campaign_filter:
+                campaign_obj = AdvertisingCampaign.objects.get(
+                    campaign_number=int(campaign_filter))
+                data = data.filter(
+                    Q(ad_campaign=campaign_obj)).order_by('wb_article')
+
     context = {
         'data': data,
     }

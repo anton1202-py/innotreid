@@ -2,34 +2,34 @@ import base64
 import glob
 import io
 import json
-import math
 import os
+import re
 import shutil
-import textwrap
 import time
-import traceback
 from collections import Counter
 from contextlib import closing
-from datetime import datetime, timedelta
-from io import BytesIO
+from datetime import datetime
 from pathlib import Path
 
 import dropbox
-import openpyxl
+import img2pdf
 import pandas as pd
-import psycopg2
+import pdfplumber
 import requests
-import telegram
-# from celery_tasks.celery import app
+from barcode import Code128
+from barcode.writer import ImageWriter
 from dotenv import load_dotenv
-from msoffice2pdf import convert
-from openpyxl import Workbook, load_workbook
-from openpyxl.drawing import image
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
-from sqlalchemy import create_engine
+from PyPDF3 import PdfFileReader, PdfFileWriter
+from PyPDF3.pdf import PageObject
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
-# Загрузка переменных окружения из файла .env
+version = 'w1.0'
+
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
 load_dotenv(dotenv_path)
@@ -55,7 +55,6 @@ CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 wb_headers_karavaev = {
     'Content-Type': 'application/json',
@@ -101,164 +100,122 @@ def stream_dropbox_file(path):
         return io.BytesIO(byte_data)
 
 
-def create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict):
-    """OZON. Создает лист подбора для OZON"""
-    dropbox_current_assembling_folder = '/DATABASE/beta/ИП'
-    main_save_folder_server = 'fbs_mode/data_for_barcodes'
-    file_add_name = 'ИП'
-
-    sorted_data_buils_dict = dict(
-        sorted(fbs_ozon_common_data_buils_dict.items(), key=lambda x: x[0][-6:]))
-    number_of_departure_oz = sorted_data_buils_dict.keys()
-    ozone_selection_sheet_xls = openpyxl.Workbook()
-    create = ozone_selection_sheet_xls.create_sheet(
-        title='pivot_list', index=0)
-    sheet = ozone_selection_sheet_xls['pivot_list']
-    sheet['A1'] = 'Номер отправления'
-    sheet['B1'] = 'Наименование товара'
-    sheet['C1'] = 'Артикул'
-    sheet['D1'] = 'Количество'
-    sheet.row_dimensions[0].auto_size = True
-    al = Alignment(horizontal="center",
-                   vertical="center", wrap_text=True)
-    al2 = Alignment(vertical="center", wrap_text=True)
-    thin = Side(border_style="thin", color="000000")
-    thick = Side(border_style="medium", color="000000")
-    pattern = PatternFill('solid', fgColor="fcff52")
-    upd_number_of_departure_oz = []
-    upd_product_name_oz = []
-    upd_name_for_print_oz = []
-    upd_amount_for_print_oz = []
-    for key, value in sorted_data_buils_dict.items():
-        for data in value:
-            upd_number_of_departure_oz.append(key)
-            upd_product_name_oz.append(data['Наименование'])
-            upd_name_for_print_oz.append(data['Артикул продавца'])
-            upd_amount_for_print_oz.append(data['Количество'])
-    create.column_dimensions['A'].width = 18
-    create.column_dimensions['B'].width = 38
-    create.column_dimensions['C'].width = 18
-    create.column_dimensions['D'].width = 12
-    for i in range(len(upd_number_of_departure_oz)):
-        create.cell(
-            row=i+2, column=1).value = upd_number_of_departure_oz[i]
-
-        create.cell(row=i+2, column=2).value = upd_product_name_oz[i]
-
-        create.cell(row=i+2, column=3).value = upd_name_for_print_oz[i]
-        create.cell(
-            row=i+2, column=4).value = upd_amount_for_print_oz[i]
-    for i in range(1, len(upd_number_of_departure_oz)+2):
-        wrapped_lines = textwrap.wrap(create.cell(
-            row=i, column=2).value, width=38)
-        num_lines = len(wrapped_lines)
-        print('num_lines', num_lines)
-        row_height = 18 * num_lines
-        print('row_height', row_height)
-        create.row_dimensions[i].height = row_height
-        for c in create[f'A{i}:D{i}']:
-            c[0].border = Border(top=thin, left=thin,
-                                 bottom=thin, right=thin)
-
-            c[1].border = Border(top=thin, left=thin,
-                                 bottom=thin, right=thin)
-
-            c[2].border = Border(top=thin, left=thin,
-                                 bottom=thin, right=thin)
-
-            c[3].border = Border(top=thin, left=thin,
-                                 bottom=thin, right=thin)
-
-            c[3].alignment = al
-
-            for j in range(3):
-                c[j].alignment = al2
-
-    folder_path_docs = os.path.join(
-        os.getcwd(), f'{main_save_folder_server}/ozon_docs')
-    if not os.path.exists(folder_path_docs):
-        os.makedirs(folder_path_docs)
-    name_for_file = f'{folder_path_docs}/selection_sheet'
-    ozone_selection_sheet_xls.save(f'{name_for_file}.xlsx')
-    w_b2 = load_workbook(f'{name_for_file}.xlsx')
-    source_page2 = w_b2.active
-    number_of_departure_oz = source_page2['A']
-    amount_for_print_oz = source_page2['D']
-    for i in range(1, len(number_of_departure_oz)+2):
-        if i < len(number_of_departure_oz)-1:
-            for c in source_page2[f'A{i+1}:D{i+1}']:
-                if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
-                        and number_of_departure_oz[i].value != number_of_departure_oz[i-1].value):
-                    c[0].border = Border(
-                        top=thick, left=thick, bottom=thin, right=thin)
-                    c[1].border = Border(
-                        top=thick, left=thin, bottom=thin, right=thin)
-                    c[2].border = Border(
-                        top=thick, left=thin, bottom=thin, right=thin)
-                    c[3].border = Border(
-                        top=thick, left=thin, bottom=thin, right=thick)
-                    for j in range(4):
-                        c[j].fill = pattern
-                if (number_of_departure_oz[i].value == number_of_departure_oz[i+1].value
-                        and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
-                    c[0].border = Border(
-                        top=thin, left=thick, bottom=thin, right=thin)
-                    c[1].border = Border(
-                        top=thin, left=thin, bottom=thin, right=thin)
-                    c[2].border = Border(
-                        top=thin, left=thin, bottom=thin, right=thin)
-                    c[3].border = Border(
-                        top=thin, left=thin, bottom=thin, right=thick)
-                    for j in range(4):
-                        c[j].fill = pattern
-                elif (number_of_departure_oz[i].value != number_of_departure_oz[i+1].value
-                        and number_of_departure_oz[i].value == number_of_departure_oz[i-1].value):
-                    c[0].border = Border(
-                        top=thin, left=thick, bottom=thick, right=thin)
-                    c[1].border = Border(
-                        top=thin, left=thin, bottom=thick, right=thin)
-                    c[2].border = Border(
-                        top=thin, left=thin, bottom=thick, right=thin)
-                    c[3].border = Border(
-                        top=thin, left=thin, bottom=thick, right=thick)
-                    for j in range(4):
-                        c[j].fill = pattern
-                if amount_for_print_oz[i].value > 1:
-                    c[0].border = Border(
-                        top=thick, left=thick, bottom=thick, right=thin)
-                    c[1].border = Border(
-                        top=thick, left=thin, bottom=thick, right=thin)
-                    c[2].border = Border(
-                        top=thick, left=thin, bottom=thick, right=thin)
-                    c[3].border = Border(
-                        top=thick, left=thin, bottom=thick, right=thick)
-                    for j in range(4):
-                        c[j].fill = pattern
-    w_b2.save(f'{name_for_file}.xlsx')
-    wb = load_workbook(f'{name_for_file}.xlsx')
-
-    # Выбираем активный лист
-    ws = wb.active
-
-    # Получаем высоту строки и ширину столбца для конкретной ячейки (например, A1)
-
-    path_file = os.path.abspath(f'{name_for_file}.xlsx')
-    only_file_name = os.path.splitext(os.path.basename(path_file))[0]
-    folder_path = os.path.dirname(os.path.abspath(path_file))
-
-    output = convert(source=path_file, output_dir=folder_path, soft=0)
-
-    now_date = datetime.now().strftime(("%d.%m %H-%M"))
-    folder_xls = (
-        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} лист подбора {now_date}.xlsx')
-    folder = (
-        f'{dropbox_current_assembling_folder}/OZON - {file_add_name} {now_date} лист подбора.pdf')
-    with open(output, 'rb') as f:
-        dbx_db.files_upload(f.read(), folder)
-    with open(path_file, 'rb') as f:
-        dbx_db.files_upload(f.read(), folder_xls)
+def atoi(text):
+    """Для сортировки файлов в списках для присоединения"""
+    return int(text) if text.isdigit() else text
 
 
-fbs_ozon_common_data_buils_dict = {'88215326-0005-1': [{'Артикул продавца': 'V451', 'Наименование': 'Ночник "Куки Синобу"', 'Количество': 1}], '88215343526-0005-1': [{'Артикул продавца': 'V4512', 'Наименование': 'Ночник "Куки Синобу "', 'Количество': 1}], '882s15343526-0005-1': [{'Артикул продавца': 'V4512',
-                                                                                                                                                                                                                                                                                         'Наименование': 'Ночник "Куки Синобу sfsfkhsfksdhfsdkflhsdfksdfbsdfddddddddddddddddddddddddddddddddddddddddddddddddddddddkfjsdhfklsdhfsdkfhsdfs"', 'Количество': 1}], '882135343526-0005-1': [{'Артикул продавца': 'V4512', 'Наименование': 'Ночник "Куки Синобу sfsfkhsfksdhfsdkflhsdfksdfbskfjsdhfklsdhfsdkfhsdfs"', 'Количество': 1}], '884215343526-0005-1': [{'Артикул продавца': 'V4512', 'Наименование': 'Ночник "Куки Синобу sfsfkhsfksdhfsdkflhsdfksdfbskfjsdhfklsdhfsdkfhsdfs"', 'Количество': 1}]}
-create_ozone_selection_sheet_pdf(fbs_ozon_common_data_buils_dict)
+def natural_keys(text):
+    """
+    alist.sort(key=natural_keys) sorts in human order
+    """
+    return [atoi(c) for c in re.split(r'(\d+)', text)]
+
+
+def qrcode_order():
+    """
+    WILDBERRIES.
+    Функция добавляет сборочные задания по их id
+    в созданную поставку и получает qr стикер каждого
+    задания и сохраняет его в папку
+    """
+    order_list = [1534937658, 1535269830, 1535436413]
+    # Создаем qr коды добавленных ордеров.
+    for order in order_list:
+        ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
+        payload_ticket = json.dumps({"orders": [order]})
+        response_ticket = requests.request(
+            "POST", ticket_url, headers=wb_headers_karavaev, data=payload_ticket)
+        # Расшифровываю ответ, чтобы сохранить файл этикетки задания
+        ticket_data = json.loads(response_ticket.text)[
+            "stickers"][0]["file"]
+        # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
+        # листа подбора
+        sticker_code_first_part = json.loads(response_ticket.text)[
+            "stickers"][0]["partA"]
+        sticker_code_second_part = json.loads(response_ticket.text)[
+            "stickers"][0]["partB"]
+        sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
+
+        # декодируем строку из base64 в бинарные данные
+        binary_data = base64.b64decode(ticket_data)
+        # создаем объект изображения из бинарных данных
+        img = Image.open(io.BytesIO(binary_data))
+        # сохраняем изображение в файл
+        folder_path = os.path.join(
+            os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        img.save(
+            f"{folder_path}/{order}.png")
+
+
+# qrcode_order()
+
+
+def qrcode_print_for_products():
+    """
+    Создает QR коды в необходимом формате и добавляет к ним артикул и его название 
+    из excel файла. Сравнивает цифры из файла с QR кодами и цифры из excel файла.
+    Таким образом находит артикулы и названия.
+    Входящие файлы:
+    filename - название файла с qr-кодами. Для создания промежуточной папки.
+    """
+    dir = 'fbs_mode/data_for_barcodes/qrcode_folder/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    os.chmod(dir, 0o777)
+
+    filelist = glob.glob(os.path.join(dir, "*.png"))
+    print('FILELIST', filelist)
+    filelist.sort(key=natural_keys)
+    i = 0
+    font1 = ImageFont.truetype("arial.ttf", size=40)
+    font2 = ImageFont.truetype("arial.ttf", size=90)
+
+    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
+    if not os.path.exists(filename):
+        os.makedirs(filename)
+    os.chmod(filename, 0o777)
+
+    for file in filelist:
+        path = Path(file)
+        file_name = str(os.path.basename(path).split('.')[0])
+        name_data = file_name.split('\\')
+        print('name_data', name_data)
+        sticker_data = name_data[0]
+        barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
+        layout_function = img2pdf.get_layout_fun(barcode_size)
+        im = Image.new('RGB', (660, 466), color=('#ffffff'))
+        image1 = Image.open(file)
+        draw_text = ImageDraw.Draw(im)
+
+        # Вставляем qr код в основной фон
+        im.paste(image1, (70, 100))
+        draw_text.text(
+            (90, 80),
+            f'{sticker_data}',
+            font=font1,
+            fill=('#000'), stroke_width=1
+        )
+        im.save(
+            f'{filename}/{file_name}.png')
+        pdf = img2pdf.convert(
+            f'{filename}/{file_name}.png', layout_fun=layout_function)
+        with open(f'{filename}/{file_name}.pdf', 'wb') as f:
+            f.write(pdf)
+        i += 1
+    pdf_filenames_qrcode = glob.glob(f'{filename}/*.pdf')
+    pdf_filenames_qrcode.sort(key=natural_keys)
+    filelist.clear()
+
+    # filelist = glob.glob(os.path.join(filename, "*"))
+    # for f in filelist:
+    #    try:
+    #        os.remove(f)
+    #    except Exception:
+    #        print('')
+    return pdf_filenames_qrcode
+
+
+qrcode_print_for_products()

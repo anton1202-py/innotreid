@@ -361,7 +361,7 @@ def replenish_campaign_budget(campaign, budget, header):
         else:
             message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
     elif campaign_budget < 500:
-        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньшне 500.'
+        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500.'
     else:
         message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
     for user in campaign_budget_users_list:

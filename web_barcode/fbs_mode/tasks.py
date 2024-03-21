@@ -404,7 +404,7 @@ class WildberriesFbsMode():
 
                 # Создаем qr коды добавленных ордеров.
                 for order in self.selection_dict.keys():
-                    ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40'
+                    ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
                     payload_ticket = json.dumps({"orders": [order]})
                     response_ticket = requests.request(
                         "POST", ticket_url, headers=self.headers, data=payload_ticket)
