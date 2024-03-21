@@ -126,7 +126,7 @@ app.conf.beat_schedule = {
     },
     "wb_ooo_stock_fbo": {
         "task": "reklama.periodic_tasks.wb_ooo_fbo_stock_count",
-        "schedule": crontab(hour=4, minute=25)
+        "schedule": crontab(hour=22, minute=20)
     },
 
     "ozon_reklama_stop_start_campaign": {
