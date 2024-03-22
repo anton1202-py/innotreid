@@ -354,7 +354,7 @@ def replenish_campaign_budget(campaign, budget, header):
         "return": True
     })
 
-    if campaign_budget > 500 and campaign_budget >= current_campaign_budget:
+    if campaign_budget >= 500 and campaign_budget >= current_campaign_budget:
         response = requests.request("POST", url, headers=header, data=payload)
         if response.status_code == 200:
             message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
