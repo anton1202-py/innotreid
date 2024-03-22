@@ -143,6 +143,7 @@ def ooo_wb_articles_data():
 def matching_wb_ooo_article_campaign():
     """WILDBERRIES. Сверяет артикулы ВБ ООО с кампаниями"""
     campaign_list = ad_list()
+    DataOooWbArticle.objects.all().update(ad_campaign=None)
     for campaign in campaign_list:
         header = header_determinant(campaign)
         article_list = wb_articles_in_campaign(campaign, header)
