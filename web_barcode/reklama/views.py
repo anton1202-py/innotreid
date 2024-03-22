@@ -121,6 +121,7 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    matching_wb_ooo_article_campaign()
     data = DataOooWbArticle.objects.all().order_by('wb_article')
     if request.method == 'POST':
         if 'filter' in request.POST:
