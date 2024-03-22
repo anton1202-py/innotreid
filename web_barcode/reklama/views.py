@@ -138,10 +138,8 @@ def wb_article_campaign(request):
                 data = data.filter(
                     Q(fbo_amount=int(stock_filter))).order_by('wb_article')
             if campaign_filter:
-                campaign_obj = AdvertisingCampaign.objects.get(
-                    campaign_number=int(campaign_filter))
                 data = data.filter(
-                    Q(ad_campaign=campaign_obj)).order_by('wb_article')
+                    Q(ad_campaign__icontains=campaign_filter)).order_by('wb_article')
 
     context = {
         'data': data,
