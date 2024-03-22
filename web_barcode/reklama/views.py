@@ -13,7 +13,8 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
                             ProcentForAd, SalesArticleStatistic, UrLico,
                             WbArticleCommon, WbArticleCompany)
-from reklama.periodic_tasks import ozon_status_one_campaign
+from reklama.periodic_tasks import (matching_wb_ooo_article_campaign,
+                                    ozon_status_one_campaign)
 from reklama.supplyment import create_articles_company, header_determinant
 
 dotenv_path = os.path.join(os.path.dirname(
@@ -120,6 +121,7 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    matching_wb_ooo_article_campaign()
     data = DataOooWbArticle.objects.all().order_by('wb_article')
     if request.method == 'POST':
         if 'filter' in request.POST:

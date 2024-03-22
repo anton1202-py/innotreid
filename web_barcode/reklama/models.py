@@ -255,11 +255,9 @@ class DataOooWbArticle(models.Model):
         blank=True,
         null=True
     )
-    ad_campaign = models.ForeignKey(
-        AdvertisingCampaign,
+    ad_campaign = models.CharField(
         verbose_name='Кампания артикула',
-        on_delete=models.CASCADE,
-        related_name='data_wb_article',
+        max_length=200,
         blank=True,
         null=True
     )

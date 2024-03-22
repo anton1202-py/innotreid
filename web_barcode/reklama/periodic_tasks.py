@@ -141,7 +141,7 @@ def ooo_wb_articles_data():
 @sender_error_to_tg
 @app.task
 def matching_wb_ooo_article_campaign():
-    """Сверяет артикулы ВБ ООО с кампаниями"""
+    """WILDBERRIES. Сверяет артикулы ВБ ООО с кампаниями"""
     campaign_list = ad_list()
     for campaign in campaign_list:
         header = header_determinant(campaign)
@@ -150,17 +150,21 @@ def matching_wb_ooo_article_campaign():
             article_obj = OooWbArticle.objects.get(wb_nomenclature=article)
             matching_data = DataOooWbArticle.objects.get(
                 wb_article=article_obj)
-            campaign_obj = AdvertisingCampaign.objects.get(
-                campaign_number=campaign)
-            matching_data.ad_campaign = campaign_obj
+            if matching_data.ad_campaign:
+                if str(matching_data.ad_campaign) != str(campaign):
+                    matching_data.ad_campaign = str(
+                        matching_data.ad_campaign) + ', ' + str(campaign)
+            else:
+                matching_data.ad_campaign = campaign
             matching_data.save()
+
         time.sleep(3)
 
 
 @sender_error_to_tg
 @app.task
 def wb_ooo_fbo_stock_count():
-    """Смотрит и записывает остаток FBO на ВБ каждого артикула"""
+    """WILDBERRIES. Смотрит и записывает остаток FBO на ВБ каждого артикула"""
     main_data = wb_ooo_fbo_stock_data()
     for all_data in main_data:
         for data in all_data:
