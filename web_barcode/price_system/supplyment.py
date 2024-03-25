@@ -321,6 +321,7 @@ def ozon_matching_articles(ur_lico):
     ozon_article_data = ozon_cleaning_articles(ur_lico)
     main_data = Articles.objects.filter(company=ur_lico)
     for common_article, ozon_data in ozon_article_data.items():
+        ozon_article = None
         if main_data.filter(wb_barcode=ozon_data[1]).exists():
 
             ozon_article = main_data.filter(wb_barcode=ozon_data[1])[0]
@@ -330,7 +331,7 @@ def ozon_matching_articles(ur_lico):
                       0].wb_barcode, len(main_data.filter(wb_barcode=ozon_data[1])))
         elif main_data.filter(common_article=common_article).exists():
             ozon_article = main_data.get(common_article=common_article)
-        if ozon_article:
+        if ozon_article != None:
             if (ozon_article.ozon_seller_article != ozon_data[0] and ozon_article.ozon_seller_article != None
                 or str(ozon_article.ozon_barcode) != str(ozon_data[1]) and ozon_article.ozon_barcode != None
                 or ozon_article.ozon_product_id != ozon_data[2] and ozon_article.ozon_product_id != None
