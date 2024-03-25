@@ -165,7 +165,7 @@ def article_groups_view(request, ur_lico):
     for article_id in articles_data:
         if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
             obj = ArticleGroup(
-                common_article=articles_data.get(id=article_id['pk']))
+                common_article=Articles.objects.get(id=article_id['pk']))
             obj.save()
     data = ArticleGroup.objects.filter(
         common_article__company=ur_lico).order_by('common_article')
@@ -241,7 +241,7 @@ def article_price_statistic(request, ur_lico):
             mp_dict = {}
             article_data = data.filter(
                 price_date=date,
-                common_article=article_list.get(common_article=article))
+                common_article=Articles.objects.get(common_article=article))
             for i in article_data:
                 if i.marketplace == 'Wildberries':
                     mp_dict['wb_price'] = i.price

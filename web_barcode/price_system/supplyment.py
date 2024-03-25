@@ -330,7 +330,7 @@ def ozon_matching_articles(ur_lico):
                       0].wb_seller_article, main_data.filter(wb_barcode=ozon_data[1])[
                       0].wb_barcode, len(main_data.filter(wb_barcode=ozon_data[1])))
         elif main_data.filter(common_article=common_article).exists():
-            ozon_article = main_data.get(common_article=common_article)
+            ozon_article = Articles.objects.get(common_article=common_article)
         if ozon_article != None:
             if (ozon_article.ozon_seller_article != ozon_data[0] and ozon_article.ozon_seller_article != None
                 or str(ozon_article.ozon_barcode) != str(ozon_data[1]) and ozon_article.ozon_barcode != None
@@ -379,14 +379,14 @@ def yandex_matching_articles(ur_lico):
     for common_article, yandex_data in yandex_article_data.items():
         yandex_article = None
         if main_data.filter(wb_barcode=yandex_data[1]).exists():
-            yandex_article = main_data.get(
+            yandex_article = Articles.objects.get(
                 wb_barcode=yandex_data[1])
 
         elif main_data.filter(common_article=common_article).exists():
-            yandex_article = main_data.get(
+            yandex_article = Articles.objects.get(
                 common_article=common_article)
         elif main_data.filter(ozon_barcode=yandex_data[1]).exists():
-            yandex_article = main_data.get(
+            yandex_article = Articles.objects.get(
                 ozon_barcode=yandex_data[1])
         if yandex_article != None:
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
