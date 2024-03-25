@@ -9,9 +9,10 @@ from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
-                         excel_import_data, ozon_price_change,
-                         wb_matching_articles, wilberries_price_change,
-                         yandex_matching_articles, yandex_price_change)
+                         excel_import_data, ozon_matching_articles,
+                         ozon_price_change, wb_matching_articles,
+                         wilberries_price_change, yandex_matching_articles,
+                         yandex_price_change)
 
 
 def ip_article_compare(request):
@@ -24,8 +25,8 @@ def ip_article_compare(request):
     if request.POST:
         if "compare" in request.POST:
             wb_matching_articles('ИП Караваев')
-            # ozon_matching_articles()
-            # yandex_matching_articles()
+            ozon_matching_articles('ИП Караваев')
+            yandex_matching_articles('ИП Караваев')
 
         elif 'excel_export' in request.POST:
             return excel_compare_table(data)
@@ -57,8 +58,8 @@ def ooo_article_compare(request):
     # super_test()
     if request.POST:
         if "compare" in request.POST:
-            # wb_matching_articles('ООО Иннотрейд')
-            # ozon_matching_articles('ООО Иннотрейд')
+            wb_matching_articles('ООО Иннотрейд')
+            ozon_matching_articles('ООО Иннотрейд')
             yandex_matching_articles('ООО Иннотрейд')
         elif 'excel_export' in request.POST:
             return excel_compare_table(data)
