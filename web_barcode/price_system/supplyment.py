@@ -376,7 +376,7 @@ def yandex_matching_articles(ur_lico):
     yandex_article_data = yandex_articles(ur_lico)
     main_data = Articles.objects.filter(company=ur_lico)
     for common_article, yandex_data in yandex_article_data.items():
-
+        yandex_article = None
         if main_data.filter(wb_barcode=yandex_data[1]).exists():
             yandex_article = main_data.get(
                 wb_barcode=yandex_data[1])
