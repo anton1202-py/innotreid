@@ -387,7 +387,7 @@ def yandex_matching_articles(ur_lico):
         elif main_data.filter(ozon_barcode=yandex_data[1]).exists():
             yandex_article = main_data.get(
                 ozon_barcode=yandex_data[1])
-        if yandex_article:
+        if yandex_article != None:
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
                 or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
                     or yandex_article.yandex_sku != yandex_data[2] and yandex_article.yandex_sku != None):
