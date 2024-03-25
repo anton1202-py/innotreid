@@ -7,7 +7,8 @@ import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles, ArticlesPrice
-from price_system.supplyment import sender_error_to_tg
+from price_system.supplyment import (ozon_articles_list, sender_error_to_tg,
+                                     wb_articles_list, yandex_articles_list)
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -42,25 +43,12 @@ yandex_headers_karavaev = {
 
 
 @sender_error_to_tg
-def wb_articles_list():
-    """Получаем массив арткулов с ценами и скидками для ВБ"""
-    url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
-    response = requests.request("GET", url, headers=wb_headers_karavaev)
-    if response.status_code == 200:
-        article_price_data = json.loads(response.text)
-        return article_price_data
-    else:
-        return wb_articles_list()
-
-
-@sender_error_to_tg
-@app.task
-def wb_add_price_info():
+def wb_add_price_info(ur_lico):
     """
     Проверяет изменилась ли цена в базе данных.
     Если изменилась, то записывает новую цену.
     """
-    wb_article_price_data = wb_articles_list()
+    wb_article_price_data = wb_articles_list(ur_lico)
     for data in wb_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(wb_nomenclature=data['nmId']).exists():
@@ -94,43 +82,23 @@ def wb_add_price_info():
                 ).save()
 
 
-@sender_error_to_tg
-def ozon_articles_list(last_id='', main_price_data=None):
-    """Получаем массив арткулов с ценами и скидками для OZON"""
-    if main_price_data is None:
-        main_price_data = []
-    url = 'https://api-seller.ozon.ru/v4/product/info/prices'
-    payload = json.dumps({
-        "filter": {
-            "offer_id": [],
-            "product_id": [],
-            "visibility": "ALL"
-        },
-        "last_id": "",
-        "limit": 1000
-    })
-    response = requests.request(
-        "POST", url, headers=ozon_headers_karavaev, data=payload)
-    if response.status_code == 200:
-        article_price_data = json.loads(response.text)['result']['items']
-        for data in article_price_data:
-            main_price_data.append(data)
-        if len(article_price_data) == 1000:
-            ozon_articles_list(json.loads(
-                response.text)['result']['last_id'], main_price_data)
-        return main_price_data
-    else:
-        return ozon_articles_list()
-
-
-@sender_error_to_tg
 @app.task
-def ozon_add_price_info():
+def common_wb_add_price_info():
+    """
+    Проверяет изменилась ли цена в базе данных для ООО и ИП.
+    Если изменилась, то записывает новую цену.
+    """
+    wb_add_price_info('ИП Караваев')
+    wb_add_price_info('ООО Иннотрейд')
+
+
+@sender_error_to_tg
+def ozon_add_price_info(ur_lico):
     """
     Проверяет изменилась ли цена в базе данных на артикул ОЗОН.
     Если изменилась, то записывает новую цену.
     """
-    ozon_article_price_data = ozon_articles_list()
+    ozon_article_price_data = ozon_articles_list(ur_lico)
     for data in ozon_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(ozon_product_id=data['product_id']).exists():
@@ -162,37 +130,17 @@ def ozon_add_price_info():
                 ).save()
 
 
-@sender_error_to_tg
-def yandex_articles_list(page_token='', main_price_data=None):
-    """Получаем массив арткулов с ценами и скидками для OZON"""
-    if main_price_data is None:
-        main_price_data = []
-    url = f'https://api.partner.market.yandex.ru/businesses/3345369/offer-mappings?limit=200&page_token={page_token}'
-    payload = json.dumps({
-        "offerIds": [],
-        "cardStatuses": [],
-        "categoryIds": [],
-        "vendorNames": [],
-        "tags": [],
-        "archived": False
-    })
-    response = requests.request(
-        "POST", url, headers=yandex_headers_karavaev, data=payload)
-    if response.status_code == 200:
-        article_price_data = json.loads(response.text)[
-            'result']['offerMappings']
-        for data in article_price_data:
-            main_price_data.append(data)
-        if len(article_price_data) == 200:
-            yandex_articles_list(json.loads(response.text)[
-                                 'result']['paging']['nextPageToken'], main_price_data)
-        return main_price_data
-    else:
-        return yandex_articles_list()
-
-
-@sender_error_to_tg
 @app.task
+def common_ozon_add_price_info():
+    """
+    Проверяет изменилась ли цена в базе данных на артикул ОЗОН ООО и ИП.
+    Если изменилась, то записывает новую цену.
+    """
+    ozon_add_price_info('ИП Караваев')
+    ozon_add_price_info('ООО Иннотрейд')
+
+
+@sender_error_to_tg
 def yandex_add_price_info():
     """
     Проверяет изменилась ли цена в базе данных на артикул YANDEX.
@@ -228,3 +176,9 @@ def yandex_add_price_info():
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=data['offer']['basicPrice']['value'],
                 ).save()
+
+
+@app.task
+def common_yandex_add_price_info():
+    yandex_add_price_info('ИП Караваев')
+    yandex_add_price_info('ООО Иннотрейд')

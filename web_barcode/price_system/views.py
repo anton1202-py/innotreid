@@ -9,12 +9,9 @@ from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
-                         excel_import_data, ozon_cleaning_articles,
-                         ozon_matching_articles, ozon_price_change,
-                         ozon_raw_articles, super_test, wb_matching_articles,
-                         wilberries_price_change, yandex_articles,
-                         yandex_matching_articles, yandex_price_change,
-                         yandex_raw_articles_data)
+                         excel_import_data, ozon_price_change,
+                         wb_matching_articles, wilberries_price_change,
+                         yandex_matching_articles, yandex_price_change)
 
 
 def ip_article_compare(request):
@@ -80,12 +77,12 @@ def ooo_article_compare(request):
     context = {
         'data': data,
     }
-    return render(request, 'price_system/ooo_article_compare.html', context)
+    return render(request, 'price_system/article_compare.html', context)
 
 
-def ip_groups_view(request):
+def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
-    data = Groups.objects.all().order_by('name')
+    data = Groups.objects.filter(company=ur_lico).order_by('name')
     context = {
         'data': data,
     }
@@ -94,6 +91,7 @@ def ip_groups_view(request):
             request_data = request.POST
             obj, created = Groups.objects.get_or_create(
                 name=request_data['name'],
+                company=request_data['ur_lico'],
                 wb_price=request_data['wb_price'],
                 wb_discount=request_data['wb_discount'],
                 ozon_price=request_data['ozon_price'],
@@ -103,7 +101,7 @@ def ip_groups_view(request):
             )
         elif 'change_button' in request.POST.keys():
             request_data = request.POST
-            Groups.objects.filter(id=request_data['change_button']).update(
+            data.filter(id=request_data['change_button']).update(
                 name=request_data['name'],
                 wb_price=request_data['wb_price'],
                 wb_discount=request_data['wb_discount'],
@@ -113,7 +111,7 @@ def ip_groups_view(request):
                 old_price=request_data['old_price']
             )
         elif 'del-button' in request.POST.keys():
-            Groups.objects.get(
+            data.get(
                 name=request.POST['del-button']).delete()
         elif 'action_price' in request.POST:
             names = ArticleGroup.objects.filter(
@@ -133,29 +131,43 @@ def ip_groups_view(request):
                 yandex_nom_list.append(
                     art.common_article.yandex_seller_article)
 
-            wilberries_price_change(wb_nom_list, wb_price, wb_discount)
-            ozon_price_change(oz_nom_list, ozon_price, min_price, old_price)
-            yandex_price_change(yandex_nom_list, yandex_price, old_price)
+            wilberries_price_change(
+                ur_lico, wb_nom_list, wb_price, wb_discount)
+            ozon_price_change(ur_lico, oz_nom_list,
+                              ozon_price, min_price, old_price)
+            yandex_price_change(ur_lico, yandex_nom_list,
+                                yandex_price, old_price)
 
             # Записываем изененные цены в базу данных
-            wb_add_price_info()
-            ozon_add_price_info()
-            yandex_add_price_info()
+            wb_add_price_info(ur_lico)
+            ozon_add_price_info(ur_lico)
+            yandex_add_price_info(ur_lico)
         return redirect('price_groups_ip')
     return render(request, 'price_system/groups.html', context)
 
 
-def ip_article_groups_view(request):
-    """Отвечает за сопоставление артикула и группы"""
-    articles_data = Articles.objects.all().values('pk')
+def ip_groups_view(request):
+    """Отвечает за Отображение ценовых групп ИП"""
+    return groups_view(request, 'ИП Караваев')
+
+
+def ooo_groups_view(request):
+    """Отвечает за Отображение ценовых групп ООО"""
+    return groups_view(request, 'ООО Иннотрейд')
+
+
+def article_groups_view(request, ur_lico):
+    """Описывает общее представление сопоставление артикула и группы"""
+    articles_data = Articles.objects.filter(company=ur_lico).values('pk')
     filter_data = Groups.objects.all().values('name')
     form = FilterChooseGroupForm(request.POST)
     for article_id in articles_data:
         if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
             obj = ArticleGroup(
-                common_article=Articles.objects.get(id=article_id['pk']))
+                common_article=articles_data.get(id=article_id['pk']))
             obj.save()
-    data = ArticleGroup.objects.all().order_by('common_article')
+    data = ArticleGroup.objects.filter(
+        common_article__company=ur_lico).order_by('common_article')
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_creating_mod(data)
@@ -167,9 +179,9 @@ def ip_article_groups_view(request):
             group_filter = filter_data.get("group_name")
 
             if article_filter:
-                if Articles.objects.filter(common_article=article_filter).exists():
+                if articles_data.filter(common_article=article_filter).exists():
                     data = data.filter(
-                        Q(common_article=Articles.objects.filter(common_article=article_filter)[0])).order_by('id')
+                        Q(common_article=articles_data.filter(common_article=article_filter)[0])).order_by('id')
                 else:
                     data = data.filter(
                         Q(common_article=0)).order_by('id')
@@ -196,16 +208,27 @@ def ip_article_groups_view(request):
     return render(request, 'price_system/article_groups.html', context)
 
 
-def ip_article_price_statistic(request):
+def ip_article_groups_view(request):
+    """Отвечает за сопоставление артикула и группы ИП"""
+    return article_groups_view(request, 'ИП Караваев')
+
+
+def ooo_article_groups_view(request):
+    """Отвечает за сопоставление артикула и группы ООО"""
+    return article_groups_view(request, 'ООО Иннотрейд')
+
+
+def article_price_statistic(request, ur_lico):
     """Отображает статистику по изменениею цен артикулов"""
 
     end_date = datetime.now()
     start_date = end_date - timedelta(days=5)
-    data = ArticlesPrice.objects.filter(
-        price_date__gte=start_date).order_by('common_article')
-    price_date = ArticlesPrice.objects.filter(
+    data = ArticlesPrice.objects.filter(common_article__company=ur_lico,
+                                        price_date__gte=start_date).order_by('common_article')
+    price_date = data.filter(
         price_date__gte=start_date).values('price_date').distinct()
-    article_list = Articles.objects.all().order_by('common_article')
+    article_list = Articles.objects.filter(
+        company=ur_lico).order_by('common_article')
     date_list = []
     for i in price_date:
         date_list.append(i['price_date'])
@@ -217,7 +240,7 @@ def ip_article_price_statistic(request):
             mp_dict = {}
             article_data = data.filter(
                 price_date=date,
-                common_article=Articles.objects.get(common_article=article))
+                common_article=article_list.get(common_article=article))
             for i in article_data:
                 if i.marketplace == 'Wildberries':
                     mp_dict['wb_price'] = i.price
@@ -237,13 +260,23 @@ def ip_article_price_statistic(request):
     return render(request, 'price_system/article_price_statistic.html', context)
 
 
-class IpArticleCompareDetailView(ListView):
+def ip_article_price_statistic(request):
+    """Отображает статистику по изменениею цен артикулов"""
+    return article_price_statistic(request, 'ИП Караваев')
+
+
+def ooo_article_price_statistic(request):
+    """Отображает статистику по изменениею цен артикулов"""
+    return article_price_statistic(request, 'ООО Иннотрейд')
+
+
+class ArticleCompareDetailView(ListView):
     model = Articles
     template_name = 'price_system/article_compare_detail.html'
     context_object_name = 'data'
 
     def get_context_data(self, **kwargs):
-        context = super(IpArticleCompareDetailView,
+        context = super(ArticleCompareDetailView,
                         self).get_context_data(**kwargs)
         return context
 
@@ -269,7 +302,7 @@ class IpArticleCompareDetailView(ListView):
             article.yandex_barcode = post_data.get('yandex_barcode')
             article.yandex_sku = post_data.get('yandex_sku')
             article.save()
-        return redirect('article_compare_detail_ip', self.kwargs['common_article'])
+        # return redirect('article_compare_detail', self.kwargs['common_article'])
 
     def get_queryset(self):
         return Articles.objects.filter(

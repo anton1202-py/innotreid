@@ -13,8 +13,7 @@ from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import Alignment, Border, PatternFill, Side
 
-from .models import (ArticleGroup, Articles, Groups, OooArticleGroup,
-                     OooArticlesPrice, OooGroups)
+from .models import ArticleGroup, Articles, Groups
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -317,10 +316,6 @@ def wb_matching_articles(ur_lico):
             wb.save()
 
 
-def super_test():
-    wb_matching_articles()
-
-
 def ozon_matching_articles(ur_lico):
     """Функция сопоставляет артикулы с Ozon с общей базой"""
     ozon_article_data = ozon_cleaning_articles(ur_lico)
@@ -348,7 +343,7 @@ def ozon_matching_articles(ur_lico):
                 # print('ozon_article.wb_barcode', ozon_article.wb_barcode, ozon_article.wb_seller_article,
                 #      ozon_article.ozon_seller_article, ozon_article.ozon_barcode)
                 print(
-                    f'проверьте артикул {common_article} на ozon вручную. Не совпали данные {ozon_data[1]}')
+                    f'проверьте артикул {common_article} на ozon вручную.  Barcode {ozon_article.yandex_barcode} - {ozon_data[1]}. SKU {ozon_article.yandex_sku} - {ozon_data[2]}. на яндекс вручную. Не совпали данные')
             elif ozon_article.ozon_barcode == None:
                 ozon = ozon_article
                 ozon.status = 'Сопоставлено'
@@ -383,32 +378,16 @@ def yandex_matching_articles(ur_lico):
     for common_article, yandex_data in yandex_article_data.items():
 
         if main_data.filter(wb_barcode=yandex_data[1]).exists():
-
             yandex_article = main_data.get(
                 wb_barcode=yandex_data[1])
-            if common_article == 'N308-1' or common_article == 'N135-2':
-                print('в wb_barcode=yandex_data[1]', main_data.filter(
-                    wb_barcode=yandex_data[1]).exists())
-                print(yandex_article.wb_seller_article,
-                      yandex_article.wb_barcode, yandex_data[1])
-                print(common_article, yandex_data)
-                print('**************************')
 
         elif main_data.filter(common_article=common_article).exists():
-            if common_article == 'N308-1':
-                print('в common_article=common_article', main_data.filter(
-                    common_article=common_article).exists())
             yandex_article = main_data.get(
                 common_article=common_article)
         elif main_data.filter(ozon_barcode=yandex_data[1]).exists():
-            if common_article == 'N308-1':
-                print('в ozon_barcode=yandex_data[1]', main_data.filter(
-                    ozon_barcode=yandex_data[1]).exists())
             yandex_article = main_data.get(
                 ozon_barcode=yandex_data[1])
         if yandex_article:
-            if common_article == 'N308-1':
-                print(yandex_article.yandex_seller_article, yandex_data[0])
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
                 or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
                     or yandex_article.yandex_sku != yandex_data[2] and yandex_article.yandex_sku != None):
@@ -416,7 +395,7 @@ def yandex_matching_articles(ur_lico):
                 yandex_article.company = ur_lico
                 yandex_article.save()
                 print(
-                    f'проверьте артикул {common_article} {yandex_article.wb_seller_article} на яндекс вручную. Не совпали данные')
+                    f'проверьте артикул {common_article}. Barcode {yandex_article.yandex_barcode} - {yandex_data[1]}. SKU {yandex_article.yandex_sku} - {yandex_data[2]}. на яндекс вручную. Не совпали данные')
             elif yandex_article.yandex_barcode == None:
                 yandex_article.status = 'Сопоставлено'
                 yandex_article.company = ur_lico
@@ -426,7 +405,6 @@ def yandex_matching_articles(ur_lico):
                 yandex_article.save()
             yandex_article = None
         else:
-            print(common_article)
             yandex = Articles(
                 common_article=common_article,
                 status='Сопоставлено',
@@ -590,17 +568,18 @@ def excel_import_data(xlsx_file):
             ).update(group=Groups.objects.get(name=list(worksheet.rows)[row][1].value))
 
 
-def wb_price_changer(info_list: list):
+def wb_price_changer(header, info_list: list):
     """Изменяет цену входящего списка артикулов на WB"""
     url = 'https://discounts-prices-api.wb.ru/api/v2/upload/task'
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
-        "POST", url, headers=wb_headers_karavaev, data=payload)
+        "POST", url, headers=header, data=payload)
 
 
-def wilberries_price_change(articles_list: list, price: int, discount: int):
+def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
+    header = header_wb_dict[ur_lico]
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -615,21 +594,22 @@ def wilberries_price_change(articles_list: list, price: int, discount: int):
                     "discount": discount
                 }
                 data_for_change.append(inner_data_dict)
-        wb_price_changer(data_for_change)
+        wb_price_changer(header, data_for_change)
 
 
-def ozon_price_changer(info_list: list):
+def ozon_price_changer(header, info_list: list):
     """Изменяет цену входящего списка артикулов на OZON"""
     url = 'https://api-seller.ozon.ru/v1/product/import/prices'
     payload = json.dumps({"prices": info_list})
 
     response_data = requests.request(
-        "POST", url, headers=ozon_headers_karavaev, data=payload)
+        "POST", url, headers=header, data=payload)
 
 
-def ozon_price_change(articles_list: list, price: float, min_price: float, old_price=0):
+def ozon_price_change(ur_lico, articles_list: list, price: float, min_price: float, old_price=0):
     """Изменяет цену на артикулы OZON"""
     koef_articles = math.ceil(len(articles_list)/1000)
+    header = header_ozon_dict[ur_lico]
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -649,20 +629,22 @@ def ozon_price_change(articles_list: list, price: float, min_price: float, old_p
                     "product_id": article
                 }
                 data_for_change.append(inner_data_dict)
-        ozon_price_changer(data_for_change)
+        ozon_price_changer(header, data_for_change)
 
 
-def yandex_price_changer(info_list: list):
+def yandex_price_changer(header, business_id, info_list: list):
     """Изменяет цену входящего списка артикулов на OZON"""
-    url = 'https://api.partner.market.yandex.ru/businesses/3345369/offer-prices/updates'
+    url = f'https://api.partner.market.yandex.ru/businesses/{business_id}/offer-prices/updates'
     payload = json.dumps({"offers": info_list})
     response_data = requests.request(
-        "POST", url, headers=yandex_headers_karavaev, data=payload)
+        "POST", url, headers=header, data=payload)
 
 
-def yandex_price_change(articles_list: list, price: float, old_price=0):
+def yandex_price_change(ur_lico, articles_list: list, price: float, old_price=0):
     """Изменяет цену на артикулы YANDEX"""
     koef_articles = math.ceil(len(articles_list)/500)
+    header = header_yandex_dict[ur_lico]
+    business_id = yandex_business_id_dict[ur_lico]
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*500
@@ -680,4 +662,78 @@ def yandex_price_change(articles_list: list, price: float, old_price=0):
                     }
                 }
                 data_for_change.append(inner_data_dict)
-        yandex_price_changer(data_for_change)
+        yandex_price_changer(header, business_id, data_for_change)
+
+
+@sender_error_to_tg
+def wb_articles_list(ur_lico):
+    """Получаем массив арткулов с ценами и скидками для ВБ"""
+    url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
+    header = header_wb_dict[ur_lico]
+    response = requests.request("GET", url, headers=header)
+    if response.status_code == 200:
+        article_price_data = json.loads(response.text)
+        return article_price_data
+    else:
+        return wb_articles_list(ur_lico)
+
+
+@sender_error_to_tg
+def ozon_articles_list(ur_lico, last_id='', main_price_data=None):
+    """Получаем массив арткулов с ценами и скидками для OZON"""
+    header = header_ozon_dict[ur_lico]
+    if main_price_data is None:
+        main_price_data = []
+    url = 'https://api-seller.ozon.ru/v4/product/info/prices'
+    payload = json.dumps({
+        "filter": {
+            "offer_id": [],
+            "product_id": [],
+            "visibility": "ALL"
+        },
+        "last_id": "",
+        "limit": 1000
+    })
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        article_price_data = json.loads(response.text)['result']['items']
+        for data in article_price_data:
+            main_price_data.append(data)
+        if len(article_price_data) == 1000:
+            ozon_articles_list(ur_lico, json.loads(
+                response.text)['result']['last_id'], main_price_data)
+        return main_price_data
+    else:
+        return ozon_articles_list(ur_lico)
+
+
+@sender_error_to_tg
+def yandex_articles_list(ur_lico, page_token='', main_price_data=None):
+    """Получаем массив арткулов с ценами и скидками для OZON"""
+    header = header_yandex_dict[ur_lico]
+    business_id = yandex_business_id_dict[ur_lico]
+    if main_price_data is None:
+        main_price_data = []
+    url = f'https://api.partner.market.yandex.ru/businesses/{business_id}/offer-mappings?limit=200&page_token={page_token}'
+    payload = json.dumps({
+        "offerIds": [],
+        "cardStatuses": [],
+        "categoryIds": [],
+        "vendorNames": [],
+        "tags": [],
+        "archived": False
+    })
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        article_price_data = json.loads(response.text)[
+            'result']['offerMappings']
+        for data in article_price_data:
+            main_price_data.append(data)
+        if len(article_price_data) == 200:
+            yandex_articles_list(ur_lico, json.loads(response.text)[
+                                 'result']['paging']['nextPageToken'], main_price_data)
+        return main_price_data
+    else:
+        return yandex_articles_list(ur_lico)

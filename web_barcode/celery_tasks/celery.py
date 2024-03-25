@@ -101,15 +101,15 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=5, minute=5)
     },
     "price_system_wb_task": {
-        "task": "price_system.periodical_tasks.wb_add_price_info",
+        "task": "price_system.periodical_tasks.common_wb_add_price_info",
         "schedule": crontab(hour=7, minute=16)
     },
     "price_system_ozon_task": {
-        "task": "price_system.periodical_tasks.ozon_add_price_info",
+        "task": "price_system.periodical_tasks.common_ozon_add_price_info",
         "schedule": crontab(hour=7, minute=17)
     },
     "price_system_yandex_task": {
-        "task": "price_system.periodical_tasks.yandex_add_price_info",
+        "task": "price_system.periodical_tasks.common_yandex_add_price_info",
         "schedule": crontab(hour=7, minute=18)
     },
     "wb_reklama_campaign_budget_add": {

@@ -14,6 +14,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Название</th>
+                    <th>Юр. лицо</th>
                     <th>Цена WB</th>
                     <th>Скидка продавца WB</th>
                     <th>Цена после скидки WB</th>
@@ -30,9 +31,14 @@
                     <form method="post" name="name" enctype="multipart/form-data" action="{% url 'price_groups_ip' %}">
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
+                        <td>{{ el.company }}</td>
                         <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
                         <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" required/></td>
-                        <td></td>
+                        {% if el.wb_price and el.wb_discount %}
+                            <td>{{ 100|sub:el.wb_discount|divide:100|multiplicity:el.wb_price }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
                         
                         <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
                         <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
@@ -70,6 +76,12 @@
                         <td></td>
                         <td class="table_times_amount">
                             <input class="form-control" type="text" name="name" required/>
+                        </td>
+                        <td class="table_times_amount">
+                            <select name="ur_lico" value="Конь" id="ur_lico" required>
+                                <option value="ИП Караваев">ИП Караваев</option>
+                                <option value="ООО Иннотрейд">ООО Иннотрейд</option>
+                            </select>
                         </td>
                         <td class="table_times_amount">
                             <input class="form-control" type="number" name="wb_price" required/>

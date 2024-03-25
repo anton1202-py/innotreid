@@ -50,7 +50,7 @@ CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 
-campaign_budget_users_list = [CHAT_ID_EU]
+campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
@@ -318,10 +318,33 @@ def wb_campaign_budget(campaign, header):
         return wb_campaign_budget(campaign, header)
 
 
-@sender_error_to_tg
-def replenish_campaign_budget(campaign, budget, header):
+def campaign_info_for_budget(campaign, campaign_budget, budget, header):
     """Пополняет бюджет рекламной кампаний"""
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
+    payload = json.dumps({
+        "sum": campaign_budget,
+        "type": 1,
+        "return": True
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        message = (f"Пополнил бюджет кампании {campaign} на {campaign_budget}."
+                   f"Итого сумма: {json.loads(response.text)['total']}."
+                   f"Продаж за позавчера было на {budget}")
+        return message
+    else:
+        message = ('*************************'
+                   f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}.'
+                   f'Статус код: {response.status_code}'
+                   '*************************')
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message, parse_mode='HTML')
+        return campaign_info_for_budget(campaign, campaign_budget, budget, header)
+
+
+@sender_error_to_tg
+def replenish_campaign_budget(campaign, budget, header):
+    """Определяем кампании для пополнения бюджета"""
     campaign_obj = AdvertisingCampaign.objects.get(campaign_number=campaign)
     info_campaign_obj = ProcentForAd.objects.get(
         campaign_number=campaign_obj
@@ -345,23 +368,13 @@ def replenish_campaign_budget(campaign, budget, header):
     elif campaign_budget > 10000:
         campaign_budget = 10000
 
-    payload = json.dumps({
-        "sum": campaign_budget,
-        "type": 1,
-        "return": True
-    })
-
     if campaign_budget >= 500 and campaign_budget >= current_campaign_budget:
-        response = requests.request("POST", url, headers=header, data=payload)
-        if response.status_code == 200:
-            message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
-            # Если все ок и бюджет кампании пополнился, то обнуляем виртуальный счет.
-            info_campaign_obj.virtual_budget = 0
-            info_campaign_obj.save()
-        else:
-            message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
+        message = campaign_info_for_budget(
+            campaign, campaign_budget, budget, header)
+        info_campaign_obj.virtual_budget = 0
+        info_campaign_obj.save()
     elif campaign_budget < 500:
-        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500. {int(campaign_budget)} р.'
+        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500. {info_campaign_obj.virtual_budget} р.'
     else:
         message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
 
@@ -369,7 +382,9 @@ def replenish_campaign_budget(campaign, budget, header):
         bot.send_message(chat_id=user,
                          text=message, parse_mode='HTML')
     if campaign == 15580755:
-        text = f'Бюджет кампании {campaign} равен {campaign_budget}. Виртуальный счет: {info_campaign_obj.virtual_budget}'
+        text = ('**************************'
+                f'Бюджет кампании {campaign} равен {campaign_budget}. Виртуальный счет: {info_campaign_obj.virtual_budget}'
+                '**************************')
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
     # print(message)
