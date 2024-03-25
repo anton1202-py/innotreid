@@ -65,12 +65,10 @@
                     <th>YANDEX арт пост</th>
                     <th>YANDEX баркод</th>
                     <th>YANDEX SKU</th>
-
-                    <th>Кратность</th>
                 </tr>
                 {% for el in data %}   
                 <tr>
-                    <td><a href="{% url 'article_compare_detail_ip' el.common_article %}">{{ el.common_article }}</a></td>
+                    <td><a href="{% url 'article_compare_detail_ooo' el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
 
@@ -88,9 +86,6 @@
                     <td>{{ el.yandex_seller_article }}</td>
                     <td>{{ el.yandex_barcode }}</td>
                     <td>{{ el.yandex_sku }}</td>
-
-                    <td>{{ el.multiplicity }}</td>
-
                 </tr>
                 {% endfor %}
             </table>

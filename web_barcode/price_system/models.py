@@ -100,8 +100,8 @@ class Articles(models.Model):
         return self.common_article
 
     class Meta:
-        verbose_name = 'Таблица сверки'
-        verbose_name_plural = 'Таблица сверки'
+        verbose_name = 'Таблица сверки ИП'
+        verbose_name_plural = 'Таблица сверки ИП'
 
 
 class Groups(models.Model):
@@ -146,8 +146,54 @@ class Groups(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Ценовые группы'
-        verbose_name_plural = 'Ценовые группы'
+        verbose_name = 'Ценовые группы ИП'
+        verbose_name_plural = 'Ценовые группы ИП'
+
+
+class OooGroups(models.Model):
+    name = models.CharField(
+        verbose_name='Артикул',
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    wb_price = models.IntegerField(
+        verbose_name='WB стоимость',
+        blank=True,
+        null=True
+    )
+    wb_discount = models.IntegerField(
+        verbose_name='WB скидка продавца',
+        blank=True,
+        null=True
+    )
+    ozon_price = models.IntegerField(
+        verbose_name='OZON стоимость',
+        blank=True,
+        null=True
+    )
+    yandex_price = models.IntegerField(
+        verbose_name='YANDEX стоимость',
+        blank=True,
+        null=True
+    )
+    min_price = models.IntegerField(
+        verbose_name='Минимальная цена',
+        blank=True,
+        null=True
+    )
+    old_price = models.IntegerField(
+        verbose_name='Старая цена',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Ценовые группы ООО'
+        verbose_name_plural = 'Ценовые группы ООО'
 
 
 class ArticleGroup(models.Model):
@@ -167,8 +213,29 @@ class ArticleGroup(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Соответствие артикул - группа'
-        verbose_name_plural = 'Соответствие артикул - группа'
+        verbose_name = 'Соответствие артикул - группа ИП'
+        verbose_name_plural = 'Соответствие артикул - группа ИП'
+
+
+class OooArticleGroup(models.Model):
+    common_article = models.ForeignKey(
+        Articles,
+        verbose_name='Общий артикул',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    group = models.ForeignKey(
+        Groups,
+        verbose_name='Ценовая группа',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Соответствие артикул - группа ООО'
+        verbose_name_plural = 'Соответствие артикул - группа ООО'
 
 
 class ArticlesPrice(models.Model):
@@ -208,5 +275,46 @@ class ArticlesPrice(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Изменение цен на артикул'
-        verbose_name_plural = 'Изменение цен на артикул'
+        verbose_name = 'Изменение цен на артикул ИП'
+        verbose_name_plural = 'Изменение цен на артикул ИП'
+
+
+class OooArticlesPrice(models.Model):
+    """Модель фиксирует изменение цен на артикул"""
+    common_article = models.ForeignKey(
+        Articles,
+        verbose_name='Общий артикул',
+        related_name='oooarticleprice',
+        on_delete=models.CASCADE,
+        null=True
+    )
+    marketplace = models.CharField(
+        verbose_name='Маркетплейс',
+        max_length=15,
+        blank=True,
+        null=True
+    )
+    price_date = models.DateField(
+        verbose_name='Дата изменения цены',
+        blank=True,
+        null=True
+    )
+    price = models.IntegerField(
+        verbose_name='Цена',
+        blank=True,
+        null=True
+    )
+    basic_discount = models.IntegerField(
+        verbose_name='Скидка продавца',
+        blank=True,
+        null=True
+    )
+    spp = models.IntegerField(
+        verbose_name='Скидка постоянного покупателя',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Изменение цен на артикул ООО'
+        verbose_name_plural = 'Изменение цен на артикул ООО'

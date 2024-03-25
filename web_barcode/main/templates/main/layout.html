@@ -134,34 +134,73 @@
             <li>
                 <a href="" class="expanded">
                     <span class="material-symbols-sharp">receipt_long</span>
-                    <h3>Работа с ценами</h3>
+                    <h3>Работа с ценами ИП</h3>
                     <span class="material-symbols-outlined">
                         chevron_right
                     </span>
                 </a>
                 <ul>
-                    {% url 'price_system_article_compare' as url_article_compare %}
+                    {% url 'price_system_article_compare_ip' as url_article_compare %}
                         <li>
                             <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
                                 <span class="material-symbols-sharp">filter_list</span>
                                 <h3>Таблица сопоставления</h3>
                             </a>
                         </li>
-                        {% url 'price_groups' as url_price_groups %}
+                        {% url 'price_groups_ip' as url_price_groups %}
                         <li>
                             <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
                                 <span class="material-symbols-sharp">filter_list</span>
                                 <h3>Ценовые группы</h3>
                             </a>
                         </li>
-                        {% url 'article_groups' as url_article_groups %}
+                        {% url 'article_groups_ip' as url_article_groups %}
                         <li>
                             <a href="{{ url_article_groups }}" {% if request.path == url_article_groups %}class="active"{% endif %}>
                                 <span class="material-symbols-sharp">filter_list</span>
                                 <h3>Группа артикула</h3>
                             </a>
                         </li>
-                        {% url 'article_price_statistic' as url_price_statistic %}
+                        {% url 'article_price_statistic_ip' as url_price_statistic %}
+                        <li>
+                            <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Статистика изменения цен</h3>
+                            </a>
+                        </li>
+                </ul>
+            </li>
+            <li>
+                <a href="" class="expanded">
+                    <span class="material-symbols-sharp">receipt_long</span>
+                    <h3>Работа с ценами ООО</h3>
+                    <span class="material-symbols-outlined">
+                        chevron_right
+                    </span>
+                </a>
+                <ul>
+                        {% url 'price_system_article_compare_ooo' as url_article_compare %}
+                        <li>
+                            <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Таблица сопоставления</h3>
+                            </a>
+                        </li>
+                        {% url 'price_groups_ooo' as url_price_groups %}
+                        <li>
+                            <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Ценовые группы</h3>
+                            </a>
+                        </li>
+                        {% url 'article_groups_ooo' as url_article_groups %}
+                        <li>
+                            <a href="{{ url_article_groups }}" {% if request.path == url_article_groups %}class="active"{% endif %}>
+                                <span class="material-symbols-sharp">filter_list</span>
+                                <h3>Группа артикула</h3>
+                            </a>
+                        </li>
+                        {% url 'article_price_statistic_ooo' as url_price_statistic %}
                         <li>
                             <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
                                 <span class="material-symbols-sharp">filter_list</span>

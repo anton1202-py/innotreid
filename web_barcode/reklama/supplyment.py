@@ -50,7 +50,7 @@ CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 
-campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
+campaign_budget_users_list = [CHAT_ID_EU]
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
@@ -331,15 +331,12 @@ def replenish_campaign_budget(campaign, budget, header):
 
     campaign_budget = math.ceil(budget * koef / 100)
     campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
-
     current_campaign_budget = wb_campaign_budget(campaign, header)
 
     if campaign_budget < 500:
         common_budget = campaign_budget + virtual_budjet
         if common_budget >= 500:
             campaign_budget = common_budget
-            info_campaign_obj.save()
-            info_campaign_obj.virtual_budget = 0
         else:
             info_campaign_obj.virtual_budget = common_budget
             info_campaign_obj.save()
@@ -358,15 +355,23 @@ def replenish_campaign_budget(campaign, budget, header):
         response = requests.request("POST", url, headers=header, data=payload)
         if response.status_code == 200:
             message = f"Пополнил бюджет кампании {campaign} на {campaign_budget}. Итого сумма: {json.loads(response.text)['total']}. Продаж за позавчера было на {budget}"
+            # Если все ок и бюджет кампании пополнился, то обнуляем виртуальный счет.
+            info_campaign_obj.virtual_budget = 0
+            info_campaign_obj.save()
         else:
             message = f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}. Сумма: {campaign_budget}'
     elif campaign_budget < 500:
-        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500.'
+        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500. {int(campaign_budget)} р.'
     else:
         message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
+
     for user in campaign_budget_users_list:
         bot.send_message(chat_id=user,
                          text=message, parse_mode='HTML')
+    if campaign == 15580755:
+        text = f'Бюджет кампании {campaign} равен {campaign_budget}. Виртуальный счет: {info_campaign_obj.virtual_budget}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
     # print(message)
     # bot.send_message(chat_id=CHAT_ID_ADMIN,
     #                  text=message, parse_mode='HTML')
@@ -397,7 +402,7 @@ def check_status_campaign(campaign, header):
 
 @sender_error_to_tg
 def start_add_campaign(campaign, header):
-    """Запускает рекламную кампанию"""
+    """WILDBERRIES Запускает рекламную кампанию"""
     url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
     status = check_status_campaign(campaign, header)
     if status:
@@ -420,7 +425,7 @@ def start_add_campaign(campaign, header):
 
 @sender_error_to_tg
 def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
-    """Получает информацию артикулов ООО ВБ от API WB"""
+    """WILDBERRIES. Получает информацию артикулов ООО ВБ от API WB"""
     if not common_data:
         common_data = []
     if update_date:
@@ -468,7 +473,7 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
 
 @sender_error_to_tg
 def ooo_wb_articles_data():
-    """Записывает артикулы ООО ВБ в базу данных"""
+    """WILDBERRIES. Записывает артикулы ООО ВБ в базу данных"""
     data = ooo_wb_articles_info()
     article_list = []
     for entry in data:
@@ -484,7 +489,7 @@ def ooo_wb_articles_data():
 
 @sender_error_to_tg
 def wb_ooo_fbo_stock_data():
-    """Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
+    """WILDBERRIES. Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
     article_list = ooo_wb_articles_data()
     wb_koef = math.ceil(len(article_list)/900)
     calculate_data = datetime.now() - timedelta(days=2)

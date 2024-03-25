@@ -27,7 +27,7 @@
                 {% for el in data %}
                 <tr>
                     <td>{{ el.id }}</td>
-                    <form method="post" name="name" enctype="multipart/form-data" action="{% url 'price_groups' %}">
+                    <form method="post" name="name" enctype="multipart/form-data" action="{% url 'price_groups_ip' %}">
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
                         <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
@@ -65,7 +65,7 @@
                 </tr>
                 {% endfor %}
                 <tr>
-                    <form method="post" name="add_article" enctype="multipart/form-data" action="{% url 'price_groups' %}">
+                    <form method="post" name="add_article" enctype="multipart/form-data" action="{% url 'price_groups_ip' %}">
                         {% csrf_token %}
                         <td></td>
                         <td class="table_times_amount">
