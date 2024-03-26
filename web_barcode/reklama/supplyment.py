@@ -170,7 +170,7 @@ def wb_articles_in_campaign(campaign_number, header):
     else:
         message = f'Статус код {response.status_code} - кампания {campaign_number}. Текст ошибки: {response.text}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
+                         text=message)
         time.sleep(5)
         return wb_articles_in_campaign(campaign_number, header)
 
