@@ -138,7 +138,6 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    print(campaign_list)
     return campaign_list
 
 
@@ -167,10 +166,10 @@ def wb_articles_in_campaign(campaign_number, header):
     if response.status_code == 200:
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
-    if response.status_code == 400:
+    elif response.status_code == 400:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
-        text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера.'
+        text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
         for user in campaign_budget_users_list:
             bot.send_message(chat_id=user,
                              text=text, parse_mode='HTML')
@@ -285,6 +284,8 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
+    strange_campaign = [15507304, 15580755,
+                        15542636, 15541569, 15541444, 15541343]
 
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
@@ -310,6 +311,11 @@ def count_sum_orders():
             time.sleep(22)
         # time.sleep(61)
         # print(campaign_orders_money_dict)
+    for camp, data in campaign_orders_money_dict.items():
+        if camp in strange_campaign:
+            text = f'Подозрительная кампания, которая не пополняется. {camp}. Ее данные: {data}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=text, parse_mode='HTML')
     return campaign_orders_money_dict
 
 

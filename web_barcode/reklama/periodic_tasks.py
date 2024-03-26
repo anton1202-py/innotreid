@@ -117,7 +117,8 @@ ozon_payload = {
 @app.task
 def budget_working():
     """Работа с бюджетом компании"""
-
+    strange_campaign = [15507304, 15580755,
+                        15542636, 15541569, 15541444, 15541343]
     campaign_data = count_sum_orders()
     if campaign_data:
         for campaign, budget in campaign_data.items():
@@ -125,6 +126,10 @@ def budget_working():
             replenish_campaign_budget(campaign, budget, header)
             time.sleep(3)
             start_add_campaign(campaign, header)
+            if campaign in strange_campaign:
+                text = f'В periodic_task. Подозрительная кампания, которая не пополняется. {campaign}. Ее данные: {budget}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
 
 
 @sender_error_to_tg

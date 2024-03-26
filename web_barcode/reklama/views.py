@@ -73,7 +73,6 @@ def ad_campaign_add(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # ooo_wb_articles_data()
-    ad_list()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
