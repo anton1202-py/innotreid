@@ -280,6 +280,7 @@ def count_sum_orders():
             response = requests.request(
                 "POST", url, headers=header, data=payload)
             # print(response.text)
+            print('response.text', response.text)
             data_list = json.loads(response.text)['data']['cards']
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
