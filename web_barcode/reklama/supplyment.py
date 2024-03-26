@@ -152,7 +152,6 @@ def db_articles_in_campaign(campaign_number):
     articles_list = []
     for data in articles_data:
         articles_list.append(int(data.wb_article.wb_article))
-
     return articles_list
 
 
@@ -167,10 +166,17 @@ def wb_articles_in_campaign(campaign_number, header):
     if response.status_code == 200:
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
+    if response.status_code == 400:
+        message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+        text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера.'
+        for user in campaign_budget_users_list:
+            bot.send_message(chat_id=user,
+                             text=text, parse_mode='HTML')
+        return []
     else:
-        message = f'Статус код {response.status_code} - кампания {campaign_number}. Текст ошибки: {response.text}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message)
+        message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
         time.sleep(5)
         return wb_articles_in_campaign(campaign_number, header)
 
@@ -295,11 +301,11 @@ def count_sum_orders():
         for campaign in small_info_list:
             header = header_determinant(campaign)
             article_list = wb_articles_in_campaign(campaign, header)
-
-            data_list = count_sum_orders_action(
-                article_list, begin_date, end_date, header)
-            sum = count_sum_adv_campaign(data_list)
-            campaign_orders_money_dict[campaign] = sum
+            if article_list:
+                data_list = count_sum_orders_action(
+                    article_list, begin_date, end_date, header)
+                sum = count_sum_adv_campaign(data_list)
+                campaign_orders_money_dict[campaign] = sum
             time.sleep(22)
         # time.sleep(61)
         # print(campaign_orders_money_dict)

@@ -117,12 +117,14 @@ ozon_payload = {
 @app.task
 def budget_working():
     """Работа с бюджетом компании"""
+
     campaign_data = count_sum_orders()
-    for campaign, budget in campaign_data.items():
-        header = header_determinant(campaign)
-        replenish_campaign_budget(campaign, budget, header)
-        time.sleep(3)
-        start_add_campaign(campaign, header)
+    if campaign_data:
+        for campaign, budget in campaign_data.items():
+            header = header_determinant(campaign)
+            replenish_campaign_budget(campaign, budget, header)
+            time.sleep(3)
+            start_add_campaign(campaign, header)
 
 
 @sender_error_to_tg
