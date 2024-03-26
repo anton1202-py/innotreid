@@ -270,6 +270,7 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         text = f'count_sum_orders_action. response.status_code = {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
+        time.sleep(25)
         return count_sum_orders_action(article_list, begin_date, end_date, header)
 
 
@@ -300,7 +301,7 @@ def count_sum_orders():
                 article_list, begin_date, end_date, header)
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
-            time.sleep(1)
+            time.sleep(25)
         time.sleep(61)
         # print(campaign_orders_money_dict)
     return campaign_orders_money_dict
