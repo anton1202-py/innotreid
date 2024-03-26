@@ -15,7 +15,8 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             WbArticleCommon, WbArticleCompany)
 from reklama.periodic_tasks import (matching_wb_ooo_article_campaign,
                                     ozon_status_one_campaign)
-from reklama.supplyment import create_articles_company, header_determinant
+from reklama.supplyment import (ad_list, create_articles_company,
+                                header_determinant)
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -72,6 +73,7 @@ def ad_campaign_add(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # ooo_wb_articles_data()
+    ad_list()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')

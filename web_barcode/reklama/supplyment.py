@@ -138,6 +138,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
+    print(campaign_list)
     return campaign_list
 
 
