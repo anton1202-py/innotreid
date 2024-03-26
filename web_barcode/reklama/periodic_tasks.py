@@ -139,10 +139,11 @@ def ooo_wb_articles_data():
     data = ooo_wb_articles_info()
     for entry in data:
         wb_article, wb_nomenclature, article_title = entry
-        OooWbArticle.objects.get_or_create(
-            wb_article=wb_article,
-            wb_nomenclature=wb_nomenclature,
-            article_title=article_title)
+        if not OooWbArticle.objects.filter(wb_article=wb_article).exists():
+            OooWbArticle.objects.get_or_create(
+                wb_article=wb_article,
+                wb_nomenclature=wb_nomenclature,
+                article_title=article_title)
 
 
 @sender_error_to_tg
