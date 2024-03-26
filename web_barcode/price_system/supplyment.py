@@ -2,6 +2,7 @@ import datetime
 import json
 import math
 import os
+import time
 import traceback
 from datetime import date, datetime
 
@@ -676,6 +677,10 @@ def wb_articles_list(ur_lico):
         article_price_data = json.loads(response.text)
         return article_price_data
     else:
+        text = f'Приложение price_system. supplyment. Функция: wb_articles_list. Статус код: {response.status_code}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+        time.sleep(10)
         return wb_articles_list(ur_lico)
 
 

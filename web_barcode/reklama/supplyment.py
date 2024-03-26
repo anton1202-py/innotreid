@@ -168,7 +168,7 @@ def wb_articles_in_campaign(campaign_number, header):
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
     else:
-        message = f'Статус код {response.status_code} - кампания {campaign_number}'
+        message = f'Статус код {response.status_code} - кампания {campaign_number}. Текст ошибки: {response.text}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
         time.sleep(5)
@@ -287,7 +287,6 @@ def count_sum_orders():
 
     campaign_orders_money_dict = {}
     for i in range(wb_koef):
-        # Лист для запроса в эндпоинту ОЗОНа
         start_point = i*3
         finish_point = (i+1)*3
         small_info_list = campaign_list[
@@ -301,8 +300,8 @@ def count_sum_orders():
                 article_list, begin_date, end_date, header)
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
-            time.sleep(25)
-        time.sleep(61)
+            time.sleep(22)
+        # time.sleep(61)
         # print(campaign_orders_money_dict)
     return campaign_orders_money_dict
 

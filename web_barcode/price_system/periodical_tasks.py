@@ -141,12 +141,12 @@ def common_ozon_add_price_info():
 
 
 @sender_error_to_tg
-def yandex_add_price_info():
+def yandex_add_price_info(ur_lico):
     """
     Проверяет изменилась ли цена в базе данных на артикул YANDEX.
     Если изменилась, то записывает новую цену.
     """
-    yandex_article_price_data = yandex_articles_list()
+    yandex_article_price_data = yandex_articles_list(ur_lico)
     for data in yandex_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(yandex_seller_article=data['offer']['offerId']).exists():
