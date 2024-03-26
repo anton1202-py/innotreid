@@ -240,6 +240,40 @@ def count_sum_adv_campaign(data_list: list):
 
 
 @sender_error_to_tg
+def count_sum_orders_action(article_list, begin_date, end_date, header):
+    """Получает данные о заказах рекламной кампании за позавчера"""
+    url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
+    payload = json.dumps({
+        "brandNames": [],
+        "objectIDs": [],
+        "tagIDs": [],
+        "nmIDs": article_list,
+        "timezone": "Europe/Moscow",
+        "period": {
+            "begin": begin_date,
+            "end": end_date
+        },
+        "orderBy": {
+            "field": "ordersSumRub",
+            "mode": "asc"
+        },
+        "page": 1
+    })
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        data_list = json.loads(response.text)['data']['cards']
+        return data_list
+    else:
+        print(
+            f'count_sum_orders_action. response.status_code = {response.status_code}')
+        text = f'count_sum_orders_action. response.status_code = {response.status_code}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+        return count_sum_orders_action(article_list, begin_date, end_date, header)
+
+
+@sender_error_to_tg
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
@@ -249,7 +283,7 @@ def count_sum_orders():
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
     # Словарь вида: {номер_компании: заказов_за_позавчера}
     wb_koef = math.ceil(len(campaign_list)/3)
-    url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
+
     campaign_orders_money_dict = {}
     for i in range(wb_koef):
         # Лист для запроса в эндпоинту ОЗОНа
@@ -261,27 +295,9 @@ def count_sum_orders():
         for campaign in small_info_list:
             header = header_determinant(campaign)
             article_list = wb_articles_in_campaign(campaign, header)
-            payload = json.dumps({
-                "brandNames": [],
-                "objectIDs": [],
-                "tagIDs": [],
-                "nmIDs": article_list,
-                "timezone": "Europe/Moscow",
-                "period": {
-                    "begin": begin_date,
-                    "end": end_date
-                },
-                "orderBy": {
-                    "field": "ordersSumRub",
-                    "mode": "asc"
-                },
-                "page": 1
-            })
-            response = requests.request(
-                "POST", url, headers=header, data=payload)
-            # print(response.text)
-            print('response.text', response.text)
-            data_list = json.loads(response.text)['data']['cards']
+
+            data_list = count_sum_orders_action(
+                article_list, begin_date, end_date, header)
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
             time.sleep(1)
