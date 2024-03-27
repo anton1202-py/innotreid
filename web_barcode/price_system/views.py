@@ -226,13 +226,14 @@ def article_price_statistic(request, ur_lico):
     start_date = end_date - timedelta(days=5)
     data = ArticlesPrice.objects.filter(common_article__company=ur_lico,
                                         price_date__gte=start_date).order_by('common_article')
-    print(data)
+    print(len(data))
     price_date = data.filter(
         price_date__gte=start_date).values('price_date').distinct()
+    print(price_date)
     article_list = Articles.objects.filter(
         company=ur_lico).order_by('common_article')
     print('**************************************')
-    print(article_list)
+    print(len(article_list))
     print('**************************************')
     date_list = []
     for i in price_date:
@@ -255,7 +256,7 @@ def article_price_statistic(request, ur_lico):
                     mp_dict['yandex_price'] = i.price
             inner_dict[str(date)] = mp_dict
             data_for_user[article.common_article] = inner_dict
-
+    print('Добрался до конца бэка')
     context = {
         'data': data,
         'date_list': date_list,
