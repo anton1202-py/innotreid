@@ -115,11 +115,11 @@ app.conf.beat_schedule = {
     },
     "price_system_compare_ooo_articles": {
         "task": "price_system.periodical_tasks.periodic_compare_ooo_articles",
-        "schedule": crontab(hour=5, minute=0, day_of_week=7)
+        "schedule": crontab(hour=5, minute=0, day_of_week=1)
     },
     "price_system_compare_ip_articles": {
         "task": "price_system.periodical_tasks.periodic_compare_ip_articles",
-        "schedule": crontab(hour=5, minute=10, day_of_week=7)
+        "schedule": crontab(hour=5, minute=10, day_of_week=1)
     },
 
     "wb_reklama_campaign_budget_add": {
