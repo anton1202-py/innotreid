@@ -352,8 +352,8 @@ def ozon_matching_articles(ur_lico):
                 # print('ozon_article.wb_barcode', ozon_article.wb_barcode, ozon_article.wb_seller_article,
                 #      ozon_article.ozon_seller_article, ozon_article.ozon_barcode)
                 message = (f'проверьте артикул {common_article} на ozon вручную.  \
-                           Barcode {ozon_article.yandex_barcode} - {ozon_data[1]}. \
-                           SKU {ozon_article.yandex_sku} - {ozon_data[2]}. \
+                           Barcode {ozon_article.ozon_barcode} - {ozon_data[1]}. \
+                           SKU {ozon_article.ozon_sku} - {ozon_data[2]}. \
                            Не совпали данные')
                 print(message)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
