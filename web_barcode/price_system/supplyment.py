@@ -31,9 +31,10 @@ CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
 
 OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
 OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
+
 YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
 WB_OOO_API_KEY = os.getenv('WB_OOO_API_KEY')
-
+WB_API_KEY_INNOTREID = os.getenv('API_KEY_WB_INNOTREID')
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
@@ -50,7 +51,7 @@ wb_headers_karavaev = {
 }
 wb_headers_ooo = {
     'Content-Type': 'application/json',
-    'Authorization': WB_OOO_API_KEY
+    'Authorization': WB_API_KEY_INNOTREID
 }
 
 ozon_headers_karavaev = {
@@ -282,6 +283,7 @@ def yandex_articles(ur_lico):
     return article_yandex_dict
 
 
+@sender_error_to_tg
 def wb_matching_articles(ur_lico):
     """
     WILDBERRIES.
@@ -299,8 +301,12 @@ def wb_matching_articles(ur_lico):
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
                 wb_article.save()
-                print(
-                    f'проверьте артикул {common_article} на вб вручную. Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. Баркоды: {wb_article.wb_barcode} {wb_data[1]}. Ном номера: {wb_article.wb_nomenclature} {wb_data[2]}')
+                message = (f'проверьте артикул {common_article} на вб вручную. \
+                           Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. \
+                           Баркоды: {wb_article.wb_barcode} {wb_data[1]}. \
+                           Ном номера: {wb_article.wb_nomenclature} {wb_data[2]}')
+                print(message)
+                bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             else:
                 wb_article.status = 'Сопоставлено'
                 wb_article.company = ur_lico
@@ -317,6 +323,7 @@ def wb_matching_articles(ur_lico):
             wb.save()
 
 
+@sender_error_to_tg
 def ozon_matching_articles(ur_lico):
     """Функция сопоставляет артикулы с Ozon с общей базой"""
     ozon_article_data = ozon_cleaning_articles(ur_lico)
@@ -344,8 +351,12 @@ def ozon_matching_articles(ur_lico):
                 ozon_article.save()
                 # print('ozon_article.wb_barcode', ozon_article.wb_barcode, ozon_article.wb_seller_article,
                 #      ozon_article.ozon_seller_article, ozon_article.ozon_barcode)
-                print(
-                    f'проверьте артикул {common_article} на ozon вручную.  Barcode {ozon_article.yandex_barcode} - {ozon_data[1]}. SKU {ozon_article.yandex_sku} - {ozon_data[2]}. на яндекс вручную. Не совпали данные')
+                message = (f'проверьте артикул {common_article} на ozon вручную.  \
+                           Barcode {ozon_article.yandex_barcode} - {ozon_data[1]}. \
+                           SKU {ozon_article.yandex_sku} - {ozon_data[2]}. \
+                           на яндекс вручную. Не совпали данные')
+                print(message)
+                bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif ozon_article.ozon_barcode == None:
                 ozon = ozon_article
                 ozon.status = 'Сопоставлено'
@@ -373,6 +384,7 @@ def ozon_matching_articles(ur_lico):
             ozon.save()
 
 
+@sender_error_to_tg
 def yandex_matching_articles(ur_lico):
     """Функция сопоставляет артикулы с Яндекса с общей базой"""
     yandex_article_data = yandex_articles(ur_lico)
@@ -668,20 +680,32 @@ def yandex_price_change(ur_lico, articles_list: list, price: float, old_price=0)
 
 
 @sender_error_to_tg
-def wb_articles_list(ur_lico):
+def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
     """Получаем массив арткулов с ценами и скидками для ВБ"""
-    url = 'https://suppliers-api.wildberries.ru/public/api/v1/info'
+    if article_price_data == None:
+        article_price_data = []
+    url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&offset={offset}'
     header = header_wb_dict[ur_lico]
     response = requests.request("GET", url, headers=header)
     if response.status_code == 200:
-        article_price_data = json.loads(response.text)
+        main_data = json.loads(response.text)['data']['listGoods']
+        for data in main_data:
+            inner_dict = {}
+            inner_dict['nmId'] = data['nmID']
+            inner_dict['price'] = data['sizes']['price']
+            inner_dict['discount'] = data['discount']
+            article_price_data.append(inner_dict)
+        if len(main_data) == 1000:
+            iter_numb += 1
+            offset = 1000 * iter_numb
+            wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
         return article_price_data
     else:
         text = f'Приложение price_system. supplyment. Функция: wb_articles_list. Статус код: {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
         time.sleep(10)
-        return wb_articles_list(ur_lico)
+        return wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
 
 
 @sender_error_to_tg

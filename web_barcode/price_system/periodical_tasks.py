@@ -7,8 +7,12 @@ import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles, ArticlesPrice
-from price_system.supplyment import (ozon_articles_list, sender_error_to_tg,
-                                     wb_articles_list, yandex_articles_list)
+from price_system.supplyment import (ozon_articles_list,
+                                     ozon_matching_articles,
+                                     sender_error_to_tg, wb_articles_list,
+                                     wb_matching_articles,
+                                     yandex_articles_list,
+                                     yandex_matching_articles)
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -182,3 +186,17 @@ def yandex_add_price_info(ur_lico):
 def common_yandex_add_price_info():
     yandex_add_price_info('ИП Караваев')
     yandex_add_price_info('ООО Иннотрейд')
+
+
+@app.task
+def periodic_compare_ip_articles():
+    wb_matching_articles('ИП Караваев')
+    ozon_matching_articles('ИП Караваев')
+    yandex_matching_articles('ИП Караваев')
+
+
+@app.task
+def periodic_compare_ooo_articles():
+    wb_matching_articles('ООО Иннотрейд')
+    ozon_matching_articles('ООО Иннотрейд')
+    yandex_matching_articles('ООО Иннотрейд')

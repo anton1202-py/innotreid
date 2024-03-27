@@ -100,9 +100,10 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.yandex_tasks.fbs_balance_updater",
         "schedule": crontab(hour=5, minute=5)
     },
+
     "price_system_wb_task": {
         "task": "price_system.periodical_tasks.common_wb_add_price_info",
-        "schedule": crontab(hour=7, minute=16)
+        "schedule": crontab(hour=11, minute=4)
     },
     "price_system_ozon_task": {
         "task": "price_system.periodical_tasks.common_ozon_add_price_info",
@@ -112,6 +113,15 @@ app.conf.beat_schedule = {
         "task": "price_system.periodical_tasks.common_yandex_add_price_info",
         "schedule": crontab(hour=7, minute=18)
     },
+    "price_system_compare_ooo_articles": {
+        "task": "price_system.periodical_tasks.periodic_compare_ooo_articles",
+        "schedule": crontab(hour=5, minute=0, day_of_week=7)
+    },
+    "price_system_compare_ip_articles": {
+        "task": "price_system.periodical_tasks.periodic_compare_ip_articles",
+        "schedule": crontab(hour=5, minute=10, day_of_week=7)
+    },
+
     "wb_reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
         "schedule": crontab(hour=21, minute=1)

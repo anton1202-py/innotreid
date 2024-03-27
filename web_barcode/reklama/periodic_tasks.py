@@ -184,7 +184,6 @@ def wb_ooo_fbo_stock_count():
             matching_data.fbo_amount = data['stocks']['stocksWb']
             matching_data.save()
 
-# budget_working()
 
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ OZON ========== #
 
