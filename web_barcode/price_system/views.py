@@ -303,7 +303,7 @@ class ArticleCompareDetailView(ListView):
             article.yandex_barcode = post_data.get('yandex_barcode')
             article.yandex_sku = post_data.get('yandex_sku')
             article.save()
-        return redirect('article_compare_detail', self.kwargs['common_article'])
+        return redirect('article_compare_detail_ooo', self.kwargs['common_article'])
 
     def get_queryset(self):
         return Articles.objects.filter(
