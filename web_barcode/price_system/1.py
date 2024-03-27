@@ -8,6 +8,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
+from web_barcode.price_system.periodical_tasks import wb_add_price_info
+
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -62,4 +64,5 @@ def wb_articles_list():
     print(n)
 
 
-wb_articles_list()
+wb_add_price_info('ИП Караваев')
+# wb_add_price_info('ООО Иннотрейд')

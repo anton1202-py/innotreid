@@ -17,6 +17,9 @@ from .supplyment import (excel_compare_table, excel_creating_mod,
 
 def ip_article_compare(request):
     """Отображает страницу с таблицей сопоставления ИП"""
+    # wb_add_price_info('ИП Караваев')
+    # ozon_add_price_info('ИП Караваев')
+    # yandex_add_price_info('ИП Караваев')
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     data = Articles.objects.filter(
@@ -220,15 +223,15 @@ def ooo_article_groups_view(request):
 
 
 def article_price_statistic(request, ur_lico):
-    """Отображает статистику по изменениею цен артикулов"""
+    """Отображает статистику по изменению цен артикулов"""
 
     end_date = datetime.now()
     start_date = end_date - timedelta(days=5)
     data = ArticlesPrice.objects.filter(common_article__company=ur_lico,
                                         price_date__gte=start_date).order_by('common_article')
     print(len(data))
-    price_date = data.filter(
-        price_date__gte=start_date).distinct().values('price_date')
+    price_date = ArticlesPrice.objects.filter(
+        price_date__gte=start_date).values('price_date').distinct()
     print(price_date)
     article_list = Articles.objects.filter(
         company=ur_lico).order_by('common_article')
