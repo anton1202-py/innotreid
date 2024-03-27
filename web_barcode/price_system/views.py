@@ -226,10 +226,14 @@ def article_price_statistic(request, ur_lico):
     start_date = end_date - timedelta(days=5)
     data = ArticlesPrice.objects.filter(common_article__company=ur_lico,
                                         price_date__gte=start_date).order_by('common_article')
+    print(data)
     price_date = data.filter(
         price_date__gte=start_date).values('price_date').distinct()
     article_list = Articles.objects.filter(
         company=ur_lico).order_by('common_article')
+    print('**************************************')
+    print(article_list)
+    print('**************************************')
     date_list = []
     for i in price_date:
         date_list.append(i['price_date'])
