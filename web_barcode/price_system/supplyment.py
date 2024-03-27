@@ -413,6 +413,7 @@ def yandex_matching_articles(ur_lico):
                             SKU {yandex_article.yandex_sku} - {yandex_data[2]}. \
                             Не совпали данные')
                 print(message)
+                print(common_article, yandex_data)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif yandex_article.yandex_barcode == None:
                 yandex_article.status = 'Сопоставлено'
