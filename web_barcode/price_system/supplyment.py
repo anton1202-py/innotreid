@@ -697,7 +697,6 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
         main_data = json.loads(response.text)['data']['listGoods']
         for data in main_data:
             inner_dict = {}
-            art_list.append(data['nmID'])
             inner_dict['nmId'] = data['nmID']
             inner_dict['price'] = data['sizes'][0]['price']
             inner_dict['discount'] = data['discount']
