@@ -692,7 +692,7 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
         for data in main_data:
             inner_dict = {}
             inner_dict['nmId'] = data['nmID']
-            inner_dict['price'] = data['sizes']['price']
+            inner_dict['price'] = data['sizes'][0]['price']
             inner_dict['discount'] = data['discount']
             article_price_data.append(inner_dict)
         if len(main_data) == 1000:
