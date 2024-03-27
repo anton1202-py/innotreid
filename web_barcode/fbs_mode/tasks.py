@@ -206,6 +206,7 @@ class WildberriesFbsMode():
             dbx_db.files_create_folder_v2(
                 self.dropbox_current_assembling_folder)
 
+    @sender_error_to_tg
     def process_new_orders(self):
         """
         WILDBERRIES
@@ -228,66 +229,55 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def time_filter_orders(self):
         """
         WILDBERRIES
         Функция фильтрует новые заказы по времени.
         Если заказ создан меньше, чем 1 час назад, в работу он не берется
         """
-        try:
-            orders_data = self.process_new_orders()
-            filters_order_data = []
-            now_time = datetime.now()
-            for order in orders_data:
-                # Время создания заказа в переводе с UTC на московское
-                create_order_time = datetime.strptime(
-                    order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
-                delta_order_time = now_time - create_order_time
-                if delta_order_time > timedelta(hours=1):
-                    filters_order_data.append(order)
-            return filters_order_data
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'time_filter_orders', self.time_filter_orders, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        orders_data = self.process_new_orders()
+        filters_order_data = []
+        now_time = datetime.now()
+        for order in orders_data:
+            # Время создания заказа в переводе с UTC на московское
+            create_order_time = datetime.strptime(
+                order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+            delta_order_time = now_time - create_order_time
+            if delta_order_time > timedelta(hours=1):
+                filters_order_data.append(order)
+        return filters_order_data
 
+    @sender_error_to_tg
     def article_info(self, article):
         """
         WILDBERRIES
         Получает развернутый ответ про каждый артикул. 
         """
-        try:
-            url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
-            payload = json.dumps({
-                "settings": {
-                    "cursor": {
-                        "limit": 1
-                    },
-                    "filter": {
-                        "textSearch": article,
-                        "withPhoto": -1
-                    }
+        url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+        payload = json.dumps({
+            "settings": {
+                "cursor": {
+                    "limit": 1
+                },
+                "filter": {
+                    "textSearch": article,
+                    "withPhoto": -1
                 }
-            })
-            response_data = requests.request(
-                "POST", url_data, headers=self.headers, data=payload)
-            if response_data.status_code == 200:
-                return response_data.text
-            else:
-                text = f'Статус код = {response_data.status_code} у артикула {article}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-                time.sleep(5)
-                return self.article_info(article)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'article_info', self.article_info, e)
+            }
+        })
+        response_data = requests.request(
+            "POST", url_data, headers=self.headers, data=payload)
+        if response_data.status_code == 200:
+            return response_data.text
+        else:
+            text = f'Статус код = {response_data.status_code} у артикула {article}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
+            time.sleep(5)
+            return self.article_info(article)
 
+    @sender_error_to_tg
     def article_data_for_tickets(self):
         """
         WILDBERRIES
@@ -295,98 +285,78 @@ class WildberriesFbsMode():
         Создает словарь с данными каждого артикулы и словарь с количеством каждого
         артикула. 
         """
-        try:
-            orders_data = self.time_filter_orders()
-            # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
-            self.data_article_info_dict = {}
-            # Список только для артикулов ночников. Остальные отфильтровывает
-            self.clear_article_list = []
-            # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
-            self.selection_dict = {}
-            for data in orders_data:
-                answer = self.article_info(data['article'])
+        orders_data = self.time_filter_orders()
+        # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
+        self.data_article_info_dict = {}
+        # Список только для артикулов ночников. Остальные отфильтровывает
+        self.clear_article_list = []
+        # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
+        self.selection_dict = {}
+        for data in orders_data:
+            answer = self.article_info(data['article'])
+            if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                self.clear_article_list.append(data['article'])
+                # Достаем баркод артикула (первый из списка, если их несколько)
+                barcode = json.loads(answer)[
+                    'cards'][0]['sizes'][0]['skus'][0]
+                # Достаем название артикула
+                title = json.loads(answer)[
+                    'cards'][0]['title']
+                self.data_article_info_dict[data['article']] = [
+                    title, barcode]
+                photo = json.loads(answer)[
+                    'cards'][0]['photos'][0]['big']
+                brand = json.loads(answer)[
+                    'cards'][0]['brand']
+                title_article = json.loads(answer)[
+                    'cards'][0]['title']
+                seller_article = data['article']
+                # Заполняем словарь данными для Листа подбора
+                self.selection_dict[data['id']] = [
+                    photo, brand, title_article, seller_article]
+            time.sleep(2)
+        # Словарь с данными: {артикул_продавца: количество}
+        self.amount_articles = dict(Counter(self.clear_article_list))
+        return self.amount_articles
 
-                if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
-                    self.clear_article_list.append(data['article'])
-                    # Достаем баркод артикула (первый из списка, если их несколько)
-                    barcode = json.loads(answer)[
-                        'cards'][0]['sizes'][0]['skus'][0]
-                    # Достаем название артикула
-                    title = json.loads(answer)[
-                        'cards'][0]['title']
-                    self.data_article_info_dict[data['article']] = [
-                        title, barcode]
-                    photo = json.loads(answer)[
-                        'cards'][0]['photos'][0]['big']
-                    brand = json.loads(answer)[
-                        'cards'][0]['brand']
-                    title_article = json.loads(answer)[
-                        'cards'][0]['title']
-                    seller_article = data['article']
-                    # Заполняем словарь данными для Листа подбора
-                    self.selection_dict[data['id']] = [
-                        photo, brand, title_article, seller_article]
-                time.sleep(2)
-            # Словарь с данными: {артикул_продавца: количество}
-            self.amount_articles = dict(Counter(self.clear_article_list))
-            return self.amount_articles
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'article_data_for_tickets', self.article_data_for_tickets, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def create_barcode_tickets(self):
         """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
-        try:
-            if self.clear_article_list and self.data_article_info_dict:
-                design_barcodes_dict_spec(
-                    self.clear_article_list, self.data_article_info_dict)
-            else:
-                text = 'не сработала create_barcode_tickets так как нет данных'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_barcode_tickets', self.create_barcode_tickets, e)
+        if self.clear_article_list and self.data_article_info_dict:
+            design_barcodes_dict_spec(
+                self.clear_article_list, self.data_article_info_dict)
+        else:
+            text = 'не сработала create_barcode_tickets так как нет данных'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def create_delivery(self):
         """WILDBERRIES. Создание поставки"""
-        try:
-            amount_articles = self.article_data_for_tickets()
-            if amount_articles:
-                delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
-                url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
-                hour = datetime.now().hour
-                delivery_name = f"Поставка {delivery_date}"
-                if hour >= 6 and hour < 18:
-                    delivery_name = f'День {delivery_date}'
-                else:
-                    delivery_name = f'Ночь {delivery_date}'
-
-                payload = json.dumps(
-                    {"name": delivery_name}
-                )
-                # Из этой переменной достать ID поставки
-                response_data = requests.request(
-                    "POST", url_data, headers=self.headers, data=payload)
-                # print(response_data)
-                self.supply_id = json.loads(response_data.text)['id']
+        amount_articles = self.article_data_for_tickets()
+        if amount_articles:
+            delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
+            url_data = 'https://suppliers-api.wildberries.ru/api/v3/supplies'
+            hour = datetime.now().hour
+            delivery_name = f"Поставка {delivery_date}"
+            if hour >= 6 and hour < 18:
+                delivery_name = f'День {delivery_date}'
             else:
-                text = f'Нет артикулов на WB для сборки {self.file_add_name}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_delivery', self.create_delivery, e)
+                delivery_name = f'Ночь {delivery_date}'
+            payload = json.dumps(
+                {"name": delivery_name}
+            )
+            # Из этой переменной достать ID поставки
+            response_data = requests.request(
+                "POST", url_data, headers=self.headers, data=payload)
+            # print(response_data)
+            self.supply_id = json.loads(response_data.text)['id']
+        else:
+            text = f'Нет артикулов на WB для сборки {self.file_add_name}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def qrcode_order(self):
         """
         WILDBERRIES.
@@ -394,182 +364,151 @@ class WildberriesFbsMode():
         в созданную поставку и получает qr стикер каждого
         задания и сохраняет его в папку
         """
-        try:
-            if self.supply_id:
-                # Добавляем заказы в поставку
-                for order in self.selection_dict.keys():
-                    add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
-                    response_add_orders = requests.request(
-                        "PATCH", add_url, headers=self.headers)
-
-                # Создаем qr коды добавленных ордеров.
-                for order in self.selection_dict.keys():
-                    ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
-                    payload_ticket = json.dumps({"orders": [order]})
-                    response_ticket = requests.request(
-                        "POST", ticket_url, headers=self.headers, data=payload_ticket)
-
-                    # Расшифровываю ответ, чтобы сохранить файл этикетки задания
-                    ticket_data = json.loads(response_ticket.text)[
-                        "stickers"][0]["file"]
-
-                    # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
-                    # листа подбора
-                    sticker_code_first_part = json.loads(response_ticket.text)[
-                        "stickers"][0]["partA"]
-                    sticker_code_second_part = json.loads(response_ticket.text)[
-                        "stickers"][0]["partB"]
-                    sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
-                    self.selection_dict[order].append(sticker_code)
-                    # декодируем строку из base64 в бинарные данные
-                    binary_data = base64.b64decode(ticket_data)
-                    # создаем объект изображения из бинарных данных
-                    img = Image.open(BytesIO(binary_data))
-                    # сохраняем изображение в файл
-                    folder_path = os.path.join(
-                        os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
-                    if not os.path.exists(folder_path):
-                        os.makedirs(folder_path)
-                    img.save(
-                        f"{folder_path}/{order} {self.selection_dict[order][-2]}.png")
-            else:
-                text = 'не сработала qrcode_order из за отсутвия self.supply_id'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message('qrcode_order', self.qrcode_order, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
-    def create_selection_list(self):
-        """WILDBERRIES. Создает лист сборки"""
-        try:
-            if self.selection_dict:
-                delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
-                # создаем новую книгу Excel
-                selection_file = Workbook()
-                COUNT_HELPER = 2
-                # выбираем лист Sheet1
-                create = selection_file.create_sheet(
-                    title='pivot_list', index=0)
-                sheet = selection_file['pivot_list']
-
-                # Установка параметров печати
-                create.page_setup.paperSize = create.PAPERSIZE_A4
-                create.page_setup.orientation = create.ORIENTATION_PORTRAIT
-                create.page_margins.left = 0.25
-                create.page_margins.right = 0.25
-                create.page_margins.top = 0.25
-                create.page_margins.bottom = 0.25
-                create.page_margins.header = 0.3
-                create.page_margins.footer = 0.3
-
-                sheet['A1'] = '№ Задания'
-                sheet['B1'] = 'Фото'
-                sheet['C1'] = 'Бренд'
-                sheet['D1'] = 'Наименование'
-                sheet['E1'] = 'Артикул продавца'
-                sheet['F1'] = 'Стикер'
-
-                for key, value in self.selection_dict.items():
-                    # # загружаем изображение
-                    response = requests.get(value[0])
-                    img = image.Image(io.BytesIO(response.content))
-                    # задаем размеры изображения
-                    img.width = 30
-                    img.height = 50
-
-                    create.cell(row=COUNT_HELPER, column=1).value = key
-                    # вставляем изображение в Столбец В
-                    sheet.add_image(img, f'B{COUNT_HELPER}')
-                    # create.cell(row=COUNT_HELPER, column=2).value = value[0]
-                    create.cell(row=COUNT_HELPER, column=3).value = value[1]
-                    create.cell(row=COUNT_HELPER, column=4).value = value[2]
-                    create.cell(row=COUNT_HELPER, column=5).value = value[3]
-                    create.cell(row=COUNT_HELPER, column=6).value = value[4]
-                    COUNT_HELPER += 1
+        if self.supply_id:
+            # Добавляем заказы в поставку
+            for order in self.selection_dict.keys():
+                add_url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/orders/{order}'
+                response_add_orders = requests.request(
+                    "PATCH", add_url, headers=self.headers)
+            # Создаем qr коды добавленных ордеров.
+            for order in self.selection_dict.keys():
+                ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
+                payload_ticket = json.dumps({"orders": [order]})
+                response_ticket = requests.request(
+                    "POST", ticket_url, headers=self.headers, data=payload_ticket)
+                # Расшифровываю ответ, чтобы сохранить файл этикетки задания
+                ticket_data = json.loads(response_ticket.text)[
+                    "stickers"][0]["file"]
+                # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
+                # листа подбора
+                sticker_code_first_part = json.loads(response_ticket.text)[
+                    "stickers"][0]["partA"]
+                sticker_code_second_part = json.loads(response_ticket.text)[
+                    "stickers"][0]["partB"]
+                sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
+                self.selection_dict[order].append(sticker_code)
+                # декодируем строку из base64 в бинарные данные
+                binary_data = base64.b64decode(ticket_data)
+                # создаем объект изображения из бинарных данных
+                img = Image.open(BytesIO(binary_data))
+                # сохраняем изображение в файл
                 folder_path = os.path.join(
-                    os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
+                    os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
                 if not os.path.exists(folder_path):
                     os.makedirs(folder_path)
-                name_selection_file = f'{folder_path}/selection_list.xlsx'
-                path_file = os.path.abspath(name_selection_file)
-
-                selection_file.save(name_selection_file)
-
-                w_b2 = load_workbook(name_selection_file)
-                source_page2 = w_b2.active
-
-                al = Alignment(horizontal="center", vertical="center")
-                al_left = Alignment(horizontal="left",
-                                    vertical="center", wrapText=True)
-
-                source_page2.column_dimensions['A'].width = 10  # Номер задания
-                source_page2.column_dimensions['B'].width = 5  # Картинка
-                source_page2.column_dimensions['C'].width = 15  # Бренд
-                source_page2.column_dimensions['D'].width = 25  # Наименование
-                # Артикул продавца
-                source_page2.column_dimensions['E'].width = 16
-                source_page2.column_dimensions['F'].width = 16  # Стикер
-
-                thin = Side(border_style="thin", color="000000")
-                for i in range(len(self.selection_dict)+1):
-                    for c in source_page2[f'A{i+1}:F{i+1}']:
-                        c[0].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[0].font = Font(size=9)
-                        c[0].alignment = al
-
-                        c[1].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[1].font = Font(size=9)
-                        c[1].alignment = al
-
-                        c[2].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[2].font = Font(size=9)
-                        c[2].alignment = al_left
-
-                        c[3].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[3].font = Font(size=9)
-                        c[3].alignment = al_left
-
-                        c[4].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[4].font = Font(size=9)
-                        c[4].alignment = al_left
-
-                        c[5].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[5].font = Font(size=9)
-                        c[5].alignment = al_left
-
-                # Увеличиваем высоту строки
-                for i in range(2, len(self.selection_dict) + 2):
-                    source_page2.row_dimensions[i].height = 40
-                w_b2.save(name_selection_file)
-                folder_path = os.path.dirname(os.path.abspath(path_file))
-                name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
-                name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}'
-
-                output = convert(source=path_file,
-                                 output_dir=folder_path, soft=1)
-                # Сохраняем на DROPBOX
-                with open(output, 'rb') as f:
-                    dbx_db.files_upload(
-                        f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
-            else:
-                text = 'Не сработала create_selection_list потому что нет self.selection_dict'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_selection_list', self.create_selection_list, e)
+                img.save(
+                    f"{folder_path}/{order} {self.selection_dict[order][-2]}.png")
+        else:
+            text = 'не сработала qrcode_order из за отсутвия self.supply_id'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
+
+    @sender_error_to_tg
+    def create_selection_list(self):
+        """WILDBERRIES. Создает лист сборки"""
+        if self.selection_dict:
+            delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
+            # создаем новую книгу Excel
+            selection_file = Workbook()
+            COUNT_HELPER = 2
+            # выбираем лист Sheet1
+            create = selection_file.create_sheet(
+                title='pivot_list', index=0)
+            sheet = selection_file['pivot_list']
+            # Установка параметров печати
+            create.page_setup.paperSize = create.PAPERSIZE_A4
+            create.page_setup.orientation = create.ORIENTATION_PORTRAIT
+            create.page_margins.left = 0.25
+            create.page_margins.right = 0.25
+            create.page_margins.top = 0.25
+            create.page_margins.bottom = 0.25
+            create.page_margins.header = 0.3
+            create.page_margins.footer = 0.3
+            sheet['A1'] = '№ Задания'
+            sheet['B1'] = 'Фото'
+            sheet['C1'] = 'Бренд'
+            sheet['D1'] = 'Наименование'
+            sheet['E1'] = 'Артикул продавца'
+            sheet['F1'] = 'Стикер'
+            for key, value in self.selection_dict.items():
+                # # загружаем изображение
+                response = requests.get(value[0])
+                img = image.Image(io.BytesIO(response.content))
+                # задаем размеры изображения
+                img.width = 30
+                img.height = 50
+                create.cell(row=COUNT_HELPER, column=1).value = key
+                # вставляем изображение в Столбец В
+                sheet.add_image(img, f'B{COUNT_HELPER}')
+                # create.cell(row=COUNT_HELPER, column=2).value = value[0]
+                create.cell(row=COUNT_HELPER, column=3).value = value[1]
+                create.cell(row=COUNT_HELPER, column=4).value = value[2]
+                create.cell(row=COUNT_HELPER, column=5).value = value[3]
+                create.cell(row=COUNT_HELPER, column=6).value = value[4]
+                COUNT_HELPER += 1
+            folder_path = os.path.join(
+                os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            name_selection_file = f'{folder_path}/selection_list.xlsx'
+            path_file = os.path.abspath(name_selection_file)
+            selection_file.save(name_selection_file)
+            w_b2 = load_workbook(name_selection_file)
+            source_page2 = w_b2.active
+            al = Alignment(horizontal="center", vertical="center")
+            al_left = Alignment(horizontal="left",
+                                vertical="center", wrapText=True)
+            source_page2.column_dimensions['A'].width = 10  # Номер задания
+            source_page2.column_dimensions['B'].width = 5  # Картинка
+            source_page2.column_dimensions['C'].width = 15  # Бренд
+            source_page2.column_dimensions['D'].width = 25  # Наименование
+            # Артикул продавца
+            source_page2.column_dimensions['E'].width = 16
+            source_page2.column_dimensions['F'].width = 16  # Стикер
+            thin = Side(border_style="thin", color="000000")
+            for i in range(len(self.selection_dict)+1):
+                for c in source_page2[f'A{i+1}:F{i+1}']:
+                    c[0].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[0].font = Font(size=9)
+                    c[0].alignment = al
+                    c[1].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[1].font = Font(size=9)
+                    c[1].alignment = al
+                    c[2].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[2].font = Font(size=9)
+                    c[2].alignment = al_left
+                    c[3].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[3].font = Font(size=9)
+                    c[3].alignment = al_left
+                    c[4].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[4].font = Font(size=9)
+                    c[4].alignment = al_left
+                    c[5].border = Border(top=thin, left=thin,
+                                         bottom=thin, right=thin)
+                    c[5].font = Font(size=9)
+                    c[5].alignment = al_left
+            # Увеличиваем высоту строки
+            for i in range(2, len(self.selection_dict) + 2):
+                source_page2.row_dimensions[i].height = 40
+            w_b2.save(name_selection_file)
+            folder_path = os.path.dirname(os.path.abspath(path_file))
+            name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
+            name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}'
+            output = convert(source=path_file,
+                             output_dir=folder_path, soft=1)
+            # Сохраняем на DROPBOX
+            with open(output, 'rb') as f:
+                dbx_db.files_upload(
+                    f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
+        else:
+            text = 'Не сработала create_selection_list потому что нет self.selection_dict'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=text, parse_mode='HTML')
 
     def supply_to_delivery(self, numb=0):
         """
@@ -1390,6 +1329,7 @@ class YandexMarketFbsMode():
         except dropbox.exceptions.ApiError as e:
             return False
 
+    @sender_error_to_tg
     def receive_orders_data(self):
         """
         YANDEXMARKET
@@ -1398,222 +1338,170 @@ class YandexMarketFbsMode():
         Создает список с данными каждого заказа: [{Заказ: [{артикул_продавца: артикул, название_артикула: название,
         количество_в_заказе: количество}]}]
         """
-        try:
-            url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders?status=PROCESSING&substatus=STARTED"
-            response = requests.request(
-                "GET", url, headers=self.yandex_headers)
-            orders_list = json.loads(response.text)['orders']
-
-            main_orders_list = []
-            for order in orders_list:
-                order_dict = {}
-                article_list_in_order = order['items']
-                inner_article_list = []
+        url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders?status=PROCESSING&substatus=STARTED"
+        response = requests.request(
+            "GET", url, headers=self.yandex_headers)
+        orders_list = json.loads(response.text)['orders']
+        main_orders_list = []
+        for order in orders_list:
+            order_dict = {}
+            article_list_in_order = order['items']
+            inner_article_list = []
+            inner_article_dict = {}
+            for article in article_list_in_order:
                 inner_article_dict = {}
-                for article in article_list_in_order:
+                inner_article_dict['seller_article'] = article['offerId']
+                inner_article_dict['article_name'] = article['offerName']
+                inner_article_dict['amount'] = article['count']
+                inner_article_list.append(inner_article_dict)
+            inner_article_dict['articles_info'] = inner_article_list
+            inner_article_dict['delivery_date'] = order['delivery']['dates']['toDate']
+            order_dict['order_id'] = order['id']
+            order_dict['order_data'] = inner_article_dict
+            main_orders_list.append(order_dict)
+        return main_orders_list
 
-                    inner_article_dict = {}
-
-                    inner_article_dict['seller_article'] = article['offerId']
-                    inner_article_dict['article_name'] = article['offerName']
-                    inner_article_dict['amount'] = article['count']
-
-                    inner_article_list.append(inner_article_dict)
-                inner_article_dict['articles_info'] = inner_article_list
-                inner_article_dict['delivery_date'] = order['delivery']['dates']['toDate']
-                order_dict['order_id'] = order['id']
-                order_dict['order_data'] = inner_article_dict
-
-                main_orders_list.append(order_dict)
-            return main_orders_list
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'receive_orders_data', self.receive_orders_data, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def change_orders_status(self):
         """
         YANDEXMARKET
         Функция изменяет статус новых заказов.
         """
-        try:
-            orders_list = self.receive_orders_data()
-            for order in orders_list:
-                status_url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order['order_id']}/status"
-
-                payload = json.dumps(
-                    {
-                        "order": {
-                            "status": "PROCESSING",
-                            "substatus": "READY_TO_SHIP",
-                        }
+        orders_list = self.receive_orders_data()
+        for order in orders_list:
+            status_url = f"https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order['order_id']}/status"
+            payload = json.dumps(
+                {
+                    "order": {
+                        "status": "PROCESSING",
+                        "substatus": "READY_TO_SHIP",
                     }
-                )
-                response_data = requests.request(
-                    "PUT", status_url, headers=self.yandex_headers, data=payload)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'change_orders_status', self.change_orders_status, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                }
+            )
+            response_data = requests.request(
+                "PUT", status_url, headers=self.yandex_headers, data=payload)
 
+    @sender_error_to_tg
     def receive_delivery_number(self):
         """
         YANDEXMARKET
         Определяет id поставки для подтверждения отгрузки.
         """
-        try:
-            url_delivery = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments'
-            date_for_delivery = datetime.now() + timedelta(days=1)
-            date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
-            payload = json.dumps({
-                "dateFrom": date_for_delivery,
-                "dateTo": date_for_delivery,
-                "statuses": [
-                    "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
-                    "OUTBOUND_READY_FOR_CONFIRMATION", "FINISHED"
-                ]
-            })
-            response_delivery = requests.request(
-                "PUT", url_delivery, headers=self.yandex_headers, data=payload)
-
-            shipments_list = json.loads(response_delivery.text)[
-                'result']['shipments']
-            if len(shipments_list) == 0:
-                message_text = 'На завтра нет поставки Яндекс Маркета'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message_text, parse_mode='HTML')
-            else:
-                shipment_dict = {}
-                shipment_id = shipments_list[0]['id']
-                self.shipment_id = shipments_list[0]['id']
-                shipment_dict['shipment_id'] = shipment_id
-                return shipment_dict
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'receive_delivery_number', self.receive_delivery_number, e)
+        url_delivery = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments'
+        date_for_delivery = datetime.now() + timedelta(days=1)
+        date_for_delivery = date_for_delivery.strftime('%d-%m-%Y')
+        payload = json.dumps({
+            "dateFrom": date_for_delivery,
+            "dateTo": date_for_delivery,
+            "statuses": [
+                "OUTBOUND_CREATED", "OUTBOUND_CONFIRMED",
+                "OUTBOUND_READY_FOR_CONFIRMATION", "FINISHED"
+            ]
+        })
+        response_delivery = requests.request(
+            "PUT", url_delivery, headers=self.yandex_headers, data=payload)
+        shipments_list = json.loads(response_delivery.text)[
+            'result']['shipments']
+        if len(shipments_list) == 0:
+            message_text = 'На завтра нет поставки Яндекс Маркета'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
+        else:
+            shipment_dict = {}
+            shipment_id = shipments_list[0]['id']
+            self.shipment_id = shipments_list[0]['id']
+            shipment_dict['shipment_id'] = shipment_id
+            return shipment_dict
 
+    @sender_error_to_tg
     def received_info_about_delivery(self):
         """
         YANDEXMARKET.
         Получает информацию о предстоящей отгрузке.
         """
-        try:
-            shipment_data = self.receive_delivery_number()
-            if shipment_data:
-                shipment_id = shipment_data['shipment_id']
-                # shipment_id = 45793720
-                url_info = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}'
-                response = requests.request(
-                    "GET", url_info, headers=self.yandex_headers)
-                info_main_data = json.loads(response.text)['result']
-                orders_list = info_main_data['orderIds']
-                shipment_data = {}
-                shipment_data['shipment_id'] = shipment_id
-                shipment_data['orders_list'] = orders_list
-                return shipment_data
-            else:
-                return shipment_data
+        shipment_data = self.receive_delivery_number()
+        if shipment_data:
+            shipment_id = shipment_data['shipment_id']
+            # shipment_id = 45793720
+            url_info = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}'
+            response = requests.request(
+                "GET", url_info, headers=self.yandex_headers)
+            info_main_data = json.loads(response.text)['result']
+            orders_list = info_main_data['orderIds']
+            shipment_data = {}
+            shipment_data['shipment_id'] = shipment_id
+            shipment_data['orders_list'] = orders_list
+            return shipment_data
+        else:
+            return shipment_data
 
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'received_info_about_delivery', self.received_info_about_delivery, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def check_actual_orders(self):
         """
         YANDEXMARKET
         Проверяет все ордеры в поставке и исключает отмененнные
         """
-        try:
-            shipment_data = self.received_info_about_delivery()
-            if shipment_data:
-                orders_info_list = []
-                inner_info_dict = {}
-                raw_orders_list = shipment_data['orders_list']
-                for order in raw_orders_list:
-                    inner_info_list = []
-                    url_check = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}'
-                    response = requests.request(
-                        "GET", url_check, headers=self.yandex_headers)
-                    check_main_data = json.loads(response.text)['order']
-                    if check_main_data['status'] != 'CANCELLED':
-                        self.orders_list.append(order)
-                        for article in check_main_data['items']:
-                            inner_article_list = {}
-                            inner_article_list['seller_article'] = article['offerId']
-                            inner_article_list['name'] = article['offerName']
-                            inner_article_list['amount'] = article['count']
-                            inner_info_list.append(inner_article_list)
-                        inner_info_dict[order] = inner_info_list
-                        orders_info_list.append(inner_info_dict)
-                return inner_info_dict
-            else:
-                return None
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'check_actual_orders', self.check_actual_orders, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
 
+        shipment_data = self.received_info_about_delivery()
+        if shipment_data:
+            orders_info_list = []
+            inner_info_dict = {}
+            raw_orders_list = shipment_data['orders_list']
+            for order in raw_orders_list:
+                inner_info_list = []
+                url_check = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/orders/{order}'
+                response = requests.request(
+                    "GET", url_check, headers=self.yandex_headers)
+                check_main_data = json.loads(response.text)['order']
+                if check_main_data['status'] != 'CANCELLED':
+                    self.orders_list.append(order)
+                    for article in check_main_data['items']:
+                        inner_article_list = {}
+                        inner_article_list['seller_article'] = article['offerId']
+                        inner_article_list['name'] = article['offerName']
+                        inner_article_list['amount'] = article['count']
+                        inner_info_list.append(inner_article_list)
+                    inner_info_dict[order] = inner_info_list
+                    orders_info_list.append(inner_info_dict)
+            return inner_info_dict
+        else:
+            return None
+
+    @sender_error_to_tg
     def yandex_prepare_data(self):
         """
         YANDEX.
         Готовит данные для общего файла для производства"""
-        try:
-            raw_data = self.check_actual_orders()
-            if raw_data:
-                article_count_dict = {}
-                for order_id, article_list in raw_data.items():
-                    for article_dict in article_list:
-                        if article_dict['seller_article'] in article_count_dict.keys():
-                            article_count_dict[article_dict['seller_article']] = int(
-                                article_dict['amount']) + int(article_count_dict[article_dict['seller_article']])
-                        else:
-                            article_count_dict[article_dict['seller_article']] = int(
-                                article_dict['amount'])
-                return article_count_dict
-            else:
-                return None
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'yandex_prepare_data', self.yandex_prepare_data, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        raw_data = self.check_actual_orders()
+        if raw_data:
+            article_count_dict = {}
+            for order_id, article_list in raw_data.items():
+                for article_dict in article_list:
+                    if article_dict['seller_article'] in article_count_dict.keys():
+                        article_count_dict[article_dict['seller_article']] = int(
+                            article_dict['amount']) + int(article_count_dict[article_dict['seller_article']])
+                    else:
+                        article_count_dict[article_dict['seller_article']] = int(
+                            article_dict['amount'])
+            return article_count_dict
+        else:
+            return None
 
+    @sender_error_to_tg
     def approve_shipment(self):
         """
         YANDEXMARKET
         Подтверждение отгрузки
         """
-        try:
-            shipment_data = self.received_info_about_delivery()
-            shipment_id = shipment_data['shipment_id']
-
-            approve_url = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}/confirm'
-            payload_approve = json.dumps({
-                "externalShipmentId": f'{shipment_id}',
-                "orderIds": self.orders_list
-            })
-            response = requests.request(
-                "POST", approve_url, headers=self.yandex_headers, data=payload_approve)
-
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'approve_shipment', self.approve_shipment, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        shipment_data = self.received_info_about_delivery()
+        shipment_id = shipment_data['shipment_id']
+        approve_url = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{shipment_id}/confirm'
+        payload_approve = json.dumps({
+            "externalShipmentId": f'{shipment_id}',
+            "orderIds": self.orders_list
+        })
+        response = requests.request(
+            "POST", approve_url, headers=self.yandex_headers, data=payload_approve)
 
     def check_dropbox_folder_exist(self):
         """Проверяет, что на Dropbox существует необходимая папка"""
@@ -1621,35 +1509,29 @@ class YandexMarketFbsMode():
             dbx_db.files_create_folder_v2(
                 self.dropbox_current_assembling_folder)
 
+    @sender_error_to_tg
     def saving_act(self):
         """
         YANDEXMARKET
         Сохраняет акт приема - передачи в PDF формате.
         """
-        try:
-            self.check_dropbox_folder_exist()
-            url_act = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{self.shipment_id}/act'
-            response_act = requests.request(
-                "GET", url_act, headers=self.yandex_headers)
-            pdf_data = response_act.content
-            folder_path = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex')
-            if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-            save_folder_docs = f'{folder_path}/YANDEX - {self.file_add_name} акт {self.date_for_files}.pdf'
-            # сохранение PDF-файла
-            with open(save_folder_docs, 'wb') as f:
-                f.write(pdf_data)
-            folder = (
-                f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} акт {self.date_for_files}.pdf')
-            with open(save_folder_docs, 'rb') as f:
-                dbx_db.files_upload(f.read(), folder)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'saving_act', self.saving_act, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        self.check_dropbox_folder_exist()
+        url_act = f'https://api.partner.market.yandex.ru/campaigns/{self.compaign_id}/first-mile/shipments/{self.shipment_id}/act'
+        response_act = requests.request(
+            "GET", url_act, headers=self.yandex_headers)
+        pdf_data = response_act.content
+        folder_path = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/yandex')
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        save_folder_docs = f'{folder_path}/YANDEX - {self.file_add_name} акт {self.date_for_files}.pdf'
+        # сохранение PDF-файла
+        with open(save_folder_docs, 'wb') as f:
+            f.write(pdf_data)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} акт {self.date_for_files}.pdf')
+        with open(save_folder_docs, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
     @sender_error_to_tg
     def saving_tickets_from_yandex_server(self, order, folder_path):
@@ -1673,154 +1555,130 @@ class YandexMarketFbsMode():
             time.sleep(5)
             self.saving_tickets_from_yandex_server(self, order, folder_path)
 
+    @sender_error_to_tg
     def saving_tickets(self):
         """
         YANDEXMARKET
         Сохраняет этикетки в PDF формате.
         """
-        try:
-            orders_info_list = self.check_actual_orders()
-            self.check_dropbox_folder_exist()
-            # Проверка существования папок
-            raw_ticket_folder = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex')
-            if not os.path.exists(raw_ticket_folder):
-                os.makedirs(raw_ticket_folder)
-            folder_path = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets')
-            if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-            done_tickets_folder = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets/done')
-            if not os.path.exists(done_tickets_folder):
-                os.makedirs(done_tickets_folder)
+        orders_info_list = self.check_actual_orders()
+        self.check_dropbox_folder_exist()
+        # Проверка существования папок
+        raw_ticket_folder = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/yandex')
+        if not os.path.exists(raw_ticket_folder):
+            os.makedirs(raw_ticket_folder)
+        folder_path = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets')
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        done_tickets_folder = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets/done')
+        if not os.path.exists(done_tickets_folder):
+            os.makedirs(done_tickets_folder)
+        for order in self.orders_list:
+            self.saving_tickets_from_yandex_server(order, folder_path)
+            time.sleep(3)
+        new_data_for_yandex_ticket(folder_path, orders_info_list)
+        list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
+        folder_summary_file_name = f'{raw_ticket_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
+        merge_barcode_for_yandex_two_on_two(
+            list_filenames, folder_summary_file_name)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
+        with open(folder_summary_file_name, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
-            for order in self.orders_list:
-                self.saving_tickets_from_yandex_server(order, folder_path)
-                time.sleep(3)
-
-            new_data_for_yandex_ticket(folder_path, orders_info_list)
-            list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
-            folder_summary_file_name = f'{raw_ticket_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
-            merge_barcode_for_yandex_two_on_two(
-                list_filenames, folder_summary_file_name)
-            folder = (
-                f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
-            with open(folder_summary_file_name, 'rb') as f:
-                dbx_db.files_upload(f.read(), folder)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'saving_tickets', self.saving_tickets, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def create_yandex_selection_sheet_pdf(self):
         """
         YANDEXMARKET
         Формирует файл подбора
         """
-        try:
-            date_for_files = datetime.now().strftime('%Y-%m-%d')
-            main_shipment_data = self.check_actual_orders()
-            number_of_departure_ya = main_shipment_data.keys()
-            yandex_selection_sheet_xls = openpyxl.Workbook()
-            create = yandex_selection_sheet_xls.create_sheet(
-                title='pivot_list', index=0)
-            create.page_setup.paperSize = create.PAPERSIZE_A4
-            create.page_setup.orientation = create.ORIENTATION_PORTRAIT
-            create.page_margins.left = 0.25
-            create.page_margins.right = 0.25
-            create.page_margins.top = 0.25
-            create.page_margins.bottom = 0.25
-            create.page_margins.header = 0.3
-            create.page_margins.footer = 0.3
-
-            sheet = yandex_selection_sheet_xls['pivot_list']
-            sheet['A1'] = f'Лист подбора Яндекс Маркета {date_for_files}'
-            font = Font(size=16)
-            # Применяем стиль шрифта к ячейке с надписью
-            sheet['A1'].font = font
-            sheet.merge_cells('A1:D1')
-
-            sheet['A3'] = 'Номер отправления'
-            sheet['B3'] = 'Наименование товара'
-            sheet['C3'] = 'Артикул'
-            sheet['D3'] = 'Количество'
-
-            al = Alignment(horizontal="center",
-                           vertical="center", wrap_text=True)
-            al2 = Alignment(vertical="center", wrap_text=True)
-            thin = Side(border_style="thin", color="000000")
-            thick = Side(border_style="medium", color="000000")
-            pattern = PatternFill('solid', fgColor="fcff52")
-
-            upd_number_of_departure_ya = []
-            upd_product_name_ya = []
-            upd_name_for_print_ya = []
-            upd_amount_for_print_ya = []
-
-            for key, value in main_shipment_data.items():
-                for data in value:
-                    upd_number_of_departure_ya.append(key)
-                    upd_product_name_ya.append(data['name'])
-                    upd_name_for_print_ya.append(data['seller_article'])
-                    upd_amount_for_print_ya.append(data['amount'])
-
-            create.column_dimensions['A'].width = 18
-            create.column_dimensions['B'].width = 38
-            create.column_dimensions['C'].width = 18
-            create.column_dimensions['D'].width = 12
-
-            for i in range(len(upd_number_of_departure_ya)):
-                create.cell(
-                    row=i+4, column=1).value = upd_number_of_departure_ya[i]
-                create.cell(row=i+4, column=2).value = upd_product_name_ya[i]
-                create.cell(row=i+4, column=3).value = upd_name_for_print_ya[i]
-                create.cell(
-                    row=i+4, column=4).value = upd_amount_for_print_ya[i]
-            for i in range(3, len(upd_number_of_departure_ya)+4):
-                wrapped_lines = textwrap.wrap(create.cell(
-                    row=i, column=2).value, width=38)
-                num_lines = len(wrapped_lines)
-                row_height = 18 * num_lines
-                create.row_dimensions[i].height = row_height
-                for c in create[f'A{i}:D{i}']:
-                    c[0].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[1].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[2].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[3].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[3].alignment = al
-                    for j in range(4):
-                        c[j].alignment = al
-
-            select_file_folder = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/yandex')
-            if not os.path.exists(select_file_folder):
-                os.makedirs(select_file_folder)
-            name_for_file = f'{select_file_folder}/YANDEX - selection_sheet {self.date_for_files}.xlsx'
-            yandex_selection_sheet_xls.save(name_for_file)
-
-            folder_path = os.path.dirname(
-                os.path.abspath(name_for_file))
-            path_file = os.path.abspath(name_for_file)
-            output = convert(source=path_file, output_dir=folder_path, soft=1)
-
-            folder = (
-                f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} лист подбора {self.date_for_files}.pdf')
-            # Сохраняем на DROPBOX
-            with open(output, 'rb') as f:
-                dbx_db.files_upload(f.read(), folder)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_yandex_selection_sheet_pdf', self.create_yandex_selection_sheet_pdf, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text[:4000], parse_mode='HTML')
+        date_for_files = datetime.now().strftime('%Y-%m-%d')
+        main_shipment_data = self.check_actual_orders()
+        number_of_departure_ya = main_shipment_data.keys()
+        yandex_selection_sheet_xls = openpyxl.Workbook()
+        create = yandex_selection_sheet_xls.create_sheet(
+            title='pivot_list', index=0)
+        create.page_setup.paperSize = create.PAPERSIZE_A4
+        create.page_setup.orientation = create.ORIENTATION_PORTRAIT
+        create.page_margins.left = 0.25
+        create.page_margins.right = 0.25
+        create.page_margins.top = 0.25
+        create.page_margins.bottom = 0.25
+        create.page_margins.header = 0.3
+        create.page_margins.footer = 0.3
+        sheet = yandex_selection_sheet_xls['pivot_list']
+        sheet['A1'] = f'Лист подбора Яндекс Маркета {date_for_files}'
+        font = Font(size=16)
+        # Применяем стиль шрифта к ячейке с надписью
+        sheet['A1'].font = font
+        sheet.merge_cells('A1:D1')
+        sheet['A3'] = 'Номер отправления'
+        sheet['B3'] = 'Наименование товара'
+        sheet['C3'] = 'Артикул'
+        sheet['D3'] = 'Количество'
+        al = Alignment(horizontal="center",
+                       vertical="center", wrap_text=True)
+        al2 = Alignment(vertical="center", wrap_text=True)
+        thin = Side(border_style="thin", color="000000")
+        thick = Side(border_style="medium", color="000000")
+        pattern = PatternFill('solid', fgColor="fcff52")
+        upd_number_of_departure_ya = []
+        upd_product_name_ya = []
+        upd_name_for_print_ya = []
+        upd_amount_for_print_ya = []
+        for key, value in main_shipment_data.items():
+            for data in value:
+                upd_number_of_departure_ya.append(key)
+                upd_product_name_ya.append(data['name'])
+                upd_name_for_print_ya.append(data['seller_article'])
+                upd_amount_for_print_ya.append(data['amount'])
+        create.column_dimensions['A'].width = 18
+        create.column_dimensions['B'].width = 38
+        create.column_dimensions['C'].width = 18
+        create.column_dimensions['D'].width = 12
+        for i in range(len(upd_number_of_departure_ya)):
+            create.cell(
+                row=i+4, column=1).value = upd_number_of_departure_ya[i]
+            create.cell(row=i+4, column=2).value = upd_product_name_ya[i]
+            create.cell(row=i+4, column=3).value = upd_name_for_print_ya[i]
+            create.cell(
+                row=i+4, column=4).value = upd_amount_for_print_ya[i]
+        for i in range(3, len(upd_number_of_departure_ya)+4):
+            wrapped_lines = textwrap.wrap(create.cell(
+                row=i, column=2).value, width=38)
+            num_lines = len(wrapped_lines)
+            row_height = 18 * num_lines
+            create.row_dimensions[i].height = row_height
+            for c in create[f'A{i}:D{i}']:
+                c[0].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[1].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[2].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[3].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[3].alignment = al
+                for j in range(4):
+                    c[j].alignment = al
+        select_file_folder = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/yandex')
+        if not os.path.exists(select_file_folder):
+            os.makedirs(select_file_folder)
+        name_for_file = f'{select_file_folder}/YANDEX - selection_sheet {self.date_for_files}.xlsx'
+        yandex_selection_sheet_xls.save(name_for_file)
+        folder_path = os.path.dirname(
+            os.path.abspath(name_for_file))
+        path_file = os.path.abspath(name_for_file)
+        output = convert(source=path_file, output_dir=folder_path, soft=1)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} лист подбора {self.date_for_files}.pdf')
+        # Сохраняем на DROPBOX
+        with open(output, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
