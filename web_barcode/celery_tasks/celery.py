@@ -103,7 +103,7 @@ app.conf.beat_schedule = {
 
     "price_system_wb_task": {
         "task": "price_system.periodical_tasks.common_wb_add_price_info",
-        "schedule": crontab(hour=11, minute=8)
+        "schedule": crontab(hour=7, minute=16)
     },
     "price_system_ozon_task": {
         "task": "price_system.periodical_tasks.common_ozon_add_price_info",
