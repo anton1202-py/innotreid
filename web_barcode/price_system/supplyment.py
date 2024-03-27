@@ -354,7 +354,7 @@ def ozon_matching_articles(ur_lico):
                 message = (f'проверьте артикул {common_article} на ozon вручную.  \
                            Barcode {ozon_article.yandex_barcode} - {ozon_data[1]}. \
                            SKU {ozon_article.yandex_sku} - {ozon_data[2]}. \
-                           на яндекс вручную. Не совпали данные')
+                           Не совпали данные')
                 print(message)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif ozon_article.ozon_barcode == None:
@@ -408,8 +408,12 @@ def yandex_matching_articles(ur_lico):
                 yandex_article.status = 'Не сопоставлено'
                 yandex_article.company = ur_lico
                 yandex_article.save()
-                print(
-                    f'проверьте артикул {common_article}. Barcode {yandex_article.yandex_barcode} - {yandex_data[1]}. SKU {yandex_article.yandex_sku} - {yandex_data[2]}. на яндекс вручную. Не совпали данные')
+                message = (f'Проверьте артикул {common_article} на яндекс вручную. \
+                            Barcode {yandex_article.yandex_barcode} - {yandex_data[1]}. \
+                            SKU {yandex_article.yandex_sku} - {yandex_data[2]}. \
+                            Не совпали данные')
+                print(message)
+                bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif yandex_article.yandex_barcode == None:
                 yandex_article.status = 'Сопоставлено'
                 yandex_article.company = ur_lico
