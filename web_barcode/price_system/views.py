@@ -228,7 +228,7 @@ def article_price_statistic(request, ur_lico):
                                         price_date__gte=start_date).order_by('common_article')
     print(len(data))
     price_date = data.filter(
-        price_date__gte=start_date).values('price_date').distinct()
+        price_date__gte=start_date).distinct().values('price_date')
     print(price_date)
     article_list = Articles.objects.filter(
         company=ur_lico).order_by('common_article')
