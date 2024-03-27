@@ -10,16 +10,13 @@ from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
                          excel_import_data, ozon_matching_articles,
-                         ozon_price_change, wb_matching_articles,
-                         wilberries_price_change, yandex_matching_articles,
-                         yandex_price_change)
+                         ozon_price_change, wb_articles_list,
+                         wb_matching_articles, wilberries_price_change,
+                         yandex_matching_articles, yandex_price_change)
 
 
 def ip_article_compare(request):
     """Отображает страницу с таблицей сопоставления ИП"""
-    # wb_add_price_info('ИП Караваев')
-    # ozon_add_price_info('ИП Караваев')
-    # yandex_add_price_info('ИП Караваев')
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     data = Articles.objects.filter(
@@ -229,15 +226,10 @@ def article_price_statistic(request, ur_lico):
     start_date = end_date - timedelta(days=5)
     data = ArticlesPrice.objects.filter(common_article__company=ur_lico,
                                         price_date__gte=start_date).order_by('common_article')
-    print(len(data))
     price_date = ArticlesPrice.objects.filter(common_article__company=ur_lico,
                                               price_date__gte=start_date).values('price_date').distinct()
-    print(price_date)
     article_list = Articles.objects.filter(
         company=ur_lico).order_by('common_article')
-    print('**************************************')
-    print(len(article_list))
-    print('**************************************')
     date_list = []
     for i in price_date:
         date_list.append(i['price_date'])
@@ -259,7 +251,6 @@ def article_price_statistic(request, ur_lico):
                     mp_dict['yandex_price'] = i.price
             inner_dict[str(date)] = mp_dict
             data_for_user[article.common_article] = inner_dict
-    print('Добрался до конца бэка')
     context = {
         'data': data,
         'date_list': date_list,

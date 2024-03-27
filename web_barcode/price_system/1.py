@@ -7,8 +7,9 @@ import traceback
 import requests
 import telegram
 from dotenv import load_dotenv
+from price_system.supplyment import wb_articles_list
 
-from web_barcode.price_system.periodical_tasks import wb_add_price_info
+# from web_barcode.price_system.periodical_tasks import wb_add_price_info
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -42,27 +43,5 @@ yandex_headers_karavaev = {
 }
 
 
-def uppercase(func):
-    def wrapper():
-        try:
-            func()
-        except Exception as e:
-            tb_str = traceback.format_exc()
-            message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
-                             f'<b>Функция выполняет</b>: {func.__doc__}\n'
-                             f'<b>Ошибка</b>\n: {e}\n\n'
-                             f'<b>Техническая информация</b>:\n {tb_str}')
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_error[:4000], parse_mode='HTML')
-    return wrapper
-
-
-@uppercase
-def wb_articles_list():
-    """Получаем массив арткулов с ценами и скидками для ВБ"""
-    n = 1 + '23'
-    print(n)
-
-
-wb_add_price_info('ИП Караваев')
+wb_articles_list('ИП Караваев')
 # wb_add_price_info('ООО Иннотрейд')
