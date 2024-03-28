@@ -102,7 +102,6 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    tasks = current_app.tasks
     tasks_info = []
     # print(celery_app.tasks)
     counter = 0

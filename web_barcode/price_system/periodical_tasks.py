@@ -103,6 +103,8 @@ def ozon_add_price_info(ur_lico):
     Если изменилась, то записывает новую цену.
     """
     ozon_article_price_data = ozon_articles_list(ur_lico)
+    print('**************************')
+    print('прошли ozon_article_price_data')
     for data in ozon_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(ozon_product_id=data['product_id']).exists():

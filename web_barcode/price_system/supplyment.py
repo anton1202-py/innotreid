@@ -51,6 +51,11 @@ wb_headers_karavaev = {
 }
 wb_headers_ooo = {
     'Content-Type': 'application/json',
+    'Authorization': WB_OOO_API_KEY
+}
+
+wb_data_ooo_headers = {
+    'Content-Type': 'application/json',
     'Authorization': WB_API_KEY_INNOTREID
 }
 
@@ -76,6 +81,11 @@ header_wb_dict = {
     'ООО Иннотрейд': wb_headers_ooo,
     'ИП Караваев': wb_headers_karavaev
 }
+header_wb_data_dict = {
+    'ООО Иннотрейд': wb_data_ooo_headers,
+    'ИП Караваев': wb_headers_karavaev
+}
+
 header_ozon_dict = {
     'ООО Иннотрейд': ozon_headers_ooo,
     'ИП Караваев': ozon_headers_karavaev
@@ -593,12 +603,14 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+    print('response.status_code', response_data.status_code)
 
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
     header = header_wb_dict[ur_lico]
+    print('header', header)
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -613,6 +625,7 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                     "discount": discount
                 }
                 data_for_change.append(inner_data_dict)
+        print('data_for_change', data_for_change)
         wb_price_changer(header, data_for_change)
 
 
@@ -691,7 +704,7 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
         article_price_data = []
         art_list = []
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&offset={offset}'
-    header = header_wb_dict[ur_lico]
+    header = header_wb_data_dict[ur_lico]
     response = requests.request("GET", url, headers=header)
     if response.status_code == 200:
         main_data = json.loads(response.text)['data']['listGoods']
@@ -728,7 +741,7 @@ def ozon_articles_list(ur_lico, last_id='', main_price_data=None):
             "product_id": [],
             "visibility": "ALL"
         },
-        "last_id": "",
+        "last_id": last_id,
         "limit": 1000
     })
     response = requests.request(
