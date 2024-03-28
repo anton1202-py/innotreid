@@ -132,9 +132,9 @@ def google_sheet():
 
         counter = 2
         for row in data:
-            time.sleep(1)
-            sheet.append_row(row)
             time.sleep(3)
+            sheet.append_row(row)
+            time.sleep(5)
             try:
                 sheet.update_cell(
                     counter, 2, f'=IMAGE(D{counter};1)')
@@ -146,6 +146,7 @@ def google_sheet():
         message_text = error_message('google_sheet', google_sheet, e)
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
+        google_sheet()
 
 
 # google_sheet()
