@@ -533,47 +533,55 @@ def ooo_wb_articles_data():
 
 
 @sender_error_to_tg
+def get_wb_ooo_stock_data(header, info_list):
+    """Получает данные от метода api/v2/nm-report/detail"""
+    calculate_data = datetime.now() - timedelta(days=2)
+    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
+    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
+    payload = json.dumps({
+        "brandNames": [],
+        "objectIDs": [],
+        "tagIDs": [],
+        "nmIDs": info_list,
+        "timezone": "Europe/Moscow",
+        "period": {
+            "begin": begin_date,
+            "end": end_date
+        },
+        "orderBy": {
+            "field": "ordersSumRub",
+            "mode": "asc"
+        },
+        "page": 1
+    })
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        data_list = json.loads(response.text)['data']['cards']
+        return data_list
+    else:
+        text = f'reklama.supplyment.get_wb_ooo_stock_data. Статус код = {response.status_code}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+        time.sleep(21)
+        return get_wb_ooo_stock_data(header, info_list)
+
+
+@sender_error_to_tg
 def wb_ooo_fbo_stock_data():
     """WILDBERRIES. Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
     article_list = ooo_wb_articles_data()
     wb_koef = math.ceil(len(article_list)/900)
-    calculate_data = datetime.now() - timedelta(days=2)
-    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
-    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
-    # Словарь вида: {номер_компании: заказов_за_позавчера}
-
-    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
-
     main_article_data_list = []
-    headers = wb_header['ООО Иннотрейд']
+    header = wb_header['ООО Иннотрейд']
     for i in range(wb_koef):
         # Лист для запроса в эндпоинту ОЗОНа
         start_point = i*900
         finish_point = (i+1)*900
         small_info_list = article_list[
             start_point:finish_point]
-        payload = json.dumps({
-            "brandNames": [],
-            "objectIDs": [],
-            "tagIDs": [],
-            "nmIDs": small_info_list,
-            "timezone": "Europe/Moscow",
-            "period": {
-                "begin": begin_date,
-                "end": end_date
-            },
-            "orderBy": {
-                "field": "ordersSumRub",
-                "mode": "asc"
-            },
-            "page": 1
-        })
-        response = requests.request(
-            "POST", url, headers=headers, data=payload)
-        # print(response.text)
-        data_list = json.loads(response.text)['data']['cards']
+        data_list = get_wb_ooo_stock_data(header, small_info_list)
         main_article_data_list.append(data_list)
         time.sleep(21)
     return main_article_data_list
-
-    # print(campaign_orders_money_dict)

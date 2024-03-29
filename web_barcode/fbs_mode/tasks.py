@@ -510,81 +510,63 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def supply_to_delivery(self, numb=0):
         """
         WILDBERRIES.
         Функция добавляет поставку в доставку.
         """
-        try:
-            if self.supply_id:
-                time.sleep(30)
-                # Переводим поставку в доставку
-                url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
-                response_to_supply = requests.request(
-                    "PATCH", url_to_supply, headers=self.headers)
-
-                if response_to_supply.status_code != 204 and numb < 10:
-                    numb += 1
-                    self.supply_to_delivery(numb)
-                elif response_to_supply.status_code != 204 and numb >= 10:
-                    text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=text, parse_mode='HTML')
-                # elif response_to_supply.status_code == 204:
-                #     text = 'Поставку перевел в доставку'
-                #     bot.send_message(chat_id=CHAT_ID_ADMIN,
-                #                      text=text, parse_mode='HTML')
-            else:
-                text = 'Поставка не добавлена в доставку (supply_to_delivery), так как нет артикулов'
+        if self.supply_id:
+            time.sleep(30)
+            # Переводим поставку в доставку
+            url_to_supply = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/deliver'
+            response_to_supply = requests.request(
+                "PATCH", url_to_supply, headers=self.headers)
+            if response_to_supply.status_code != 204 and numb < 10:
+                numb += 1
+                self.supply_to_delivery(numb)
+            elif response_to_supply.status_code != 204 and numb >= 10:
+                text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'supply_to_delivery', self.supply_to_delivery, e)
+        else:
+            text = 'Поставка не добавлена в доставку (supply_to_delivery), так как нет артикулов'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def qrcode_supply(self):
         """
         WILDBERRIES.
         Функция получает QR код поставки
         и преобразует этот QR код в необходимый формат.
         """
-        try:
-            if self.supply_id:
-                time.sleep(60)
-                # Получаем QR код поставки:
-                url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
-                response_supply_qrcode = requests.request(
-                    "GET", url_supply_qrcode, headers=self.headers)
-
-                # Создаем QR код поставки
-                qrcode_base64_data = json.loads(
-                    response_supply_qrcode.text)["file"]
-
-                # декодируем строку из base64 в бинарные данные
-                binary_data = base64.b64decode(qrcode_base64_data)
-                # создаем объект изображения из бинарных данных
-                img = Image.open(BytesIO(binary_data))
-                # сохраняем изображение в файл
-                folder_path = os.path.join(
-                    os.getcwd(), 'fbs_mode/data_for_barcodes/qrcode_supply')
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                img.save(
-                    f"{folder_path}/{self.supply_id}.png")
-            else:
-                text = 'Поставка не сформирована (qrcode_supply), так как нет артикулов'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'qrcode_supply', self.qrcode_supply, e)
+        if self.supply_id:
+            time.sleep(60)
+            # Получаем QR код поставки:
+            url_supply_qrcode = f"https://suppliers-api.wildberries.ru/api/v3/supplies/{self.supply_id}/barcode?type=png"
+            response_supply_qrcode = requests.request(
+                "GET", url_supply_qrcode, headers=self.headers)
+            # Создаем QR код поставки
+            qrcode_base64_data = json.loads(
+                response_supply_qrcode.text)["file"]
+            # декодируем строку из base64 в бинарные данные
+            binary_data = base64.b64decode(qrcode_base64_data)
+            # создаем объект изображения из бинарных данных
+            img = Image.open(BytesIO(binary_data))
+            # сохраняем изображение в файл
+            folder_path = os.path.join(
+                os.getcwd(), 'fbs_mode/data_for_barcodes/qrcode_supply')
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            img.save(
+                f"{folder_path}/{self.supply_id}.png")
+        else:
+            text = 'Поставка не сформирована (qrcode_supply), так как нет артикулов'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def list_for_print_create(self):
         """
         WILDBERRIES.
@@ -592,94 +574,87 @@ class WildberriesFbsMode():
         amount_articles - словарь с данными {артикул_продавца: количество}.
         Объединяет эти файлы и сохраняет конечный файл на дропбоксе.
         """
-        try:
-            if self.amount_articles:
-                qrcode_list = qrcode_print_for_products()
-                pdf_filenames = glob.glob(
-                    'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
-                logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
-                # mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
-                # bot.send_message(chat_id=CHAT_ID_ADMIN,
-                #                  text=mes_text, parse_mode='HTML')
-                # text = str(self.amount_articles)
-                # bot.send_message(chat_id=CHAT_ID_ADMIN,
-                #                  text=text, parse_mode='HTML')
-                list_pdf_file_ticket_for_complect = []
-                for j in pdf_filenames:
-                    while self.amount_articles[str(Path(j).stem)] > 0:
-                        list_pdf_file_ticket_for_complect.append(j)
-                        self.amount_articles[str(Path(j).stem)] -= 1
-                logging.info(
-                    f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
-                # Определяем число qr кодов для поставки.
-                amount_of_supply_qrcode = math.ceil(
-                    len(list_pdf_file_ticket_for_complect)/20)
-                for file in qrcode_list:
-                    list_pdf_file_ticket_for_complect.append(file)
-                logging.info(
-                    f"list_pdf_file_ticket_for_complect после добавления qr кодов: {list_pdf_file_ticket_for_complect}")
-                outer_list = []  # Внешний список для процесса сортировки
-                for i in list_pdf_file_ticket_for_complect:
-                    # Разделяю полное название файла на путь к файлу и имя файла
-                    # Оказывается в python знаком \ отделяется последняя папка перед файлом
-                    # А все внешние отделяются знаком /
-                    last_slash_index = i.rfind("/")
-                    result = [i[:last_slash_index], i[last_slash_index+1:]]
-                    new_name = result
-                    full_new_name = []  # Список с полным именени файла после разделения
-                    # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
-                    # В этом цикле разделяю имена из предыдущих списков по пробелу.
-                    for j in new_name:
-                        split_name = j.split(' ')
-                        full_new_name.append(split_name)
-                    outer_list.append(full_new_name)
-                # Сортирую самый внешний список по последнему элемену самого внутреннего списка
-                sorted_list = sorted(outer_list, key=lambda x: x[-1][-1])
-                # Далее идет обратный процесс - процесс объединения элементов списка
-                # в первоначальные имена файлов, но уже отсортированные
-                new_sort = []
-                for i in sorted_list:
-                    inner_new_sort = []
-                    for j in i:
-                        j = ' '.join(j)
-                        inner_new_sort.append(j)
-                    new_sort.append(inner_new_sort)
-                last_sorted_list = []
-                for i in new_sort:
-                    i = '/'.join(i)
-                    last_sorted_list.append(i)
-                list_pdf_file_ticket_for_complect = last_sorted_list
-                logging.info(
-                    f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
-                # mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
-                # bot.send_message(chat_id=CHAT_ID_ADMIN,
-                #                  text=mes_text, parse_mode='HTML')
-                qrcode_supply_amount = supply_qrcode_to_standart_view()
-                if len(qrcode_supply_amount) != 0:
-                    while amount_of_supply_qrcode > 0:
-                        list_pdf_file_ticket_for_complect.append(
-                            qrcode_supply_amount[0])
-                        amount_of_supply_qrcode -= 1
-                folder_path = os.path.join(
-                    os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                file_name = (f'{folder_path}/Наклейки для комплектовщиков '
-                             f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
-                saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
-                print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
-                                      file_name,
-                                      saved_on_dropbox_filename)
-            else:
-                text = 'не сработала list_for_print_create потому что нет данных'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'list_for_print_create', self.list_for_print_create, e)
+        if self.amount_articles:
+            qrcode_list = qrcode_print_for_products()
+            pdf_filenames = glob.glob(
+                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+            logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
+            # mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
+            # bot.send_message(chat_id=CHAT_ID_ADMIN,
+            #                  text=mes_text, parse_mode='HTML')
+            # text = str(self.amount_articles)
+            # bot.send_message(chat_id=CHAT_ID_ADMIN,
+            #                  text=text, parse_mode='HTML')
+            list_pdf_file_ticket_for_complect = []
+            for j in pdf_filenames:
+                while self.amount_articles[str(Path(j).stem)] > 0:
+                    list_pdf_file_ticket_for_complect.append(j)
+                    self.amount_articles[str(Path(j).stem)] -= 1
+            logging.info(
+                f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
+            # Определяем число qr кодов для поставки.
+            amount_of_supply_qrcode = math.ceil(
+                len(list_pdf_file_ticket_for_complect)/20)
+            for file in qrcode_list:
+                list_pdf_file_ticket_for_complect.append(file)
+            logging.info(
+                f"list_pdf_file_ticket_for_complect после добавления qr кодов: {list_pdf_file_ticket_for_complect}")
+            outer_list = []  # Внешний список для процесса сортировки
+            for i in list_pdf_file_ticket_for_complect:
+                # Разделяю полное название файла на путь к файлу и имя файла
+                # Оказывается в python знаком \ отделяется последняя папка перед файлом
+                # А все внешние отделяются знаком /
+                last_slash_index = i.rfind("/")
+                result = [i[:last_slash_index], i[last_slash_index+1:]]
+                new_name = result
+                full_new_name = []  # Список с полным именени файла после разделения
+                # Имена QR кодов у меня составные. Состоят из нескольких слов с пробелами
+                # В этом цикле разделяю имена из предыдущих списков по пробелу.
+                for j in new_name:
+                    split_name = j.split(' ')
+                    full_new_name.append(split_name)
+                outer_list.append(full_new_name)
+            # Сортирую самый внешний список по последнему элемену самого внутреннего списка
+            sorted_list = sorted(outer_list, key=lambda x: x[-1][-1])
+            # Далее идет обратный процесс - процесс объединения элементов списка
+            # в первоначальные имена файлов, но уже отсортированные
+            new_sort = []
+            for i in sorted_list:
+                inner_new_sort = []
+                for j in i:
+                    j = ' '.join(j)
+                    inner_new_sort.append(j)
+                new_sort.append(inner_new_sort)
+            last_sorted_list = []
+            for i in new_sort:
+                i = '/'.join(i)
+                last_sorted_list.append(i)
+            list_pdf_file_ticket_for_complect = last_sorted_list
+            logging.info(
+                f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
+            # mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
+            # bot.send_message(chat_id=CHAT_ID_ADMIN,
+            #                  text=mes_text, parse_mode='HTML')
+            qrcode_supply_amount = supply_qrcode_to_standart_view()
+            if len(qrcode_supply_amount) != 0:
+                while amount_of_supply_qrcode > 0:
+                    list_pdf_file_ticket_for_complect.append(
+                        qrcode_supply_amount[0])
+                    amount_of_supply_qrcode -= 1
+            folder_path = os.path.join(
+                os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            file_name = (f'{folder_path}/Наклейки для комплектовщиков '
+                         f'{time.strftime("%Y-%m-%d %H-%M")}.pdf')
+            saved_on_dropbox_filename = f'{self.dropbox_current_assembling_folder}/WB - {self.file_add_name} этикетки FBS {time.strftime("%Y-%m-%d %H-%M-%S")}.pdf'
+            print_barcode_to_pdf2(list_pdf_file_ticket_for_complect,
+                                  file_name,
+                                  saved_on_dropbox_filename)
+        else:
+            text = 'не сработала list_for_print_create потому что нет данных'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+                             text=text, parse_mode='HTML')
 
 
 class OzonFbsMode():
@@ -712,72 +687,59 @@ class OzonFbsMode():
         # Словарь с данными {'артикул продавца': 'количество'}. Для сводной таблицы по FBS
         self.ozon_article_amount = {}
 
+    @sender_error_to_tg
     def awaiting_packaging_orders(self):
         """
         OZON.
         Функция собирает новые заказы и преобразует данные
         от заказа в словарь для дальнейшей работы с ним
         """
-        try:
-            # Метод для просмотра новых заказов
-            url = "https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list"
 
-            future_date_for_filter = self.future_date.strftime(
-                '%Y-%m-%d') + 'T08:00:00Z'
+        # Метод для просмотра новых заказов
+        url = "https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/list"
+        future_date_for_filter = self.future_date.strftime(
+            '%Y-%m-%d') + 'T08:00:00Z'
+        payload = json.dumps({
+            "filter": {
+                "cutoff_from": self.since_date_for_filter,
+                "cutoff_to": future_date_for_filter,
+                "status": "awaiting_packaging"
+            },
+            "limit": 100
+        })
+        response = requests.request(
+            "POST", url, headers=self.ozon_headers, data=payload)
+        # Заполняю словарь данными
+        for i in json.loads(response.text)['result']['postings']:
+            inner_dict_data = {}
+            inner_dict_data['posting_number'] = i['posting_number']
+            inner_dict_data['order_id'] = i['order_id']
+            inner_dict_data['delivery_method'] = i['delivery_method']
+            inner_dict_data['in_process_at'] = i['in_process_at']
+            inner_dict_data['shipment_date'] = i['shipment_date']
+            inner_dict_data['products'] = i['products']
+            self.posting_data.append(inner_dict_data)
 
-            payload = json.dumps({
-                "filter": {
-                    "cutoff_from": self.since_date_for_filter,
-                    "cutoff_to": future_date_for_filter,
-                    "status": "awaiting_packaging"
-                },
-                "limit": 100
-            })
-
-            response = requests.request(
-                "POST", url, headers=self.ozon_headers, data=payload)
-            # Заполняю словарь данными
-            for i in json.loads(response.text)['result']['postings']:
-                inner_dict_data = {}
-                inner_dict_data['posting_number'] = i['posting_number']
-                inner_dict_data['order_id'] = i['order_id']
-                inner_dict_data['delivery_method'] = i['delivery_method']
-                inner_dict_data['in_process_at'] = i['in_process_at']
-                inner_dict_data['shipment_date'] = i['shipment_date']
-                inner_dict_data['products'] = i['products']
-                self.posting_data.append(inner_dict_data)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'awaiting_packaging_orders', self.awaiting_packaging_orders, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def form_delivery_request(self, posting_data):
         """
         OZON.
         Формирую данные для запроса на перевод отрпавления в поставку
         Каждый элемент в products_data — это товар, включённый в данное отправление.
         """
-        try:
-            posting_info_dict = {}
-            for data_dict in posting_data:
-                products_data = []
-                for sku_data in data_dict['products']:
-                    raw_dict = {
-                        "product_id": sku_data['sku'],
-                        "quantity": sku_data['quantity']
-                    }
-                    products_data.append(raw_dict)
-                posting_info_dict[data_dict['posting_number']] = products_data
-            return posting_info_dict
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'form_delivery_request', self.form_delivery_request, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        posting_info_dict = {}
+        for data_dict in posting_data:
+            products_data = []
+            for sku_data in data_dict['products']:
+                raw_dict = {
+                    "product_id": sku_data['sku'],
+                    "quantity": sku_data['quantity']
+                }
+                products_data.append(raw_dict)
+            posting_info_dict[data_dict['posting_number']] = products_data
+        return posting_info_dict
 
+    @sender_error_to_tg
     def awaiting_deliver_orders(self):
         """
         OZON.
@@ -785,32 +747,27 @@ class OzonFbsMode():
         Каждый элемент в packages может содержать несколько элементов products или отправлений.
         Каждый элемент в products — это товар, включённый в данное отправление.
         """
-        try:
-            posting_info_dict = self.form_delivery_request(self.posting_data)
-            url = 'https://api-seller.ozon.ru/v4/posting/fbs/ship'
-            for data_dict in self.posting_data:
-                payload = json.dumps({
-                    "packages": [
-                        {
-                            "products": posting_info_dict[data_dict['posting_number']]
-                        }
-                    ],
-                    "posting_number": data_dict['posting_number']
-                })
-                response = requests.request(
-                    "POST", url, headers=self.ozon_headers, data=payload)
-                if response.status_code != 200:
-                    text = f'Статус код поставки {data_dict["posting_number"]}: {response.status_code}'
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                     text=text, parse_mode='HTML')
-                time.sleep(5)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'awaiting_deliver_orders', self.awaiting_deliver_orders, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
 
+        posting_info_dict = self.form_delivery_request(self.posting_data)
+        url = 'https://api-seller.ozon.ru/v4/posting/fbs/ship'
+        for data_dict in self.posting_data:
+            payload = json.dumps({
+                "packages": [
+                    {
+                        "products": posting_info_dict[data_dict['posting_number']]
+                    }
+                ],
+                "posting_number": data_dict['posting_number']
+            })
+            response = requests.request(
+                "POST", url, headers=self.ozon_headers, data=payload)
+            if response.status_code != 200:
+                text = f'Статус код поставки {data_dict["posting_number"]}: {response.status_code}'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=text, parse_mode='HTML')
+            time.sleep(5)
+
+    @sender_error_to_tg
     def check_folder_exists(self, path):
         try:
             dbx_db.files_list_folder(path)
@@ -818,207 +775,174 @@ class OzonFbsMode():
         except dropbox.exceptions.ApiError as e:
             return False
 
+    @sender_error_to_tg
     def prepare_data_for_confirm_delivery(self):
         """OZON. Подготовка данных для подтверждения отгрузки"""
-        try:
-            hour = datetime.now().hour
-            date_folder = datetime.today().strftime('%Y-%m-%d')
-
-            to_date_for_filter = self.tomorrow_date.strftime(
-                '%Y-%m-%d') + 'T23:59:00Z'
-            date_confirm_delivery = self.tomorrow_date.strftime('%Y-%m-%d')
-
-            # Словарь с данными {'Номер склада': {quantity: 'Количество артикулов', containers_count: 'количество коробок'}}
-            self.ware_house_amount_dict = {}
-            # Словарь с данными {'номер отправления': {'Артикул продавца': 'количество'}}
-            self.fbs_ozon_common_data = {}
-
-            # Словарь с данными {'номер отправления': [{'Артикул продавца': 'seller_article',
-            # 'Наименование': 'article_name', 'Количество': 'amount'}]}
-            self.fbs_ozon_common_data_buils_dict = {}
-
-            if hour >= 6 and hour < 18:
-                self.delivary_method_id = self.warehouse_dict['day_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
-            else:
-                self.delivary_method_id = self.warehouse_dict['night_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
-            self.departure_date = date_confirm_delivery + 'T10:00:00Z'
-
-            # Создаем папку на dropbox, если ее еще нет
-            if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
-                dbx_db.files_create_folder_v2(
-                    self.dropbox_current_assembling_folder)
-
-            # Проверяем все отгрузки, которые буду завтра
-            url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
-            amount_products = 0
-            payload = json.dumps(
-                {
-                    "dir": "asc",
-                    "filter": {
-                        "delivery_method_id": [self.delivary_method_id],
-                        "provider_id": [24],
-                        "since": self.since_date_for_filter,
-                        "status": "awaiting_deliver",
-                        "to": to_date_for_filter,
-                        "warehouse_id": [self.delivary_method_id]
-                    },
-                    "limit": 999,
-                    "offset": 0,
-                    "with": {
-                        "analytics_data": True,
-                        "barcodes": True,
-                        "financial_data": True,
-                        "translit": True
-                    }
+        hour = datetime.now().hour
+        date_folder = datetime.today().strftime('%Y-%m-%d')
+        to_date_for_filter = self.tomorrow_date.strftime(
+            '%Y-%m-%d') + 'T23:59:00Z'
+        date_confirm_delivery = self.tomorrow_date.strftime('%Y-%m-%d')
+        # Словарь с данными {'Номер склада': {quantity: 'Количество артикулов', containers_count: 'количество коробок'}}
+        self.ware_house_amount_dict = {}
+        # Словарь с данными {'номер отправления': {'Артикул продавца': 'количество'}}
+        self.fbs_ozon_common_data = {}
+        # Словарь с данными {'номер отправления': [{'Артикул продавца': 'seller_article',
+        # 'Наименование': 'article_name', 'Количество': 'amount'}]}
+        self.fbs_ozon_common_data_buils_dict = {}
+        if hour >= 6 and hour < 18:
+            self.delivary_method_id = self.warehouse_dict['day_stock']
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
+        else:
+            self.delivary_method_id = self.warehouse_dict['night_stock']
+            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
+        self.departure_date = date_confirm_delivery + 'T10:00:00Z'
+        # Создаем папку на dropbox, если ее еще нет
+        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
+            dbx_db.files_create_folder_v2(
+                self.dropbox_current_assembling_folder)
+        # Проверяем все отгрузки, которые буду завтра
+        url = 'https://api-seller.ozon.ru/v3/posting/fbs/list'
+        amount_products = 0
+        payload = json.dumps(
+            {
+                "dir": "asc",
+                "filter": {
+                    "delivery_method_id": [self.delivary_method_id],
+                    "provider_id": [24],
+                    "since": self.since_date_for_filter,
+                    "status": "awaiting_deliver",
+                    "to": to_date_for_filter,
+                    "warehouse_id": [self.delivary_method_id]
+                },
+                "limit": 999,
+                "offset": 0,
+                "with": {
+                    "analytics_data": True,
+                    "barcodes": True,
+                    "financial_data": True,
+                    "translit": True
                 }
-            )
-            response = requests.request(
-                "POST", url, headers=self.ozon_headers, data=payload)
-            for data in json.loads(response.text)['result']['postings']:
-                inner_article_amount_dict = {}
-                inner_bilding_list = []
-                if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
-                    for product in data['products']:
-                        inner_bilding_dict = {}
-                        inner_bilding_dict['Артикул продавца'] = product['offer_id']
-                        inner_bilding_dict['Наименование'] = product['name']
-                        inner_bilding_dict['Количество'] = product['quantity']
-                        amount_products += product['quantity']
-                        inner_article_amount_dict[product['offer_id']
-                                                  ] = product['quantity']
-                        inner_bilding_list.append(inner_bilding_dict)
-                        if product['offer_id'] not in self.ozon_article_amount:
-                            self.ozon_article_amount[product['offer_id']] = int(
-                                product['quantity'])
-                        else:
-                            self.ozon_article_amount[product['offer_id']
-                                                     ] += int(product['quantity'])
-                    self.fbs_ozon_common_data[data['posting_number']
-                                              ] = inner_article_amount_dict
-                    # Словарь для файла сборки
-                    self.fbs_ozon_common_data_buils_dict[data['posting_number']
-                                                         ] = inner_bilding_list
-            containers_count = math.ceil(amount_products/20)
-            self.ware_house_amount_dict[self.delivary_method_id] = {
-                'quantity': amount_products, 'containers_count': containers_count}
-            return self.ozon_article_amount
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'prepare_data_for_confirm_delivery', self.prepare_data_for_confirm_delivery, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+            }
+        )
+        response = requests.request(
+            "POST", url, headers=self.ozon_headers, data=payload)
+        for data in json.loads(response.text)['result']['postings']:
+            inner_article_amount_dict = {}
+            inner_bilding_list = []
+            if self.tomorrow_date.strftime('%Y-%m-%d') in data["shipment_date"]:
+                for product in data['products']:
+                    inner_bilding_dict = {}
+                    inner_bilding_dict['Артикул продавца'] = product['offer_id']
+                    inner_bilding_dict['Наименование'] = product['name']
+                    inner_bilding_dict['Количество'] = product['quantity']
+                    amount_products += product['quantity']
+                    inner_article_amount_dict[product['offer_id']
+                                              ] = product['quantity']
+                    inner_bilding_list.append(inner_bilding_dict)
+                    if product['offer_id'] not in self.ozon_article_amount:
+                        self.ozon_article_amount[product['offer_id']] = int(
+                            product['quantity'])
+                    else:
+                        self.ozon_article_amount[product['offer_id']
+                                                 ] += int(product['quantity'])
+                self.fbs_ozon_common_data[data['posting_number']
+                                          ] = inner_article_amount_dict
+                # Словарь для файла сборки
+                self.fbs_ozon_common_data_buils_dict[data['posting_number']
+                                                     ] = inner_bilding_list
+        containers_count = math.ceil(amount_products/20)
+        self.ware_house_amount_dict[self.delivary_method_id] = {
+            'quantity': amount_products, 'containers_count': containers_count}
+        return self.ozon_article_amount
 
+    @sender_error_to_tg
     def confirm_delivery_create_document(self):
         """
         OZON.
         Функция подтверждает отгрузку и запускает создание документов на стороне ОЗОН"""
-        try:
-            url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/create'
-            if self.ware_house_amount_dict[self.delivary_method_id]['quantity'] > 0:
-                payload = json.dumps({
-                    "containers_count": self.ware_house_amount_dict[self.delivary_method_id]['containers_count'],
-                    "delivery_method_id": self.delivary_method_id,
-                    "departure_date": self.departure_date
-                })
-                response = requests.request(
-                    "POST", url, headers=self.ozon_headers, data=payload)
-                self.delivery_id = json.loads(response.text)['result']['id']
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'confirm_delivery_create_document', self.confirm_delivery_create_document, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/create'
+        if self.ware_house_amount_dict[self.delivary_method_id]['quantity'] > 0:
+            payload = json.dumps({
+                "containers_count": self.ware_house_amount_dict[self.delivary_method_id]['containers_count'],
+                "delivery_method_id": self.delivary_method_id,
+                "departure_date": self.departure_date
+            })
+            response = requests.request(
+                "POST", url, headers=self.ozon_headers, data=payload)
+            self.delivery_id = json.loads(response.text)['result']['id']
 
+    @sender_error_to_tg
     def check_delivery_create(self):
         """
         OZON.
         Функция проверяет, что отгрузка создана.
         Формирует список отправлений для дальнейшей работы
         """
-        try:
-            url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/check-status'
+        url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/check-status'
+        payload = json.dumps(
+            {
+                "id": self.delivery_id
+            }
+        )
+        response = requests.request(
+            "POST", url, headers=self.ozon_headers, data=payload)
+        data = json.loads(response.text)['result']
+        if data['status'] == "ready":
+            self.delivery_number_list = data["added_to_act"]
+            print('Функция check_delivery_create сработала. Спать 5 мин не нужно')
+        else:
+            print('уснули на 5 мин в функции check_delivery_create')
+            time.sleep(300)
+            self.check_delivery_create()
 
-            payload = json.dumps(
-                {
-                    "id": self.delivery_id
-                }
-            )
-            response = requests.request(
-                "POST", url, headers=self.ozon_headers, data=payload)
-            data = json.loads(response.text)['result']
-            if data['status'] == "ready":
-                self.delivery_number_list = data["added_to_act"]
-                print('Функция check_delivery_create сработала. Спать 5 мин не нужно')
-            else:
-                print('уснули на 5 мин в функции check_delivery_create')
-                time.sleep(300)
-                self.check_delivery_create()
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'check_delivery_create', self.check_delivery_create, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
+    @sender_error_to_tg
     def receive_barcode_delivery(self):
         """OZON. Получает и сохраняет штрихкод поставки"""
-        try:
-            url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/get-barcode'
-            payload = json.dumps(
-                {
-                    "id": self.delivery_id
-                }
-            )
-            response = requests.request(
-                "POST", url, headers=self.ozon_headers, data=payload)
-            image = Image.open(io.BytesIO(response.content))
-            folder_path = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/ozon_delivery_barcode')
-            if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-            save_folder_docs = f"{folder_path}/{self.delivery_id}_баркод {self.date_for_files}.png"
-            image.save(save_folder_docs)
-
-            # Сохраняем штрихкод в PDF формате
-            now_date = datetime.now().strftime(("%d.%m"))
-            im = Image.open(save_folder_docs)
-            text_common = "Штрихкод для отгрузки ОЗОН"
-            text_company = ''
-            if self.file_add_name == 'ООО':
-                text_company = 'ООО Иннотрейд'
-            elif self.file_add_name == 'ИП':
-                text_company = 'ИП Караваев'
-            font = ImageFont.truetype("arial.ttf", size=50)
-            A4 = (1033, 1462)
-            white_A4 = Image.new('RGB', A4, 'white')
-            text_draw = ImageDraw.Draw(white_A4)
-            text_common_lenght = text_draw.textlength(text_common, font=font)
-            text_company_lenght = text_draw.textlength(text_company, font=font)
-            x = (A4[0] - im.width) // 2
-            text_common_x = (A4[0] - round(text_common_lenght)) // 2
-            text_company_x = (A4[0] - round(text_company_lenght)) // 2
-            white_A4.paste(im, (x, 330))
-            text_draw.text((text_common_x, 100), text_common,
-                           font=font, fill=('#000000'))
-            text_draw.text((text_company_x, 200), text_company,
-                           font=font, fill=('#000000'))
-            save_folder_docs_pdf = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {now_date}.pdf"
-            white_A4.save(save_folder_docs_pdf, 'PDF', quality=100)
-
-            folder = (
-                f'{self.dropbox_current_assembling_folder}/OZON - {self.file_add_name} акт {now_date}.pdf')
-            with open(save_folder_docs_pdf, 'rb') as f:
-                dbx_db.files_upload(f.read(), folder)
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'receive_barcode_delivery', self.receive_barcode_delivery, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        url = 'https://api-seller.ozon.ru/v2/posting/fbs/act/get-barcode'
+        payload = json.dumps(
+            {
+                "id": self.delivery_id
+            }
+        )
+        response = requests.request(
+            "POST", url, headers=self.ozon_headers, data=payload)
+        image = Image.open(io.BytesIO(response.content))
+        folder_path = os.path.join(
+            os.getcwd(), f'{self.main_save_folder_server}/ozon_delivery_barcode')
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        save_folder_docs = f"{folder_path}/{self.delivery_id}_баркод {self.date_for_files}.png"
+        image.save(save_folder_docs)
+        # Сохраняем штрихкод в PDF формате
+        now_date = datetime.now().strftime(("%d.%m"))
+        im = Image.open(save_folder_docs)
+        text_common = "Штрихкод для отгрузки ОЗОН"
+        text_company = ''
+        if self.file_add_name == 'ООО':
+            text_company = 'ООО Иннотрейд'
+        elif self.file_add_name == 'ИП':
+            text_company = 'ИП Караваев'
+        font = ImageFont.truetype("arial.ttf", size=50)
+        A4 = (1033, 1462)
+        white_A4 = Image.new('RGB', A4, 'white')
+        text_draw = ImageDraw.Draw(white_A4)
+        text_common_lenght = text_draw.textlength(text_common, font=font)
+        text_company_lenght = text_draw.textlength(text_company, font=font)
+        x = (A4[0] - im.width) // 2
+        text_common_x = (A4[0] - round(text_common_lenght)) // 2
+        text_company_x = (A4[0] - round(text_company_lenght)) // 2
+        white_A4.paste(im, (x, 330))
+        text_draw.text((text_common_x, 100), text_common,
+                       font=font, fill=('#000000'))
+        text_draw.text((text_company_x, 200), text_company,
+                       font=font, fill=('#000000'))
+        save_folder_docs_pdf = f"{self.main_save_folder_server}/ozon_delivery_barcode/{self.delivery_id}_баркод {now_date}.pdf"
+        white_A4.save(save_folder_docs_pdf, 'PDF', quality=100)
+        folder = (
+            f'{self.dropbox_current_assembling_folder}/OZON - {self.file_add_name} акт {now_date}.pdf')
+        with open(save_folder_docs_pdf, 'rb') as f:
+            dbx_db.files_upload(f.read(), folder)
 
     def create_ozone_selection_sheet_pdf(self):
         """OZON. Создает лист подбора для OZON"""
@@ -1322,12 +1246,27 @@ class YandexMarketFbsMode():
         else:
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
 
+    @sender_error_to_tg
     def check_folder_exists(self, path):
+        message = ''
         try:
-            dbx_db.files_list_folder(path)
-            return True
-        except dropbox.exceptions.ApiError as e:
-            return False
+            dbx_db.users_get_current_account()
+            try:
+                dbx_db.files_list_folder(path)
+                return True
+            except dropbox.exceptions.ApiError as e:
+                return False
+        except dropbox.exceptions.AuthError as err:
+            message = f'Ошибка аутентификации: {err}'
+        except dropbox.exceptions.BadInputError as err:
+            message = f'Неверные входные данные: {err}'
+        except dropbox.exceptions.HttpError as err:
+            message = f'Ошибка HTTP: {err}'
+        except Exception as err:
+            message = f'Неизвестная ошибка: {err}'
+        if message:
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
 
     @sender_error_to_tg
     def receive_orders_data(self):

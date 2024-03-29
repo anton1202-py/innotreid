@@ -16,7 +16,7 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
 from reklama.periodic_tasks import (matching_wb_ooo_article_campaign,
                                     ozon_status_one_campaign)
 from reklama.supplyment import (ad_list, create_articles_company,
-                                header_determinant)
+                                header_determinant, wb_ooo_fbo_stock_data)
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')

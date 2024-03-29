@@ -702,7 +702,6 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     if article_price_data == None:
         article_price_data = []
-        art_list = []
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&offset={offset}'
     header = header_wb_data_dict[ur_lico]
     response = requests.request("GET", url, headers=header)
@@ -718,7 +717,6 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
             iter_numb += 1
             offset = 1000 * iter_numb
             wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
-
         return article_price_data
     else:
         text = f'Приложение price_system. supplyment. Функция: wb_articles_list. Статус код: {response.status_code}'

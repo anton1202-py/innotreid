@@ -2,12 +2,19 @@ import json
 import os
 import time
 
+import dropbox
 import requests
 from dotenv import load_dotenv
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
 load_dotenv(dotenv_path)
+
+REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
+APP_KEY_DB = os.getenv('APP_KEY_DB')
+APP_SECRET_DB = os.getenv('APP_SECRET_DB')
+
+
 API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
 YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
 API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
@@ -47,41 +54,21 @@ ozon_headers_ooo = {
 }
 
 
-def delivery_data(next_number=0, limit_number=1000):
-    url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
-    response_data = requests.request(
-        "GET", url_data, headers=wb_headers_karavaev)
-    if response_data.status_code == 200:
-        if len(json.loads(response_data.text)['supplies']) >= limit_number:
-            next_number_new = json.loads(response_data.text)['next']
-            return delivery_data(next_number_new)
-        else:
-            last_sup = json.loads(response_data.text)['supplies'][-1]
-            supply_id = last_sup['id']
-            return supply_id
-    else:
-        time.sleep(5)
-        delivery_data()
+# Укажите свой токен доступа к Dropbox
+TOKEN = 'YOUR_DROPBOX_ACCESS_TOKEN'
 
-
-def data_for_production_list():
-    supply_id = delivery_data()
-    url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
-    response_data = requests.request(
-        "GET", url, headers=wb_headers_karavaev)
-    if response_data.status_code == 200:
-        article_amount = {}
-        orders_data = json.loads(response_data.text)['orders']
-        for data in orders_data:
-            if data['article'] in article_amount:
-                article_amount[data['article']] += 1
-            else:
-                article_amount[data['article']] = 1
-        return article_amount
-
-    else:
-        time.sleep(5)
-        data_for_production_list()
-
-
-print(data_for_production_list())
+try:
+    dbx = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
+                          app_key=APP_KEY_DB,
+                          app_secret=APP_SECRET_DB)
+    dbx.users_get_current_account()
+    print(dbx.users_get_current_account())
+    print("Соединение с Dropbox установлено")
+except dropbox.exceptions.AuthError as err:
+    print("Ошибка аутентификации: ", err)
+except dropbox.exceptions.BadInputError as err:
+    print("Неверные входные данные: ", err)
+except dropbox.exceptions.HttpError as err:
+    print("Ошибка HTTP: ", err)
+except Exception as err:
+    print("Неизвестная ошибка: ", err)
