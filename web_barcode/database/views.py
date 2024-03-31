@@ -4,6 +4,7 @@ import pandas as pd
 import xlwt
 from celery import current_app
 from celery_tasks.celery import app as celery_app
+from celery_tasks.ozon_tasks import fbs_balance_maker_for_all_company
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -102,6 +103,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    fbs_balance_maker_for_all_company()
     data = Articles.objects.all()
     context = {
         'data': data,

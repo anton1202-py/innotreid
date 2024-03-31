@@ -10,7 +10,7 @@ from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.supplyment import sender_error_to_tg
 
-from .helpers_func import error_message, stream_dropbox_file
+from .helpers_func import stream_dropbox_file
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -139,10 +139,15 @@ def sku_article_data(header):
             "POST", info_url, headers=header, data=payload)
         article_data = json.loads(response.text)['result']['items']
         for data in article_data:
-            if data['fbs_sku'] != 0:
-                main_info_dict[data['offer_id']] = data['fbs_sku']
-            else:
+            if data['sku'] != 0:
                 main_info_dict[data['offer_id']] = data['sku']
+            else:
+                if data['fbs_sku'] != 0:
+                    main_info_dict[data['offer_id']] = data['fbs_sku']
+                elif data['fbo_sku'] != 0:
+                    main_info_dict[data['offer_id']] = data['fbo_sku']
+                else:
+                    continue
     return main_info_dict
 
 
@@ -235,7 +240,6 @@ def fbs_balance_maker(header, storage):
         for article in small_info_list:
             inner_request_dict = {}
             inner_request_dict['offer_id'] = article
-            # print('Делаем остаток 100 на FBS', inner_request_dict['offer_id'])
             inner_request_dict['product_id'] = article_small_balance_dict[article]
             inner_request_dict['stock'] = 100
             inner_request_dict['warehouse_id'] = warehouse_id
