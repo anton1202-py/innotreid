@@ -1247,6 +1247,18 @@ class YandexMarketFbsMode():
             self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
 
     @sender_error_to_tg
+    def send_file_to_dropbox(self, file, folder):
+        message = ''
+        try:
+            dbx_db.files_upload(file.read(), folder)
+        except Exception as err:
+            message = f'Неизвестная ошибка: {err}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
+            time.sleep(10)
+            self.send_file_to_dropbox(file, folder)
+
+    @sender_error_to_tg
     def check_folder_exists(self, path):
         message = ''
         try:
@@ -1470,7 +1482,8 @@ class YandexMarketFbsMode():
         folder = (
             f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} акт {self.date_for_files}.pdf')
         with open(save_folder_docs, 'rb') as f:
-            dbx_db.files_upload(f.read(), folder)
+            self.send_file_to_dropbox(f, folder)
+            # dbx_db.files_upload(f.read(), folder)
 
     @sender_error_to_tg
     def saving_tickets_from_yandex_server(self, order, folder_path):
@@ -1526,7 +1539,8 @@ class YandexMarketFbsMode():
         folder = (
             f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
         with open(folder_summary_file_name, 'rb') as f:
-            dbx_db.files_upload(f.read(), folder)
+            self.send_file_to_dropbox(f, folder)
+            # dbx_db.files_upload(f.read(), folder)
 
     @sender_error_to_tg
     def create_yandex_selection_sheet_pdf(self):
@@ -1617,7 +1631,7 @@ class YandexMarketFbsMode():
             f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} лист подбора {self.date_for_files}.pdf')
         # Сохраняем на DROPBOX
         with open(output, 'rb') as f:
-            dbx_db.files_upload(f.read(), folder)
+            self.send_file_to_dropbox(f, folder)
 
 
 class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
