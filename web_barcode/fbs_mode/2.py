@@ -21,6 +21,7 @@ from barcode.writer import ImageWriter
 from dotenv import load_dotenv
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
+# from price_system.supplyment import sender_error_to_tg
 from PyPDF3 import PdfFileReader, PdfFileWriter
 from PyPDF3.pdf import PageObject
 from reportlab.lib.pagesizes import letter
@@ -93,129 +94,76 @@ dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_secret=APP_SECRET_DB)
 
 
-def stream_dropbox_file(path):
-    _, res = dbx_db.files_download(path)
-    with closing(res) as result:
-        byte_data = result.content
-        return io.BytesIO(byte_data)
+# @sender_error_to_tg
+def merge_barcode_for_yandex_two_on_two(list_filenames, folder_summary_file_name):
+    with open(list_filenames[0], "rb") as f:
+        input1 = PdfFileReader(f, strict=False)
+        # Создаем новую страницу
+        page1 = input1.getPage(0)
+        # Задаем максимальную ширину страницы.
+        # Почему-то всегда берет самую длинную сторону в качестве ширины
+        total_width = max([page1.mediaBox.upperRight[0]*(2)])
+        # Задаем максимальную высоту страницы.
+        # Почему-то всегда берет самую короткую сторону в качестве длины
+        total_height = max([page1.mediaBox.upperRight[1]*(2)])
+        # Горизонтальный размер страницы
+        horiz_size = page1.mediaBox.upperRight[0]
+        # Вертикальный размер страницы
+        vertic_size = page1.mediaBox.upperRight[1]
+        # Создаем объект записи конечного файла
+        output = PdfFileWriter()
+        # Присваиваем имя конечного файла
+        file_name = folder_summary_file_name
+
+        # Создаем страницу конечного файла
+        new_page = PageObject.createBlankPage(
+            file_name, total_width, total_height)
+        # Размещаем нулевой элемент на первой странице
+        new_page.mergeTranslatedPage(page1, 0, 0)
+        # При добавлении страницы разворачиваем ее на 90 градусов.
+        # Потому что длина берется всегда с длинной координаты, в у нас файл вертикальный.
+        output.addPage(new_page.rotateClockwise(90))
+        # Узнает из скольки страниц файл нам нужен
+        page_amount = (len(list_filenames) // 4)
+        if len(list_filenames) % 4 > 0:
+            page_amount = page_amount + 1
+        pages_names = []
+        for p in range(1, page_amount):
+            p = PageObject.createBlankPage(
+                file_name, total_width, total_height)
+            # При добавлении всех страниц переворачиваем их на 90 градусов, как первую.
+            output.addPage(p.rotateClockwise(90))
+            # Добавляем к новому файлу каждую страницу в цикле
+            pages_names.append(p)
+        for i in range(0, len(list_filenames)):
+            with open(list_filenames[i], "rb") as bb:
+                # Коэффициент счетчика страниц
+                m = i // 4
+                # Вертикальный коэффициент. Равен либо 0, либо 1.
+                # Совпадает с остатком от деления на 2 номера файла
+                n = i % 2
+                # Горизонтальный коэффициент.
+                k = (i // 2) - 2 * m
+                # Размещаем файлы на первой странице.
+                if i < 4:
+                    new_page.mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(n))
+                # Размещаем файлы на всех последующих страницах.
+                elif i >= 4:
+                    (pages_names[m-1]).mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(n))
+                output.write(open(file_name, "wb"))
+        f.close()
 
 
-def atoi(text):
-    """Для сортировки файлов в списках для присоединения"""
-    return int(text) if text.isdigit() else text
+list_filenames = glob.glob(
+    'web_barcode/fbs_mode/data_for_barcodes/yandex/*.pdf')
+folder_summary_file_name = f'web_barcode/fbs_mode/data_for_barcodes/yandex/YANDEX - этикетки.pdf'
 
-
-def natural_keys(text):
-    """
-    alist.sort(key=natural_keys) sorts in human order
-    """
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
-
-
-def qrcode_order():
-    """
-    WILDBERRIES.
-    Функция добавляет сборочные задания по их id
-    в созданную поставку и получает qr стикер каждого
-    задания и сохраняет его в папку
-    """
-    order_list = [1534937658, 1535269830, 1535436413]
-    # Создаем qr коды добавленных ордеров.
-    for order in order_list:
-        ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
-        payload_ticket = json.dumps({"orders": [order]})
-        response_ticket = requests.request(
-            "POST", ticket_url, headers=wb_headers_karavaev, data=payload_ticket)
-        # Расшифровываю ответ, чтобы сохранить файл этикетки задания
-        ticket_data = json.loads(response_ticket.text)[
-            "stickers"][0]["file"]
-        # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
-        # листа подбора
-        sticker_code_first_part = json.loads(response_ticket.text)[
-            "stickers"][0]["partA"]
-        sticker_code_second_part = json.loads(response_ticket.text)[
-            "stickers"][0]["partB"]
-        sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
-
-        # декодируем строку из base64 в бинарные данные
-        binary_data = base64.b64decode(ticket_data)
-        # создаем объект изображения из бинарных данных
-        img = Image.open(io.BytesIO(binary_data))
-        # сохраняем изображение в файл
-        folder_path = os.path.join(
-            os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        img.save(
-            f"{folder_path}/{order}.png")
-
-
-# qrcode_order()
-
-
-def qrcode_print_for_products():
-    """
-    Создает QR коды в необходимом формате и добавляет к ним артикул и его название 
-    из excel файла. Сравнивает цифры из файла с QR кодами и цифры из excel файла.
-    Таким образом находит артикулы и названия.
-    Входящие файлы:
-    filename - название файла с qr-кодами. Для создания промежуточной папки.
-    """
-    dir = 'fbs_mode/data_for_barcodes/qrcode_folder/'
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    os.chmod(dir, 0o777)
-
-    filelist = glob.glob(os.path.join(dir, "*.png"))
-    print('FILELIST', filelist)
-    filelist.sort(key=natural_keys)
-    i = 0
-    font1 = ImageFont.truetype("arial.ttf", size=40)
-    font2 = ImageFont.truetype("arial.ttf", size=90)
-
-    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
-    if not os.path.exists(filename):
-        os.makedirs(filename)
-    os.chmod(filename, 0o777)
-
-    for file in filelist:
-        path = Path(file)
-        file_name = str(os.path.basename(path).split('.')[0])
-        name_data = file_name.split('\\')
-        print('name_data', name_data)
-        sticker_data = name_data[0]
-        barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
-        layout_function = img2pdf.get_layout_fun(barcode_size)
-        im = Image.new('RGB', (660, 466), color=('#ffffff'))
-        image1 = Image.open(file)
-        draw_text = ImageDraw.Draw(im)
-
-        # Вставляем qr код в основной фон
-        im.paste(image1, (70, 100))
-        draw_text.text(
-            (90, 80),
-            f'{sticker_data}',
-            font=font1,
-            fill=('#000'), stroke_width=1
-        )
-        im.save(
-            f'{filename}/{file_name}.png')
-        pdf = img2pdf.convert(
-            f'{filename}/{file_name}.png', layout_fun=layout_function)
-        with open(f'{filename}/{file_name}.pdf', 'wb') as f:
-            f.write(pdf)
-        i += 1
-    pdf_filenames_qrcode = glob.glob(f'{filename}/*.pdf')
-    pdf_filenames_qrcode.sort(key=natural_keys)
-    filelist.clear()
-
-    # filelist = glob.glob(os.path.join(filename, "*"))
-    # for f in filelist:
-    #    try:
-    #        os.remove(f)
-    #    except Exception:
-    #        print('')
-    return pdf_filenames_qrcode
-
-
-qrcode_print_for_products()
+merge_barcode_for_yandex_two_on_two(list_filenames, folder_summary_file_name)
