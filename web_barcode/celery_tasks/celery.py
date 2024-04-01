@@ -74,7 +74,7 @@ app.conf.beat_schedule = {
     },
     "ooo_fbs_action": {
         "task": "fbs_mode.tasks.ooo_common_task",
-        "schedule": crontab(hour=18, minute=47)
+        "schedule": crontab(hour=17, minute=40)
     },
     "ip_fbs_morning_action": {
         "task": "fbs_mode.tasks.ip_morning_task",
