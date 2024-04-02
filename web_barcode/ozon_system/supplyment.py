@@ -189,13 +189,43 @@ def compare_action_articles_and_database(header, ur_lico):
     actions_data = get_articles_price_from_actions(header)
 
     database_data = get_articles_data_from_database(ur_lico)
-
+    # Словарь для удаляемых артикулов ииз кампании
+    del_articles = {}
     for action, action_articles in actions_data.items():
+        inner_list = []
         for article, price in database_data.items():
             if article in action_articles:
                 if action_articles[article] < database_data[article]:
+                    inner_list.append(article)
                     print('ALARM', action, article,
                           action_articles[article], database_data[article])
+        del_articles[action] = inner_list
+    print('del_articles', del_articles)
+    return del_articles
+
+
+def del_articles_from_cation(header, action_id, articles_list):
+    """Удаляет список артикулов из акции"""
+    url = 'https://api-seller.ozon.ru/v1/actions/products/deactivate'
+    payload = json.dumps({
+        "action_id": action_id,
+        "product_ids": articles_list
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        text = f'Из акции {action_id} удалили артикулы: {articles_list}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+
+
+def delete_articles_with_low_price(header, ur_lico):
+    """
+    Удаляет артикулы, цены которых а акциях ниже,
+    чем выставленная минимальная цена
+    """
+    action_data = compare_action_articles_and_database(header, ur_lico)
+    for action_id, articles_list in action_data.items():
+        del_articles_from_cation(header, action_id, articles_list)
 
 
 def main_for_check():
