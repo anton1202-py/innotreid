@@ -231,5 +231,7 @@ def delete_articles_with_low_price(header, ur_lico):
 
 
 def main_for_check():
-    header = ozon_header['ИП Караваев']
-    delete_articles_with_low_price(header, 'ИП Караваев')
+    ur_lico_list = ['ООО Иннотрейд', 'ИП Караваев']
+    for url_lico in ur_lico_list:
+        header = ozon_header[url_lico]
+        delete_articles_with_low_price(header, url_lico)
