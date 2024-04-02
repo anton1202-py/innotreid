@@ -8,6 +8,7 @@ import requests
 import telegram
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
+from price_system.models import ArticleGroup
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
@@ -117,11 +118,84 @@ def get_actions_list(header):
         main_data = json.loads(response.text)['result']
         for data in main_data:
             actions_list.append(data['id'])
+        print('actions_list', actions_list)
+        print('***********************')
         return actions_list
     else:
         message = 'ozon_system.supplyment.get_action_list Не получил данные от метода списка акций ОЗОН api-seller.ozon.ru/v1/actions'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
 
 
-def get_articles_data_from_database():
+def get_articles_data_from_database(ur_lico):
     """Получает данные артикулов из внутренней базы данных"""
+    data = ArticleGroup.objects.filter(group__company=ur_lico)
+    # Словарь вида {product_id: минимальная_цена}
+    campaign_min_price_dict = {}
+    for campaign_data in data:
+        campaign_min_price_dict[campaign_data.common_article.ozon_product_id] = campaign_data.group.min_price
+    return campaign_min_price_dict
+
+
+def get_action_data(action_id, header, action_info_list=None, offset=0, koef=0):
+    """
+    Получает артикулы и их цену в акции
+    Возвращает словарь вида: {артикул: цена_по_акции}
+    """
+    if action_info_list == None:
+        action_info_list = []
+    action_articles_info_dict = {}
+    url = 'https://api-seller.ozon.ru/v1/actions/products'
+    payload = json.dumps({
+        "action_id": action_id,
+        "limit": 100,
+        "offset": offset
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+
+    if response.status_code == 200:
+        main_data = json.loads(response.text)['result']['products']
+        print('len(main_data)', len(main_data))
+        for data in main_data:
+            action_info_list.append(data)
+        if len(main_data) == 100:
+            koef += 1
+            print('koef', koef)
+            offset = 100 * koef
+            print('offset', offset)
+            get_action_data(action_id, header, action_info_list, offset, koef)
+        for action_data in action_info_list:
+            action_articles_info_dict[action_data['id']
+                                      ] = action_data['action_price']
+        return action_articles_info_dict
+
+
+def get_articles_price_from_actions(header):
+    """
+    Получает артикулы и их цену в акции.
+    Возвращает словарь вида: {id_акции: {product_id: цена_по_акции}}
+    """
+    actions_list = get_actions_list(header)
+    main_actions_info_dict = {}
+
+    for action in actions_list:
+        articles_action_price_dict = get_action_data(action, header)
+        main_actions_info_dict[action] = articles_action_price_dict
+        time.sleep(5)
+    return main_actions_info_dict
+
+
+def compare_action_articles_and_database(header, ur_lico):
+    """Сравнивает артикулы из акций и из базы данных"""
+    actions_data = get_articles_price_from_actions(header)
+
+    database_data = get_articles_data_from_database(ur_lico)
+
+    for action, action_articles in actions_data.items():
+        for article, price in database_data.items():
+            if article in action_articles:
+                print(action, article)
+
+
+def main_for_check():
+    header = ozon_headers_karavaev
+    compare_action_articles_and_database(header, 'ИП Караваев')
