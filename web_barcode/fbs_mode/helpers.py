@@ -737,7 +737,7 @@ def merge_barcode_for_ozon_two_on_two(list_filenames, folder_summary_file_name):
             # Добавляем к новосму файлу каждую страницу в цикле
             pages_names.append(p)
 
-        for i in range(1, len(list_filenames)):
+        for i in range(0, len(list_filenames)):
             with open(list_filenames[i], "rb") as bb:
                 # Коэффициент счетчика страниц
                 m = i // 4
@@ -817,7 +817,7 @@ def merge_barcode_for_yandex_two_on_two(list_filenames, folder_summary_file_name
             output.addPage(p.rotateClockwise(90))
             # Добавляем к новосму файлу каждую страницу в цикле
             pages_names.append(p)
-        for i in range(1, len(list_filenames)):
+        for i in range(0, len(list_filenames)):
             with open(list_filenames[i], "rb") as bb:
                 # Коэффициент счетчика страниц
                 m = i // 4

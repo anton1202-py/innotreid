@@ -166,7 +166,15 @@ def wb_articles_in_campaign(campaign_number, header):
     if response.status_code == 200:
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
-    elif response.status_code == 400:
+    # elif response.status_code == 400:
+    #     message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
+    #     bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+    #     text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
+    #     for user in campaign_budget_users_list:
+    #         bot.send_message(chat_id=user,
+    #                          text=text, parse_mode='HTML')
+    #     return []
+    elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
         text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'

@@ -121,3 +121,7 @@ def get_actions_list(header):
     else:
         message = 'ozon_system.supplyment.get_action_list Не получил данные от метода списка акций ОЗОН api-seller.ozon.ru/v1/actions'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+
+
+def get_articles_data_from_database():
+    """Получает данные артикулов из внутренней базы данных"""
