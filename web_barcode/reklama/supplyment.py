@@ -248,7 +248,7 @@ def count_sum_adv_campaign(data_list: list):
 @sender_error_to_tg
 def count_sum_orders_action(article_list, begin_date, end_date, header):
     """Получает данные о заказах рекламной кампании за позавчера"""
-    url = 'https://suppliers-api.wildberries.ru/content/v1/analytics/nm-report/detail'
+    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
     payload = json.dumps({
         "brandNames": [],
         "objectIDs": [],
@@ -560,6 +560,10 @@ def get_wb_ooo_stock_data(header, info_list):
     if response.status_code == 200:
         data_list = json.loads(response.text)['data']['cards']
         return data_list
+    elif response.status_code == 404:
+        text = f'reklama.supplyment.get_wb_ooo_stock_data. Статус код = {response.status_code}. Какая-то серьезная ошибка'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
     else:
         text = f'reklama.supplyment.get_wb_ooo_stock_data. Статус код = {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
