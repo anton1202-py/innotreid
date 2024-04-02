@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pandas as pd
 import requests
+import telegram
 from celery import Celery, shared_task
 from celery_tasks.celery import app
 from django.db.models import Q, Sum
