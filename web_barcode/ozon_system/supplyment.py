@@ -225,10 +225,11 @@ def delete_articles_with_low_price(header, ur_lico):
     чем выставленная минимальная цена
     """
     action_data = compare_action_articles_and_database(header, ur_lico)
-    for action_id, articles_list in action_data.items():
-        del_articles_from_cation(header, action_id, articles_list)
+    if action_data:
+        for action_id, articles_list in action_data.items():
+            del_articles_from_cation(header, action_id, articles_list)
 
 
 def main_for_check():
-    header = ozon_headers_karavaev
-    compare_action_articles_and_database(header, 'ИП Караваев')
+    header = ozon_header['ИП Караваев']
+    delete_articles_with_low_price(header, 'ИП Караваев')
