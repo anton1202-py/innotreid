@@ -193,8 +193,9 @@ def compare_action_articles_and_database(header, ur_lico):
     for action, action_articles in actions_data.items():
         for article, price in database_data.items():
             if article in action_articles:
-
-                print(action, action_articles[article], database_data[article])
+                if action_articles[article] < database_data[article]:
+                    print('ALARM', action, article,
+                          action_articles[article], database_data[article])
 
 
 def main_for_check():
