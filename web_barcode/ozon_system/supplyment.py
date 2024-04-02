@@ -51,6 +51,7 @@ CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 
+admins_chat_is_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
@@ -108,6 +109,7 @@ ozon_payload = {
 }
 
 
+@sender_error_to_tg
 def get_actions_list(header):
     """Получает список акций юр. лица."""
     url = 'https://api-seller.ozon.ru/v1/actions'
@@ -126,6 +128,7 @@ def get_actions_list(header):
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
 
 
+@sender_error_to_tg
 def get_articles_data_from_database(ur_lico):
     """Получает данные артикулов из внутренней базы данных"""
     data = ArticleGroup.objects.filter(group__company=ur_lico)
@@ -136,6 +139,7 @@ def get_articles_data_from_database(ur_lico):
     return campaign_min_price_dict
 
 
+@sender_error_to_tg
 def get_action_data(action_id, header, action_info_list=None, offset=0, koef=0):
     """
     Получает артикулы и их цену в акции
@@ -154,14 +158,11 @@ def get_action_data(action_id, header, action_info_list=None, offset=0, koef=0):
 
     if response.status_code == 200:
         main_data = json.loads(response.text)['result']['products']
-        print('len(main_data)', len(main_data))
         for data in main_data:
             action_info_list.append(data)
         if len(main_data) == 100:
             koef += 1
-            print('koef', koef)
             offset = 100 * koef
-            print('offset', offset)
             get_action_data(action_id, header, action_info_list, offset, koef)
         for action_data in action_info_list:
             action_articles_info_dict[action_data['id']
@@ -169,6 +170,7 @@ def get_action_data(action_id, header, action_info_list=None, offset=0, koef=0):
         return action_articles_info_dict
 
 
+@sender_error_to_tg
 def get_articles_price_from_actions(header):
     """
     Получает артикулы и их цену в акции.
@@ -184,6 +186,7 @@ def get_articles_price_from_actions(header):
     return main_actions_info_dict
 
 
+@sender_error_to_tg
 def compare_action_articles_and_database(header, ur_lico):
     """Сравнивает артикулы из акций и из базы данных"""
     actions_data = get_articles_price_from_actions(header)
@@ -205,7 +208,8 @@ def compare_action_articles_and_database(header, ur_lico):
     return del_articles
 
 
-def del_articles_from_cation(header, action_id, articles_list):
+@sender_error_to_tg
+def del_articles_from_action(header, action_id, articles_list, ur_lico):
     """Удаляет список артикулов из акции"""
     url = 'https://api-seller.ozon.ru/v1/actions/products/deactivate'
     payload = json.dumps({
@@ -214,11 +218,13 @@ def del_articles_from_cation(header, action_id, articles_list):
     })
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
-        text = f'Из акции {action_id} удалили артикулы: {articles_list}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=text, parse_mode='HTML')
+        text = f'{ur_lico}. Из акции {action_id} удалили артикулы: {articles_list}'
+        for chat_id in admins_chat_is_list:
+            bot.send_message(chat_id=chat_id,
+                             text=text, parse_mode='HTML')
 
 
+@sender_error_to_tg
 def delete_articles_with_low_price(header, ur_lico):
     """
     Удаляет артикулы, цены которых а акциях ниже,
@@ -227,11 +233,4 @@ def delete_articles_with_low_price(header, ur_lico):
     action_data = compare_action_articles_and_database(header, ur_lico)
     if action_data:
         for action_id, articles_list in action_data.items():
-            del_articles_from_cation(header, action_id, articles_list)
-
-
-def main_for_check():
-    ur_lico_list = ['ООО Иннотрейд', 'ИП Караваев']
-    for url_lico in ur_lico_list:
-        header = ozon_header[url_lico]
-        delete_articles_with_low_price(header, url_lico)
+            del_articles_from_action(header, action_id, articles_list, ur_lico)
