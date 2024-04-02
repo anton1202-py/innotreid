@@ -72,10 +72,10 @@ app.conf.beat_schedule = {
         "task": "ozon_system.tasks.start_adv_company",
         'schedule': crontab(day_of_month=penultimate_day_of_month.day, hour=20, minute=0),
     },
-    # "ozon_system_del_articles_low_price": {
-    #     "task": "ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions",
-    #     'schedule': crontab(hour='1,13'),
-    # },
+    "ozon_system_del_articles_low_price": {
+        "task": "ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions",
+        'schedule': crontab(hour='1,13', minute=0),
+    },
     "ooo_fbs_action": {
         "task": "fbs_mode.tasks.ooo_common_task",
         "schedule": crontab(hour=17, minute=40)
