@@ -177,10 +177,9 @@ def stop_adv_company():
     for compaign in compaigns_list:
         stop_compaign(compaign)
 
-# @app.task
 
-
-def main_for_check():
+@app.task
+def delete_ozon_articles_with_low_price_from_actions():
     """
     Удаляет артикулы из акций ОЗОН,
     если цна в акции меньше, чем в базе даных

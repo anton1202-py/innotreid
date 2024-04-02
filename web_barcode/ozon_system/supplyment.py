@@ -120,8 +120,6 @@ def get_actions_list(header):
         main_data = json.loads(response.text)['result']
         for data in main_data:
             actions_list.append(data['id'])
-        print('actions_list', actions_list)
-        print('***********************')
         return actions_list
     else:
         message = 'ozon_system.supplyment.get_action_list Не получил данные от метода списка акций ОЗОН api-seller.ozon.ru/v1/actions'
