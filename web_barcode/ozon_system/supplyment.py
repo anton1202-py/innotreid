@@ -199,7 +199,8 @@ def compare_action_articles_and_database(header, ur_lico):
                     inner_list.append(article)
                     print('ALARM', action, article,
                           action_articles[article], database_data[article])
-        del_articles[action] = inner_list
+        if inner_list:
+            del_articles[action] = inner_list
     print('del_articles', del_articles)
     return del_articles
 
