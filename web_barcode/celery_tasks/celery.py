@@ -74,7 +74,7 @@ app.conf.beat_schedule = {
     },
     "ozon_system_del_articles_low_price": {
         "task": "ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions",
-        'schedule': crontab(hour='*/12'),
+        'schedule': crontab(hour='1,13'),
     },
     "ooo_fbs_action": {
         "task": "fbs_mode.tasks.ooo_common_task",
