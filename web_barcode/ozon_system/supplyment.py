@@ -180,7 +180,7 @@ def get_articles_price_from_actions(header):
     for action in actions_list:
         articles_action_price_dict = get_action_data(action, header)
         main_actions_info_dict[action] = articles_action_price_dict
-        time.sleep(5)
+        time.sleep(2)
     return main_actions_info_dict
 
 
