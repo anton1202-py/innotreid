@@ -422,8 +422,6 @@ def yandex_matching_articles(ur_lico):
                             Barcode {yandex_article.yandex_barcode} - {yandex_data[1]}. \
                             SKU {yandex_article.yandex_sku} - {yandex_data[2]}. \
                             Не совпали данные')
-                print(message)
-                print(common_article, yandex_data)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif yandex_article.yandex_barcode == None:
                 yandex_article.status = 'Сопоставлено'
@@ -491,13 +489,14 @@ def excel_creating_mod(data):
 
 
 def excel_with_price_groups_creating_mod(data, ur_lico):
-    """Создает и скачивает excel файл с ценовыми группами"""
-    # Создаем DataFrame из данных
+    """
+    Экспортирует в Excel таблицу с группами.
+    Создает и скачивает excel файл с ценовыми группами
+    """
     # Создаем DataFrame из данных
     wb = Workbook()
     # Получаем активный лист
     ws = wb.active
-
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
         ws.cell(row=row, column=1, value=str(item.id))
@@ -520,14 +519,9 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     ws.cell(row=1, column=8, value='Минимальная цена')
     ws.cell(row=1, column=9, value='Старая цена')
 
-    al = Alignment(horizontal="center",
-                   vertical="center")
     al_left = Alignment(horizontal="left",
                         vertical="center")
-    al2 = Alignment(vertical="center", wrap_text=True)
     thin = Side(border_style="thin", color="000000")
-    thick = Side(border_style="medium", color="000000")
-    pattern = PatternFill('solid', fgColor="fcff52")
 
     ws.column_dimensions['A'].width = 8
     ws.column_dimensions['B'].width = 12
@@ -562,7 +556,6 @@ def excel_compare_table(data):
     wb = Workbook()
     # Получаем активный лист
     ws = wb.active
-
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
         ws.cell(row=row, column=1, value=str(item.common_article))
@@ -643,6 +636,28 @@ def excel_compare_table(data):
     response['Content-Disposition'] = file_data
     wb.save(response)
     return response
+
+
+def excel_import_group_create_data(xlsx_file):
+    """
+    Импортирует данные о группе из Excel
+    Создает группы цен на основе полученных из Excel данных.
+    """
+    workbook = load_workbook(filename=xlsx_file, read_only=True)
+    worksheet = workbook.active
+    # Читаем файл построчно и создаем объекты.
+    for row in range(1, len(list(worksheet.rows))):
+        print(list(worksheet.rows)[row][1].value)
+        # if list(worksheet.rows)[row][1].value == None or list(worksheet.rows)[row][1].value == 'None':
+        # article = ArticleGroup.objects.get(
+        # common_article=Articles.objects.get(common_article=list(worksheet.rows)[row][0].value))
+        # article.group = None
+        # article.save()
+        # else:
+        # new_obj = ArticleGroup.objects.filter(
+        # common_article=Articles.objects.get(
+        # common_article=list(worksheet.rows)[row][0].value)
+        # ).update(group=Groups.objects.get(name=list(worksheet.rows)[row][1].value))
 
 
 def excel_import_data(xlsx_file):

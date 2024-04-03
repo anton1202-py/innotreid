@@ -156,7 +156,7 @@ def db_articles_in_campaign(campaign_number):
 
 
 @sender_error_to_tg
-def wb_articles_in_campaign(campaign_number, header):
+def wb_articles_in_campaign(campaign_number, header, attempt=0):
     """Достает артикулы, которые есть у компании в Wildberries"""
     url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
     payload = json.dumps([
@@ -166,14 +166,6 @@ def wb_articles_in_campaign(campaign_number, header):
     if response.status_code == 200:
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
-    # elif response.status_code == 400:
-    #     message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
-    #     bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
-    #     text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
-    #     for user in campaign_budget_users_list:
-    #         bot.send_message(chat_id=user,
-    #                          text=text, parse_mode='HTML')
-    #     return []
     elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
@@ -186,7 +178,15 @@ def wb_articles_in_campaign(campaign_number, header):
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
         time.sleep(5)
-        return wb_articles_in_campaign(campaign_number, header)
+        attempt += 1
+        if attempt < 50:
+            return wb_articles_in_campaign(campaign_number, header, attempt)
+        else:
+            text = f'Данные кампании {campaign_number} были запрошены 50 раз, но всегда выдает ошибку. Проверьте эту кампанию на сайте ВБ'
+            for user in campaign_budget_users_list:
+                bot.send_message(chat_id=user,
+                                 text=text, parse_mode='HTML')
+            return []
 
 
 @sender_error_to_tg

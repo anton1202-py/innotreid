@@ -9,7 +9,7 @@ from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
-                         excel_import_data,
+                         excel_import_data, excel_import_group_create_data,
                          excel_with_price_groups_creating_mod,
                          ozon_articles_list, ozon_matching_articles,
                          ozon_price_change, wb_articles_list,
@@ -92,7 +92,10 @@ def groups_view(request, ur_lico):
         print(request.POST)
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
-        if 'add_button' in request.POST.keys():
+        elif 'import_file' in request.FILES:
+            excel_import_group_create_data(
+                request.FILES['import_file'], ur_lico)
+        elif 'add_button' in request.POST.keys():
             request_data = request.POST
             print(ur_lico)
             obj, created = Groups.objects.get_or_create(
