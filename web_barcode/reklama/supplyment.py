@@ -419,15 +419,6 @@ def replenish_campaign_budget(campaign, budget, header):
     for user in campaign_budget_users_list:
         bot.send_message(chat_id=user,
                          text=message, parse_mode='HTML')
-    if campaign == 15580755:
-        text = ('**************************'
-                f'Бюджет кампании {campaign} равен {campaign_budget}. Виртуальный счет: {info_campaign_obj.virtual_budget}'
-                '**************************')
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=text, parse_mode='HTML')
-    # print(message)
-    # bot.send_message(chat_id=CHAT_ID_ADMIN,
-    #                  text=message, parse_mode='HTML')
 
 
 @sender_error_to_tg

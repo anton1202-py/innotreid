@@ -106,7 +106,7 @@ class Articles(models.Model):
 
 class Groups(models.Model):
     name = models.CharField(
-        verbose_name='Артикул',
+        verbose_name='Название',
         max_length=50,
     )
     company = models.CharField(

@@ -127,7 +127,7 @@ def budget_working():
             time.sleep(3)
             start_add_campaign(campaign, header)
             if campaign in strange_campaign:
-                text = f'В periodic_task. Подозрительная кампания, которая не пополняется. {campaign}. Ее данные: {budget}'
+                text = f'В periodic_task. Подозрительная кампания, которая не пополняется. {campaign}. Ее бюджет: {budget}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=text, parse_mode='HTML')
 
