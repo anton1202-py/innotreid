@@ -8,6 +8,26 @@
     <div class="features">
         <div class="top-befor-header">
             <h1>Ценовые группы {{ ur_lico }}</h1>
+            {% if request.user.is_staff %}
+            <div class="add-data">
+                <div class="inner-form-data-button">
+                    <br>
+                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                        {% csrf_token %}
+                        <div class="two_button_label">
+                            <button type="submit" name="export" value="create_file">
+                                Экспортировать в Excel
+                            </button>
+                            <label for="import_data">EXCEL для сопоставления</label>
+                            <input type="file" id="import_data" name="import_file" class="input-file">
+                            <button type="submit">
+                                Загрузить
+                            </button> 
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
             <table style="overflow-x: scroll; display: block; width: 100%;">

@@ -188,6 +188,6 @@ def delete_ozon_articles_with_low_price_from_actions():
     for url_lico in ur_lico_list:
         header = ozon_header[url_lico]
         delete_articles_with_low_price(header, url_lico)
-    text = 'Отработала функция ozon_system.tasks.elete_ozon_articles_with_low_price_from_actions'
+    text = 'Отработала функция ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions'
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=text, parse_mode='HTML')

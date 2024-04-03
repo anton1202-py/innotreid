@@ -9,11 +9,12 @@ from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (excel_compare_table, excel_creating_mod,
-                         excel_import_data, ozon_articles_list,
-                         ozon_matching_articles, ozon_price_change,
-                         wb_articles_list, wb_matching_articles,
-                         wilberries_price_change, yandex_matching_articles,
-                         yandex_price_change)
+                         excel_import_data,
+                         excel_with_price_groups_creating_mod,
+                         ozon_articles_list, ozon_matching_articles,
+                         ozon_price_change, wb_articles_list,
+                         wb_matching_articles, wilberries_price_change,
+                         yandex_matching_articles, yandex_price_change)
 
 
 def ip_article_compare(request):
@@ -88,6 +89,9 @@ def groups_view(request, ur_lico):
     data = Groups.objects.filter(company=ur_lico).order_by('name')
 
     if request.POST:
+        print(request.POST)
+        if request.POST.get('export') == 'create_file':
+            return excel_with_price_groups_creating_mod(data, ur_lico)
         if 'add_button' in request.POST.keys():
             request_data = request.POST
             print(ur_lico)
@@ -132,27 +136,16 @@ def groups_view(request, ur_lico):
                 oz_nom_list.append(art.common_article.ozon_product_id)
                 yandex_nom_list.append(
                     art.common_article.yandex_seller_article)
-            print(names)
             wilberries_price_change(
                 ur_lico, wb_nom_list, wb_price, wb_discount)
-            print('прошел wilberries_price_change')
             ozon_price_change(ur_lico, oz_nom_list,
                               ozon_price, min_price, old_price)
-            print('прошел ozon_price_change')
             yandex_price_change(ur_lico, yandex_nom_list,
                                 yandex_price, old_price)
-            print('прошел yandex_price_change')
-
             # Записываем изененные цены в базу данных
             wb_add_price_info(ur_lico)
-            print('*****************')
-            print('прошел wb_add_price_info')
             ozon_add_price_info(ur_lico)
-            print('*****************')
-            print('прошел ozon_add_price_info')
             yandex_add_price_info(ur_lico)
-            print('*****************')
-            print('прошел yandex_add_price_info')
         # return redirect('price_groups_ip')
     context = {
         'data': data,
