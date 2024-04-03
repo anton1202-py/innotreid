@@ -292,8 +292,6 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
-    strange_campaign = [15507304, 15580755,
-                        15542636, 15541569, 15541444, 15541343]
 
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
@@ -317,13 +315,6 @@ def count_sum_orders():
                 sum = count_sum_adv_campaign(data_list)
                 campaign_orders_money_dict[campaign] = sum
             time.sleep(22)
-        # time.sleep(61)
-        # print(campaign_orders_money_dict)
-    for camp, data in campaign_orders_money_dict.items():
-        if camp in strange_campaign:
-            text = f'Подозрительная кампания, которая не пополняется. {camp}. Ее данные: {data}'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=text, parse_mode='HTML')
     return campaign_orders_money_dict
 
 
@@ -356,8 +347,15 @@ def wb_campaign_budget(campaign, header):
         return wb_campaign_budget(campaign, header)
 
 
-def campaign_info_for_budget(campaign, campaign_budget, budget, header):
-    """Пополняет бюджет рекламной кампаний"""
+def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header):
+    """
+    Пополняет бюджет рекламной кампаний
+    campaign - id кампании
+    campaign_budget - бюджет, на который пополнится кампания
+    budget - сумма заказов артикулов из этой кампании за позавчера
+    koef - коэффициент от суммы заказов, который идет на рекламу
+    header - header юр. лица для запроса к  АПИ ВБ
+    """
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
     payload = json.dumps({
         "sum": campaign_budget,
@@ -366,9 +364,11 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, header):
     })
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
-        message = (f"Пополнил бюджет кампании {campaign} на {campaign_budget}."
-                   f"Итого сумма: {json.loads(response.text)['total']}."
-                   f"Продаж за позавчера было на {budget}")
+        # message = (f"Пополнил {campaign} на {campaign_budget}."
+        #            f"Итого сумма: {json.loads(response.text)['total']}."
+        #            f"Продаж за позавчера было на {budget}")
+        message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
+                   f"Итого бюджет: {json.loads(response.text)['total']}.")
         return message
     else:
         message = ('*************************'
@@ -377,12 +377,17 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, header):
                    '*************************')
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
-        return campaign_info_for_budget(campaign, campaign_budget, budget, header)
+        return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header)
 
 
 @sender_error_to_tg
 def replenish_campaign_budget(campaign, budget, header):
-    """Определяем кампании для пополнения бюджета"""
+    """
+    Определяем кампании для пополнения бюджета
+    campaign - id рекламной кампании
+    budget - сумма заказов текущей рекламной кампании за позавчера
+    header - header текущего юр лица для связи с АПИ ВБ
+    """
     campaign_obj = AdvertisingCampaign.objects.get(campaign_number=campaign)
     info_campaign_obj = ProcentForAd.objects.get(
         campaign_number=campaign_obj
@@ -392,6 +397,7 @@ def replenish_campaign_budget(campaign, budget, header):
 
     campaign_budget = math.ceil(budget * koef / 100)
     campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
+    add_to_virtual_bill = round_up_to_nearest_multiple(campaign_budget, 50)
     current_campaign_budget = wb_campaign_budget(campaign, header)
 
     if campaign_budget < 500:
@@ -406,19 +412,20 @@ def replenish_campaign_budget(campaign, budget, header):
     elif campaign_budget > 10000:
         campaign_budget = 10000
 
+    message = ''
     if campaign_budget >= 500 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
-            campaign, campaign_budget, budget, header)
+            campaign, campaign_budget, budget, koef, header)
         info_campaign_obj.virtual_budget = 0
         info_campaign_obj.save()
-    elif campaign_budget < 500:
-        message = f'Кампании {campaign} не пополнилась потому общий виртуальный счет меньше 500. {info_campaign_obj.virtual_budget} р.'
     else:
-        message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
+        message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+    # elif campaign_budget < 500:
+    #     message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+    # else:
+    #     message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
 
-    for user in campaign_budget_users_list:
-        bot.send_message(chat_id=user,
-                         text=message, parse_mode='HTML')
+    return message
 
 
 @sender_error_to_tg
@@ -465,6 +472,41 @@ def start_add_campaign(campaign, header):
         message = f"статус кампании {campaign} не пришел, но все равно пытаюсь ее запустить"
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
+
+
+@sender_error_to_tg
+def sort_message_list(messages_list: list):
+    """
+    WILDBERRIES.
+    Сортирует список сообщений на пополненные и не пополненные кампании
+    messages_list - список сообщений по каждой кампании - пополнилась
+    она или нет.
+    """
+    replenish_messages = 'Бюджет пополнил:'
+    unreplenish_messages = 'Бюджет кампаний не пополнен:'
+    for message in messages_list:
+        if 'Пополнил' in message:
+            replenish_messages += f'\n\n{message}'
+        else:
+            unreplenish_messages += f'\n\n{message}'
+    messages = [replenish_messages, unreplenish_messages]
+    return messages
+
+
+@sender_error_to_tg
+def send_common_message(messages_list: list):
+    """
+    WILDBERRIES.
+    Отправляет общие сообщение о не запущенных рекламных кампаниях
+    И о запущенных
+    messages_list - список сообщений по каждой кампании - пополнилась
+    она или нет.
+    """
+    messages = sort_message_list(messages_list)
+    for message in messages:
+        for user in campaign_budget_users_list:
+            bot.send_message(chat_id=user,
+                             text=message[:4094], parse_mode='HTML')
 
 
 @sender_error_to_tg

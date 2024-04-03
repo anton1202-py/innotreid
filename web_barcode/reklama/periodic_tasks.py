@@ -15,8 +15,9 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             WbArticleCommon, WbArticleCompany)
 from reklama.supplyment import (ad_list, count_sum_orders, header_determinant,
                                 ooo_wb_articles_info,
-                                replenish_campaign_budget, start_add_campaign,
-                                wb_articles_in_campaign, wb_ooo_fbo_stock_data)
+                                replenish_campaign_budget, send_common_message,
+                                start_add_campaign, wb_articles_in_campaign,
+                                wb_ooo_fbo_stock_data)
 
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
@@ -117,19 +118,16 @@ ozon_payload = {
 @app.task
 def budget_working():
     """Работа с бюджетом компании"""
-    strange_campaign = [15507304, 15580755,
-                        15542636, 15541569, 15541444, 15541343]
+    messages_list = []
     campaign_data = count_sum_orders()
     if campaign_data:
         for campaign, budget in campaign_data.items():
             header = header_determinant(campaign)
-            replenish_campaign_budget(campaign, budget, header)
+            message = replenish_campaign_budget(campaign, budget, header)
+            messages_list.append(message)
             time.sleep(3)
             start_add_campaign(campaign, header)
-            if campaign in strange_campaign:
-                text = f'В periodic_task. Подозрительная кампания, которая не пополняется. {campaign}. Ее бюджет: {budget}'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=text, parse_mode='HTML')
+    send_common_message(messages_list)
 
 
 @sender_error_to_tg

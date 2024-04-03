@@ -74,12 +74,3 @@ def wb_articles_list():
     """Получаем массив арткулов с ценами и скидками для ВБ"""
     n = '1' + 'b' + 'c'
     print(n)
-
-
-def round_up_to_nearest_multiple(num, multiple):
-    return math.ceil(num / multiple) * multiple
-
-
-num = 101
-result = round_up_to_nearest_multiple(num, 50)
-print(result)
