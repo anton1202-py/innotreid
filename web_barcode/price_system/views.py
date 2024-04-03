@@ -85,11 +85,9 @@ def ooo_article_compare(request):
 
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
-    ozon_articles_list('ООО Иннотрейд')
-    data = Groups.objects.filter(company=ur_lico).order_by('name')
+    data = Groups.objects.filter(company=ur_lico).order_by('id')
 
     if request.POST:
-        print(request.POST)
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
         elif 'import_file' in request.FILES:
@@ -97,7 +95,6 @@ def groups_view(request, ur_lico):
                 request.FILES['import_file'], ur_lico)
         elif 'add_button' in request.POST.keys():
             request_data = request.POST
-            print(ur_lico)
             obj, created = Groups.objects.get_or_create(
                 name=request_data['name'],
                 company=ur_lico,

@@ -499,31 +499,29 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     ws = wb.active
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
-        ws.cell(row=row, column=1, value=str(item.id))
-        ws.cell(row=row, column=2, value=str(item.name))
-        ws.cell(row=row, column=3, value=str(item.company))
-        ws.cell(row=row, column=4, value=str(item.wb_price))
-        ws.cell(row=row, column=5, value=str(item.wb_discount))
-        ws.cell(row=row, column=6, value=str(item.ozon_price))
-        ws.cell(row=row, column=7, value=str(item.yandex_price))
-        ws.cell(row=row, column=8, value=str(item.min_price))
-        ws.cell(row=row, column=9, value=str(item.old_price))
+        ws.cell(row=row, column=1, value=str(item.name))
+        ws.cell(row=row, column=2, value=str(item.company))
+        ws.cell(row=row, column=3, value=str(item.wb_price))
+        ws.cell(row=row, column=4, value=str(item.wb_discount))
+        ws.cell(row=row, column=5, value=str(item.ozon_price))
+        ws.cell(row=row, column=6, value=str(item.yandex_price))
+        ws.cell(row=row, column=7, value=str(item.min_price))
+        ws.cell(row=row, column=8, value=str(item.old_price))
     # Устанавливаем заголовки столбцов
-    ws.cell(row=1, column=1, value='ID')
-    ws.cell(row=1, column=2, value='Название')
-    ws.cell(row=1, column=3, value='Юр. лицо')
-    ws.cell(row=1, column=4, value='WB стоимость')
-    ws.cell(row=1, column=5, value='WB скидка продавца')
-    ws.cell(row=1, column=6, value='OZON стоимость')
-    ws.cell(row=1, column=7, value='YANDEX стоимость')
-    ws.cell(row=1, column=8, value='Минимальная цена')
-    ws.cell(row=1, column=9, value='Старая цена')
+    ws.cell(row=1, column=1, value='Название')
+    ws.cell(row=1, column=2, value='Юр. лицо')
+    ws.cell(row=1, column=3, value='WB стоимость')
+    ws.cell(row=1, column=4, value='WB скидка продавца')
+    ws.cell(row=1, column=5, value='OZON стоимость')
+    ws.cell(row=1, column=6, value='YANDEX стоимость')
+    ws.cell(row=1, column=7, value='Минимальная цена')
+    ws.cell(row=1, column=8, value='Старая цена')
 
     al_left = Alignment(horizontal="left",
                         vertical="center")
     thin = Side(border_style="thin", color="000000")
 
-    ws.column_dimensions['A'].width = 8
+    ws.column_dimensions['A'].width = 12
     ws.column_dimensions['B'].width = 12
     ws.column_dimensions['C'].width = 14
     ws.column_dimensions['D'].width = 12
@@ -531,7 +529,6 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     ws.column_dimensions['F'].width = 12
     ws.column_dimensions['G'].width = 12
     ws.column_dimensions['H'].width = 12
-    ws.column_dimensions['I'].width = 12
 
     for i in range(len(data)+1):
         for c in ws[f'A{i+1}:I{i+1}']:
@@ -638,26 +635,38 @@ def excel_compare_table(data):
     return response
 
 
-def excel_import_group_create_data(xlsx_file):
+def excel_import_group_create_data(xlsx_file, ur_lico):
     """
     Импортирует данные о группе из Excel
     Создает группы цен на основе полученных из Excel данных.
     """
     workbook = load_workbook(filename=xlsx_file, read_only=True)
     worksheet = workbook.active
+    group_names = []
+    group_names_queryset = Groups.objects.filter(
+        company=ur_lico).values('name')
     # Читаем файл построчно и создаем объекты.
+    for data in group_names_queryset:
+        group_names.append(data['name'])
     for row in range(1, len(list(worksheet.rows))):
-        print(list(worksheet.rows)[row][1].value)
-        # if list(worksheet.rows)[row][1].value == None or list(worksheet.rows)[row][1].value == 'None':
-        # article = ArticleGroup.objects.get(
-        # common_article=Articles.objects.get(common_article=list(worksheet.rows)[row][0].value))
-        # article.group = None
-        # article.save()
-        # else:
-        # new_obj = ArticleGroup.objects.filter(
-        # common_article=Articles.objects.get(
-        # common_article=list(worksheet.rows)[row][0].value)
-        # ).update(group=Groups.objects.get(name=list(worksheet.rows)[row][1].value))
+        group_name = list(worksheet.rows)[row][0].value
+        wb_price = list(worksheet.rows)[row][2].value
+        wb_discount = list(worksheet.rows)[row][3].value
+        ozon_price = list(worksheet.rows)[row][4].value
+        yandex_price = list(worksheet.rows)[row][5].value
+        min_price = list(worksheet.rows)[row][6].value
+        old_price = list(worksheet.rows)[row][7].value
+        if group_name not in group_names:
+            Groups(
+                name=group_name,
+                company=ur_lico,
+                wb_price=wb_price,
+                wb_discount=wb_discount,
+                ozon_price=ozon_price,
+                yandex_price=yandex_price,
+                min_price=min_price,
+                old_price=old_price
+            ).save()
 
 
 def excel_import_data(xlsx_file):
