@@ -320,6 +320,8 @@ def count_sum_orders():
                 sum = count_sum_adv_campaign(data_list)
                 campaign_orders_money_dict[campaign] = sum
             time.sleep(22)
+    for camp, sum in campaign_orders_money_dict.items():
+        print(camp, sum)
     return campaign_orders_money_dict
 
 

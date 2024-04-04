@@ -15,8 +15,9 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             WbArticleCommon, WbArticleCompany)
 from reklama.periodic_tasks import (matching_wb_ooo_article_campaign,
                                     ozon_status_one_campaign)
-from reklama.supplyment import (ad_list, create_articles_company,
-                                header_determinant, wb_ooo_fbo_stock_data)
+from reklama.supplyment import (ad_list, count_sum_orders,
+                                create_articles_company, header_determinant,
+                                wb_ooo_fbo_stock_data)
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -72,7 +73,7 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    ad_list()
+    count_sum_orders()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
