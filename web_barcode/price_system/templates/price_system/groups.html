@@ -52,7 +52,7 @@
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
                         <td>{{ el.company }}</td>
-                        <td><input value="{{ el.wb_price }}" type="number" name="wb_price" required/></td>
+                        <td><input value="{{ el.wb_price }}" type="number" name="wb_price"  required/></td>
                         <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" required/></td>
                         {% if el.wb_price and el.wb_discount %}
                             <td>{{ 100|sub:el.wb_discount|divide:100|multiplicity:el.wb_price }}</td>
