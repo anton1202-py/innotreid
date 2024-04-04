@@ -765,7 +765,7 @@ table td {
     right: 0;
     bottom: 0;
 }
-table form input {
+table tr form td input {
     width: 100px;
 }
 .left-align{

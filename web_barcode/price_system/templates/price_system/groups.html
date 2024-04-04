@@ -41,7 +41,7 @@
                     <th>Цена OZON</th>
                     <th>Цена YANDEX</th>
                     <th>Минимальная цена</th>
-                    <th>Старая цена (Ozon, Yandex)</th>
+                    <th>Старая цена</th>
                     <th>Применить цены</th>
                     <th>del</th>
                 </tr>
@@ -50,20 +50,20 @@
                     <td>{{ el.id }}</td>
                     <form method="post" name="name" enctype="multipart/form-data" action="">
                         {% csrf_token %}
-                        <td><input value="{{ el.name }}" type="text" name="name" required/></td>
+                        <td><input value="{{ el.name }}" type="text" name="name" style="width: 100px" required/></td>
                         <td>{{ el.company }}</td>
-                        <td><input value="{{ el.wb_price }}" type="number" name="wb_price"  required/></td>
-                        <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" required/></td>
+                        <td><input value="{{ el.wb_price }}" type="number" name="wb_price" style="width: 100px" required/></td>
+                        <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" style="width: 100px" required/></td>
                         {% if el.wb_price and el.wb_discount %}
                             <td>{{ 100|sub:el.wb_discount|divide:100|multiplicity:el.wb_price }}</td>
                         {% else %}
                             <td></td>
                         {% endif %}
                         
-                        <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
-                        <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
-                        <td><input value="{{ el.min_price }}" type="number" name="min_price" required/></td>
-                        <td><input value="{{ el.old_price }}" type="number" name="old_price" required/></td>
+                        <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" style="width: 100px" required/></td>
+                        <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" style="width: 100px" required/></td>
+                        <td><input value="{{ el.min_price }}" type="number" name="min_price" style="width: 100px" required/></td>
+                        <td><input value="{{ el.old_price }}" type="number" name="old_price" style="width: 100px" required/></td>
                         <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
                     </form>
 
