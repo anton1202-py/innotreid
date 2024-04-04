@@ -170,6 +170,8 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
+        if articles_list == None:
+            print(json.loads(response.text)[0]['autoParams']['nms'])
         print(f'wb_articles_in_campaign. {campaign_number}, {articles_list}')
         return articles_list
     elif response.status_code == 404:
