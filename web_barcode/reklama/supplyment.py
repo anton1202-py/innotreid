@@ -320,6 +320,8 @@ def count_sum_orders():
             header = header_determinant(campaign)
             article_list = wb_articles_in_campaign(campaign, header)
             print(article_list)
+            if not article_list:
+                article_list = wb_articles_in_campaign(campaign, header)
             if article_list:
                 data_list = count_sum_orders_action(
                     article_list, begin_date, end_date, header)
