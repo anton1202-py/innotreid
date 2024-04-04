@@ -170,6 +170,7 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
+        print(f'wb_articles_in_campaign. {campaign_number}, {articles_list}')
         return articles_list
     elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
@@ -178,6 +179,8 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
         for user in campaign_budget_users_list:
             bot.send_message(chat_id=user,
                              text=text, parse_mode='HTML')
+        print(
+            f'wb_articles_in_campaign. {campaign_number} должен быть пустой ответ. 404')
         return []
     else:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
@@ -185,12 +188,14 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
         time.sleep(5)
         attempt += 1
         if attempt < 50:
+            print(f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса')
             return wb_articles_in_campaign(campaign_number, header, attempt)
         else:
             text = f'Данные кампании {campaign_number} были запрошены 50 раз, но всегда выдает ошибку. Проверьте эту кампанию на сайте ВБ'
             for user in campaign_budget_users_list:
                 bot.send_message(chat_id=user,
                                  text=text, parse_mode='HTML')
+            print(f'wb_articles_in_campaign. {campaign_number} Много запросов')
             return []
 
 
