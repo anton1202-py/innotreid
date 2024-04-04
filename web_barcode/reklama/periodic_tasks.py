@@ -125,14 +125,14 @@ def budget_working():
         for campaign, budget in campaign_data.items():
 
             header = header_determinant(campaign)
-            message = replenish_campaign_budget(campaign, budget, header)
-            print(campaign, budget)
-            print(message)
-            print('*****************************')
-            messages_list.append(message)
-            time.sleep(3)
-            start_add_campaign(campaign, header)
-    send_common_message(messages_list)
+    #         message = replenish_campaign_budget(campaign, budget, header)
+    #         print(campaign, budget)
+    #         print(message)
+    #         print('*****************************')
+    #         messages_list.append(message)
+    #         time.sleep(3)
+    #         start_add_campaign(campaign, header)
+    # send_common_message(messages_list)
 
 
 @sender_error_to_tg
