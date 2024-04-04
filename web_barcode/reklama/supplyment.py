@@ -138,6 +138,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
+    print(len(campaign_list))
     return campaign_list
 
 
@@ -164,6 +165,10 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
     ])
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
+        if 'autoParams' not in json.loads(response.text)[0]:
+            message = f'reklama.pupplyment.wb_articles_in_campaign. Кампания {campaign_number}. Ответ АПИ: {json.loads(response.text)}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
         articles_list = json.loads(response.text)[0]['autoParams']['nms']
         return articles_list
     elif response.status_code == 404:
@@ -363,6 +368,7 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header):
         "return": True
     })
     response = requests.request("POST", url, headers=header, data=payload)
+    time.sleep(5)
     if response.status_code == 200:
         # message = (f"Пополнил {campaign} на {campaign_budget}."
         #            f"Итого сумма: {json.loads(response.text)['total']}."
@@ -372,7 +378,7 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header):
         return message
     else:
         message = ('*************************'
-                   f'Бюджет кампании {campaign} не пополнил. Возможная ошибка: {response.text}.'
+                   f'Бюджет кампании {campaign} не пополнил.'
                    f'Статус код: {response.status_code}'
                    '*************************')
         bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -418,13 +424,11 @@ def replenish_campaign_budget(campaign, budget, header):
             campaign, campaign_budget, budget, koef, header)
         info_campaign_obj.virtual_budget = 0
         info_campaign_obj.save()
-    else:
-        message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
-    # elif campaign_budget < 500:
-    #     message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
-    # else:
-    #     message = f'Кампании {campaign} не пополнилась потому что текущий бюджет {current_campaign_budget} > для пополнения {campaign_budget}  Продаж за позавчера было на {budget}'
 
+    elif campaign_budget < 500:
+        message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+    else:
+        message = f'{campaign} - продаж {budget} руб. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
     return message
 
 
