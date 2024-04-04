@@ -319,9 +319,10 @@ def count_sum_orders():
                     article_list, begin_date, end_date, header)
                 sum = count_sum_adv_campaign(data_list)
                 campaign_orders_money_dict[campaign] = sum
-                print(campaign, sum)
+                print(f'count_sum_orders {campaign} - {sum}')
             else:
-                print('в кампании нет артикулов', campaign)
+                print(
+                    f'count_sum_orders {campaign} нет артикулов. Ответ: {article_list}')
 
             time.sleep(22)
 
