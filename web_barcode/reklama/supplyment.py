@@ -319,6 +319,7 @@ def count_sum_orders():
         for campaign in small_info_list:
             header = header_determinant(campaign)
             article_list = wb_articles_in_campaign(campaign, header)
+            print(article_list)
             if article_list:
                 data_list = count_sum_orders_action(
                     article_list, begin_date, end_date, header)
@@ -328,7 +329,7 @@ def count_sum_orders():
             else:
                 print(
                     f'count_sum_orders {campaign} нет артикулов. Ответ: {article_list}')
-
+            print('**************************')
             time.sleep(22)
 
     return campaign_orders_money_dict
