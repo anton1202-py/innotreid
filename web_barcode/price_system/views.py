@@ -98,7 +98,7 @@ def groups_view(request, ur_lico):
             obj, created = Groups.objects.get_or_create(
                 name=request_data['name'],
                 company=ur_lico,
-                wb_price=request_data['wb_price'],
+                wb_price=request_data['old_price'],
                 wb_discount=request_data['wb_discount'],
                 ozon_price=request_data['ozon_price'],
                 yandex_price=request_data['yandex_price'],
@@ -122,6 +122,7 @@ def groups_view(request, ur_lico):
         elif 'action_price' in request.POST:
             names = ArticleGroup.objects.filter(
                 group=request.POST['action_price'])
+            print(request.POST)
             wb_price = names[0].group.wb_price
             wb_discount = names[0].group.wb_discount
             ozon_price = names[0].group.ozon_price
@@ -136,16 +137,16 @@ def groups_view(request, ur_lico):
                 oz_nom_list.append(art.common_article.ozon_product_id)
                 yandex_nom_list.append(
                     art.common_article.yandex_seller_article)
-            wilberries_price_change(
-                ur_lico, wb_nom_list, wb_price, wb_discount)
-            ozon_price_change(ur_lico, oz_nom_list,
-                              ozon_price, min_price, old_price)
-            yandex_price_change(ur_lico, yandex_nom_list,
-                                yandex_price, old_price)
-            # Записываем изененные цены в базу данных
-            wb_add_price_info(ur_lico)
-            ozon_add_price_info(ur_lico)
-            yandex_add_price_info(ur_lico)
+            # wilberries_price_change(
+            #     ur_lico, wb_nom_list, wb_price, wb_discount)
+            # ozon_price_change(ur_lico, oz_nom_list,
+            #                   ozon_price, min_price, old_price)
+            # yandex_price_change(ur_lico, yandex_nom_list,
+            #                     yandex_price, old_price)
+            # # Записываем изененные цены в базу данных
+            # wb_add_price_info(ur_lico)
+            # ozon_add_price_info(ur_lico)
+            # yandex_add_price_info(ur_lico)
         # return redirect('price_groups_ip')
     context = {
         'data': data,

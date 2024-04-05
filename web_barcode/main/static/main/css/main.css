@@ -772,6 +772,19 @@ table tr form td input {
     text-align: left;
 }
 
+.price_group_table {
+    overflow-x: scroll;
+    display: block;
+    width: 100%;
+}
+
+.price_group_table input {
+    width: 100px; 
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
 table tr a {
     text-decoration: none;
     font-weight: 600;
