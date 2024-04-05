@@ -164,6 +164,7 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
         campaign_number
     ])
     response = requests.request("POST", url, headers=header, data=payload)
+    attempt += 1
     if response.status_code == 200:
         articles_list = []
         if 'autoParams' not in json.loads(response.text)[0]:
@@ -171,12 +172,16 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
             articles_list = json.loads(response.text)[0]['unitedParams']['nms']
+
             print('был в unitedParams')
         else:
             articles_list = json.loads(response.text)[0]['autoParams']['nms']
             print('был в autoParams')
         print(
             f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
+        if articles_list == None:
+            time.sleep(5)
+            wb_articles_in_campaign(campaign_number, header, attempt)
         return articles_list
     elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
@@ -192,7 +197,7 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
         time.sleep(5)
-        attempt += 1
+
         if attempt < 50:
             print(f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса')
             return wb_articles_in_campaign(campaign_number, header, attempt)
