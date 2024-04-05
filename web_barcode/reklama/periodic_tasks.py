@@ -17,6 +17,7 @@ from reklama.supplyment import (ad_list, count_sum_orders, header_determinant,
                                 ooo_wb_articles_info,
                                 replenish_campaign_budget, send_common_message,
                                 start_add_campaign, wb_articles_in_campaign,
+                                wb_articles_in_campaign_and_name,
                                 wb_ooo_fbo_stock_data)
 
 # Загрузка переменных окружения из файла .env
@@ -157,7 +158,7 @@ def matching_wb_ooo_article_campaign():
     DataOooWbArticle.objects.all().update(ad_campaign=None)
     for campaign in campaign_list:
         header = header_determinant(campaign)
-        article_list, wb_campaign_name = wb_articles_in_campaign(
+        article_list, wb_campaign_name = wb_articles_in_campaign_and_name(
             campaign, header)
         if article_list:
             for article in article_list:
