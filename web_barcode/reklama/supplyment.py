@@ -181,7 +181,7 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
         if articles_list == None:
             time.sleep(5)
-            wb_articles_in_campaign(campaign_number, header, attempt)
+            return wb_articles_in_campaign(campaign_number, header, attempt)
         return articles_list
     elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
