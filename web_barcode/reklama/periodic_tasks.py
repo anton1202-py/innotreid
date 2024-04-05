@@ -158,21 +158,29 @@ def matching_wb_ooo_article_campaign():
     for campaign in campaign_list:
         header = header_determinant(campaign)
         article_list = wb_articles_in_campaign(campaign, header)
-        print(f'article_list {article_list}')
-        print(f'type(article_list) {type(article_list)}')
-        print('**********************')
-        for article in article_list:
-            if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
-                article_obj = OooWbArticle.objects.get(wb_nomenclature=article)
-                matching_data = DataOooWbArticle.objects.get(
-                    wb_article=article_obj)
-                if matching_data.ad_campaign:
-                    if str(campaign) not in str(matching_data.ad_campaign):
-                        matching_data.ad_campaign = str(
-                            matching_data.ad_campaign) + ', ' + str(campaign)
-                else:
-                    matching_data.ad_campaign = campaign
-                matching_data.save()
+        if article_list:
+            print(f'{campaign} article_list {article_list}')
+            print(f'type(article_list) {type(article_list)}')
+            print('**********************')
+            for article in article_list:
+                if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
+                    article_obj = OooWbArticle.objects.get(
+                        wb_nomenclature=article)
+                    matching_data = DataOooWbArticle.objects.get(
+                        wb_article=article_obj)
+                    if matching_data.ad_campaign:
+                        if str(campaign) not in str(matching_data.ad_campaign):
+                            matching_data.ad_campaign = str(
+                                matching_data.ad_campaign) + ', ' + str(campaign)
+                    else:
+                        matching_data.ad_campaign = campaign
+                    matching_data.save()
+        else:
+            print('**********************')
+            print(f'{campaign} article_list {article_list}')
+            print(f'type(article_list) {type(article_list)}')
+            print(f'АХТУНГ!!!!! {campaign} не зашел в лист')
+            print('**********************')
 
         time.sleep(3)
 
