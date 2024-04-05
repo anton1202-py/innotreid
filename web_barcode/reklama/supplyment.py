@@ -165,13 +165,14 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
     ])
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
+        articles_list = []
         if 'autoParams' not in json.loads(response.text)[0]:
             message = f'reklama.pupplyment.wb_articles_in_campaign. Кампания {campaign_number}. Ответ АПИ: {json.loads(response.text)}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
-        articles_list = json.loads(response.text)[0]['autoParams']['nms']
-        if articles_list == None:
-            print(json.loads(response.text)[0]['autoParams']['nms'])
+            articles_list = json.loads(response.text)[0]['unitedParams']['nms']
+        else:
+            articles_list = json.loads(response.text)[0]['autoParams']['nms']
         print(f'wb_articles_in_campaign. {campaign_number}, {articles_list}')
         return articles_list
     elif response.status_code == 404:
