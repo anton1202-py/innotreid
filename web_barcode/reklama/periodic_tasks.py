@@ -158,6 +158,9 @@ def matching_wb_ooo_article_campaign():
     for campaign in campaign_list:
         header = header_determinant(campaign)
         article_list = wb_articles_in_campaign(campaign, header)
+        print(f'article_list {article_list}')
+        print(f'type(article_list) {type(article_list)}')
+        print('**********************')
         for article in article_list:
             if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
                 article_obj = OooWbArticle.objects.get(wb_nomenclature=article)
