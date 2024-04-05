@@ -136,7 +136,7 @@ app.conf.beat_schedule = {
     },
     "wb_ooo_matching_article_campaign": {
         "task": "reklama.periodic_tasks.matching_wb_ooo_article_campaign",
-        "schedule": crontab(hour=13, minute=26)
+        "schedule": crontab(hour=22, minute=10)
     },
     "wb_ooo_stock_fbo": {
         "task": "reklama.periodic_tasks.wb_ooo_fbo_stock_count",
