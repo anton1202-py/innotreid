@@ -157,7 +157,8 @@ def matching_wb_ooo_article_campaign():
     DataOooWbArticle.objects.all().update(ad_campaign=None)
     for campaign in campaign_list:
         header = header_determinant(campaign)
-        article_list = wb_articles_in_campaign(campaign, header)
+        article_list, wb_campaign_name = wb_articles_in_campaign(
+            campaign, header)
         if article_list:
             for article in article_list:
                 if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
@@ -171,6 +172,12 @@ def matching_wb_ooo_article_campaign():
                                 matching_data.ad_campaign) + ', ' + str(campaign)
                     else:
                         matching_data.ad_campaign = campaign
+                    if matching_data.wb_campaigns_name:
+                        if str(wb_campaign_name) not in str(matching_data.wb_campaigns_name):
+                            matching_data.wb_campaigns_name = str(
+                                matching_data.wb_campaigns_name) + ', ' + str(wb_campaign_name)
+                    else:
+                        matching_data.wb_campaigns_name = wb_campaign_name
                     matching_data.save()
         time.sleep(3)
 

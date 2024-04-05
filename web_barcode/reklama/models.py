@@ -256,8 +256,24 @@ class DataOooWbArticle(models.Model):
         null=True
     )
     ad_campaign = models.CharField(
-        verbose_name='Кампания артикула',
+        verbose_name='WB Кампания артикула',
         max_length=200,
+        blank=True,
+        null=True
+    )
+    ozon_ad_campaign = models.CharField(
+        verbose_name='OZON Кампании артикула',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+    wb_campaigns_name = models.TextField(
+        verbose_name='WB название кампаний',
+        blank=True,
+        null=True
+    )
+    ozon_campaigns_name = models.TextField(
+        verbose_name='OZON название кампаний',
         blank=True,
         null=True
     )
