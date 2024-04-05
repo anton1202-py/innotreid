@@ -173,10 +173,8 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
                              text=message, parse_mode='HTML')
             articles_list = json.loads(response.text)[0]['unitedParams']['nms']
 
-            print('был в unitedParams')
         else:
             articles_list = json.loads(response.text)[0]['autoParams']['nms']
-            print('был в autoParams')
         print(
             f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
         if articles_list == None:
@@ -199,7 +197,8 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
         time.sleep(5)
 
         if attempt < 50:
-            print(f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса')
+            print(
+                f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса {attempt}')
             return wb_articles_in_campaign(campaign_number, header, attempt)
         else:
             text = f'Данные кампании {campaign_number} были запрошены 50 раз, но всегда выдает ошибку. Проверьте эту кампанию на сайте ВБ'

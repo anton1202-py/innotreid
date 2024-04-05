@@ -159,9 +159,6 @@ def matching_wb_ooo_article_campaign():
         header = header_determinant(campaign)
         article_list = wb_articles_in_campaign(campaign, header)
         if article_list:
-            print(f'{campaign} article_list {article_list}')
-            print(f'type(article_list) {type(article_list)}')
-            print('**********************')
             for article in article_list:
                 if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
                     article_obj = OooWbArticle.objects.get(
@@ -175,13 +172,6 @@ def matching_wb_ooo_article_campaign():
                     else:
                         matching_data.ad_campaign = campaign
                     matching_data.save()
-        else:
-            print('**********************')
-            print(f'{campaign} article_list {article_list}')
-            print(f'type(article_list) {type(article_list)}')
-            print(f'АХТУНГ!!!!! {campaign} не зашел в лист')
-            print('**********************')
-
         time.sleep(3)
 
 
