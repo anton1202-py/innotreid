@@ -171,9 +171,12 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
             articles_list = json.loads(response.text)[0]['unitedParams']['nms']
+            print('был в unitedParams')
         else:
             articles_list = json.loads(response.text)[0]['autoParams']['nms']
-        print(f'wb_articles_in_campaign. {campaign_number}, {articles_list}')
+            print('был в autoParams')
+        print(
+            f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
         return articles_list
     elif response.status_code == 404:
         message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
