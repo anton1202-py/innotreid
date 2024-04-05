@@ -109,7 +109,7 @@ def groups_view(request, ur_lico):
             request_data = request.POST
             data.filter(id=request_data['change_button']).update(
                 name=request_data['name'],
-                wb_price=request_data['wb_price'],
+                wb_price=request_data['old_price'],
                 wb_discount=request_data['wb_discount'],
                 ozon_price=request_data['ozon_price'],
                 yandex_price=request_data['yandex_price'],
