@@ -157,107 +157,70 @@ def db_articles_in_campaign(campaign_number):
 
 
 @sender_error_to_tg
-def wb_articles_in_campaign(campaign_number, header, attempt=0):
-    """Достает артикулы, которые есть у компании в Wildberries"""
+def get_wb_campaign_info(campaign_number, header, attempt=0):
+    """Получает информацию о рекламной кампании ВБ"""
     url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
     payload = json.dumps([
         campaign_number
     ])
-    response = requests.request("POST", url, headers=header, data=payload)
     attempt += 1
+    response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
-        articles_list = []
-        if 'autoParams' not in json.loads(response.text)[0]:
-            message = f'reklama.pupplyment.wb_articles_in_campaign. Кампания {campaign_number}. Ответ АПИ: {json.loads(response.text)}'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message, parse_mode='HTML')
-            articles_list = json.loads(response.text)[
-                0]['unitedParams'][0]['nms']
-        else:
-            articles_list = json.loads(response.text)[0]['autoParams']['nms']
-        print(
-            f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
-        if articles_list == None:
-            time.sleep(5)
-            return wb_articles_in_campaign(campaign_number, header, attempt)
-        return articles_list
+        return json.loads(response.text)
     elif response.status_code == 404:
-        message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
         text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
         for user in campaign_budget_users_list:
             bot.send_message(chat_id=user,
                              text=text, parse_mode='HTML')
-        print(
-            f'wb_articles_in_campaign. {campaign_number} должен быть пустой ответ. 404')
         return []
     else:
         time.sleep(5)
-
-        if attempt < 50:
-            print(
-                f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса {attempt}')
-            return wb_articles_in_campaign(campaign_number, header, attempt)
+        if attempt < 60:
+            return get_wb_campaign_info(campaign_number, header, attempt)
         else:
-            text = f'Данные кампании {campaign_number} были запрошены 50 раз, но всегда выдает ошибку. Проверьте эту кампанию на сайте ВБ'
-
+            text = f'Данные кампании {campaign_number} были запрошены 50 раз. Статус код {response.status_code}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
-            print(f'wb_articles_in_campaign. {campaign_number} Много запросов')
             return []
 
 
 @sender_error_to_tg
-def wb_articles_in_campaign_and_name(campaign_number, header, attempt=0):
+def wb_articles_in_campaign(campaign_number, header):
     """Достает артикулы, которые есть у компании в Wildberries"""
-    url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
-    payload = json.dumps([
-        campaign_number
-    ])
-    response = requests.request("POST", url, headers=header, data=payload)
-    attempt += 1
-    if response.status_code == 200:
+    campaign_data = get_wb_campaign_info(campaign_number, header)
+    if campaign_data:
         articles_list = []
-        if 'autoParams' not in json.loads(response.text)[0]:
-            message = f'reklama.pupplyment.wb_articles_in_campaign. Кампания {campaign_number}. Ответ АПИ: {json.loads(response.text)}'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message, parse_mode='HTML')
-            articles_list = json.loads(response.text)[
+        if 'autoParams' not in campaign_data[0]:
+            articles_list = campaign_data[
                 0]['unitedParams'][0]['nms']
-
         else:
-            articles_list = json.loads(response.text)[0]['autoParams']['nms']
-        print(
-            f'wb_articles_in_campaign. {campaign_number}, {articles_list}, {response.status_code}')
+            articles_list = campaign_data[0]['autoParams']['nms']
         if articles_list == None:
             time.sleep(5)
-            return wb_articles_in_campaign_and_name(campaign_number, header, attempt)
-        campaign_name = json.loads(response.text)[0]['name']
-        return articles_list, campaign_name
-    elif response.status_code == 404:
-        message = f'reklama. supplyment. Статус код {response.status_code} - кампания {campaign_number}.'
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
-        text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
-        for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
-                             text=text, parse_mode='HTML')
-        print(
-            f'wb_articles_in_campaign. {campaign_number} должен быть пустой ответ. 404')
-        return [], ''
+            return wb_articles_in_campaign(campaign_number, header)
+        return articles_list
     else:
-        time.sleep(5)
+        return []
 
-        if attempt < 50:
-            print(
-                f'wb_articles_in_campaign. {campaign_number} ПОвтор запроса {attempt}')
-            return wb_articles_in_campaign_and_name(campaign_number, header, attempt)
+
+@sender_error_to_tg
+def wb_articles_in_campaign_and_name(campaign_number, header):
+    """Достает артикулы, которые есть у компании в Wildberries"""
+    campaign_data = get_wb_campaign_info(campaign_number, header)
+    if campaign_data:
+        articles_list = []
+        if 'autoParams' not in campaign_data[0]:
+            articles_list = campaign_data[
+                0]['unitedParams'][0]['nms']
         else:
-            text = f'Данные кампании {campaign_number} были запрошены 50 раз, но всегда выдает ошибку. Проверьте эту кампанию на сайте ВБ'
-
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=text, parse_mode='HTML')
-            print(f'wb_articles_in_campaign. {campaign_number} Много запросов')
-            return [], ''
+            articles_list = campaign_data[0]['autoParams']['nms']
+        if articles_list == None:
+            time.sleep(5)
+            return wb_articles_in_campaign_and_name(campaign_number, header)
+        campaign_name = campaign_data[0]['name']
+        return articles_list, campaign_name
+    else:
+        return [], ''
 
 
 @sender_error_to_tg

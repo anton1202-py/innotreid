@@ -1,7 +1,10 @@
+import asyncio
 import json
 import math
 import os
+import time
 import traceback
+from asyncio.log import logger
 
 import requests
 import telegram
@@ -39,38 +42,84 @@ yandex_headers_karavaev = {
 }
 
 
-def uppercase_two(func):
-    def wrapper(*args, **kwargs):
+def try_except_decorator(requests_per_interval, interval_seconds, max_attempts=50, max_delay=120):
+    def decorator(func):
+        async def wrapper(instance, *args, **kwargs):
+            if not hasattr(instance, '_api_call_state'):
+                instance._api_call_state = {}
+
+            method_name = func.name
+            if method_name not in instance._api_call_state:
+                instance._api_call_state[method_name] = {
+                    '_last_query_time': 0,
+                    '_current_pause': interval_seconds / requests_per_interval,
+                    '_attempts': 0,
+                    '_first_request': True
+                }
+
+            state = instance._api_call_state[method_name]
+            while state['_attempts'] < max_attempts:
+                current_time = time.time()
+                time_since_last_query = current_time - \
+                    state['_last_query_time']
+                time_to_wait = max(
+                    state['_current_pause'] - time_since_last_query, 0)
+                if state['_first_request']:
+                    logger.debug(
+                        f'Пауза между запросами: {time_to_wait} секунд')
+                    await asyncio.sleep(time_to_wait)
+                    state['_first_request'] = False
+
+                try:
+                    result = await func(instance, *args, **kwargs)
+                    state['_last_query_time'] = time.time()
+                    state['_current_pause'] = (
+                        interval_seconds / requests_per_interval + state['_current_pause']) / 2
+                    # Сброс попыток после успешного выполнения
+                    state['_attempts'] = 0
+                    return result
+                except ApiForbiddenError:
+                    raise
+                except TooManyRequests:
+                    state['_attempts'] += 1
+                    state['_current_pause'] = min(
+                        state['_current_pause'] * 2, max_delay)
+                    if state['_attempts'] >= max_attempts:
+                        raise
+                except Exception as e:
+                    logger.error(f'Ошибка запроса к wb: {e}', e)
+                    state['_attempts'] += 1
+                    state['_current_pause'] = min(
+                        state['_current_pause'] * 2, max_delay)
+                    if state['_attempts'] >= max_attempts:
+                        raise e
+        return wrapper
+    return decorator
+
+
+async def requests(self, session, method, url, data=None, json_data=None, headers=None, ):
+    async with session.request(method, url, data=data, headers=headers, json=json_data) as response:
         try:
-            return func(*args, **kwargs)
+            logger.debug(f'Запрос к {url} выполнен. Статус: {response.status}')
+            response.raise_for_status()
+        except aiohttp.ClientResponseError as e:  # Предполагая использование aiohttp
+            if e.status == 401:
+                raise exceptions.ApiForbiddenError(
+                    'Неверный API ключ', wb_user_cabinet=self._wb_user_cabinet) from e
+            if e.status == 429:
+                logger.error(f'Превышен лимит запросов к API. Ошибка: {url}')
+                raise exceptions.TooManyRequests from e
+            else:
+                #
+                raise exceptions.UnknownApiRequestError(e) from e
         except Exception as e:
-            tb_str = traceback.format_exc()
-            message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
-                             f'<b>Функция выполняет</b>: {func.__doc__}\n'
-                             f'<b>Ошибка</b>\n: {e}\n\n'
-                             f'<b>Техническая информация</b>:\n {tb_str}')
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_error, parse_mode='HTML')
-    return wrapper
-
-
-def uppercase(func):
-    def wrapper():
-        try:
-            func()
-        except Exception as e:
-            tb_str = traceback.format_exc()
-            message_error = (f'Ошибка в функции: <b>{func.__name__}</b>\n'
-                             f'<b>Функция выполняет</b>: {func.__doc__}\n'
-                             f'<b>Ошибка</b>\n: {e}\n\n'
-                             f'<b>Техническая информация</b>:\n {tb_str}')
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_error, parse_mode='HTML')
-    return wrapper
-
-
-@uppercase_two
-def wb_articles_list():
-    """Получаем массив арткулов с ценами и скидками для ВБ"""
-    n = '1' + 'b' + 'c'
-    print(n)
+            raise exceptions.UnknownApiRequestError(e) from e
+        # Если код не в блоке except, значит ответ был успешным (статус 200-299)
+        text = await response.text()
+        if text:
+            json_answer = json.loads(text)
+            if isinstance(json_answer, dict):
+                if code := json_answer.get('code'):
+                    raise exceptions.ApiErrorWithCode(code,
+                                                      json_answer.get('message'), json_answer.get('rejection'))
+        return text
