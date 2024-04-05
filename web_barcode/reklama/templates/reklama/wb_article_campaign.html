@@ -34,7 +34,8 @@
                 <th>Артикул продавца WB</th>
                 <th>Название артикула</th>
                 <th>Остаток FBO</th>
-                <th>Рекламная кампания</th>
+                <th>WB Рекламные кампании</th>
+                <th>WB название кампаний</th>
             </tr>
             {% for el in data %}
                 <tr>
@@ -49,6 +50,11 @@
                         <td></td>
                     {% else %}
                         <td>{{ el.ad_campaign }}</td>
+                    {% endif %}
+                    {% if el.wb_campaigns_name == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.wb_campaigns_name }}</td>
                     {% endif %}
                 </tr>
             {% endfor %}

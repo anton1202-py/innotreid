@@ -171,7 +171,8 @@ def wb_articles_in_campaign(campaign_number, header, attempt=0):
             message = f'reklama.pupplyment.wb_articles_in_campaign. Кампания {campaign_number}. Ответ АПИ: {json.loads(response.text)}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message, parse_mode='HTML')
-            articles_list = json.loads(response.text)[0]['unitedParams']['nms']
+            articles_list = json.loads(response.text)[
+                0]['unitedParams'][0]['nms']
 
         else:
             articles_list = json.loads(response.text)[0]['autoParams']['nms']
