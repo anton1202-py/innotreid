@@ -92,6 +92,12 @@ app.conf.beat_schedule = {
         "task": "fbs_mode.tasks.ip_friday_task",
         "schedule": crontab(hour=17, minute=20, day_of_week=5)
     },
+
+    "ip_fbs_friday_action_test": {
+        "task": "fbs_mode.tasks.ip_friday_task",
+        "schedule": crontab(hour=7, minute=53)
+    },
+
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=18, minute=0, day_of_week=1)

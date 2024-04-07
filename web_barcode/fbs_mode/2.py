@@ -2,34 +2,27 @@ import base64
 import glob
 import io
 import json
+import logging
+import math
 import os
-import re
 import shutil
+import textwrap
 import time
+import traceback
 from collections import Counter
-from contextlib import closing
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timedelta
 
 import dropbox
-import img2pdf
-import pandas as pd
-import pdfplumber
 import requests
-from barcode import Code128
-from barcode.writer import ImageWriter
+import telegram
 from dotenv import load_dotenv
-from pdf2image import convert_from_path
+from openpyxl import Workbook, load_workbook
+from openpyxl.drawing import image
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
-from PyPDF3 import PdfFileReader, PdfFileWriter
-from PyPDF3.pdf import PageObject
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
+from sqlalchemy import create_engine
 
-version = 'w1.0'
-
+# Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
 load_dotenv(dotenv_path)
@@ -55,6 +48,7 @@ CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
 CHAT_ID_AN = os.getenv('CHAT_ID_AN')
 
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 wb_headers_karavaev = {
     'Content-Type': 'application/json',
@@ -92,130 +86,124 @@ dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
                          app_key=APP_KEY_DB,
                          app_secret=APP_SECRET_DB)
 
-
-def stream_dropbox_file(path):
-    _, res = dbx_db.files_download(path)
-    with closing(res) as result:
-        byte_data = result.content
-        return io.BytesIO(byte_data)
+logging.basicConfig(level=logging.DEBUG,
+                    filename="tasks_log.log",
+                    format="%(asctime)s %(levelname)s %(message)s")
 
 
-def atoi(text):
-    """Для сортировки файлов в списках для присоединения"""
-    return int(text) if text.isdigit() else text
-
-
-def natural_keys(text):
+def process_new_orders():
     """
-    alist.sort(key=natural_keys) sorts in human order
+    WILDBERRIES
+    Функция обрабатывает новые сборочные задания.
     """
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+
+    url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
+    response = requests.request(
+        "GET", url, headers=wb_headers_karavaev)
+    orders_data = json.loads(response.text)['orders']
+    if response.status_code == 200:
+        return orders_data
+    else:
+        time.sleep(10)
+        return process_new_orders()
 
 
-def qrcode_order():
+def time_filter_orders():
     """
-    WILDBERRIES.
-    Функция добавляет сборочные задания по их id
-    в созданную поставку и получает qr стикер каждого
-    задания и сохраняет его в папку
+    WILDBERRIES
+    Функция фильтрует новые заказы по времени.
+    Если заказ создан меньше, чем 1 час назад, в работу он не берется
     """
-    order_list = [1534937658, 1535269830, 1535436413]
-    # Создаем qr коды добавленных ордеров.
-    for order in order_list:
-        ticket_url = 'https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=40&height=30'
-        payload_ticket = json.dumps({"orders": [order]})
-        response_ticket = requests.request(
-            "POST", ticket_url, headers=wb_headers_karavaev, data=payload_ticket)
-        # Расшифровываю ответ, чтобы сохранить файл этикетки задания
-        ticket_data = json.loads(response_ticket.text)[
-            "stickers"][0]["file"]
-        # Узнаю стикер сборочного задания и помещаю его в словарь с данными для
-        # листа подбора
-        sticker_code_first_part = json.loads(response_ticket.text)[
-            "stickers"][0]["partA"]
-        sticker_code_second_part = json.loads(response_ticket.text)[
-            "stickers"][0]["partB"]
-        sticker_code = f'{sticker_code_first_part} {sticker_code_second_part}'
-
-        # декодируем строку из base64 в бинарные данные
-        binary_data = base64.b64decode(ticket_data)
-        # создаем объект изображения из бинарных данных
-        img = Image.open(io.BytesIO(binary_data))
-        # сохраняем изображение в файл
-        folder_path = os.path.join(
-            os.getcwd(), "fbs_mode/data_for_barcodes/qrcode_folder")
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        img.save(
-            f"{folder_path}/{order}.png")
+    orders_data = process_new_orders()
+    filters_order_data = []
+    now_time = datetime.now()
+    for order in orders_data:
+        # Время создания заказа в переводе с UTC на московское
+        create_order_time = datetime.strptime(
+            order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
+        delta_order_time = now_time - create_order_time
+        if delta_order_time > timedelta(hours=1):
+            filters_order_data.append(order)
+    return filters_order_data
 
 
-# qrcode_order()
-
-
-def qrcode_print_for_products():
+def article_info(article):
     """
-    Создает QR коды в необходимом формате и добавляет к ним артикул и его название 
-    из excel файла. Сравнивает цифры из файла с QR кодами и цифры из excel файла.
-    Таким образом находит артикулы и названия.
-    Входящие файлы:
-    filename - название файла с qr-кодами. Для создания промежуточной папки.
+    WILDBERRIES
+    Получает развернутый ответ про каждый артикул. 
     """
-    dir = 'fbs_mode/data_for_barcodes/qrcode_folder/'
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    os.chmod(dir, 0o777)
-
-    filelist = glob.glob(os.path.join(dir, "*.png"))
-    print('FILELIST', filelist)
-    filelist.sort(key=natural_keys)
-    i = 0
-    font1 = ImageFont.truetype("arial.ttf", size=40)
-    font2 = ImageFont.truetype("arial.ttf", size=90)
-
-    filename = 'fbs_mode/data_for_barcodes/qrcode_folder/cache_dir_3/'
-    if not os.path.exists(filename):
-        os.makedirs(filename)
-    os.chmod(filename, 0o777)
-
-    for file in filelist:
-        path = Path(file)
-        file_name = str(os.path.basename(path).split('.')[0])
-        name_data = file_name.split('\\')
-        print('name_data', name_data)
-        sticker_data = name_data[0]
-        barcode_size = [img2pdf.in_to_pt(2.759), img2pdf.in_to_pt(1.95)]
-        layout_function = img2pdf.get_layout_fun(barcode_size)
-        im = Image.new('RGB', (660, 466), color=('#ffffff'))
-        image1 = Image.open(file)
-        draw_text = ImageDraw.Draw(im)
-
-        # Вставляем qr код в основной фон
-        im.paste(image1, (70, 100))
-        draw_text.text(
-            (90, 80),
-            f'{sticker_data}',
-            font=font1,
-            fill=('#000'), stroke_width=1
-        )
-        im.save(
-            f'{filename}/{file_name}.png')
-        pdf = img2pdf.convert(
-            f'{filename}/{file_name}.png', layout_fun=layout_function)
-        with open(f'{filename}/{file_name}.pdf', 'wb') as f:
-            f.write(pdf)
-        i += 1
-    pdf_filenames_qrcode = glob.glob(f'{filename}/*.pdf')
-    pdf_filenames_qrcode.sort(key=natural_keys)
-    filelist.clear()
-
-    # filelist = glob.glob(os.path.join(filename, "*"))
-    # for f in filelist:
-    #    try:
-    #        os.remove(f)
-    #    except Exception:
-    #        print('')
-    return pdf_filenames_qrcode
+    url_data = "https://suppliers-api.wildberries.ru/content/v2/get/cards/list"
+    payload = json.dumps({
+        "settings": {
+            "cursor": {
+                "limit": 1
+            },
+            "filter": {
+                "textSearch": article,
+                "withPhoto": -1
+            }
+        }
+    })
+    response_data = requests.request(
+        "POST", url_data, headers=wb_headers_karavaev, data=payload)
+    if response_data.status_code == 200:
+        print(article)
+        print('*********************')
+        print(response_data.text)
+        print('*********************')
+        print('*********************')
+        return response_data.text
+    else:
+        text = f'Статус код = {response_data.status_code} у артикула {article}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+        time.sleep(5)
+        return article_info(article)
 
 
-qrcode_print_for_products()
+def article_data_for_tickets():
+    """
+    WILDBERRIES
+    Выделяет артикулы продавца светильников, их баркоды и наименования.
+    Создает словарь с данными каждого артикулы и словарь с количеством каждого
+    артикула. 
+    """
+    orders_data = time_filter_orders()
+    # Словарь с данными артикула: {артикул_продавца: [баркод, наименование]}
+    data_article_info_dict = {}
+    # Список только для артикулов ночников. Остальные отфильтровывает
+    clear_article_list = []
+    # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
+    selection_dict = {}
+    for data in orders_data:
+        print(data['article'])
+        print('***************')
+        answer = article_info(data['article'])
+        if json.loads(answer)['cards']:
+            if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                clear_article_list.append(data['article'])
+                # Достаем баркод артикула (первый из списка, если их несколько)
+                barcode = json.loads(answer)[
+                    'cards'][0]['sizes'][0]['skus'][0]
+                # Достаем название артикула
+                title = json.loads(answer)[
+                    'cards'][0]['title']
+                data_article_info_dict[data['article']] = [
+                    title, barcode]
+                photo = json.loads(answer)[
+                    'cards'][0]['photos'][0]['big']
+                brand = json.loads(answer)[
+                    'cards'][0]['brand']
+                title_article = json.loads(answer)[
+                    'cards'][0]['title']
+                seller_article = data['article']
+                # Заполняем словарь данными для Листа подбора
+                selection_dict[data['id']] = [
+                    photo, brand, title_article, seller_article]
+        time.sleep(2)
+    # Словарь с данными: {артикул_продавца: количество}
+    amount_articles = dict(Counter(clear_article_list))
+    return amount_articles
+
+
+article_data_for_tickets()

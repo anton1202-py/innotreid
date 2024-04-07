@@ -212,22 +212,15 @@ class WildberriesFbsMode():
         WILDBERRIES
         Функция обрабатывает новые сборочные задания.
         """
-        try:
-            url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
-            response = requests.request(
-                "GET", url, headers=self.headers)
-            orders_data = json.loads(response.text)['orders']
-            if response.status_code == 200:
-                return orders_data
-            else:
-                time.sleep(10)
-                return self.process_new_orders()
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'process_new_orders', self.process_new_orders, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+        url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
+        response = requests.request(
+            "GET", url, headers=self.headers)
+        orders_data = json.loads(response.text)['orders']
+        if response.status_code == 200:
+            return orders_data
+        else:
+            time.sleep(10)
+            return self.process_new_orders()
 
     @sender_error_to_tg
     def time_filter_orders(self):
@@ -294,26 +287,27 @@ class WildberriesFbsMode():
         self.selection_dict = {}
         for data in orders_data:
             answer = self.article_info(data['article'])
-            if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
-                self.clear_article_list.append(data['article'])
-                # Достаем баркод артикула (первый из списка, если их несколько)
-                barcode = json.loads(answer)[
-                    'cards'][0]['sizes'][0]['skus'][0]
-                # Достаем название артикула
-                title = json.loads(answer)[
-                    'cards'][0]['title']
-                self.data_article_info_dict[data['article']] = [
-                    title, barcode]
-                photo = json.loads(answer)[
-                    'cards'][0]['photos'][0]['big']
-                brand = json.loads(answer)[
-                    'cards'][0]['brand']
-                title_article = json.loads(answer)[
-                    'cards'][0]['title']
-                seller_article = data['article']
-                # Заполняем словарь данными для Листа подбора
-                self.selection_dict[data['id']] = [
-                    photo, brand, title_article, seller_article]
+            if json.loads(answer)['cards']:
+                if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                    self.clear_article_list.append(data['article'])
+                    # Достаем баркод артикула (первый из списка, если их несколько)
+                    barcode = json.loads(answer)[
+                        'cards'][0]['sizes'][0]['skus'][0]
+                    # Достаем название артикула
+                    title = json.loads(answer)[
+                        'cards'][0]['title']
+                    self.data_article_info_dict[data['article']] = [
+                        title, barcode]
+                    photo = json.loads(answer)[
+                        'cards'][0]['photos'][0]['big']
+                    brand = json.loads(answer)[
+                        'cards'][0]['brand']
+                    title_article = json.loads(answer)[
+                        'cards'][0]['title']
+                    seller_article = data['article']
+                    # Заполняем словарь данными для Листа подбора
+                    self.selection_dict[data['id']] = [
+                        photo, brand, title_article, seller_article]
             time.sleep(2)
         # Словарь с данными: {артикул_продавца: количество}
         self.amount_articles = dict(Counter(self.clear_article_list))
