@@ -74,7 +74,7 @@ def ad_campaign_add(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # matching_wb_ooo_article_campaign()
-    ooo_wb_articles_to_dataooowbarticles()
+    # ooo_wb_articles_to_dataooowbarticles()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
@@ -124,7 +124,7 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    ozon_add_campaign_data_to_database()
+    # ozon_add_campaign_data_to_database()
     data = DataOooWbArticle.objects.all()
     if request.method == 'POST':
         if 'filter' in request.POST:
