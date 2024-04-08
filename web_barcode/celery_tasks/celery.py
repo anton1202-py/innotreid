@@ -144,6 +144,10 @@ app.conf.beat_schedule = {
         "task": "reklama.periodic_tasks.matching_wb_ooo_article_campaign",
         "schedule": crontab(hour=22, minute=10)
     },
+    "ozon_ooo_matching_article_campaign": {
+        "task": "reklama.periodic_tasks.matching_ozon_ooo_article_campaign",
+        "schedule": crontab(hour=22, minute=15)
+    },
     "wb_ooo_stock_fbo": {
         "task": "reklama.periodic_tasks.wb_ooo_fbo_stock_count",
         "schedule": crontab(hour=22, minute=20)

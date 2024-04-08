@@ -8,6 +8,7 @@ import requests
 import telegram
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
+from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
@@ -105,7 +106,20 @@ ozon_payload = {
     'ООО Иннотрейд': payload_ozon_adv_ooo,
     'ИП Караваев': payload_ozon_adv_ip
 }
+ozon_adv_client_access_id_dict = {
+    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_ACCESS_ID,
+    'ИП Караваев': OZON_IP_ADV_CLIENT_ACCESS_ID
+}
 
+ozon_adv_client_secret_dict = {
+    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_SECRET,
+    'ИП Караваев': OZON_IP_ADV_CLIENT_SECRET
+}
+
+ozon_api_token_dict = {
+    'ООО Иннотрейд': OZON_OOO_API_TOKEN,
+    'ИП Караваев': OZON_IP_API_TOKEN
+}
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ WILDBERRIES ========== #
 
 
@@ -670,3 +684,104 @@ def wb_ooo_fbo_stock_data():
         main_article_data_list.append(data_list)
         time.sleep(21)
     return main_article_data_list
+
+
+@sender_error_to_tg
+def ooo_wb_articles_to_dataooowbarticles():
+    """WILDBERRIES. Записывает артикулы ООО ВБ в базу данных"""
+    article_list = Articles.objects.filter(company='ООО Иннотрейд')
+    for article in article_list:
+        if not DataOooWbArticle.objects.filter(wb_article=article).exists():
+            DataOooWbArticle.objects.get_or_create(
+                wb_article=article)
+
+
+# ========== РАБОТА С РЕКЛАМНЫМИ КАМПАНИЯМИ ОЗОН ========= #
+
+@sender_error_to_tg
+def access_token(ur_lico):
+    """
+    Получение Bearer токена для работы с рекламным кабинетом.
+    Выдается при каждом запросе в рекламный кабинет юр. лица.
+    """
+    url = "https://performance.ozon.ru/api/client/token"
+
+    payload = json.dumps({
+        "client_id": ozon_adv_client_access_id_dict[ur_lico],
+        "client_secret": ozon_adv_client_secret_dict[ur_lico],
+        "grant_type": "client_credentials"
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'Headers': ozon_api_token_dict[ur_lico],
+    }
+
+    response = requests.request(
+        "POST", url, headers=ozon_header[ur_lico], data=payload)
+    print(json.loads(response.text)['access_token'])
+    return json.loads(response.text)['access_token']
+
+
+@sender_error_to_tg
+def ozon_get_adv_campaign_list(ur_lico):
+    """
+    ПОлучает список рекламных кампаний входящего юр лица
+    """
+    url = 'https://performance.ozon.ru:443/api/client/campaign'
+    header = ozon_header[ur_lico]
+    header['Authorization'] = f'Bearer {access_token(ur_lico)}'
+    response = requests.request("GET", url, headers=header)
+    ozon_adv_list = json.loads(response.text)['list']
+    return ozon_adv_list
+
+
+@sender_error_to_tg
+def ozon_get_campaign_data(ur_lico):
+    """Получает данные рекламных кампаний ОЗОН. ID и название"""
+    ozon_adv_list = ozon_get_adv_campaign_list(ur_lico)
+    ozon_adv_info_dict = {}
+    if ozon_adv_list:
+        for i in ozon_adv_list:
+            ozon_adv_info_dict[i['id']] = {'Название': i['title']}
+
+    return ozon_adv_info_dict
+
+
+@sender_error_to_tg
+def ozon_get_articles_data_adv_campaign(ur_lico, campaign, header):
+    """Получает данные рекламной кампании"""
+    url = f'https://performance.ozon.ru:443/api/client/campaign/{campaign}/objects'
+    response = requests.request("GET", url, headers=header)
+    articles_list = []
+    if response.status_code == 200:
+        articles_list = json.loads(response.text)['list']
+    elif response.status_code == 404:
+        print(f'Проверьте статус рекламной кампании {campaign}')
+    return articles_list
+
+
+@sender_error_to_tg
+def ozon_get_articles_in_adv_campaign(ur_lico, campaign, header):
+    """Получает список артикулов рекламной кампании"""
+    articles_data_list = ozon_get_articles_data_adv_campaign(
+        ur_lico, campaign, header)
+    articles_list = []
+    for data in articles_data_list:
+        articles_list.append(data['id'])
+    return articles_list
+
+
+@sender_error_to_tg
+def ozon_adv_campaign_articles_name_data(ur_lico):
+    """
+    Возвращает словарь с данными кампании по артикулам и названию
+    Вид словаря: {кампания: {'Название': 'Название кампании', 'Артикулы': [Список артикулов]}}
+    """
+    campaigns_data = ozon_get_campaign_data(ur_lico)
+    header = ozon_header[ur_lico]
+    header['Authorization'] = f'Bearer {access_token(ur_lico)}'
+    for campaign, data in campaigns_data.items():
+        articles_list = ozon_get_articles_in_adv_campaign(
+            ur_lico, campaign, header)
+        data['Артикулы'] = articles_list
+    return campaigns_data

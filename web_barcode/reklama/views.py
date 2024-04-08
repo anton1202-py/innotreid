@@ -1,13 +1,10 @@
-import importlib
-import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import requests
-from django.db.models import F, Max, Q
+from django.db.models import Max, Q
 from django.shortcuts import redirect, render
-from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from dotenv import load_dotenv
+from price_system.models import Articles
 from reklama.forms import FilterUrLicoForm
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
@@ -18,7 +15,9 @@ from reklama.periodic_tasks import (budget_working,
                                     ozon_status_one_campaign)
 from reklama.supplyment import (ad_list, count_sum_orders,
                                 create_articles_company, header_determinant,
+                                ooo_wb_articles_to_dataooowbarticles,
                                 wb_ooo_fbo_stock_data)
+from reklama.test_file import ozon_add_campaign_data_to_database
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -74,6 +73,8 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    # matching_wb_ooo_article_campaign()
+    ooo_wb_articles_to_dataooowbarticles()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
@@ -123,7 +124,8 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    data = DataOooWbArticle.objects.all().order_by('wb_article')
+    ozon_add_campaign_data_to_database()
+    data = DataOooWbArticle.objects.all()
     if request.method == 'POST':
         if 'filter' in request.POST:
             filter_data = request.POST
@@ -132,7 +134,7 @@ def wb_article_campaign(request):
             campaign_filter = filter_data.get("campaign")
 
             if article_filter:
-                article_obj = OooWbArticle.objects.get(
+                article_obj = Articles.objects.get(
                     wb_article=article_filter)
                 data = data.filter(
                     Q(wb_article=article_obj)).order_by('wb_article')

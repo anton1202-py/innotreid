@@ -8,6 +8,7 @@ import requests
 import telegram
 from celery_tasks.celery import app
 from dotenv import load_dotenv
+from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
@@ -15,6 +16,7 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             WbArticleCommon, WbArticleCompany)
 from reklama.supplyment import (ad_list, count_sum_orders, header_determinant,
                                 ooo_wb_articles_info,
+                                ozon_adv_campaign_articles_name_data,
                                 replenish_campaign_budget, send_common_message,
                                 start_add_campaign, wb_articles_in_campaign,
                                 wb_articles_in_campaign_and_name,
@@ -153,7 +155,7 @@ def ooo_wb_articles_data():
 @sender_error_to_tg
 @app.task
 def matching_wb_ooo_article_campaign():
-    """WILDBERRIES. Сверяет артикулы ВБ ООО с кампаниями"""
+    """WILDBERRIES. Сверяет артикулы ООО с кампаниями ВБ"""
     campaign_list = ad_list()
     DataOooWbArticle.objects.all().update(ad_campaign=None)
     DataOooWbArticle.objects.all().update(wb_campaigns_name=None)
@@ -163,8 +165,8 @@ def matching_wb_ooo_article_campaign():
             campaign, header)
         if article_list:
             for article in article_list:
-                if OooWbArticle.objects.filter(wb_nomenclature=article).exists():
-                    article_obj = OooWbArticle.objects.get(
+                if Articles.objects.filter(wb_nomenclature=article).exists():
+                    article_obj = Articles.objects.get(
                         wb_nomenclature=article)
                     matching_data = DataOooWbArticle.objects.get(
                         wb_article=article_obj)
@@ -184,6 +186,47 @@ def matching_wb_ooo_article_campaign():
         time.sleep(3)
 
 
+@app.task
+def matching_ozon_ooo_article_campaign():
+    """OZON. Сверяет артикулы ООО с кампаниями OZON"""
+    main_campaigns_data = ozon_adv_campaign_articles_name_data('ООО Иннотрейд')
+    DataOooWbArticle.objects.all().update(ozon_ad_campaign=None)
+    DataOooWbArticle.objects.all().update(ozon_campaigns_name=None)
+    for campaign, campaigns_data in main_campaigns_data.items():
+        if campaigns_data['Артикулы']:
+
+            for article in campaigns_data['Артикулы']:
+                article_obj = ''
+                if Articles.objects.filter(ozon_product_id=int(article)).exists():
+                    article_obj = Articles.objects.get(
+                        ozon_product_id=article)
+                elif Articles.objects.filter(ozon_sku=int(article)).exists():
+                    article_obj = Articles.objects.get(
+                        ozon_sku=article)
+                elif Articles.objects.filter(ozon_fbo_sku_id=int(article)).exists():
+                    article_obj = Articles.objects.get(
+                        ozon_fbo_sku_id=article)
+                elif Articles.objects.filter(ozon_fbs_sku_id=int(article)).exists():
+                    article_obj = Articles.objects.get(
+                        ozon_fbs_sku_id=article)
+                if article_obj:
+                    matching_data = DataOooWbArticle.objects.get(
+                        wb_article=article_obj)
+                    if matching_data.ozon_ad_campaign:
+                        if str(campaign) not in str(matching_data.ozon_ad_campaign):
+                            matching_data.ozon_ad_campaign = str(
+                                matching_data.ozon_ad_campaign) + ', ' + str(campaign)
+                    else:
+                        matching_data.ozon_ad_campaign = campaign
+                    if matching_data.ozon_campaigns_name:
+                        if str(campaigns_data['Название']) not in str(matching_data.ozon_campaigns_name):
+                            matching_data.ozon_campaigns_name = str(
+                                matching_data.ozon_campaigns_name) + ', ' + str(campaigns_data['Название'])
+                    else:
+                        matching_data.ozon_campaigns_name = campaigns_data['Название']
+                    matching_data.save()
+
+
 @sender_error_to_tg
 @app.task
 def wb_ooo_fbo_stock_count():
@@ -191,7 +234,7 @@ def wb_ooo_fbo_stock_count():
     main_data = wb_ooo_fbo_stock_data()
     for all_data in main_data:
         for data in all_data:
-            article_obj = OooWbArticle.objects.filter(
+            article_obj = Articles.objects.filter(
                 wb_nomenclature=data['nmID'])[0]
             matching_data = DataOooWbArticle.objects.get(
                 wb_article=article_obj)

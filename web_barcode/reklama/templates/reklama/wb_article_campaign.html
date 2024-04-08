@@ -6,7 +6,7 @@
 {% block content%}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Добавление рекламной кампании</h1>
+            <h1>Артикул в рекламных кампаниях</h1>
         </div>
         <div class='filter-data'>
             <form action="" class="small-filter-form" method="POST">
@@ -32,15 +32,17 @@
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Артикул продавца WB</th>
-                <th>Название артикула</th>
+                <!-- <th>Название артикула</th> -->
                 <th>Остаток FBO</th>
                 <th>WB Рекламные кампании</th>
+                <th>Ozon Рекламные кампании</th>
                 <th>WB название кампаний</th>
+                <th>Ozon название кампаний</th>
             </tr>
             {% for el in data %}
                 <tr>
-                    <td>{{ el.wb_article.wb_article }}</td>
-                    <td>{{ el.wb_article.article_title }}</td>
+                    <td>{{ el.wb_article.common_article }}</td>
+                    <!-- <td>{{ el.wb_article.article_title }}</td> -->
                     {% if el.fbo_amount == None %}
                         <td></td>
                     {% else %}
@@ -51,10 +53,20 @@
                     {% else %}
                         <td>{{ el.ad_campaign }}</td>
                     {% endif %}
+                    {% if el.ozon_ad_campaign == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ozon_ad_campaign }}</td>
+                    {% endif %}
                     {% if el.wb_campaigns_name == None %}
                         <td></td>
                     {% else %}
                         <td>{{ el.wb_campaigns_name }}</td>
+                    {% endif %}
+                    {% if el.ozon_campaigns_name == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ozon_campaigns_name }}</td>
                     {% endif %}
                 </tr>
             {% endfor %}

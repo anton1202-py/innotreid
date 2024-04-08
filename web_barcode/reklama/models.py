@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.db import models
 from django.urls import reverse
+from price_system.models import Articles
 
 
 class UrLico(models.Model):
@@ -245,8 +246,8 @@ class OooWbArticle(models.Model):
 class DataOooWbArticle(models.Model):
     """Содержит информацию артикулов ООО с Wildberries."""
     wb_article = models.ForeignKey(
-        OooWbArticle,
-        verbose_name='Артикул ООО ВБ',
+        Articles,
+        verbose_name='Артикул ООО',
         on_delete=models.CASCADE,
         related_name='data_wb_article',
     )
