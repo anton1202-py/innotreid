@@ -27,7 +27,19 @@
                     </form>
                 </div>
             </div>
+            
             {% endif %}
+        </div>
+        <div class="inner-form-data-button">
+            <br>
+            <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}
+                <!-- <div class="two_button_label"> -->
+                    <button type="submit" name="all_groups_approval" value="approval_all_price_groups" class="custom-button-delete-add">
+                        Применить все группы
+                    </button>
+                <!-- </div> -->
+            </form>
         </div>
 
             <table class="price_group_table">

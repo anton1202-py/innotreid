@@ -122,7 +122,7 @@ def groups_view(request, ur_lico):
         elif 'action_price' in request.POST:
             names = ArticleGroup.objects.filter(
                 group=request.POST['action_price'])
-            print(request.POST)
+
             wb_price = names[0].group.wb_price
             wb_discount = names[0].group.wb_discount
             ozon_price = names[0].group.ozon_price
@@ -137,17 +137,50 @@ def groups_view(request, ur_lico):
                 oz_nom_list.append(art.common_article.ozon_product_id)
                 yandex_nom_list.append(
                     art.common_article.yandex_seller_article)
-            # wilberries_price_change(
-            #     ur_lico, wb_nom_list, wb_price, wb_discount)
-            # ozon_price_change(ur_lico, oz_nom_list,
-            #                   ozon_price, min_price, old_price)
-            # yandex_price_change(ur_lico, yandex_nom_list,
-            #                     yandex_price, old_price)
-            # # Записываем изененные цены в базу данных
+            wilberries_price_change(
+                ur_lico, wb_nom_list, wb_price, wb_discount)
+            ozon_price_change(ur_lico, oz_nom_list,
+                              ozon_price, min_price, old_price)
+            yandex_price_change(ur_lico, yandex_nom_list,
+                                yandex_price, old_price)
+            # Записываем изененные цены в базу данных
+            wb_add_price_info(ur_lico)
+            ozon_add_price_info(ur_lico)
+            yandex_add_price_info(ur_lico)
+        elif 'all_groups_approval' in request.POST:
+            groups_name = Groups.objects.filter(
+                company=ur_lico
+            )
+            for group in groups_name:
+                names = ArticleGroup.objects.filter(
+                    group=group)
+                if names:
+                    wb_price = names[0].group.wb_price
+                    wb_discount = names[0].group.wb_discount
+                    ozon_price = names[0].group.ozon_price
+                    yandex_price = names[0].group.yandex_price
+                    min_price = names[0].group.min_price
+                    old_price = names[0].group.old_price
+                    wb_nom_list = []
+                    oz_nom_list = []
+                    yandex_nom_list = []
+                    for art in names:
+                        wb_nom_list.append(art.common_article.wb_nomenclature)
+                        oz_nom_list.append(art.common_article.ozon_product_id)
+                        yandex_nom_list.append(
+                            art.common_article.yandex_seller_article)
+                    wilberries_price_change(
+                        ur_lico, wb_nom_list, wb_price, wb_discount)
+                    ozon_price_change(ur_lico, oz_nom_list,
+                                      ozon_price, min_price, old_price)
+                    yandex_price_change(ur_lico, yandex_nom_list,
+                                        yandex_price, old_price)
+            # Записываем изененные цены в базу данных
             # wb_add_price_info(ur_lico)
             # ozon_add_price_info(ur_lico)
             # yandex_add_price_info(ur_lico)
         # return redirect('price_groups_ip')
+
     context = {
         'data': data,
         'ur_lico': ur_lico,
