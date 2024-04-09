@@ -720,7 +720,12 @@ main .recent-orders table {
 main .recent-orders table:hover {
     box-shadow: none;
 }
-
+.reklama_article_campaign {
+    overflow-x: scroll;
+    display: block;
+    width: 100%;
+    white-space: pre-wrap; 
+}
 table {
     text-align: center;
     border-collapse: collapse;
