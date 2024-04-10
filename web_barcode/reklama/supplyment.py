@@ -402,7 +402,7 @@ def wb_campaign_budget(campaign, header):
         return wb_campaign_budget(campaign, header)
 
 
-def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header):
+def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter=0):
     """
     Пополняет бюджет рекламной кампаний
     campaign - id кампании
@@ -419,21 +419,24 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header):
     })
     response = requests.request("POST", url, headers=header, data=payload)
     time.sleep(5)
+    attempt_counter += 1
     if response.status_code == 200:
-        # message = (f"Пополнил {campaign} на {campaign_budget}."
-        #            f"Итого сумма: {json.loads(response.text)['total']}."
-        #            f"Продаж за позавчера было на {budget}")
         message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
                    f"Итого бюджет: {json.loads(response.text)['total']}.")
         return message
     else:
-        message = ('*************************'
-                   f'Бюджет кампании {campaign} не пополнил.'
-                   f'Статус код: {response.status_code}'
-                   '*************************')
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
-        return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header)
+        if attempt_counter <= 50:
+            message = ('*************************'
+                       f'Бюджет кампании {campaign} не пополнил.'
+                       f'Статус код: {response.status_code}'
+                       '*************************')
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
+            return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter)
+        else:
+            message = (f'Бюджет кампании {campaign} не пополнил.'
+                       f'Пытался пополнить 50 раз - возвращалась ошибка.')
+            return message
 
 
 @sender_error_to_tg
