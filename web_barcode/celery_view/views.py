@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from celery import current_app
 from celery.schedules import crontab
 from celery_tasks.celery import app as celery_app
+from celery_tasks.file_for_create import get_current_ssp
 from django.shortcuts import get_object_or_404, redirect, render
 
 
@@ -32,9 +33,8 @@ def celery_tasks_view(request):
     """Показывает задачи celery на странице"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-
+    get_current_ssp()
     tasks_info = []
-    print(doc_type('celery_tasks.ozon_tasks.fbs_balance_maker_for_all_company'))
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
         inner_list.append(task_config['task'])
