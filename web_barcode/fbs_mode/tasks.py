@@ -1648,6 +1648,9 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         if self.file_add_name == 'ИП' and day_of_week in wb_ip_days and hour >= 20:
             self.ozon_article_amount = None
             self.yandex_article_amount = None
+        elif self.file_add_name == 'ООО' and hour <= 10:
+            self.ozon_article_amount = None
+            self.yandex_article_amount = None
         else:
             self.ozon_article_amount = OzonFbsMode(
                 self.headers_ozon, self.dropbox_main_fbs_folder, self.file_add_name).prepare_data_for_confirm_delivery()
@@ -2216,6 +2219,14 @@ def ip_morning_task():
     production_file(
         db_folder, file_add_name_ip, wb_headers_karavaev,
         ozon_headers_karavaev, yandex_headers_karavaev)
+    time.sleep(60)
+    action_wb(
+        db_folder, file_add_name_ooo, wb_headers_ooo,
+        ozon_headers_ooo, yandex_headers_ooo)
+    time.sleep(60)
+    production_file(
+        db_folder, file_add_name_ooo, wb_headers_ooo,
+        ozon_headers_ooo, yandex_headers_ooo)
 
 
 @app.task
