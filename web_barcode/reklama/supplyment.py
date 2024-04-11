@@ -426,12 +426,12 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
         return message
     else:
         if attempt_counter <= 50:
-            message = ('*************************'
-                       f'Бюджет кампании {campaign} не пополнил.'
-                       f'Статус код: {response.status_code}'
-                       '*************************')
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message, parse_mode='HTML')
+            # message = ('*************************'
+            #            f'Бюджет кампании {campaign} не пополнил.'
+            #            f'Статус код: {response.status_code}'
+            #            '*************************')
+            # bot.send_message(chat_id=CHAT_ID_ADMIN,
+            #                  text=message, parse_mode='HTML')
             return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter)
         else:
             message = (f'Бюджет кампании {campaign} не пополнил.'
@@ -475,7 +475,10 @@ def replenish_campaign_budget(campaign, budget, header):
     if campaign_budget >= 500 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
             campaign, campaign_budget, budget, koef, header)
-        info_campaign_obj.virtual_budget = 0
+        if 'Пытался' not in message:
+            info_campaign_obj.virtual_budget = 0
+        else:
+            info_campaign_obj.virtual_budget += campaign_budget
         info_campaign_obj.save()
 
     elif campaign_budget < 500:
@@ -611,8 +614,6 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
     else:
         message = f'статус код {response.status_code} у получения инфы всех артикулов ООО ВБ'
 
-
-# print(ooo_wb_articles_info())
 
 @sender_error_to_tg
 def ooo_wb_articles_data():
