@@ -173,20 +173,47 @@ aside h3 {
     left: 1rem;
 }
 
-a.expanded:hover span:last-of-type{
+span.expanded:hover span:last-of-type{
     transform: rotate(90deg);
 }
 
-.menu li:hover > ul,
+/* .menu li:hover > ul,
 .menu li.open > ul {
     display: block;
-}
-  
+} */
+
 .menu a {
     display: block;
     padding: 0;
-  }
+}
 
+.main-menu {
+    list-style: none;
+  }
+.submenu {
+    display: none;
+}
+  
+/* .parent:hover .submenu {
+    display: block;
+} */
+  
+.parent.active .submenu {
+    display: block;
+}
+
+aside .sidebar span {
+    text-decoration: none;
+    display: flex;
+    color: var(--color-info-dark);
+    margin-left: 0px;
+    gap: 1rem;
+    vertical-align: center;
+    align-items: center;
+    position: relative;
+    height: 3.7rem;
+    transition: all 300ms ease;
+}
 aside .sidebar a {
     text-decoration: none;
     display: flex;
@@ -199,7 +226,6 @@ aside .sidebar a {
     height: 3.7rem;
     transition: all 300ms ease;
 }
-
 aside .sidebar {
     display: flex;
     flex-direction: column;
@@ -208,7 +234,7 @@ aside .sidebar {
     top: 3rem;
 }
 
-aside .sidebar a span {
+aside .sidebar span span {
     font-size: 1.6rem;
     transition: all 300ms ease
 }
@@ -223,9 +249,17 @@ aside .sidebar a.active {
     margin-left: 0;
 }
 
-aside .sidebar a.active {
+aside .sidebar span.active {
+    background: var(--color-light);
     color: var(--color-primary);
     margin-left: 0;
+}
+
+aside .sidebar span.active:before {
+    content: '';
+    width: 6px;
+    height: 100%;
+    background: var(--color-primary);
 }
 
 aside .sidebar a.active:before {
@@ -235,15 +269,25 @@ aside .sidebar a.active:before {
     background: var(--color-primary);
 }
 
+aside .sidebar span.active span {
+    color: var(--color-primary);
+    margin-left: calc(1rem-3px);
+}
+
 aside .sidebar a.active span {
     color: var(--color-primary);
     margin-left: calc(1rem-3px);
 }
 
+aside .sidebar span:hover {
+    color: var(--color-primary);
+}
 aside .sidebar a:hover {
     color: var(--color-primary);
 }
-
+aside .sidebar span:hover span{
+    margin-left: 0.5rem;
+}
 aside .sidebar a:hover span{
     margin-left: 0.5rem;
 }
