@@ -60,6 +60,16 @@ class ProcentForAd(models.Model):
         verbose_name='Виртуальный бюджет',
         default=0
     )
+    virtual_budget_date = models.DateTimeField(
+        verbose_name='Дата изменения виртуального счета',
+        blank=True,
+        null=True
+    )
+    campaign_budget_date = models.DateTimeField(
+        verbose_name='Дата пополнения счета РК',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.campaign_number.campaign_number, self.koefficient

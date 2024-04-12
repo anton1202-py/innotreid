@@ -5,6 +5,7 @@ import os
 import time
 import traceback
 from asyncio.log import logger
+from datetime import datetime
 
 import requests
 import telegram
@@ -123,3 +124,6 @@ async def requests(self, session, method, url, data=None, json_data=None, header
                     raise exceptions.ApiErrorWithCode(code,
                                                       json_answer.get('message'), json_answer.get('rejection'))
         return text
+
+now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+print(now_date)

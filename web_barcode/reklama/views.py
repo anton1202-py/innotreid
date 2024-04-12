@@ -76,11 +76,11 @@ def ad_campaign_add(request):
 
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
-        latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget')
+        latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
     koef_dict = {}
     for koef in koef_campaign_data:
         koef_dict[koef['campaign_number']] = [
-            koef['koefficient'], koef['koef_date'], koef['latest_add'], koef['virtual_budget']]
+            koef['koefficient'], koef['koef_date'], koef['latest_add'], koef['virtual_budget'], koef['campaign_budget_date'], koef['virtual_budget_date']]
     form = FilterUrLicoForm()
     if request.POST:
         request_data = request.POST

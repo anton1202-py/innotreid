@@ -447,6 +447,7 @@ def replenish_campaign_budget(campaign, budget, header):
     budget - сумма заказов текущей рекламной кампании за позавчера
     header - header текущего юр лица для связи с АПИ ВБ
     """
+    now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     campaign_obj = AdvertisingCampaign.objects.get(campaign_number=campaign)
     info_campaign_obj = ProcentForAd.objects.get(
         campaign_number=campaign_obj
@@ -465,6 +466,7 @@ def replenish_campaign_budget(campaign, budget, header):
             campaign_budget = common_budget
         else:
             info_campaign_obj.virtual_budget = common_budget
+            info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
             campaign_budget = common_budget
 
@@ -477,8 +479,10 @@ def replenish_campaign_budget(campaign, budget, header):
             campaign, campaign_budget, budget, koef, header)
         if 'Пытался' not in message:
             info_campaign_obj.virtual_budget = 0
+            info_campaign_obj.campaign_budget_date = now_date
         else:
             info_campaign_obj.virtual_budget += campaign_budget
+        info_campaign_obj.virtual_budget_date = now_date
         info_campaign_obj.save()
 
     elif campaign_budget < 500:
