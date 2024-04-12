@@ -17,59 +17,24 @@ from .supplyment import (excel_compare_table, excel_creating_mod,
                          yandex_matching_articles, yandex_price_change)
 
 
-def ip_article_compare(request):
-    """Отображает страницу с таблицей сопоставления ИП"""
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    data = Articles.objects.filter(
-        company='ИП Караваев').order_by("common_article")
-    # super_test()
-    if request.POST:
-        if "compare" in request.POST:
-            wb_matching_articles('ИП Караваев')
-            ozon_matching_articles('ИП Караваев')
-            yandex_matching_articles('ИП Караваев')
-
-        elif 'excel_export' in request.POST:
-            return excel_compare_table(data)
-
-        elif 'filter' in request.POST:
-            filter_data = request.POST
-            article_filter = filter_data.get("common_article")
-            status_filter = filter_data.get("status")
-
-            if article_filter:
-                data = data.filter(
-                    Q(common_article=article_filter)).order_by('id')
-            if status_filter:
-                data = data.filter(
-                    Q(status=status_filter)).order_by('id')
-
-    context = {
-        'data': data,
-    }
-    return render(request, 'price_system/article_compare.html', context)
-
-
-def ooo_article_compare(request):
+def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     data = Articles.objects.filter(
-        company='ООО Иннотрейд').order_by("common_article")
-    # super_test()
+        company=ur_lico).order_by("common_article")
     if request.POST:
         if "compare" in request.POST:
-            wb_matching_articles('ООО Иннотрейд')
-            ozon_matching_articles('ООО Иннотрейд')
-            yandex_matching_articles('ООО Иннотрейд')
+            wb_matching_articles(ur_lico)
+            ozon_matching_articles(ur_lico)
+            yandex_matching_articles(ur_lico)
         elif 'excel_export' in request.POST:
             return excel_compare_table(data)
         elif 'filter' in request.POST:
             filter_data = request.POST
             article_filter = filter_data.get("common_article")
             status_filter = filter_data.get("status")
-            print(status_filter)
+
             if article_filter:
                 data = data.filter(
                     Q(common_article=article_filter)).order_by('id')
@@ -83,10 +48,24 @@ def ooo_article_compare(request):
     return render(request, 'price_system/article_compare.html', context)
 
 
+def ooo_article_compare(request):
+    """Отвечает за представление страницы сопоставления ООО"""
+    return article_compare(request, 'ООО Иннотрейд')
+
+
+def ip_article_compare(request):
+    """Отвечает за представление страницы сопоставления ИП"""
+    return article_compare(request, 'ИП Караваев')
+
+
+def gramoty_article_compare(request):
+    """Отвечает за представление страницы сопоставления ООО Мастерская чудес"""
+    return article_compare(request, 'ООО Мастерская чудес')
+
+
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
-
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
@@ -198,6 +177,11 @@ def ooo_groups_view(request):
     return groups_view(request, 'ООО Иннотрейд')
 
 
+def gramoty_groups_view(request):
+    """Отвечает за Отображение ценовых групп ООО Мастерская чудес"""
+    return groups_view(request, 'ООО Мастерская чудес')
+
+
 def article_groups_view(request, ur_lico):
     """Описывает общее представление сопоставление артикула и группы"""
     articles_data = Articles.objects.filter(company=ur_lico).values('pk')
@@ -261,6 +245,11 @@ def ooo_article_groups_view(request):
     return article_groups_view(request, 'ООО Иннотрейд')
 
 
+def gramoty_article_groups_view(request):
+    """Отвечает за сопоставление артикула и группы ООО"""
+    return article_groups_view(request, 'ООО Мастерская чудес')
+
+
 def article_price_statistic(request, ur_lico):
     """Отображает статистику по изменению цен артикулов"""
 
@@ -303,13 +292,18 @@ def article_price_statistic(request, ur_lico):
 
 
 def ip_article_price_statistic(request):
-    """Отображает статистику по изменениею цен артикулов"""
+    """Отображает статистику по изменениею цен артикулов ИП Караваев"""
     return article_price_statistic(request, 'ИП Караваев')
 
 
 def ooo_article_price_statistic(request):
-    """Отображает статистику по изменениею цен артикулов"""
+    """Отображает статистику по изменениею цен артикулов ООО Иннотрейд"""
     return article_price_statistic(request, 'ООО Иннотрейд')
+
+
+def gramoty_article_price_statistic(request):
+    """Отображает статистику по изменениею цен артикулов ООО Мастерская чудес"""
+    return article_price_statistic(request, 'ООО Мастерская чудес')
 
 
 class ArticleCompareDetailView(ListView):
@@ -320,10 +314,12 @@ class ArticleCompareDetailView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ArticleCompareDetailView,
                         self).get_context_data(**kwargs)
+        print(kwargs)
         return context
 
     def post(self, request, *args, **kwargs):
         if request.POST:
+            print(kwargs)
             post_data = request.POST
             article = Articles.objects.get(
                 common_article=self.kwargs['common_article'])
@@ -347,5 +343,6 @@ class ArticleCompareDetailView(ListView):
         return redirect('article_compare_detail_ooo', self.kwargs['common_article'])
 
     def get_queryset(self):
+        print(self.kwargs)
         return Articles.objects.filter(
             common_article=self.kwargs['common_article'])

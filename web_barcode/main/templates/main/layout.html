@@ -141,33 +141,33 @@
                         </span>
                         <ul class="submenu">
                             {% url 'price_system_article_compare_ip' as url_article_compare %}
-                                <li>
-                                    <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
-                                        <span class="material-symbols-sharp">filter_list</span>
-                                        <h3>Таблица сопоставления</h3>
-                                    </a>
-                                </li>
-                                {% url 'price_groups_ip' as url_price_groups %}
-                                <li>
-                                    <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
-                                        <span class="material-symbols-sharp">filter_list</span>
-                                        <h3>Ценовые группы</h3>
-                                    </a>
-                                </li>
-                                {% url 'article_groups_ip' as url_article_groups %}
-                                <li>
-                                    <a href="{{ url_article_groups }}" {% if request.path == url_article_groups %}class="active"{% endif %}>
-                                        <span class="material-symbols-sharp">filter_list</span>
-                                        <h3>Группа артикула</h3>
-                                    </a>
-                                </li>
-                                {% url 'article_price_statistic_ip' as url_price_statistic %}
-                                <li>
-                                    <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
-                                        <span class="material-symbols-sharp">filter_list</span>
-                                        <h3>Статистика изменения цен</h3>
-                                    </a>
-                                </li>
+                            <li>
+                                <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Таблица сопоставления</h3>
+                                </a>
+                            </li>
+                            {% url 'price_groups_ip' as url_price_groups %}
+                            <li>
+                                <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Ценовые группы</h3>
+                                </a>
+                            </li>
+                            {% url 'article_groups_ip' as url_article_groups %}
+                            <li>
+                                <a href="{{ url_article_groups }}" {% if request.path == url_article_groups %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Группа артикула</h3>
+                                </a>
+                            </li>
+                            {% url 'article_price_statistic_ip' as url_price_statistic %}
+                            <li>
+                                <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Статистика изменения цен</h3>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li class="parent">
@@ -201,6 +201,45 @@
                                 </a>
                             </li>
                             {% url 'article_price_statistic_ooo' as url_price_statistic %}
+                            <li>
+                                <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Статистика изменения цен</h3>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Работа с ценами Мастерская Чудес</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'price_system_article_compare_gramoty' as url_article_compare %}
+                            <li>
+                                <a href="{{ url_article_compare }}" {% if request.path == url_article_compare %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Таблица сопоставления</h3>
+                                </a>
+                            </li>
+                            {% url 'price_groups_gramoty' as url_price_groups %}
+                            <li>
+                                <a href="{{ url_price_groups }}" {% if request.path == url_price_groups %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Ценовые группы</h3>
+                                </a>
+                            </li>
+                            {% url 'article_groups_gramoty' as url_article_groups %}
+                            <li>
+                                <a href="{{ url_article_groups }}" {% if request.path == url_article_groups %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Группа артикула</h3>
+                                </a>
+                            </li>
+                            {% url 'article_price_statistic_gramoty' as url_price_statistic %}
                             <li>
                                 <a href="{{ url_price_statistic }}" {% if request.path == url_price_statistic %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>

@@ -8,7 +8,7 @@ class Articles(models.Model):
     common_article = models.CharField(
         verbose_name='Артикул',
         max_length=50,
-        unique=True,
+        # unique=True,
         null=True
     )
     status = models.CharField(

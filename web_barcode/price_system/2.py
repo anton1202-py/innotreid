@@ -1,4 +1,3 @@
-per = 'L010'
+from web_barcode.constants_file import APP_KEY_DB
 
-x = per.split('-')[0]
-print(x)
+print(APP_KEY_DB)

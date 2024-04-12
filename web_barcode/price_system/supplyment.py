@@ -4,101 +4,22 @@ import math
 import os
 import time
 import traceback
-from datetime import date, datetime
+from datetime import datetime
 
 import requests
 import telegram
-from django.http import FileResponse, HttpResponse, JsonResponse
-from dotenv import load_dotenv
+from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import Alignment, Border, PatternFill, Side
 
+from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
+                                        header_ozon_dict, header_wb_data_dict,
+                                        header_wb_dict, header_yandex_dict,
+                                        wb_headers_karavaev, wb_headers_ooo,
+                                        yandex_business_id_dict)
+
 from .models import ArticleGroup, Articles, Groups
-
-dotenv_path = os.path.join(os.path.dirname(
-    __file__), '..', 'web_barcode', '.env')
-load_dotenv(dotenv_path)
-
-REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
-APP_KEY_DB = os.getenv('APP_KEY_DB')
-APP_SECRET_DB = os.getenv('APP_SECRET_DB')
-
-API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
-YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
-API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
-CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
-
-OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
-OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
-
-YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
-WB_OOO_API_KEY = os.getenv('WB_OOO_API_KEY')
-WB_API_KEY_INNOTREID = os.getenv('API_KEY_WB_INNOTREID')
-
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
-CHAT_ID_EU = os.getenv('CHAT_ID_EU')
-CHAT_ID_AN = os.getenv('CHAT_ID_AN')
-
-YANDEX_BUSINESS_ID_IP = os.getenv('YANDEX_BUSINESS_ID_IP')
-YANDEX_BUSINESS_ID_OOO = os.getenv('YANDEX_BUSINESS_ID_OOO')
-
-wb_headers_karavaev = {
-    'Content-Type': 'application/json',
-    'Authorization': API_KEY_WB_IP
-}
-wb_headers_ooo = {
-    'Content-Type': 'application/json',
-    'Authorization': WB_OOO_API_KEY
-}
-
-wb_data_ooo_headers = {
-    'Content-Type': 'application/json',
-    'Authorization': WB_API_KEY_INNOTREID
-}
-
-ozon_headers_karavaev = {
-    'Api-Key': API_KEY_OZON_KARAVAEV,
-    'Content-Type': 'application/json',
-    'Client-Id': CLIENT_ID_OZON_KARAVAEV
-}
-ozon_headers_ooo = {
-    'Api-Key': OZON_OOO_API_TOKEN,
-    'Content-Type': 'application/json',
-    'Client-Id': OZON_OOO_CLIENT_ID
-}
-
-yandex_headers_karavaev = {
-    'Authorization': YANDEX_IP_KEY,
-}
-yandex_headers_ooo = {
-    'Authorization': YANDEX_OOO_KEY,
-}
-
-header_wb_dict = {
-    'ООО Иннотрейд': wb_headers_ooo,
-    'ИП Караваев': wb_headers_karavaev
-}
-header_wb_data_dict = {
-    'ООО Иннотрейд': wb_data_ooo_headers,
-    'ИП Караваев': wb_headers_karavaev
-}
-
-header_ozon_dict = {
-    'ООО Иннотрейд': ozon_headers_ooo,
-    'ИП Караваев': ozon_headers_karavaev
-}
-header_yandex_dict = {
-    'ООО Иннотрейд': yandex_headers_ooo,
-    'ИП Караваев': yandex_headers_karavaev
-}
-
-yandex_business_id_dict = {
-    'ООО Иннотрейд': YANDEX_BUSINESS_ID_OOO,
-    'ИП Караваев': YANDEX_BUSINESS_ID_IP
-}
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
@@ -114,6 +35,7 @@ def sender_error_to_tg(func):
                              f'<b>Ошибка</b>\n: {e}\n\n'
                              f'<b>Техническая информация</b>:\n {tb_str}')
             bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             # text=message_error[:4000], parse_mode='HTML')
                              text=message_error[:4000], parse_mode='HTML')
     return wrapper
 
@@ -177,9 +99,9 @@ def wb_ip_article_compare():
     return sorted_article_dict
 
 
-def wb_ooo_article_compare():
+def wb_ooo_article_compare(ur_lico):
     """Достаем данные всех артиуклов ВБ, необходимые для сверки"""
-    all_data = wb_article_data(wb_headers_ooo)
+    all_data = wb_article_data(header_wb_dict[ur_lico])
     article_dict = {}
     for data in all_data:
         article = data["vendorCode"]
@@ -301,16 +223,17 @@ def wb_matching_articles(ur_lico):
     """
     if ur_lico == 'ИП Караваев':
         wb_article_data = wb_ip_article_compare()
-    elif ur_lico == 'ООО Иннотрейд':
-        wb_article_data = wb_ooo_article_compare()
+    else:
+        wb_article_data = wb_ooo_article_compare(ur_lico)
     for common_article, wb_data in wb_article_data.items():
-        if Articles.objects.filter(common_article=common_article).exists() == True:
-            wb_article = Articles.objects.get(
-                common_article=common_article)
+        if Articles.objects.filter(company=ur_lico, common_article=common_article).exists() == True:
+            wb_article = Articles.objects.get(company=ur_lico,
+                                              common_article=common_article)
             if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or wb_article.wb_nomenclature != wb_data[2]:
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
                 wb_article.save()
+                time.sleep(1)
                 message = (f'проверьте артикул {common_article} на вб вручную. \
                            Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. \
                            Баркоды: {wb_article.wb_barcode} {wb_data[1]}. \
@@ -348,7 +271,8 @@ def ozon_matching_articles(ur_lico):
                       0].wb_seller_article, main_data.filter(wb_barcode=ozon_data[1])[
                       0].wb_barcode, len(main_data.filter(wb_barcode=ozon_data[1])))
         elif main_data.filter(common_article=common_article).exists():
-            ozon_article = Articles.objects.get(common_article=common_article)
+            ozon_article = Articles.objects.get(
+                company=ur_lico, common_article=common_article)
         if ozon_article != None:
             if (ozon_article.ozon_seller_article != ozon_data[0] and ozon_article.ozon_seller_article != None
                 or str(ozon_article.ozon_barcode) != str(ozon_data[1]) and ozon_article.ozon_barcode != None
@@ -402,15 +326,15 @@ def yandex_matching_articles(ur_lico):
     for common_article, yandex_data in yandex_article_data.items():
         yandex_article = None
         if main_data.filter(wb_barcode=yandex_data[1]).exists():
-            yandex_article = Articles.objects.get(
-                wb_barcode=yandex_data[1])
+            yandex_article = Articles.objects.get(company=ur_lico,
+                                                  wb_barcode=yandex_data[1])
 
         elif main_data.filter(common_article=common_article).exists():
-            yandex_article = Articles.objects.get(
-                common_article=common_article)
+            yandex_article = Articles.objects.get(company=ur_lico,
+                                                  common_article=common_article)
         elif main_data.filter(ozon_barcode=yandex_data[1]).exists():
-            yandex_article = Articles.objects.get(
-                ozon_barcode=yandex_data[1])
+            yandex_article = Articles.objects.get(company=ur_lico,
+                                                  ozon_barcode=yandex_data[1])
         if yandex_article != None:
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
                 or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
