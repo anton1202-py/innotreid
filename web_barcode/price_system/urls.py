@@ -35,7 +35,7 @@ urlpatterns = [
     path('article_groups_ooo', views.ooo_article_groups_view,
          name='article_groups_ooo'),
     path('article_groups_gramoty', views.gramoty_article_groups_view,
-         name='article_groups_ooo'),
+         name='article_groups_gramoty'),
 
     path('article_price_statistic_ip', views.ip_article_price_statistic,
          name='article_price_statistic_ip'),

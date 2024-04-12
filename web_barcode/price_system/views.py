@@ -246,7 +246,7 @@ def ooo_article_groups_view(request):
 
 
 def gramoty_article_groups_view(request):
-    """Отвечает за сопоставление артикула и группы ООО"""
+    """Отвечает за сопоставление артикула и группы Мастерская чудес"""
     return article_groups_view(request, 'ООО Мастерская чудес')
 
 
