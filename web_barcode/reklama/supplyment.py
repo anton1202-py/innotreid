@@ -525,17 +525,14 @@ def start_add_campaign(campaign, header):
             response = requests.request("GET", url, headers=header)
             if response.status_code != 200:
                 message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message, parse_mode='HTML')
+                bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
         elif status != 4 and status != 11 and status != 9:
             message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message, parse_mode='HTML')
+            bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
     else:
         response = requests.request("GET", url, headers=header)
         message = f"статус кампании {campaign} не пришел, но все равно пытаюсь ее запустить"
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
 
 
 @sender_error_to_tg

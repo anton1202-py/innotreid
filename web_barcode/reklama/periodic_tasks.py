@@ -265,7 +265,7 @@ def ozon_adv_bearer_token(payload, header):
     else:
         message = f'Не получил Bearer токен. Ошибка: {response.text}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
+                         text=message)
 
 
 @sender_error_to_tg

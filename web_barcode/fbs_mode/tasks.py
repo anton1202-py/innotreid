@@ -1644,7 +1644,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         wb_ip_days = ['Friday']
         # Используем метод strftime() для форматирования даты и вывода дня недели
         day_of_week = today.strftime('%A')
-
+        self.amount_articles = {}
         if self.file_add_name == 'ИП' and day_of_week in wb_ip_days and hour >= 20:
             self.ozon_article_amount = None
             self.yandex_article_amount = None
@@ -1738,13 +1738,12 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         Создает сводный файл excel с количеством каждого артикула.
         Подключается к базе данных на сервере'''
         try:
-            self.amount_articles = self.data_for_production_list()
+            self.wb_article_amount = self.data_for_production_list()
             delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
             # Задаем словарь с данными WB, а входящий становится общим для всех маркетплейсов
-            if self.amount_articles:
-                wb_article_amount = self.amount_articles.copy()
-            else:
-                wb_article_amount = {}
+            if not self.wb_article_amount:
+                self.wb_article_amount = {}
+            self.amount_articles = self.wb_article_amount.copy()
             hour = datetime.now().hour
             date_folder = datetime.today().strftime('%Y-%m-%d')
 
@@ -1843,9 +1842,9 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                             source_page.cell(
                                 row=i+1, column=7).value = self.yandex_article_amount[k]
 
-                if name_article[i].value in wb_article_amount.keys():
+                if name_article[i].value in self.wb_article_amount.keys():
                     source_page.cell(
-                        row=i+1, column=5).value = wb_article_amount[name_article[i].value]
+                        row=i+1, column=5).value = self.wb_article_amount[name_article[i].value]
                 # Заполняется столбец "В" - номер ячейки на внутреннем складе
                 for s in range(len(shelf_seller_article_list)):
                     if name_article[i].value == shelf_seller_article_list[s] and (
@@ -1984,32 +1983,19 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
         Анализирует количество артикулов в текущей сборке
         """
         try:
-            wb_article_amount = self.amount_articles.copy()
-            if self.ozon_article_amount:
-                for article in self.ozon_article_amount.keys():
-                    if article in self.amount_articles.keys():
-                        self.amount_articles[article] = int(
-                            self.amount_articles[article]) + int(self.ozon_article_amount[article])
-                    else:
-                        self.amount_articles[article] = int(
-                            self.ozon_article_amount[article])
-            if self.yandex_article_amount:
-                for article in self.yandex_article_amount.keys():
-                    if article in self.amount_articles.keys():
-                        self.amount_articles[article] = int(
-                            self.amount_articles[article]) + int(self.yandex_article_amount[article])
-                    else:
-                        self.amount_articles[article] = int(
-                            self.yandex_article_amount[article])
             sum_all_fbs = sum(self.amount_articles.values())
             sum_fbs_wb = 0
-            if wb_article_amount:
-                for i in wb_article_amount.values():
+            if self.wb_article_amount:
+                for i in self.wb_article_amount.values():
                     sum_fbs_wb += int(i)
             sum_fbs_ozon = 0
             if self.ozon_article_amount:
                 for i in self.ozon_article_amount.values():
                     sum_fbs_ozon += int(i)
+            sum_fbs_yandex = 0
+            if self.yandex_article_amount:
+                for i in self.yandex_article_amount.values():
+                    sum_fbs_yandex += int(i)
             if len(self.amount_articles) == 0:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
@@ -2022,6 +2008,7 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
                     max_amount_all_fbs)]
             return (sum_fbs_wb,
                     sum_fbs_ozon,
+                    sum_fbs_yandex,
                     sum_all_fbs,
                     articles_for_fbs,
                     max_article_amount_all_fbs,
@@ -2038,15 +2025,14 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
         try:
             list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
-            sum_fbs_wb, sum_fbs_ozon, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
-            ur_lico_for_message = ''
-            if self.file_add_name == 'ООО':
-                ur_lico_for_message = 'Amstek'
-            elif self.file_add_name == 'ИП':
-                ur_lico_for_message = '3Д Ночник'
-            message = f''' Отправлено на сборку Фбс {ur_lico_for_message}
-                ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}
-                Итого по ФБС {ur_lico_for_message}: {sum_all_fbs} штук
+            sum_fbs_wb, sum_fbs_ozon, sum_fbs_yandex, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
+            ur_lico_for_message_dict = {
+                'ООО': 'Amstek',
+                'ИП': '3Д Ночник'
+            }
+            message = f''' Отправлено на сборку Фбс {ur_lico_for_message_dict[self.file_add_name]}
+                ВБ: {sum_fbs_wb}, Озон: {sum_fbs_ozon}, Яндекс: {sum_fbs_yandex}
+                Итого по ФБС {ur_lico_for_message_dict[self.file_add_name]}: {sum_all_fbs} штук
                 В сборке {len(articles_for_fbs)} артикулов
                 Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
             message = message.replace('            ', '')
