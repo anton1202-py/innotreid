@@ -15,6 +15,15 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             ProcentForAd, SalesArticleStatistic,
                             WbArticleCommon, WbArticleCompany)
 
+from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
+                                        header_ozon_dict, header_wb_data_dict,
+                                        header_wb_dict, header_yandex_dict,
+                                        ozon_adv_client_access_id_dict,
+                                        ozon_adv_client_secret_dict,
+                                        ozon_api_token_dict,
+                                        wb_headers_karavaev, wb_headers_ooo,
+                                        yandex_business_id_dict)
+
 # Загрузка переменных окружения из файла .env
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -55,71 +64,7 @@ campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
-wb_headers_karavaev = {
-    'Content-Type': 'application/json',
-    'Authorization': API_KEY_WB_IP
-}
-wb_headers_ooo = {
-    'Content-Type': 'application/json',
-    'Authorization': WB_OOO_API_KEY
-}
 
-ozon_headers_karavaev = {
-    'Api-Key': OZON_IP_API_TOKEN,
-    'Content-Type': 'application/json',
-    'Client-Id': CLIENT_ID_OZON_KARAVAEV
-}
-ozon_headers_ooo = {
-    'Api-Key': OZON_OOO_API_TOKEN,
-    'Content-Type': 'application/json',
-    'Client-Id': OZON_OOO_CLIENT_ID
-}
-
-payload_ozon_adv_ooo = json.dumps({
-    'client_id': OZON_OOO_ADV_CLIENT_ACCESS_ID,
-    'client_secret': OZON_OOO_ADV_CLIENT_SECRET,
-    "grant_type": "client_credentials"
-})
-payload_ozon_adv_ip = json.dumps({
-    'client_id': OZON_IP_ADV_CLIENT_ACCESS_ID,
-    'client_secret': OZON_IP_ADV_CLIENT_SECRET,
-    'grant_type': 'client_credentials'
-})
-
-yandex_headers_karavaev = {
-    'Authorization': YANDEX_IP_KEY,
-}
-yandex_headers_ooo = {
-    'Authorization': YANDEX_OOO_KEY,
-}
-
-wb_header = {
-    'ООО Иннотрейд': wb_headers_ooo,
-    'ИП Караваев': wb_headers_karavaev
-}
-
-ozon_header = {
-    'ООО Иннотрейд': ozon_headers_ooo,
-    'ИП Караваев': ozon_headers_karavaev
-}
-ozon_payload = {
-    'ООО Иннотрейд': payload_ozon_adv_ooo,
-    'ИП Караваев': payload_ozon_adv_ip
-}
-ozon_adv_client_access_id_dict = {
-    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_ACCESS_ID,
-    'ИП Караваев': OZON_IP_ADV_CLIENT_ACCESS_ID
-}
-
-ozon_adv_client_secret_dict = {
-    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_SECRET,
-    'ИП Караваев': OZON_IP_ADV_CLIENT_SECRET
-}
-
-ozon_api_token_dict = {
-    'ООО Иннотрейд': OZON_OOO_API_TOKEN,
-    'ИП Караваев': OZON_IP_API_TOKEN
-}
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ WILDBERRIES ========== #
 
 
@@ -242,7 +187,7 @@ def header_determinant(campaign_number):
     """Определяет какой header использовать"""
     header_common = AdvertisingCampaign.objects.get(
         campaign_number=campaign_number).ur_lico.ur_lice_name
-    header = wb_header[header_common]
+    header = header_wb_dict[header_common]
 
     return header
 
@@ -363,11 +308,7 @@ def count_sum_orders():
                 article_list, begin_date, end_date, header)
             sum = count_sum_adv_campaign(data_list)
             campaign_orders_money_dict[campaign] = sum
-            print(f'count_sum_orders {campaign} - {sum}')
-            # else:
-            #    print(
-            #        f'count_sum_orders {campaign} нет артикулов. Ответ: {article_list}')
-            print('**************************')
+
             time.sleep(22)
 
     return campaign_orders_money_dict
@@ -516,16 +457,43 @@ def check_status_campaign(campaign, header):
 
 
 @sender_error_to_tg
+def campaing_current_budget(campaign, header):
+    """Проверяет текущий бюджет кампании"""
+    url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign}'
+    response = requests.request("GET", url, headers=header)
+    if response.status_code == 200:
+        budget = json.loads(response.text)['total']
+        return budget
+    elif response.status_code == 400:
+        message = f"Просмотр бюджета кампании {campaign}.Ошибка 400 - ошибочный запрос"
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        return 100
+    elif response.status_code == 401:
+        message = f"Просмотр бюджета кампании {campaign}.Ошибка 401 - пользователь не авторизован"
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        return 0
+    elif response.status_code == 404:
+        message = f"Просмотр бюджета кампании {campaign}.Ошибка 404 - кампания не найдена"
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        return 0
+    else:
+        return campaing_current_budget(campaign, header)
+
+
+@sender_error_to_tg
 def start_add_campaign(campaign, header):
     """WILDBERRIES Запускает рекламную кампанию"""
     url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
     status = check_status_campaign(campaign, header)
+    budget = campaing_current_budget(campaign, header)
     if status:
         if status == 4 or status == 11:
-            response = requests.request("GET", url, headers=header)
-            if response.status_code != 200:
-                message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
-                bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+            if budget > 0:
+                response = requests.request("GET", url, headers=header)
+                if response.status_code != 200:
+                    message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=message[:4092])
         elif status != 4 and status != 11 and status != 9:
             message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
             bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
@@ -599,7 +567,7 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
         }
     )
     response = requests.request(
-        "POST", url, headers=wb_header['ООО Иннотрейд'], data=payload)
+        "POST", url, headers=header_wb_dict['ООО Иннотрейд'], data=payload)
     if response.status_code == 200:
         main_answer = json.loads(response.text)
         check_amount = main_answer['cursor']
@@ -678,7 +646,7 @@ def wb_ooo_fbo_stock_data():
     article_list = ooo_wb_articles_data()
     wb_koef = math.ceil(len(article_list)/900)
     main_article_data_list = []
-    header = wb_header['ООО Иннотрейд']
+    header = header_wb_dict['ООО Иннотрейд']
     for i in range(wb_koef):
         # Лист для запроса в эндпоинту ОЗОНа
         start_point = i*900
@@ -716,13 +684,9 @@ def access_token(ur_lico):
         "client_secret": ozon_adv_client_secret_dict[ur_lico],
         "grant_type": "client_credentials"
     })
-    headers = {
-        'Content-Type': 'application/json',
-        'Headers': ozon_api_token_dict[ur_lico],
-    }
 
     response = requests.request(
-        "POST", url, headers=ozon_header[ur_lico], data=payload)
+        "POST", url, headers=header_ozon_dict[ur_lico], data=payload)
     print(json.loads(response.text)['access_token'])
     return json.loads(response.text)['access_token']
 
@@ -730,10 +694,10 @@ def access_token(ur_lico):
 @sender_error_to_tg
 def ozon_get_adv_campaign_list(ur_lico):
     """
-    ПОлучает список рекламных кампаний входящего юр лица
+    Получает список рекламных кампаний входящего юр лица
     """
     url = 'https://performance.ozon.ru:443/api/client/campaign'
-    header = ozon_header[ur_lico]
+    header = header_ozon_dict[ur_lico]
     header['Authorization'] = f'Bearer {access_token(ur_lico)}'
     response = requests.request("GET", url, headers=header)
     ozon_adv_list = json.loads(response.text)['list']
@@ -783,7 +747,7 @@ def ozon_adv_campaign_articles_name_data(ur_lico):
     Вид словаря: {кампания: {'Название': 'Название кампании', 'Артикулы': [Список артикулов]}}
     """
     campaigns_data = ozon_get_campaign_data(ur_lico)
-    header = ozon_header[ur_lico]
+    header = header_ozon_dict[ur_lico]
     header['Authorization'] = f'Bearer {access_token(ur_lico)}'
     for campaign, data in campaigns_data.items():
         articles_list = ozon_get_articles_in_adv_campaign(

@@ -16,11 +16,18 @@ API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
 API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
 CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
 
+OZON_IP_API_TOKEN = os.getenv('OZON_IP__API_TOKEN')
 OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
 OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
 
 OZON_GRAMOTY_API_TOKEN = os.getenv('OZON_GRAMOTY_API_TOKEN')
 OZON_GRAMOTY_CLIENT_ID = os.getenv('OZON_GRAMOTY_CLIENT_ID')
+
+OZON_IP_ADV_CLIENT_ACCESS_ID = os.getenv('OZON_IP_ADV_CLIENT_ACCESS_ID')
+OZON_IP_ADV_CLIENT_SECRET = os.getenv('OZON_IP_ADV_CLIENT_SECRET')
+
+OZON_OOO_ADV_CLIENT_ACCESS_ID = os.getenv('OZON_OOO_ADV_CLIENT_ACCESS_ID')
+OZON_OOO_ADV_CLIENT_SECRET = os.getenv('OZON_OOO_ADV_CLIENT_SECRET')
 
 OZON_GRAMOTY_ADV_CLIENT_ACCESS_ID = os.getenv(
     'OZON_GRAMOTY_ADV_CLIENT_ACCESS_ID')
@@ -107,6 +114,24 @@ header_ozon_dict = {
     'ИП Караваев': ozon_headers_karavaev,
     'ООО Мастерская чудес': ozon_headers_gramoty
 }
+ozon_adv_client_access_id_dict = {
+    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_ACCESS_ID,
+    'ИП Караваев': OZON_IP_ADV_CLIENT_ACCESS_ID,
+    'ООО Мастерская чудес': OZON_GRAMOTY_ADV_CLIENT_ACCESS_ID
+}
+
+ozon_adv_client_secret_dict = {
+    'ООО Иннотрейд': OZON_OOO_ADV_CLIENT_SECRET,
+    'ИП Караваев': OZON_IP_ADV_CLIENT_SECRET,
+    'ООО Мастерская чудес': OZON_GRAMOTY_ADV_CLIENT_SECRET
+}
+
+ozon_api_token_dict = {
+    'ООО Иннотрейд': OZON_OOO_API_TOKEN,
+    'ИП Караваев': OZON_IP_API_TOKEN,
+    'ООО Мастерская чудес': OZON_GRAMOTY_API_TOKEN
+}
+
 
 header_yandex_dict = {
     'ООО Иннотрейд': yandex_headers_ooo,
