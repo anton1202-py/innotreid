@@ -564,6 +564,13 @@ form{
 	padding: 0;
 	background: var(--color-background);
 }
+
+.action-button-form {
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 2rem;
+}
 .big-filter-form {
     display: flex;
     width: 100%;

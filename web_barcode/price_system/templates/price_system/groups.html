@@ -32,13 +32,15 @@
         </div>
         <div class="inner-form-data-button">
             <br>
-            <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+            <form method="POST" enctype="multipart/form-data" class="action-button-form" >
                 {% csrf_token %}
-                <!-- <div class="two_button_label"> -->
                     <button type="submit" name="all_groups_approval" value="approval_all_price_groups" class="custom-button-delete-add">
                         Применить все группы
                     </button>
-                <!-- </div> -->
+
+                    <button type="submit" name="delete_low_price_button" value="delete_low_price" class="custom-button-change">
+                        Удалить артикулы c низкой ценой
+                    </button>
             </form>
         </div>
 

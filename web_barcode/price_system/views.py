@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
+from ozon_system.supplyment import \
+    delete_ozon_articles_with_low_price_current_ur_lico
 
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
@@ -154,11 +156,10 @@ def groups_view(request, ur_lico):
                                       ozon_price, min_price, old_price)
                     yandex_price_change(ur_lico, yandex_nom_list,
                                         yandex_price, old_price)
-            # Записываем изененные цены в базу данных
-            # wb_add_price_info(ur_lico)
-            # ozon_add_price_info(ur_lico)
-            # yandex_add_price_info(ur_lico)
-        # return redirect('price_groups_ip')
+        elif 'delete_low_price_button' in request.POST:
+            # Удаляем артикулы из акции, если цена в акции ниже,
+            # чем установленная минимальная цена.
+            delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
 
     context = {
         'data': data,

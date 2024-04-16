@@ -145,4 +145,5 @@ yandex_business_id_dict = {
     'ООО Мастерская чудес': YANDEX_BUSINESS_ID_GRAMOTY
 }
 
+admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
