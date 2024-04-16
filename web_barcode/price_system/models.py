@@ -145,6 +145,16 @@ class Groups(models.Model):
         blank=True,
         null=True
     )
+    spp = models.IntegerField(
+        verbose_name='СПП',
+        blank=True,
+        null=True
+    )
+    change_date_spp = models.DateTimeField(
+        verbose_name='Дата изменения СПП',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.name

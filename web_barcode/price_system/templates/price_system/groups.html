@@ -55,6 +55,8 @@
                     <th>Цена OZON</th>
                     <th>Цена YANDEX</th>
                     <th>Мин. цена</th>
+                    <th>СПП</th>
+                    <th>Дата СПП</th>
                     <th>Применить цены</th>
                     <th>del</th>
                 </tr>
@@ -76,10 +78,12 @@
                         <td><input value="{{ el.ozon_price }}" type="number" name="ozon_price" required/></td>
                         <td><input value="{{ el.yandex_price }}" type="number" name="yandex_price" required/></td>
                         <td><input value="{{ el.min_price }}" type="number" name="min_price" required/></td>
+
                         
                         <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
                     </form>
-
+                    <td>{{ el.spp }}</td>
+                    <td>{{ el.change_date_spp }}</td>
                     <td>
                         <form method="post" class="" name="action_price" enctype="multipart/form-data">
                             {% csrf_token %}

@@ -482,11 +482,9 @@ def add_article_price_info_to_database():
             'Authorization': os.getenv('API_KEY_WB_INNOTREID')
         }
 
-        response_stat = requests.request(
-            "GET", statistic_url, headers=headers_stat)
-        response_stat_innotreid = requests.request(
-            "GET", statistic_url, headers=headers_stat_innotreid)
-        statistic_data = json.loads(response_stat.text)
+        response_stat_ip = wb_articles_list(headers_stat)
+        response_stat_innotreid = wb_articles_list(headers_stat_innotreid)
+        statistic_data = response_stat_ip
 
         today_data = datetime.today().strftime('%Y-%m-%d %H:%M')
 
@@ -516,8 +514,7 @@ def add_article_price_info_to_database():
         # Если данные по Иннотрейд существуют, то их тоже складываем в словар.
         # Их может и не существовать, если Андрей не даст ключ
         if response_stat_innotreid:
-            statistic_data_innotreid = json.loads(
-                response_stat_innotreid.text)
+            statistic_data_innotreid = response_stat_innotreid
             for statistic_wb_innotreid in statistic_data_innotreid:
                 nom_id_discount_dict[statistic_wb_innotreid['nmId']
                                      ] = [statistic_wb_innotreid['price'], statistic_wb_innotreid['discount']]
@@ -657,7 +654,6 @@ def add_article_price_info_to_database():
     try:
         URL = 'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm='
         # URL для определения текущей скидки, которую выставил продавец
-        statistic_url = f'https://suppliers-api.wildberries.ru/public/api/v1/info?quantity=0'
 
         # Авторизация для получения данных от ИП Караваев
         headers_stat = {

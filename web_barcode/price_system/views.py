@@ -199,7 +199,7 @@ def article_groups_view(request, ur_lico):
         if request.POST.get('export') == 'create_file':
             return excel_creating_mod(data)
         elif 'import_file' in request.FILES:
-            excel_import_data(request.FILES['import_file'])
+            excel_import_data(request.FILES['import_file'], ur_lico)
         elif 'filter' in request.POST:
             filter_data = request.POST
             article_filter = filter_data.get("common_article")
@@ -217,7 +217,6 @@ def article_groups_view(request, ur_lico):
                     Q(group=Groups.objects.filter(id=group_filter)[0])).order_by('id')
         elif 'group_name' in request.POST:
             if request.POST['change_group']:
-                print('Не пустая')
                 ArticleGroup.objects.filter(id=request.POST['group_name']).update(
                     group=Groups.objects.get(name=request.POST['change_group'])
                 )

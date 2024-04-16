@@ -593,7 +593,7 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
             ).save()
 
 
-def excel_import_data(xlsx_file):
+def excel_import_data(xlsx_file, ur_lico):
     """Импортирует данные о группе артикула из Excel"""
     workbook = load_workbook(filename=xlsx_file, read_only=True)
     worksheet = workbook.active
@@ -601,13 +601,14 @@ def excel_import_data(xlsx_file):
     for row in range(1, len(list(worksheet.rows))):
         if list(worksheet.rows)[row][1].value == None or list(worksheet.rows)[row][1].value == 'None':
             article = ArticleGroup.objects.get(
-                common_article=Articles.objects.get(common_article=list(worksheet.rows)[row][0].value))
+                common_article=Articles.objects.get(company=ur_lico, common_article=list(worksheet.rows)[row][0].value))
             article.group = None
             article.save()
         else:
+            print(list(worksheet.rows)[row][0].value)
             new_obj = ArticleGroup.objects.filter(
-                common_article=Articles.objects.get(
-                    common_article=list(worksheet.rows)[row][0].value)
+                common_article=Articles.objects.get(company=ur_lico,
+                                                    common_article=list(worksheet.rows)[row][0].value)
             ).update(group=Groups.objects.get(name=list(worksheet.rows)[row][1].value))
 
 

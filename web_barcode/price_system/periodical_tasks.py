@@ -1,12 +1,8 @@
-import json
-import os
 from datetime import datetime
 
-import requests
-import telegram
 from celery_tasks.celery import app
-from dotenv import load_dotenv
 from price_system.models import Articles, ArticlesPrice
+from price_system.spp_mode import article_spp_info
 from price_system.supplyment import (ozon_articles_list,
                                      ozon_matching_articles,
                                      sender_error_to_tg, wb_articles_list,
@@ -161,6 +157,7 @@ def common_yandex_add_price_info():
 
 @app.task
 def periodic_compare_ip_articles():
+    """Сверка артикулов ИП"""
     wb_matching_articles('ИП Караваев')
     ozon_matching_articles('ИП Караваев')
     yandex_matching_articles('ИП Караваев')
@@ -168,6 +165,19 @@ def periodic_compare_ip_articles():
 
 @app.task
 def periodic_compare_ooo_articles():
+    """Сверка артикулов ООО"""
     wb_matching_articles('ООО Иннотрейд')
     ozon_matching_articles('ООО Иннотрейд')
     yandex_matching_articles('ООО Иннотрейд')
+
+
+@app.task
+def write_group_spp_data():
+    """Записывает в базу данных информацию об СПП ценовой группы"""
+    time_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    main_info = article_spp_info()
+    for group_obj, spp in main_info.items():
+        if group_obj.spp != spp:
+            group_obj.spp = spp
+            group_obj.change_date_spp = time_now
+            group_obj.save()
