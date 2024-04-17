@@ -195,6 +195,11 @@ def article_groups_view(request, ur_lico):
             obj.save()
     data = ArticleGroup.objects.filter(
         common_article__company=ur_lico).order_by('common_article')
+    if request.GET.get('checkbox_value') == 'true':
+        data = ArticleGroup.objects.filter(
+            common_article__company=ur_lico,
+            group__isnull=True).order_by('common_article')
+
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_creating_mod(data)

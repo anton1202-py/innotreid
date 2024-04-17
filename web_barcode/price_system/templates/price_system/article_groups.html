@@ -37,13 +37,20 @@
                     <span>Группа</span><br>
                     {{ form.group_name }}
                 </label>
+                
                 <div class="inner-form-data">
                     <br>
                     <input type="Submit" id="filter" name="filter" value="Фильтровать" />
                 </div>
             </form>
+            <!-- <form action="" method="get" class="small-filter-form"> -->
+
+                <input type="checkbox" id="articles_without_group" name="checkbox_value" value="true">
+                <label for="articles_without_group">Артикул без группы</label>
+                <!-- <input type="submit" value="Apply Filter"> -->
+            <!-- </form> -->
         </div>
-            <table style="overflow-x: scroll; display: block; width: 100%;">
+            <table id="table" style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
                     <th>Артикул</th>
                     <th>Название группы</th>
@@ -54,23 +61,10 @@
                 {% for el in data %}
                     <tr>
                         <td>{{ el.common_article }}</td>
-                        <!-- <td>
-                            <form method="post" name="name" enctype="multipart/form-data" action="">
-                                {% csrf_token %}
-                                 {{ form.group_name }}
-                                <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST">Добавить</button>
-                            </form>
-                        </td> -->
                         <form method="post" name="name" enctype="multipart/form-data" action="">
                             {% csrf_token %}
                             <td>
                                 <input value="{{el.group.name}}" type="text" name="change_group"/>
-                                <!-- <select name="pets" id="pet-select">
-                                    <option value="{{el.group.name}}">{{el.group.name}}</option>
-                                    {% for data in filter_data %}
-                                        <option value="{{data.name}}">{{data.name}}</option>
-                                    {% endfor %}
-                                  </select> -->
                                 <button type="Submit" value="{{el.id}}" class="custom-button" name="group_name" method="POST" style="display: none;">Добавить</button>
                             </td>
                         </form>
@@ -80,6 +74,33 @@
                     </tr>
                 {% endfor %}
             </table>
+    <script>
+        document.getElementById('articles_without_group').addEventListener('change', function() {
+            var rows = document.querySelectorAll('tr'); // Замените '.data-row' на класс вашей строки таблицы
+            let table_n = document.getElementById("table");
+            let rows_n = table_n.getElementsByTagName("tr");
+            if (document.getElementById('articles_without_group').checked) {
+                console.log('я нажал чекбокс')
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelectorAll('input[type="text"]');
+                    input.forEach((input) => {
+                    if(input.value){
+                        rows_n[i].style.display = '';
+                    } else {
+                        rows_n[i].style.display = 'none';
+                    };})
+                };
+            } else {
+                console.log('зашел в последний else');
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelectorAll('input[type="text"]');
+                    input.forEach((input) => {
+                        rows_n[i].style.display = '';
+                    })
+                }
+            }
+        });
+    </script>
     </div>    
         
 {% endblock %}
