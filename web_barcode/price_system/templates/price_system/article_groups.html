@@ -48,11 +48,6 @@
                     <label for="articles_without_group">Артикул без группы</label>
                 </div>
             </form>
-            
-            <!-- <div>
-                <input type="checkbox" id="articles_without_group" name="checkbox_value" value="true">
-                <label for="articles_without_group">Артикул без группы</label>
-            </div> -->
         </div>
             <table id="table" style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
@@ -89,9 +84,9 @@
                     let input = rows_n[i].querySelectorAll('input[type="text"]');
                     input.forEach((input) => {
                     if(input.value){
-                        rows_n[i].style.display = '';
-                    } else {
                         rows_n[i].style.display = 'none';
+                    } else {
+                        rows_n[i].style.display = '';
                     };})
                 };
             } else {
