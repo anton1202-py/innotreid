@@ -44,7 +44,7 @@
             </form>
         </div>
 
-            <table class="price_group_table">
+            <table class="price_group_table" id="pricesTable">
                 <tr>
                     <th>ID</th>
                     <th>Название</th>
@@ -137,6 +137,44 @@
             </table>
             <button type="Submit" class="custom-button" name="add_button" method="POST">Добавить</button>
                     </form>
+        
+            <div class="overlay" id="overlay">
+                <div class="popup" id="popup">
+                    <span class="close-btn" onclick="closePopup()">X</span>
+                    <p id="popup-text"></p>
+                </div>
+            </div>
+    
+        <script>
+
+                
+            function openPopup(groupName) {
+                document.getElementById('popup-text').innerHTML = `Ошибка в разницах цен группы <b>${groupName}</b>. Цена Озон отличается от старой цены менее, чем на 20 рублей.`;  
+            }
+
+            function closePopup() {
+                document.getElementById('overlay').style.display = 'none';
+            }
+            // Получаем таблицу и строки в ней
+            const table = document.getElementById('pricesTable');
+            const rows = table.getElementsByTagName('tr');
+            // Проходим по всем строкам, начиная со второй строки (индекс 1)
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const priceOzonCell = cells[6];
+                const oldPriceCell = cells[3];
+                const groupNameCell = cells[1];
+                const priceOzon = priceOzonCell.getElementsByTagName('input')[0]
+                const oldPrice = oldPriceCell.getElementsByTagName('input')[0]
+                const groupName = groupNameCell.getElementsByTagName('input')[0]    
+                // Проверяем условие и выводим ошибку, если оно не выполнено
+                if (oldPrice.value - priceOzon.value < 20) {
+                    openPopup(groupName.value)
+                    break; // Прерываем цикл после вывода первой ошибки
+                }
+            }
+        </script>
+    
     </div>    
         
 {% endblock %}
