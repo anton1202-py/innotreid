@@ -163,10 +163,11 @@ def ozon_cleaning_articles(ur_lico):
                 else:
                     article_ozon_dict[dat["offer_id"]] = [
                         dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
-        elif ur_lico == 'ООО Иннотрейд':
+        else:
             for dat in ozon_data:
                 article_ozon_dict[dat["offer_id"].capitalize()] = [
                     dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+    print(article_ozon_dict)
     return article_ozon_dict
 
 
