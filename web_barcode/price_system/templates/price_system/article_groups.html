@@ -76,19 +76,20 @@
                     </tr>
                 {% endfor %}
             </table>
-            <div class="overlay" id="overlay">
-                <div class="popup" id="popup">
+            <div class="overlay-costprice" id="overlay-costprice">
+                <div class="popup-costprice" id="popup-costprice">
                     <span class="close-btn" onclick="closePopup()">X</span>
                     <p id="popup-text"></p>
                 </div>
             </div>
     <script>
         function openPopup(articleName) {
+            document.getElementById('overlay-costprice').style.display = 'block';
             document.getElementById('popup-text').innerHTML = `Ошибка в разницах цен группы и себестоимости артикула <b>${articleName}</b>.`;  
         }
 
         function closePopup() {
-            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('overlay-costprice').style.display = 'none';
         }
         document.getElementById('articles_without_group').addEventListener('change', function() {
             var rows = document.querySelectorAll('tr');

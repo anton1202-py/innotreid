@@ -138,8 +138,8 @@
             <button type="Submit" class="custom-button" name="add_button" method="POST">Добавить</button>
                     </form>
         
-            <div class="overlay" id="overlay">
-                <div class="popup" id="popup">
+            <div class="overlay-costprice" id="overlay-costprice">
+                <div class="popup-costprice" id="popup-costprice">
                     <span class="close-btn" onclick="closePopup()">X</span>
                     <p id="popup-text"></p>
                 </div>
@@ -149,11 +149,12 @@
 
                 
             function openPopup(groupName) {
+                document.getElementById('overlay-costprice').style.display = 'block';
                 document.getElementById('popup-text').innerHTML = `Ошибка в разницах цен группы <b>${groupName}</b>. Цена Озон отличается от старой цены менее, чем на 20 рублей.`;  
             }
 
             function closePopup() {
-                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('overlay-costprice').style.display = 'none';
             }
             // Получаем таблицу и строки в ней
             const table = document.getElementById('pricesTable');
