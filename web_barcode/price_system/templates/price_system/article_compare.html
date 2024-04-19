@@ -43,6 +43,16 @@
                     <br>
                     <input type="Submit" id="filter" name="filter" value="Фильтровать" />
                 </div>
+                <div class="inner-form-data">
+                    <br>
+                    <span class="material-symbols-sharp" onclick="openPopup()">
+                        currency_ruble
+                    </span>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <span class="material-symbols-sharp" onclick="">person</span>
+                </div>
             </form>
         </div>
             <table style="overflow-x: scroll; display: block; width: 100%;">
@@ -50,6 +60,7 @@
                     <th>Артикул</th>
                     <th>Статус</th>
                     <th>Компания</th>
+                    <th>Себестоимость</th>
 
                     <th>WB арт пост</th>
                     <th>WB баркод</th>
@@ -71,6 +82,7 @@
                     <td><a href="{% url 'article_compare_detail_ip' el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
+                    <td>{{ el.cost_price }}</td>
 
                     <td>{{ el.wb_seller_article }}</td>
                     <td>{{ el.wb_barcode }}</td>
@@ -89,6 +101,39 @@
                 </tr>
                 {% endfor %}
             </table>
+    
+    
+    
+            <div class="overlay-costprice" id="overlay-costprice">
+                <div class="popup-costprice" id="popup">
+                    <span class="close-btn" onclick="closePopup()">X</span>
+                    <p id="popup-text"><b>Модуль загрузки себестоимости</b></p>
+                    <form action="" enctype="multipart/form-data" class="small-filter-form" method="POST">
+                        {% csrf_token %}
+                    <div class="two_button_label">
+                        <button type="submit" name="export_costprice" value="create_file">
+                            Экспортировать артикулы в Excel
+                        </button>
+                        <label for="import_file_costprice">EXCEL с себестоимостью</label>
+                        <input type="file" id="import_file_costprice" name="import_file_costprice" class="input-file">
+                        <button type="submit">
+                            Загрузить
+                        </button> 
+                    </div>
+                    </form>
+                </div>
+            </div>
+    
+    <script>
+        function closePopup() {
+                document.getElementById('overlay-costprice').style.display = 'none';
+            }
+            
+        function openPopup(groupName) {
+            document.getElementById('overlay-costprice').style.display = 'block';  
+        }
+    </script>
+
     </div>    
         
 {% endblock %}

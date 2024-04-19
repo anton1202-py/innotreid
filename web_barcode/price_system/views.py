@@ -10,7 +10,9 @@ from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
-from .supplyment import (excel_compare_table, excel_creating_mod,
+from .supplyment import (excel_article_costprice_export, excel_compare_table,
+                         excel_creating_mod,
+                         excel_import_article_costprice_data,
                          excel_import_data, excel_import_group_create_data,
                          excel_with_price_groups_creating_mod,
                          ozon_articles_list, ozon_matching_articles,
@@ -26,6 +28,7 @@ def article_compare(request, ur_lico: str):
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
     if request.POST:
+        print(request.POST)
         if "compare" in request.POST:
             wb_matching_articles(ur_lico)
             ozon_matching_articles(ur_lico)
@@ -43,7 +46,14 @@ def article_compare(request, ur_lico: str):
             if status_filter:
                 data = data.filter(
                     Q(status=status_filter)).order_by('id')
-                print(data)
+        elif 'export_costprice' in request.POST:
+            return excel_article_costprice_export(data)
+        elif 'import_file_costprice' in request.FILES:
+            print('Я там где нужно)')
+            print('request.POST', request.POST)
+            print('request.FILES', request.FILES)
+            excel_import_article_costprice_data(
+                request.FILES['import_file_costprice'], ur_lico)
     context = {
         'data': data,
     }

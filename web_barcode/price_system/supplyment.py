@@ -6,6 +6,7 @@ import time
 import traceback
 from datetime import datetime
 
+import pandas as pd
 import requests
 import telegram
 from django.http import HttpResponse
@@ -559,6 +560,49 @@ def excel_compare_table(data):
     return response
 
 
+def excel_article_costprice_export(data):
+    """Экспортирует в excel таблицу артикулы - себестоимость"""
+    # Создаем DataFrame из данных
+    wb = Workbook()
+    # Получаем активный лист
+    ws = wb.active
+    # Заполняем лист данными
+    for row, item in enumerate(data, start=2):
+        ws.cell(row=row, column=1, value=str(item.common_article))
+        ws.cell(row=row, column=2, value=str(item.cost_price))
+
+    # Устанавливаем заголовки столбцов
+    ws.cell(row=1, column=1, value='Общий артикул')
+    ws.cell(row=1, column=2, value='Себестоимость')
+
+    al = Alignment(horizontal="center",
+                   vertical="center")
+    al_left = Alignment(horizontal="left",
+                        vertical="center")
+    al2 = Alignment(vertical="center", wrap_text=True)
+    thin = Side(border_style="thin", color="000000")
+    thick = Side(border_style="medium", color="000000")
+    pattern = PatternFill('solid', fgColor="fcff52")
+
+    ws.column_dimensions['A'].width = 15
+    ws.column_dimensions['B'].width = 15
+
+    for i in range(len(data)+1):
+        for c in ws[f'A{i+1}:B{i+1}']:
+            for i in range(2):
+                c[i].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[i].alignment = al_left
+
+    # Сохраняем книгу Excel в память
+    response = HttpResponse(content_type='application/xlsx')
+    name = f'Article_cost_price_{datetime.now().strftime("%Y.%m.%d")}.xlsx'
+    file_data = 'attachment; filename=' + name
+    response['Content-Disposition'] = file_data
+    wb.save(response)
+    return response
+
+
 def excel_import_group_create_data(xlsx_file, ur_lico):
     """
     Импортирует данные о группе из Excel
@@ -595,21 +639,58 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
 
 def excel_import_data(xlsx_file, ur_lico):
     """Импортирует данные о группе артикула из Excel"""
-    workbook = load_workbook(filename=xlsx_file, read_only=True)
-    worksheet = workbook.active
-    # Читаем файл построчно и создаем объекты.
-    for row in range(1, len(list(worksheet.rows))):
-        if list(worksheet.rows)[row][1].value == None or list(worksheet.rows)[row][1].value == 'None':
-            article = ArticleGroup.objects.get(
-                common_article=Articles.objects.get(company=ur_lico, common_article=list(worksheet.rows)[row][0].value))
-            article.group = None
-            article.save()
+
+    excel_data_common = pd.read_excel(xlsx_file)
+    excel_data = pd.DataFrame(excel_data_common, columns=['Артикул', 'Группа'])
+    article_list = excel_data['Артикул'].to_list()
+    group_name_list = excel_data['Группа'].to_list()
+
+    # Словарь {артикул: название_группы}
+    article_value_dict = {}
+    # Список для обновления строк в БД
+    new_objects = []
+
+    for i in range(len(article_list)):
+        article_value_dict[article_list[i]] = group_name_list[i]
+
+    for row in range(len(article_list)):
+        article_obj = ArticleGroup.objects.get(
+            common_article=Articles.objects.get(company=ur_lico, common_article=article_list[row]))
+        if Groups.objects.filter(name=article_value_dict[article_obj.common_article.common_article]).exists():
+            article_obj.group = Groups.objects.get(
+                name=article_value_dict[article_obj.common_article.common_article])
         else:
-            print(list(worksheet.rows)[row][0].value)
-            new_obj = ArticleGroup.objects.filter(
-                common_article=Articles.objects.get(company=ur_lico,
-                                                    common_article=list(worksheet.rows)[row][0].value)
-            ).update(group=Groups.objects.get(name=list(worksheet.rows)[row][1].value))
+            article_obj.group = None
+        new_objects.append(article_obj)
+
+    ArticleGroup.objects.bulk_update(new_objects, ['group'])
+
+
+def excel_import_article_costprice_data(xlsx_file, ur_lico):
+    """Импортирует данные о группе артикула из Excel"""
+
+    excel_data_common = pd.read_excel(xlsx_file)
+    excel_data = pd.DataFrame(excel_data_common, columns=[
+                              'Общий артикул', 'Себестоимость'])
+    article_list = excel_data['Общий артикул'].to_list()
+    costprice_list = excel_data['Себестоимость'].to_list()
+
+    # Словарь {артикул: название_группы}
+    article_value_dict = {}
+    # Список для обновления строк в БД
+    new_objects = []
+
+    for i in range(len(article_list)):
+        article_value_dict[article_list[i]] = costprice_list[i]
+
+    for row in range(len(article_list)):
+        article_obj = Articles.objects.get(
+            company=ur_lico, common_article=article_list[row])
+        article_obj.cost_price = article_value_dict[article_obj.common_article]
+        print(article_obj.cost_price)
+        new_objects.append(article_obj)
+
+    Articles.objects.bulk_update(new_objects, ['cost_price'])
 
 
 def excel_new_group_data(xlsx_file):

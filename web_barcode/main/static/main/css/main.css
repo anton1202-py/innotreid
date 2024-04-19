@@ -988,6 +988,7 @@ table tr:hover {
     max-width: 300px;
     text-align: center;
 }
+
 .overlay {
     position: fixed;
     top: 0;
@@ -997,6 +998,31 @@ table tr:hover {
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
+    align-items: center;
+}
+.overlay-costprice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.popup-costprice {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    justify-content: center; /* Выравниваем элементы по центру горизонтально */
     align-items: center;
 }
 .close-btn {

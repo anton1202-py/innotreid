@@ -56,6 +56,8 @@
                     <th>Цена WB</th>
                     <th>Цена OZON</th>
                     <th>Цена YANDEX</th>
+                    <th>Себестоимость</th>
+
                 </tr>
                 {% for el in data %}
                     <tr>
@@ -70,12 +72,26 @@
                         <td>{{ el.group.wb_price }}</td>
                         <td>{{ el.group.ozon_price }}</td>
                         <td>{{ el.group.yandex_price }}</td>
+                        <td>{{ el.common_article.cost_price }}</td>
                     </tr>
                 {% endfor %}
             </table>
+            <div class="overlay" id="overlay">
+                <div class="popup" id="popup">
+                    <span class="close-btn" onclick="closePopup()">X</span>
+                    <p id="popup-text"></p>
+                </div>
+            </div>
     <script>
+        function openPopup(articleName) {
+            document.getElementById('popup-text').innerHTML = `Ошибка в разницах цен группы и себестоимости артикула <b>${articleName}</b>.`;  
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+        }
         document.getElementById('articles_without_group').addEventListener('change', function() {
-            var rows = document.querySelectorAll('tr'); // Замените '.data-row' на класс вашей строки таблицы
+            var rows = document.querySelectorAll('tr');
             let table_n = document.getElementById("table");
             let rows_n = table_n.getElementsByTagName("tr");
             if (document.getElementById('articles_without_group').checked) {
@@ -90,7 +106,6 @@
                     };})
                 };
             } else {
-                console.log('зашел в последний else');
                 for (let i = 0; i < rows_n.length; i++) {
                     let input = rows_n[i].querySelectorAll('input[type="text"]');
                     input.forEach((input) => {
@@ -99,6 +114,21 @@
                 }
             }
         });
+
+        let table_n = document.getElementById("table");
+        let rows_n = table_n.getElementsByTagName("tr");
+        for (let i = 1; i < rows_n.length; i++) {
+            let cell = rows_n[i].querySelectorAll('td');
+            let wb_price = parseFloat(cell[2].textContent)
+            let ozon_price = parseFloat(cell[3].textContent)
+            let yandex_price = parseFloat(cell[4].textContent)
+            let cost_price = parseFloat(cell[5].textContent)
+            if (wb_price && ozon_price && yandex_price && typeof cost_price === 'number') {
+                if (cost_price > wb_price || cost_price > ozon_price || cost_price > yandex_price){
+                    openPopup(cell[0].textContent)
+                }    
+            }
+        }
     </script>
     </div>    
         
