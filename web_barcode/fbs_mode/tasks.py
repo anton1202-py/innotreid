@@ -573,12 +573,7 @@ class WildberriesFbsMode():
             pdf_filenames = glob.glob(
                 'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
             logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
-            # mes_text = f'длина списка из папки cache_dir/*.pdf {len(pdf_filenames)}'
-            # bot.send_message(chat_id=CHAT_ID_ADMIN,
-            #                  text=mes_text, parse_mode='HTML')
-            # text = str(self.amount_articles)
-            # bot.send_message(chat_id=CHAT_ID_ADMIN,
-            #                  text=text, parse_mode='HTML')
+
             list_pdf_file_ticket_for_complect = []
             for j in pdf_filenames:
                 while self.amount_articles[str(Path(j).stem)] > 0:
@@ -626,9 +621,7 @@ class WildberriesFbsMode():
             list_pdf_file_ticket_for_complect = last_sorted_list
             logging.info(
                 f"list_pdf_file_ticket_for_complect перед группировкой файлов: {list_pdf_file_ticket_for_complect}")
-            # mes_text = f'длина списка list_pdf_file_ticket_for_complect для печати этикеток после сортировки {len(list_pdf_file_ticket_for_complect)}'
-            # bot.send_message(chat_id=CHAT_ID_ADMIN,
-            #                  text=mes_text, parse_mode='HTML')
+
             qrcode_supply_amount = supply_qrcode_to_standart_view()
             if len(qrcode_supply_amount) != 0:
                 while amount_of_supply_qrcode > 0:

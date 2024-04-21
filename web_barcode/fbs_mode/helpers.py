@@ -506,7 +506,7 @@ def qrcode_print_for_products():
         # Вставляем qr код в основной фон
         im.paste(image1, (70, 100))
         draw_text.text(
-            (90, 80),
+            (90, 50),
             f'{sticker_data}',
             font=font1,
             fill=('#000'), stroke_width=1
