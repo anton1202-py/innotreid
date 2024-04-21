@@ -325,22 +325,24 @@ def round_up_to_nearest_multiple(num, multiple):
 
 
 @sender_error_to_tg
-def wb_campaign_budget(campaign, header):
+def wb_campaign_budget(campaign, header, counter):
     """
     WILDBERRIES.
     Смотрит бюджет рекламной кампании ВБ.
     """
     url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign}'
     response = requests.request("GET", url, headers=header)
+    counter += 1
     if response.status_code == 200:
         budget = json.loads(response.text)['total']
         return budget
+    elif response.status_code != 200 and counter <= 50:
+        time.sleep(10)
+        return wb_campaign_budget(campaign, header)
     else:
         message = f'Статус код просмотра бюджета {response.status_code} - кампания {campaign}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
-        time.sleep(5)
-        return wb_campaign_budget(campaign, header)
 
 
 def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter=0):
@@ -434,21 +436,19 @@ def replenish_campaign_budget(campaign, budget, header):
 
 
 @sender_error_to_tg
-def check_status_campaign(campaign, header):
+def check_status_campaign(campaign, header, counter=0):
     """WILDBERRIES. Проверяет статус рекламной кампаниию"""
     url = f'https://advert-api.wb.ru/adv/v1/promotion/adverts'
     payload = json.dumps([campaign])
+    counter += 1
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
         main_data = json.loads(response.text)[0]
         status = main_data['status']
         return status
-    elif response.status_code == 504:
-        time.sleep(5)
-        message = f"РЕКЛАМА ВБ. Статус код на запрос статуса кампании {campaign} = {response.status_code}. Повторяю запрос"
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
-        return check_status_campaign(campaign, header)
+    elif response.status_code != 200 and counter <= 50:
+        time.sleep(10)
+        return check_status_campaign(campaign, header, counter)
     else:
         message = f"статус код на запрос статуса кампании {campaign} = {response.status_code}. Возвращаю статус код 11."
         bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -481,17 +481,20 @@ def campaing_current_budget(campaign, header):
 
 
 @sender_error_to_tg
-def start_add_campaign(campaign, header):
+def start_add_campaign(campaign, header, counter=0):
     """WILDBERRIES Запускает рекламную кампанию"""
     url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign}'
     status = check_status_campaign(campaign, header)
     budget = campaing_current_budget(campaign, header)
-    if status:
+    counter += 1
+    if status and counter <= 50:
         if status == 4 or status == 11:
             if budget > 0:
                 response = requests.request("GET", url, headers=header)
-                if response.status_code != 200:
-                    message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.text} {response.status_code}"
+                if response.status_code != 200 and response.status_code != 422:
+                    start_add_campaign(campaign, header, counter)
+                elif response.status_code != 404:
+                    message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.status_code}. Кампания не найдена"
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4092])
         elif status != 4 and status != 11 and status != 9:
