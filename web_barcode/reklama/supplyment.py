@@ -487,10 +487,11 @@ def start_add_campaign(campaign, header, counter=0):
                 response = requests.request("GET", url, headers=header)
                 if response.status_code != 200 and response.status_code != 422:
                     start_add_campaign(campaign, header, counter)
-                elif response.status_code != 404:
+                elif response.status_code == 404:
                     message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.status_code}. Кампания не найдена"
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4092])
+
         elif status != 4 and status != 11 and status != 9:
             message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
             bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
