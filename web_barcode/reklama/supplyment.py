@@ -325,7 +325,7 @@ def round_up_to_nearest_multiple(num, multiple):
 
 
 @sender_error_to_tg
-def wb_campaign_budget(campaign, header, counter):
+def wb_campaign_budget(campaign, header, counter=0):
     """
     WILDBERRIES.
     Смотрит бюджет рекламной кампании ВБ.
@@ -338,7 +338,7 @@ def wb_campaign_budget(campaign, header, counter):
         return budget
     elif response.status_code != 200 and counter <= 50:
         time.sleep(10)
-        return wb_campaign_budget(campaign, header)
+        return wb_campaign_budget(campaign, header, counter)
     else:
         message = f'Статус код просмотра бюджета {response.status_code} - кампания {campaign}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
@@ -369,12 +369,6 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
         return message
     else:
         if attempt_counter <= 50:
-            # message = ('*************************'
-            #            f'Бюджет кампании {campaign} не пополнил.'
-            #            f'Статус код: {response.status_code}'
-            #            '*************************')
-            # bot.send_message(chat_id=CHAT_ID_ADMIN,
-            #                  text=message, parse_mode='HTML')
             return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter)
         else:
             message = (f'Бюджет кампании {campaign} не пополнил.'
