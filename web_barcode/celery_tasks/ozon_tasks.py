@@ -109,12 +109,30 @@ def request_info_stocks_data(header, last_id='', main_stock_data=None):
 
 
 @sender_error_to_tg
+def article_category(header, product_id):
+    """Достает категорию товара по product_id"""
+    url = 'https://api-seller.ozon.ru/v2/product/info'
+    payload = json.dumps({
+        "offer_id": "",
+        "product_id": product_id
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    main_data = json.loads(response.text)['result']
+    description_name = main_data['name']
+
+    return description_name
+
+
+@sender_error_to_tg
 def product_id_list(header):
-    """Выдает список списков product_id"""
+    """Выдает список product_id"""
     stocks_data = request_info_stocks_data(header)
     product_id_list = []
     for data in stocks_data:
-        product_id_list.append(data['product_id'])
+        name = article_category(header, data['product_id'])
+        if 'Светильник' in name or 'Ночник' in name:
+            product_id_list.append(data['product_id'])
+        time.sleep(1)
     return product_id_list
 
 

@@ -157,8 +157,8 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=22, minute=20)
     },
 
-    "ozon_reklama_stop_start_campaign": {
-        "task": "reklama.periodic_tasks.ozon_start_stop_nessessary_campaign",
-        "schedule": crontab(hour=21, minute=0)
-    },
+    # "ozon_reklama_stop_start_campaign": {
+    #     "task": "reklama.periodic_tasks.ozon_start_stop_nessessary_campaign",
+    #     "schedule": crontab(hour=21, minute=0)
+    # },
 }
