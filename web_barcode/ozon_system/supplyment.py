@@ -115,6 +115,7 @@ def compare_action_articles_and_database(header, ur_lico):
                     inner_list.append(article)
         if inner_list:
             del_articles[action] = inner_list
+    print(del_articles)
     return del_articles
 
 
@@ -137,7 +138,7 @@ def del_articles_from_action(header, action_id, articles_list, ur_lico):
 @sender_error_to_tg
 def delete_articles_with_low_price(header, ur_lico):
     """
-    Удаляет артикулы, цены которых а акциях ниже,
+    Удаляет артикулы, цены которых в акциях ниже,
     чем выставленная минимальная цена
     """
     action_data = compare_action_articles_and_database(header, ur_lico)
@@ -149,7 +150,7 @@ def delete_articles_with_low_price(header, ur_lico):
 @sender_error_to_tg
 def delete_ozon_articles_with_low_price_current_ur_lico(url_lico):
     """
-    Удаляет артикулы из акций ОЗОН, если цна в акции меньше,
+    Удаляет артикулы из акций ОЗОН, если цена в акции меньше,
     чем в базе даных. Только для входящего юр. лица.
     """
     header = header_ozon_dict[url_lico]
