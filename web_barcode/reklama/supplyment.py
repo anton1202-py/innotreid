@@ -543,13 +543,13 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
         common_data = []
     if update_date:
         cursor = {
-            "limit": 1000,
+            "limit": 100,
             "updatedAt": update_date,
             "nmID": mn_id
         }
     else:
         cursor = {
-            "limit": 1000,
+            "limit": 100,
             "nmID": mn_id
         }
 
@@ -573,8 +573,8 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
         for data in article_info:
             inner_data = (data['vendorCode'], data['nmID'], data['title'])
             common_data.append(inner_data)
-        if len(article_info) == 1000:
-            # time.sleep(5)
+        if len(article_info) == 100:
+            time.sleep(5)
             ooo_wb_articles_info(
                 check_amount['updatedAt'], check_amount['nmID'], common_data)
         return common_data

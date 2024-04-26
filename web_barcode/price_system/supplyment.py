@@ -47,13 +47,13 @@ def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
         common_data = []
     if update_date:
         cursor = {
-            "limit": 1000,
+            "limit": 100,
             "updatedAt": update_date,
             "nmID": mn_id
         }
     else:
         cursor = {
-            "limit": 1000,
+            "limit": 100,
             "nmID": mn_id
         }
 
@@ -75,8 +75,8 @@ def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
         check_amount = json.loads(response.text)['cursor']
         for data in all_data:
             common_data.append(data)
-        if len(json.loads(response.text)["cards"]) == 1000:
-            # time.sleep(5)
+        if len(json.loads(response.text)["cards"]) == 100:
+            time.sleep(5)
             return wb_article_data(header,
                                    check_amount['updatedAt'], check_amount['nmID'], common_data)
         return common_data
