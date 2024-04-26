@@ -79,7 +79,7 @@ def gramoty_article_compare(request):
     return article_compare(request, 'ООО Мастерская чудес')
 
 
-async def groups_view(request, ur_lico):
+def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
     # loop = asyncio.get_event_loop()
@@ -175,19 +175,18 @@ async def groups_view(request, ur_lico):
             # Удаляем артикулы из акции, если цена в акции ниже,
             # чем установленная минимальная цена.
 
-            await delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
-            print('Долгая функция успешно выполнена асинхронно.')
+            delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
 
     context = {
         'data': data,
         'ur_lico': ur_lico,
     }
-    return TemplateResponse(request, 'price_system/groups.html', context)
+    return render(request, 'price_system/groups.html', context)
 
 
-async def ip_groups_view(request):
+def ip_groups_view(request):
     """Отвечает за Отображение ценовых групп ИП"""
-    return await groups_view(request, 'ИП Караваев')
+    return groups_view(request, 'ИП Караваев')
 
 
 def ooo_groups_view(request):
