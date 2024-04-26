@@ -1,47 +1,24 @@
-import importlib
-import inspect
-import json
-import os
-import traceback
-
-import requests
-import telegram
-from dotenv import load_dotenv
-from price_system.supplyment import wb_articles_list
-
-# from web_barcode.price_system.periodical_tasks import wb_add_price_info
-
-# Загрузка переменных окружения из файла .env
-dotenv_path = os.path.join(os.path.dirname(
-    __file__), '..', 'web_barcode', '.env')
-load_dotenv(dotenv_path)
+import asyncio
 
 
-API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
-YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
-API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
-CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
-
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
-wb_headers_karavaev = {
-    'Content-Type': 'application/json',
-    'Authorization': API_KEY_WB_IP
-}
-
-ozon_headers_karavaev = {
-    'Api-Key': API_KEY_OZON_KARAVAEV,
-    'Content-Type': 'application/json',
-    'Client-Id': CLIENT_ID_OZON_KARAVAEV
-}
-
-yandex_headers_karavaev = {
-    'Authorization': YANDEX_IP_KEY,
-}
+def synchronous_function(n, m):
+    # Синхронная функция, которую вы хотите вызвать
+    return n + m
 
 
-wb_articles_list('ИП Караваев')
-# wb_add_price_info('ООО Иннотрейд')
+async def async_wrapper():
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, synchronous_function)
+    synchronous_function()
+    print(type(result))
+    return result
+
+
+async def async_function_calling_sync():
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, synchronous_function, 5, 10)
+    s = synchronous_function(5, 3)
+    print(s, result)
+    return result
+
+asyncio.run(async_function_calling_sync())

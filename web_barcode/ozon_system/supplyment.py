@@ -1,3 +1,4 @@
+import asyncio
 import json
 import math
 import os
@@ -148,12 +149,14 @@ def delete_articles_with_low_price(header, ur_lico):
 
 
 @sender_error_to_tg
-def delete_ozon_articles_with_low_price_current_ur_lico(url_lico):
+async def delete_ozon_articles_with_low_price_current_ur_lico(url_lico):
     """
     Удаляет артикулы из акций ОЗОН, если цена в акции меньше,
     чем в базе даных. Только для входящего юр. лица.
     """
     header = header_ozon_dict[url_lico]
+    loop = asyncio.get_event_loop()
+    # delete_articles_with_low_price(header, url_lico)
     delete_articles_with_low_price(header, url_lico)
     text = 'Отработала функция ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions'
     bot.send_message(chat_id=CHAT_ID_ADMIN,

@@ -1,7 +1,11 @@
+import asyncio
 from datetime import datetime, timedelta
 
+from asgiref.sync import sync_to_async
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
 from django.views.generic import ListView
 from ozon_system.supplyment import \
     delete_ozon_articles_with_low_price_current_ur_lico
@@ -75,9 +79,10 @@ def gramoty_article_compare(request):
     return article_compare(request, 'ООО Мастерская чудес')
 
 
-def groups_view(request, ur_lico):
+async def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
+    # loop = asyncio.get_event_loop()
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
@@ -166,21 +171,23 @@ def groups_view(request, ur_lico):
                                       ozon_price, min_price, old_price)
                     yandex_price_change(ur_lico, yandex_nom_list,
                                         yandex_price, old_price)
-        elif 'delete_low_price_button' in request.POST:
+        if 'delete_low_price_button' in request.POST:
             # Удаляем артикулы из акции, если цена в акции ниже,
             # чем установленная минимальная цена.
-            delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
+
+            await delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
+            print('Долгая функция успешно выполнена асинхронно.')
 
     context = {
         'data': data,
         'ur_lico': ur_lico,
     }
-    return render(request, 'price_system/groups.html', context)
+    return TemplateResponse(request, 'price_system/groups.html', context)
 
 
-def ip_groups_view(request):
+async def ip_groups_view(request):
     """Отвечает за Отображение ценовых групп ИП"""
-    return groups_view(request, 'ИП Караваев')
+    return await groups_view(request, 'ИП Караваев')
 
 
 def ooo_groups_view(request):

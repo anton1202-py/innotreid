@@ -69,7 +69,7 @@ TEMPLATES = [
         },
     },
 ]
-
+ASGI_APPLICATION = 'web_barcode.asgi.application'
 WSGI_APPLICATION = 'web_barcode.wsgi.application'
 
 # Database
