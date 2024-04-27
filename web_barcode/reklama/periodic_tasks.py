@@ -229,6 +229,10 @@ def wb_ooo_fbo_stock_count():
     main_data = wb_ooo_fbo_stock_data()
     for all_data in main_data:
         for data in all_data:
+            print(data)
+            print(Articles.objects.filter(
+                wb_nomenclature=data['nmID']))
+            print('*************************')
             article_obj = Articles.objects.filter(
                 wb_nomenclature=data['nmID'])[0]
             matching_data = DataOooWbArticle.objects.get(

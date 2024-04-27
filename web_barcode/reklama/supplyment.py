@@ -574,12 +574,10 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
             inner_data = (data['vendorCode'], data['nmID'], data['title'])
             common_data.append(inner_data)
         if len(article_info) == 100:
-            time.sleep(5)
+            # time.sleep(5)
             ooo_wb_articles_info(
                 check_amount['updatedAt'], check_amount['nmID'], common_data)
         return common_data
-    else:
-        message = f'статус код {response.status_code} у получения инфы всех артикулов ООО ВБ'
 
 
 @sender_error_to_tg
@@ -642,6 +640,7 @@ def get_wb_ooo_stock_data(header, info_list):
 def wb_ooo_fbo_stock_data():
     """WILDBERRIES. Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
     article_list = ooo_wb_articles_data()
+    print(len(article_list))
     wb_koef = math.ceil(len(article_list)/900)
     main_article_data_list = []
     header = header_wb_dict['ООО Иннотрейд']
