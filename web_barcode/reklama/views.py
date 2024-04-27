@@ -30,7 +30,6 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    matching_wb_ooo_article_campaign()
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')

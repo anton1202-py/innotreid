@@ -97,7 +97,6 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    print(len(campaign_list))
     return campaign_list
 
 
@@ -640,7 +639,6 @@ def get_wb_ooo_stock_data(header, info_list):
 def wb_ooo_fbo_stock_data():
     """WILDBERRIES. Собирает данные по каждому артикулу. Возвращает список списков со всеми данными"""
     article_list = ooo_wb_articles_data()
-    print(len(article_list))
     wb_koef = math.ceil(len(article_list)/900)
     main_article_data_list = []
     header = header_wb_dict['ООО Иннотрейд']
@@ -684,7 +682,6 @@ def access_token(ur_lico):
 
     response = requests.request(
         "POST", url, headers=header_ozon_dict[ur_lico], data=payload)
-    print(json.loads(response.text)['access_token'])
     return json.loads(response.text)['access_token']
 
 
