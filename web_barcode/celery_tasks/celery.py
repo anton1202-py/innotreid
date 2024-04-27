@@ -125,7 +125,7 @@ app.conf.beat_schedule = {
     },
     "price_system_compare_ooo_articles": {
         "task": "price_system.periodical_tasks.periodic_compare_ooo_articles",
-        "schedule": crontab(hour=5, minute=0, day_of_week=1)
+        "schedule": crontab(hour=5, minute=0)
     },
     "price_system_compare_ip_articles": {
         "task": "price_system.periodical_tasks.write_group_spp_data",
