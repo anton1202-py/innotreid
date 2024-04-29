@@ -334,6 +334,38 @@
                             <h3>Периодические задачи</h3>
                         </a>
                     </li>
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Мотивация дизайнеров</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'motivation_article_designers' as url_article_designers %}
+                            <li>
+                                <a href="{{ url_article_designers }}" {% if request.path == url_article_designers %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Светильники дизайнеров</h3>
+                                </a>
+                            </li>
+                            {% url 'motivation_article_sale' as url_article_sale %}
+                            <li>
+                                <a href="{{ url_article_sale }}" {% if request.path == url_article_sale %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Продажи светильников</h3>
+                                </a>
+                            </li>
+                            {% url 'motivation_designers_rewards' as url_designers_rewards %}
+                            <li>
+                                <a href="{{ url_designers_rewards }}" {% if request.path == url_designers_rewards %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Вознаграждение дизайнеров</h3>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
             </ul>
         </nav>
         </div>

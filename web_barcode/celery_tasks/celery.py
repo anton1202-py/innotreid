@@ -100,7 +100,7 @@ app.conf.beat_schedule = {
 
     "google_sheet_task": {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
-        "schedule": crontab(hour=18, minute=0, day_of_week=1)
+        "schedule": crontab(hour=18, minute=30, day_of_week=1)
     },
     "ozon_balance_task": {
         "task": "celery_tasks.ozon_tasks.fbs_balance_maker_for_all_company",

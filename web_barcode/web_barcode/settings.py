@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'price_system',
     'reklama',
     'celery_tasks',
-    'celery_view'
+    'celery_view',
+    'motivation',
+    'users',
 ]
 
 MIDDLEWARE = [

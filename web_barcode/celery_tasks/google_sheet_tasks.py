@@ -15,6 +15,7 @@ from celery_tasks.celery import app
 from dotenv import load_dotenv
 from gspread_formatting import *
 from oauth2client.service_account import ServiceAccountCredentials
+from price_system.supplyment import sender_error_to_tg
 
 from .helpers_func import error_message
 
@@ -37,6 +38,7 @@ dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
+@sender_error_to_tg
 def stream_dropbox_file(path):
     _, res = dbx_db.files_download(path)
     with closing(res) as result:
@@ -44,6 +46,7 @@ def stream_dropbox_file(path):
         return io.BytesIO(byte_data)
 
 
+@sender_error_to_tg
 def dropbox_matching_data():
     """Возвращает список устаревших артикулов ВБ для сравнения"""
     matching_file = stream_dropbox_file(MATCHING_DB_FILE)
@@ -54,51 +57,74 @@ def dropbox_matching_data():
     return matching_list
 
 
-def wb_data():
-    """Собирает данные для Google Sheet"""
-    now_day = datetime.datetime.now().strftime('%d-%m-%Y')
-    try:
-        url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
-        payload = json.dumps({
+@sender_error_to_tg
+def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
+    """Получаем данные всех артикулов в ВБ"""
+    if not common_data:
+        common_data = []
+    if update_date:
+        cursor = {
+            "limit": 100,
+            "updatedAt": update_date,
+            "nmID": mn_id
+        }
+    else:
+        cursor = {
+            "limit": 100,
+            "nmID": mn_id
+        }
+
+    url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
+    payload = json.dumps(
+        {
             "settings": {
-                "cursor": {
-                    "limit": 1000
-                },
+                "cursor": cursor,
                 "filter": {
                     "withPhoto": -1
                 }
             }
-        })
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': API_KEY_WB
         }
-        response = requests.request("POST", url, headers=headers, data=payload)
-        main_data = json.loads(response.text)['cards']
-        raw_for_table_list = []
-        counter = 2
+    )
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        all_data = json.loads(response.text)["cards"]
+        check_amount = json.loads(response.text)['cursor']
+        for data in all_data:
+            common_data.append(data)
+        if len(json.loads(response.text)["cards"]) == 100:
+            time.sleep(5)
+            return wb_article_data(header,
+                                   check_amount['updatedAt'], check_amount['nmID'], common_data)
+        return common_data
 
-        matching_list = dropbox_matching_data()
-        for data in main_data:
-            inner_list = []
-            if data['subjectName'] == 'Ночники':
-                if data['vendorCode'] not in matching_list:
-                    inner_list.append(data['vendorCode'])
-                    inner_list.append(f'=IMAGE(D{counter};1)')
-                    inner_list.append(data['title'])
-                    inner_list.append(data['photos'][0]['big'])
-                    inner_list.append(now_day)
-                    raw_for_table_list.append(inner_list)
-                    counter += 1
 
-        for_table_list = sorted(raw_for_table_list, key=lambda x: x[0])
+@sender_error_to_tg
+def wb_data():
+    """Собирает данные для Google Sheet"""
+    now_day = datetime.datetime.now().strftime('%d-%m-%Y')
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': API_KEY_WB
+    }
 
-        return for_table_list
-    except Exception as e:
-        # обработка ошибки и отправка сообщения через бота
-        message_text = error_message('wb_data', wb_data, e)
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message_text, parse_mode='HTML')
+    main_data = wb_article_data(headers)
+    raw_for_table_list = []
+    counter = 2
+    matching_list = dropbox_matching_data()
+    for data in main_data:
+        inner_list = []
+        if data['subjectName'] == 'Ночники':
+            if data['vendorCode'] not in matching_list:
+                inner_list.append(data['vendorCode'])
+                inner_list.append(f'=IMAGE(D{counter};1)')
+                inner_list.append(data['title'])
+                inner_list.append(data['photos'][0]['big'])
+                inner_list.append(now_day)
+                raw_for_table_list.append(inner_list)
+                counter += 1
+    for_table_list = sorted(raw_for_table_list, key=lambda x: x[0])
+    return for_table_list
 
 
 @app.task
@@ -147,6 +173,3 @@ def google_sheet():
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
         google_sheet()
-
-
-# google_sheet()

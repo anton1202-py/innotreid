@@ -1,0 +1,34 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr>
+                <th>Ночник</th>
+                <th>Автор</th>
+                <th>Продажи за год</th>
+                <th>Вознаграждение за год</th>
+            </tr>
+            {% for el in article_list %}
+            <tr>
+                <td>{{ el.article.common_article }}</td>
+                
+                    <td>
+                        {{ form.as_p }}
+                        
+                    </td>
+                
+                <td></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>    
+        
+{% endblock %}
