@@ -96,6 +96,7 @@ def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
             time.sleep(5)
             return wb_article_data(header,
                                    check_amount['updatedAt'], check_amount['nmID'], common_data)
+
         return common_data
 
 
@@ -115,7 +116,7 @@ def wb_data():
     for data in main_data:
         inner_list = []
         if data['subjectName'] == 'Ночники':
-            if data['vendorCode'] not in matching_list:
+            if data['vendorCode'] not in matching_list and 'photos' in data.keys():
                 inner_list.append(data['vendorCode'])
                 inner_list.append(f'=IMAGE(D{counter};1)')
                 inner_list.append(data['title'])

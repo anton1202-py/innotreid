@@ -6,6 +6,7 @@ from celery import current_app
 from celery.schedules import crontab
 from celery_tasks.celery import app as celery_app
 from celery_tasks.file_for_create import get_current_ssp
+from celery_tasks.google_sheet_tasks import wb_data
 from django.shortcuts import get_object_or_404, redirect, render
 
 
@@ -33,7 +34,7 @@ def celery_tasks_view(request):
     """Показывает задачи celery на странице"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    get_current_ssp()
+    wb_data()
     tasks_info = []
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
