@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-
-from .models import Articles, DesignUser
+from price_system.models import Articles, DesignUser
 
 
 class DesignerChooseForm(forms.Form):

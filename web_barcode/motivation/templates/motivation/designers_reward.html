@@ -1,0 +1,40 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        <div class="add-data">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="label-button">
+                    <button type="submit" name="filter_data" value="ООО Иннотрейд" class="custom-button-delete-add">
+                        ООО Иннотрейд
+                    </button>
+                    <button type="submit" name="filter_data" value="ИП Караваев" class="custom-button-choose">
+                        ИП Караваев
+                    </button> 
+                </div>
+            </form>
+        </div>
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr>
+                <th>Дизайнер</th>
+                <th>Продажи за год</th>
+                <th>Вознаграждение за год</th>
+            </tr>
+            {% for el in designer_users %}
+            <tr>
+                <td>{{ el.first_name }} {{ el.last_name }}</td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>    
+        
+{% endblock %}

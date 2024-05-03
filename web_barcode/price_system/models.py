@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
@@ -99,6 +100,14 @@ class Articles(models.Model):
         verbose_name='Себестоимость',
         blank=True,
         null=True,
+    )
+    designer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Дизайнер',
+        related_name='lighter_designer',
+        null=True,
+        blank=True
     )
 
     def __str__(self):
@@ -229,3 +238,24 @@ class ArticlesPrice(models.Model):
     class Meta:
         verbose_name = 'Изменение цен на артикул ИП'
         verbose_name_plural = 'Изменение цен на артикул ИП'
+
+
+class DesignUser(models.Model):
+    designer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Дизайнер',
+        related_name='designer'
+    )
+    tg_chat_id = models.PositiveBigIntegerField(
+        verbose_name='chat_id телеграма',
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.designer.last_name
+
+    class Meta:
+        verbose_name = 'Дизайнеры'
+        verbose_name_plural = 'Дизайнеры'

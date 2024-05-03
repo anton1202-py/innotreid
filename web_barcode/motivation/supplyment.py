@@ -9,8 +9,7 @@ import telegram
 from django.contrib.auth.models import User
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
-from motivation.models import DesignUser, Lighters
-from price_system.models import Articles
+from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
@@ -29,12 +28,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 
 def articles_data_merge():
     main_data = Articles.objects.all()
-    for data in main_data:
-        s = data.common_article
-        if not s[0].isdigit() and s[0] not in ['d', 'D', ' ']:
-            Lighters(
-                article=data
-            ).save()
     print(len(main_data))
 
 

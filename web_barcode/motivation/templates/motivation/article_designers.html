@@ -8,6 +8,19 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
+        <div class="add-data">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="label-button">
+                    <button type="submit" name="filter_data" value="ООО Иннотрейд" class="custom-button-delete-add">
+                        ООО Иннотрейд
+                    </button>
+                    <button type="submit" name="filter_data" value="ИП Караваев" class="custom-button-choose">
+                        ИП Караваев
+                    </button> 
+                </div>
+            </form>
+        </div>
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Ночник</th>
@@ -17,11 +30,19 @@
             </tr>
             {% for el in article_list %}
             <tr>
-                <td>{{ el.article.common_article }}</td>
+                <td>{{ el.common_article }}</td>
                 
                     <td>
-                        {{ form.as_p }}
-                        
+                        <select class="mySelect" data-row="{{ el.common_article }}">
+                            {% if el.designer != None %}
+                                <option value="">{{ el.designer }}</option>
+                            {% else %}
+                                <option value=""></option>
+                            {% endif %}
+                            {% for designer in designer_list %}
+                                <option value="{{ designer.id }}">{{ designer.username }}</option>
+                            {% endfor %}
+                        </select>
                     </td>
                 
                 <td></td>
@@ -30,5 +51,36 @@
             {% endfor %}
         </table>
     </div>    
+    <script>
+        document.querySelectorAll('.mySelect').forEach(select => {
+    select.addEventListener('change', function() {
+        var selectedSurname = this.value;
+        console.log(selectedSurname)
+        var rowNumber = this.dataset.row;
+        console.log(rowNumber)
+        
+        var formData = new FormData();
+        formData.append('selected_designer', selectedSurname);
+        formData.append('article', rowNumber);
+        formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+
+        fetch('update_model_field/', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                // Обработка успешного ответа от сервера
+                // Например, обновление отображаемого значения фамилии в таблице
+            } else {
+                // Обработка ошибки
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+        </script>
         
 {% endblock %}

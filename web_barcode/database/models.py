@@ -169,7 +169,7 @@ class ShelvingStocks(models.Model):
             self.task_finish_date = None
         super(ShelvingStocks, self).save(*args, **kwargs)
 
-    def get_absolute_url(self): # new
+    def get_absolute_url(self):  # new
         return reverse('stock-shelving')
 
     def __str__(self):
@@ -315,3 +315,406 @@ class OrdersFbsInfo(models.Model):
     class Meta:
         verbose_name = 'Заказы со склада FBS'
         verbose_name_plural = 'Заказы со склада FBS'
+
+
+class WildberriesSales(models.Model):
+    """Продажи Wildberries со всех юр. лиц"""
+    date = models.DateTimeField(
+        verbose_name='Дата и время продажи',
+        blank=True,
+        null=True
+    )
+    last_change_date = models.DateTimeField(
+        verbose_name='Дата и время обновления информации в сервисе',
+        blank=True,
+        null=True
+    )
+    warehouse_name = models.CharField(
+        verbose_name='Склад отгрузки',
+        max_length=50,
+        null=True,
+        blank=True
+    )
+    country_name = models.CharField(
+        verbose_name='Страна',
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    oblast_okrug_name = models.CharField(
+        verbose_name='Округ',
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    region_name = models.CharField(
+        verbose_name='Регион',
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    supplier_article = models.CharField(
+        verbose_name='Артикул продавца',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    nm_id = models.IntegerField(
+        verbose_name='Артикул WB',
+        null=True,
+        blank=True
+    )
+    barcode = models.CharField(
+        verbose_name='Баркод',
+        max_length=30,
+        null=True,
+        blank=True
+    )
+    category = models.CharField(
+        verbose_name='Категория',
+        max_length=50,
+        null=True,
+        blank=True
+    )
+    subject = models.CharField(
+        verbose_name='Предмет',
+        max_length=50,
+        null=True,
+        blank=True
+    )
+    brand = models.CharField(
+        verbose_name='Бренд',
+        max_length=50,
+        null=True,
+        blank=True
+    )
+    tech_size = models.CharField(
+        verbose_name='Размер товара',
+        max_length=30,
+        null=True,
+        blank=True
+    )
+    income_id = models.IntegerField(
+        verbose_name='Номер поставки',
+        null=True,
+        blank=True
+    )
+    is_supply = models.BooleanField(
+        verbose_name='Договор поставки',
+        null=True,
+        blank=True
+    )
+    is_realization = models.BooleanField(
+        verbose_name='Договор реализации',
+        null=True,
+        blank=True
+    )
+    total_price = models.FloatField(
+        verbose_name='Цена без скидки',
+        null=True,
+        blank=True
+    )
+    discount_percent = models.IntegerField(
+        verbose_name='Скидка продавца',
+        null=True,
+        blank=True
+    )
+    spp = models.FloatField(
+        verbose_name='СПП',
+        null=True,
+        blank=True
+    )
+    payment_sale_amount = models.IntegerField(
+        verbose_name='Оплачено с WB кошелька',
+        null=True,
+        blank=True
+    )
+    for_pay = models.FloatField(
+        verbose_name='К перечислению продавцу',
+        null=True,
+        blank=True
+    )
+
+    finished_price = models.FloatField(
+        verbose_name='Фактическая цена с учетом всех скидок (к взиманию с покупателя)',
+        null=True,
+        blank=True
+    )
+    price_with_disc = models.FloatField(
+        verbose_name='Цена со скидкой продавца, от которой считается сумма к перечислению продавцу',
+        null=True,
+        blank=True
+    )
+    sale_id = models.CharField(
+        verbose_name='Уникальный идентификатор продажи/возврата',
+        max_length=15,
+        null=True,
+        blank=True
+    )
+    order_type = models.CharField(
+        verbose_name='Тип заказа',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    sticker = models.CharField(
+        verbose_name='Идентификатор стикера',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    g_number = models.CharField(
+        verbose_name='Номер заказа',
+        max_length=50,
+        null=True,
+        blank=True
+    )
+    srid = models.CharField(
+        verbose_name='Уникальный идентификатор заказа.',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    ur_lico = models.CharField(
+        verbose_name='Юр. лицо',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    month = models.IntegerField(
+        verbose_name='Месяц',
+        null=True,
+        blank=True
+    )
+    year = models.IntegerField(
+        verbose_name='год',
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Продажи WB'
+        verbose_name_plural = 'Продажи WB'
+
+
+class OzonSales(models.Model):
+    """Продажи Ozon со всех юр. лиц"""
+    start_date_period = models.DateTimeField(
+        verbose_name='Дата начала отчета продажи',
+        blank=True,
+        null=True
+    )
+    finish_date_period = models.DateTimeField(
+        verbose_name='Дата окончания отчета продажи',
+        blank=True,
+        null=True
+    )
+    month = models.IntegerField(
+        verbose_name='Месяц',
+        null=True,
+        blank=True
+    )
+    year = models.IntegerField(
+        verbose_name='год',
+        null=True,
+        blank=True
+    )
+    number_report = models.CharField(
+        verbose_name='номер отчета',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    row_number = models.IntegerField(
+        verbose_name='Номер строки в отчете',
+        null=True,
+        blank=True
+    )
+    offer_id = models.CharField(
+        verbose_name='Артикул продавца',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    sku = models.BigIntegerField(
+        verbose_name='SKU товара',
+        null=True,
+        blank=True
+    )
+    barcode = models.CharField(
+        verbose_name='Штрихкод товара',
+        max_length=30,
+        null=True,
+        blank=True
+    )
+    name = models.CharField(
+        verbose_name='Наименование товара',
+        max_length=300,
+        null=True,
+        blank=True
+    )
+    seller_price_per_instance = models.FloatField(
+        verbose_name='Цена продавца с учётом скидки',
+        null=True,
+        blank=True
+    )
+    amount = models.FloatField(
+        verbose_name='Сумма',
+        null=True,
+        blank=True
+    )
+    bonus = models.FloatField(
+        verbose_name='Баллы за скидки',
+        null=True,
+        blank=True
+    )
+    commission = models.FloatField(
+        verbose_name='Итого комиссия с учётом скидок и наценки',
+        null=True,
+        blank=True
+    )
+    compensation = models.FloatField(
+        verbose_name='Доплата за счёт Ozon',
+        null=True,
+        blank=True
+    )
+    price_per_instance = models.FloatField(
+        verbose_name='Цена за экземпляр',
+        null=True,
+        blank=True
+    )
+    quantity = models.IntegerField(
+        verbose_name='Количество товара',
+        null=True,
+        blank=True
+    )
+    standard_fee = models.FloatField(
+        verbose_name='Базовое вознаграждение Ozon',
+        null=True,
+        blank=True
+    )
+    stars = models.FloatField(
+        verbose_name='Выплаты по механикам лояльности партнёров',
+        null=True,
+        blank=True
+    )
+    total = models.FloatField(
+        verbose_name='Итого к начислению',
+        null=True,
+        blank=True
+    )
+    return_amount = models.FloatField(
+        verbose_name='Сумма',
+        null=True,
+        blank=True
+    )
+    return_bonus = models.FloatField(
+        verbose_name='Баллы за скидки',
+        null=True,
+        blank=True
+    )
+    return_commission = models.FloatField(
+        verbose_name='Итого комиссия с учётом скидок и наценки',
+        null=True,
+        blank=True
+    )
+    return_compensation = models.FloatField(
+        verbose_name='Доплата за счёт Ozon',
+        null=True,
+        blank=True
+    )
+    return_price_per_instance = models.FloatField(
+        verbose_name='Цена за экземпляр',
+        null=True,
+        blank=True
+    )
+    return_quantity = models.IntegerField(
+        verbose_name='Количество товара',
+        null=True,
+        blank=True
+    )
+    return_standard_fee = models.FloatField(
+        verbose_name='Базовое вознаграждение Ozon',
+        null=True,
+        blank=True
+    )
+    return_stars = models.FloatField(
+        verbose_name='Выплаты по механикам лояльности партнёров',
+        null=True,
+        blank=True
+    )
+    return_total = models.FloatField(
+        verbose_name='Итого к начислению',
+        null=True,
+        blank=True
+    )
+    commission_ratio = models.FloatField(
+        verbose_name='Доля комиссии за продажу по категории',
+        null=True,
+        blank=True
+    )
+    ur_lico = models.CharField(
+        verbose_name='Юр. лицо',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Продажи Ozon'
+        verbose_name_plural = 'Продажи Ozon'
+
+
+class OzonMonthlySalesData(models.Model):
+    """Продажи Ozon по месяцам для всех юр. лиц"""
+    start_date_period = models.DateTimeField(
+        verbose_name='Дата начала отчета продажи',
+        blank=True,
+        null=True
+    )
+    finish_date_period = models.DateTimeField(
+        verbose_name='Дата окончания отчета продажи',
+        blank=True,
+        null=True
+    )
+    number_report = models.CharField(
+        verbose_name='Номер отчёта о реализации',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+    doc_date = models.DateTimeField(
+        verbose_name='Дата формирования документа',
+        blank=True,
+        null=True
+    )
+    doc_amount = models.FloatField(
+        verbose_name='Всего к начислению',
+        null=True,
+        blank=True
+    )
+    vat_amount = models.FloatField(
+        verbose_name='Итоговая сумма с НДС',
+        null=True,
+        blank=True
+    )
+    month = models.IntegerField(
+        verbose_name='Месяц',
+        null=True,
+        blank=True
+    )
+    year = models.IntegerField(
+        verbose_name='год',
+        null=True,
+        blank=True
+    )
+    ur_lico = models.CharField(
+        verbose_name='Юр. лицо',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+
+
+class YandexSales(models.Model):
+    """Продажи Ozon со всех юр. лиц"""
