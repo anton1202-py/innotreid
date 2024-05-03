@@ -44,7 +44,7 @@ def process_wb_sales_data():
 
 def process_ozon_sales_data():
     """Записывает данные по продажам Ozon в базу данных"""
-    nessesary_date = datetime.now() - timedelta(days=100)
+    nessesary_date = datetime.now() - timedelta(days=70)
     month_report = int(nessesary_date.strftime('%m'))
     year_report = nessesary_date.strftime('%Y')
     print(month_report)
