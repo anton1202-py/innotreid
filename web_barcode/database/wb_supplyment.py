@@ -3,7 +3,7 @@ from price_system.supplyment import sender_error_to_tg
 from .models import WildberriesSales
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def wb_save_sales_data_to_database(data, ur_lico, month, year):
     """Записывает данные по продажам с Wildberries в базу данных"""
     WildberriesSales(

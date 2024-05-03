@@ -13,6 +13,7 @@ app = Celery('celery_tasks',
                       'celery_tasks.tasks',
                       'celery_tasks.tasks_yandex_fby_fbs',
                       'celery_tasks.yandex_tasks',
+                      'database.periodic_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
                       'price_system.periodical_tasks',
@@ -32,9 +33,13 @@ elif today.month == 12:
 penultimate_day_of_month = first_day_of_next_month - datetime.timedelta(days=2)
 
 app.conf.beat_schedule = {
-    "everyday-task1": {
-        "task": "celery_tasks.tasks.add_database_data",
+    "database_wb_sales_every_day": {
+        "task": "database.periodic_tasks.process_wb_sales_data",
         "schedule": crontab(hour=7, minute=20)
+    },
+    "database_ozon_sales_every_month": {
+        "task": "database.periodic_tasks.process_ozon_sales_data",
+        "schedule": crontab(0, 0, day_of_month='10')
     },
     "everyday-task": {
         "task": "celery_tasks.tasks.add_stock_data_from_frontend",

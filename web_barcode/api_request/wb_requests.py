@@ -26,6 +26,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
                                         yandex_business_id_dict)
 
 
+@sender_error_to_tg
 def wb_sales_statistic(header, check_date, attempt=0):
     """Получаем данные всех артикулов в ВБ. Максимум 1 запрос в минут"""
     url = f'https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom={check_date}&flag=1'
@@ -34,6 +35,7 @@ def wb_sales_statistic(header, check_date, attempt=0):
         "GET", url, headers=header)
     attempt += 1
     message = ''
+    time.sleep(2)
     if attempt <= 50:
         if response.status_code == 200:
             all_data = json.loads(response.text)

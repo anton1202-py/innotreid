@@ -106,7 +106,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    process_ozon_sales_data()
+    # process_ozon_sales_data()
     data = Articles.objects.all()
     context = {
         'data': data,

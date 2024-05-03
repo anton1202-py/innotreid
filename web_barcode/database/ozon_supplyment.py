@@ -1,38 +1,11 @@
-import json
-import math
-import os
-import time
-from datetime import datetime, timedelta
-
-import requests
-import telegram
-from api_request.wb_requests import wb_sales_statistic
-from django.contrib.auth.models import User
-# from celery_tasks.celery import app
-# from celery_tasks.celery import app
-from dotenv import load_dotenv
-from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
-                            WbArticleCommon, WbArticleCompany)
 
-from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
-                                        header_ozon_dict, header_wb_data_dict,
-                                        header_wb_dict, header_yandex_dict,
-                                        ozon_adv_client_access_id_dict,
-                                        ozon_adv_client_secret_dict,
-                                        ozon_api_token_dict,
-                                        wb_headers_karavaev, wb_headers_ooo,
-                                        yandex_business_id_dict)
-
-from .models import OzonMonthlySalesData, OzonSales, WildberriesSales
+from .models import OzonMonthlySalesData, OzonSales
 
 
+@sender_error_to_tg
 def ozon_main_process_sale_data(main_data, ur_lico, month_report, year_report):
     """Обрабатывает главные данные отчета по продажам с Ozon"""
-    print(len(main_data['result']['rows']))
     main_date_info = main_data['result']['header']
     # print('main_date_info', main_date_info)
     start_date_period = main_date_info['start_date']
@@ -59,6 +32,7 @@ def ozon_main_process_sale_data(main_data, ur_lico, month_report, year_report):
                            number_report, month_report, year_report)
 
 
+@sender_error_to_tg
 def ozon_article_sale_data(sale_article_info, ur_lico, start_date_period, finish_date_period,
                            number_report, month_report, year_report):
     """Обрабатывает данные артикулов отчета по продажам с Ozon"""
@@ -141,6 +115,7 @@ def ozon_article_sale_data(sale_article_info, ur_lico, start_date_period, finish
         ozon_save_article_sale_in_database(func_data_dict)
 
 
+@sender_error_to_tg
 def ozon_save_article_sale_in_database(func_data_dict):
     """Сохранет информацию о продажах артикула"""
     OzonSales(
@@ -178,6 +153,7 @@ def ozon_save_article_sale_in_database(func_data_dict):
     ).save()
 
 
+@sender_error_to_tg
 def ozon_save_main_sale_data_in_database(main_sale_data_dict):
     """Сохранет общую информацию о продажах за месяц"""
     OzonMonthlySalesData(

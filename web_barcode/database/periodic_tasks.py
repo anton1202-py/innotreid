@@ -8,8 +8,8 @@ import requests
 import telegram
 from api_request.ozon_requests import ozon_sales_monthly_report
 from api_request.wb_requests import wb_sales_statistic
+from celery_tasks.celery import app
 from django.contrib.auth.models import User
-# from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
@@ -28,6 +28,7 @@ from .ozon_supplyment import ozon_main_process_sale_data
 from .wb_supplyment import wb_save_sales_data_to_database
 
 
+@app.task
 def process_wb_sales_data():
     """Записывает данные по продажам WB в базу данных"""
     nessesary_date = datetime.now() - timedelta(days=2)
@@ -42,16 +43,17 @@ def process_wb_sales_data():
         time.sleep(65)
 
 
+@app.task
 def process_ozon_sales_data():
     """Записывает данные по продажам Ozon в базу данных"""
-    nessesary_date = datetime.now() - timedelta(days=40)
+    nessesary_date = datetime.now() - timedelta(days=20)
     month_report = int(nessesary_date.strftime('%m'))
     year_report = nessesary_date.strftime('%Y')
-    print(month_report)
     for ur_lico, header in header_ozon_dict.items():
-        print('ur_lico', ur_lico)
         main_data = ozon_sales_monthly_report(
             header, month_report, year_report)
         ozon_main_process_sale_data(
             main_data, ur_lico, month_report, year_report)
         time.sleep(65)
+    message = 'Сохранил продажи Озон за предыдущий месяц'
+    bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
