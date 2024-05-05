@@ -70,7 +70,7 @@ def article_designers(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    # get_current_selling()
+    get_current_selling()
 
     current_year = datetime.now().strftime('%Y')
     page_name = 'Светильники дизайнеров'

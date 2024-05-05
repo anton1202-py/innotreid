@@ -49,7 +49,7 @@ def get_current_selling():
     # ozon_sale_data = OzonSales.objects.all()
     article_data = Articles.objects.all()
     date = datetime.now()
-    january = date - timedelta(days=40)
+    january = date - timedelta(days=110)
     january_month = int(january.strftime('%m'))
     current_year = january.strftime('%Y')
     ozon_marketplace = CodingMarketplaces.objects.get(marketpalce='Ozon')
@@ -70,7 +70,3 @@ def get_current_selling():
             quantity=quantity,
             data=date,
             marketplace=ozon_marketplace).save()
-        if len(article_data) != 0:
-            print(article_data)
-
-            print(len(article_data), article.ozon_seller_article)
