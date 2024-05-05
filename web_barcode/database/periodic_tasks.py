@@ -26,7 +26,8 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
 from .models import WildberriesSales
 from .ozon_supplyment import (ozon_main_process_sale_data,
                               save_ozon_sale_data_for_motivation)
-from .wb_supplyment import wb_save_sales_data_to_database
+from .wb_supplyment import (save_wildberries_sale_data_for_motivation,
+                            wb_save_sales_data_to_database)
 
 
 @app.task
@@ -40,6 +41,8 @@ def process_wb_sales_data():
         main_data = wb_sales_statistic(header, check_date)
         for data in main_data:
             wb_save_sales_data_to_database(
+                data, ur_lico, month_report, year_report)
+            save_wildberries_sale_data_for_motivation(
                 data, ur_lico, month_report, year_report)
         time.sleep(65)
 
@@ -56,6 +59,7 @@ def process_ozon_sales_data():
         ozon_main_process_sale_data(
             main_data, ur_lico, month_report, year_report)
         time.sleep(65)
+    # Сохраняю данные в базу данных продаж для мотивации
     save_ozon_sale_data_for_motivation()
     message = 'Сохранил продажи Озон за предыдущий месяц'
     bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

@@ -5,6 +5,7 @@ from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 
 from .models import CodingMarketplaces, WildberriesSales
+from web_barcode.constants_file import CHAT_ID_ADMIN, bot
 
 
 @sender_error_to_tg
@@ -45,42 +46,40 @@ def wb_save_sales_data_to_database(data, ur_lico, month, year):
     ).save()
 
 
-# @sender_error_to_tg
-def save_wildberries_sale_data_for_motivation():
+@sender_error_to_tg
+def save_wildberries_sale_data_for_motivation(data, ur_lico, month, year):
     """Сохраняет данные по продажам Wildberries в базу продаж по подсчету мотивации"""
-    now_date = datetime.now() - timedelta(days=20)
-    filter_month = now_date.strftime('%m')
-    current_year = now_date.strftime('%Y')
-
+    now_date = datetime.now()
     wb_marketplace = CodingMarketplaces.objects.get(
         marketpalce='Wildberries')
-    article_data = Articles.objects.all()
-    for article in article_data:
-        article_data = WildberriesSales.objects.filter(
-            nm_id=article.wb_nomenclature, month=filter_month, year=current_year).values('finished_price')
-        summ_money = 0
-        quantity = len(article_data)
-        for i in article_data:
-            summ_money += i['finished_price']
-        if Selling.objects.filter(lighter=article,
-                                  ur_lico=article.company,
-                                  year=current_year,
-                                  month=filter_month,
+    if Articles.objects.filter(wb_nomenclature=data['nmId']).exists():
+        article_obj = Articles.objects.get(wb_nomenclature=data['nmId'])
+
+        if Selling.objects.filter(lighter=article_obj,
+                                  ur_lico=ur_lico,
+                                  year=year,
+                                  month=month,
                                   marketplace=wb_marketplace).exists():
-            Selling.objects.filter(lighter=article,
-                                   ur_lico=article.company,
-                                   year=current_year,
-                                   month=filter_month,
-                                   marketplace=wb_marketplace).update(summ=summ_money,
-                                                                      quantity=quantity,
-                                                                      data=now_date,)
+            sell_obj = Selling.objects.get(lighter=article_obj,
+                                           ur_lico=ur_lico,
+                                           year=year,
+                                           month=month,
+                                           marketplace=wb_marketplace)
+            sell_obj.summ += int(data['finishedPrice'])
+            sell_obj.quantity += 1
+            sell_obj.data = now_date
+            sell_obj.save()
+
         else:
             Selling(
-                lighter=article,
-                ur_lico=article.company,
-                year=current_year,
-                month=filter_month,
-                summ=summ_money,
-                quantity=quantity,
+                lighter=article_obj,
+                ur_lico=ur_lico,
+                year=year,
+                month=month,
+                summ=data['finishedPrice'],
+                quantity=1,
                 data=now_date,
                 marketplace=wb_marketplace).save()
+    else:
+        message = f'В базе данных нет артикула {data['nmId']}. Не смог загрузить по нему продажи в базу данных для мотивации'
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

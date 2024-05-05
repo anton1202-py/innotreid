@@ -108,6 +108,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    # process_wb_sales_data()
     # save_wildberries_sale_data_for_motivation()
     data = Articles.objects.all()
     context = {
