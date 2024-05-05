@@ -23,11 +23,18 @@
         </div>
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
-                <th>Ночник</th>
-                <th>Автор</th>
-                <th>Продажи за год</th>
-                <th>Вознаграждение за год</th>
+                <th rowspan="2">Ночник</th>
+                <th rowspan="2">Автор</th>
+                <th rowspan="2">Продажи за год</th>
+                <th rowspan="2">Вознаграждение</th>
+                <th colspan="{{ month_list|length }}">{{ current_year }} год</th>
             </tr>
+            <tr>
+                {% for month in month_list %}
+                    <th>{{ month }}</th>
+                {% endfor %}
+            </tr>
+            
             {% for el in article_list %}
             <tr>
                 <td>{{ el.common_article }}</td>
@@ -45,8 +52,11 @@
                         </select>
                     </td>
                 
-                <td></td>
-                <td></td>
+                <td>{{year_sales_dict|get_item:el.id}}</td>
+                <td>{{year_sales_dict|get_item:el.id|multiplicity:0.02|round_number}}</td>
+                {% for month in month_list %}
+                    <td>{{ main_sales_dict|get_item:el.id|get_item:month }}</td>
+                {% endfor %}
             </tr>
             {% endfor %}
         </table>

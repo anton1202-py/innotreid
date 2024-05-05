@@ -90,7 +90,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
+AUTH_USER_MODEL = 'users.InnotreidUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME':
@@ -109,7 +109,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

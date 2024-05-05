@@ -1,6 +1,10 @@
+from datetime import datetime, timedelta
+
+from motivation.models import Selling
+from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 
-from .models import WildberriesSales
+from .models import CodingMarketplaces, WildberriesSales
 
 
 @sender_error_to_tg
@@ -39,3 +43,44 @@ def wb_save_sales_data_to_database(data, ur_lico, month, year):
         month=month,
         year=year
     ).save()
+
+
+# @sender_error_to_tg
+def save_wildberries_sale_data_for_motivation():
+    """Сохраняет данные по продажам Wildberries в базу продаж по подсчету мотивации"""
+    now_date = datetime.now() - timedelta(days=20)
+    filter_month = now_date.strftime('%m')
+    current_year = now_date.strftime('%Y')
+
+    wb_marketplace = CodingMarketplaces.objects.get(
+        marketpalce='Wildberries')
+    article_data = Articles.objects.all()
+    for article in article_data:
+        article_data = WildberriesSales.objects.filter(
+            nm_id=article.wb_nomenclature, month=filter_month, year=current_year).values('finished_price')
+        summ_money = 0
+        quantity = len(article_data)
+        for i in article_data:
+            summ_money += i['finished_price']
+        if Selling.objects.filter(lighter=article,
+                                  ur_lico=article.company,
+                                  year=current_year,
+                                  month=filter_month,
+                                  marketplace=wb_marketplace).exists():
+            Selling.objects.filter(lighter=article,
+                                   ur_lico=article.company,
+                                   year=current_year,
+                                   month=filter_month,
+                                   marketplace=wb_marketplace).update(summ=summ_money,
+                                                                      quantity=quantity,
+                                                                      data=now_date,)
+        else:
+            Selling(
+                lighter=article,
+                ur_lico=article.company,
+                year=current_year,
+                month=filter_month,
+                summ=summ_money,
+                quantity=quantity,
+                data=now_date,
+                marketplace=wb_marketplace).save()

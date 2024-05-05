@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from users.models import InnotreidUser
 
 
 class Articles(models.Model):
@@ -102,7 +102,7 @@ class Articles(models.Model):
         null=True,
     )
     designer = models.ForeignKey(
-        User,
+        InnotreidUser,
         on_delete=models.CASCADE,
         verbose_name='Дизайнер',
         related_name='lighter_designer',
@@ -242,7 +242,7 @@ class ArticlesPrice(models.Model):
 
 class DesignUser(models.Model):
     designer = models.ForeignKey(
-        User,
+        InnotreidUser,
         on_delete=models.CASCADE,
         verbose_name='Дизайнер',
         related_name='designer'

@@ -5,8 +5,10 @@ import xlwt
 from celery import current_app
 from celery_tasks.celery import app as celery_app
 from celery_tasks.ozon_tasks import fbs_balance_maker_for_all_company
+from database.ozon_supplyment import save_ozon_sale_data_for_motivation
 from database.periodic_tasks import (process_ozon_sales_data,
                                      process_wb_sales_data)
+from database.wb_supplyment import save_wildberries_sale_data_for_motivation
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -106,7 +108,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    # process_ozon_sales_data()
+    save_wildberries_sale_data_for_motivation()
     data = Articles.objects.all()
     context = {
         'data': data,

@@ -1,6 +1,10 @@
+from datetime import datetime, timedelta
+
+from motivation.models import Selling
+from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 
-from .models import OzonMonthlySalesData, OzonSales
+from .models import CodingMarketplaces, OzonMonthlySalesData, OzonSales
 
 
 @sender_error_to_tg
@@ -167,3 +171,46 @@ def ozon_save_main_sale_data_in_database(main_sale_data_dict):
         year=main_sale_data_dict['year'],
         ur_lico=main_sale_data_dict['ur_lico'],
     ).save()
+
+
+@sender_error_to_tg
+def save_ozon_sale_data_for_motivation():
+    """Сохраняет данные по продажам Озон в базу продаж по подсчету мотивации"""
+    now_date = datetime.now() - timedelta(days=20)
+    filter_month = now_date.strftime('%m')
+    current_year = now_date.strftime('%Y')
+
+    ozon_marketplace = CodingMarketplaces.objects.get(marketpalce='Ozon')
+    article_data = Articles.objects.all()
+    for article in article_data:
+
+        article_data = OzonSales.objects.filter(
+            offer_id=article.ozon_seller_article, month=filter_month, year=current_year).values('total', 'quantity')
+
+        summ_money = 0
+        quantity = 0
+        for i in article_data:
+            quantity += i['quantity']
+            summ_money += i['total']
+        if Selling.objects.filter(lighter=article,
+                                  ur_lico=article.company,
+                                  year=current_year,
+                                  month=filter_month,
+                                  marketplace=ozon_marketplace).exists():
+            Selling.objects.filter(lighter=article,
+                                   ur_lico=article.company,
+                                   year=current_year,
+                                   month=filter_month,
+                                   marketplace=ozon_marketplace).update(summ=summ_money,
+                                                                        quantity=quantity,
+                                                                        data=now_date,)
+        else:
+            Selling(
+                lighter=article,
+                ur_lico=article.company,
+                year=current_year,
+                month=filter_month,
+                summ=summ_money,
+                quantity=quantity,
+                data=now_date,
+                marketplace=ozon_marketplace).save()

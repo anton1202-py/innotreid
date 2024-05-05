@@ -1,10 +1,9 @@
 from database.models import CodingMarketplaces
 from django.db import models
-from price_system.models import DesignUser
+from price_system.models import Articles, DesignUser
 
 
 class Selling(models.Model):
-    from price_system.models import Articles
     lighter = models.ForeignKey(
         Articles,
         on_delete=models.CASCADE,
@@ -28,6 +27,22 @@ class Selling(models.Model):
     )
     summ = models.FloatField(
         verbose_name='Сумма',
+        null=True,
+        blank=True
+    )
+    month = models.IntegerField(
+        verbose_name='Месяц',
+        null=True,
+        blank=True
+    )
+    year = models.IntegerField(
+        verbose_name='год',
+        null=True,
+        blank=True
+    )
+    ur_lico = models.CharField(
+        verbose_name='Юр. лицо',
+        max_length=75,
         null=True,
         blank=True
     )
