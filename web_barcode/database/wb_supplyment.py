@@ -4,8 +4,9 @@ from motivation.models import Selling
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 
-from .models import CodingMarketplaces, WildberriesSales
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot
+
+from .models import CodingMarketplaces, WildberriesSales
 
 
 @sender_error_to_tg
@@ -81,5 +82,5 @@ def save_wildberries_sale_data_for_motivation(data, ur_lico, month, year):
                 data=now_date,
                 marketplace=wb_marketplace).save()
     else:
-        message = f'В базе данных нет артикула {data['nmId']}. Не смог загрузить по нему продажи в базу данных для мотивации'
+        message = f'В базе данных нет артикула {data["nmId"]}. Не смог загрузить по нему продажи в базу данных для мотивации'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
