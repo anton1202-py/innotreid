@@ -71,7 +71,6 @@ def article_designers(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # get_current_selling()
-
     current_year = datetime.now().strftime('%Y')
     page_name = 'Светильники дизайнеров'
     article_list = Articles.objects.filter(
@@ -79,10 +78,20 @@ def article_designers(request):
     sale_data = Selling.objects.all().values('lighter', 'month', 'summ')
 
     # Проверяю наличия данных из формы фильтра юр лица.
-    filter_data = request.session.get('filter_data')
-    if filter_data:
-        article_list = Articles.objects.filter(
-            company=filter_data).order_by('common_article')
+
+    # filter_data = request.session.get('filter_data')
+    # common_article = request.session.get('common_article')
+    # designer = request.session.get('designer')
+    # print(filter_data, common_article, designer)
+    # if filter_data:
+    #     article_list = Articles.objects.filter(
+    #         company=filter_data).order_by('common_article')
+    # if common_article:
+    #     article_list = Articles.objects.filter(
+    #         Q(common_article=common_article)).order_by('common_article')
+    # if designer:
+    #     article_list = Articles.objects.filter(
+    #         Q(designer=designer)).order_by('common_article')
 
     # Список месяцев в текущем году
     months = Selling.objects.filter(
@@ -96,12 +105,25 @@ def article_designers(request):
     designer_list = designer_group.user_set.all()
 
     if request.POST:
-        if 'filter_data' in request.POST:
-            filter_company = request.POST.get('filter_data')
+        print(request.POST)
+        filter_company = request.POST.get('filter_data')
+        common_article = request.POST.get("common_article")
+        designer = request.POST.get("designer")
+        if filter_company:
             article_list = Articles.objects.filter(
                 company=filter_company).order_by('common_article')
-            request.session['filter_data'] = request.POST.get('filter_data')
-        return redirect('motivation_article_designers')
+            # request.session['filter_data'] = request.POST.get('filter_data')
+        if common_article:
+            article_list = Articles.objects.filter(
+                Q(common_article=common_article)).order_by('common_article')
+            # request.session['common_article'] = request.POST.get(
+            #     'common_article')
+        if designer:
+            article_list = Articles.objects.filter(
+                Q(designer=designer)).order_by('common_article')
+            # request.session['designer'] = request.POST.get('designer')
+
+        # return redirect('motivation_article_designers')
 
     context = {
         'page_name': page_name,

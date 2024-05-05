@@ -18,7 +18,7 @@ class Selling(models.Model):
     marketplace = models.ForeignKey(
         CodingMarketplaces,
         verbose_name='Маркетплейс',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     quantity = models.IntegerField(
         verbose_name='Количество',
