@@ -82,8 +82,8 @@ def get_front_api_wb_info(nm_id):
 @sender_error_to_tg
 def calculate_spp(price_from_page, price_from_wb_api, discount_from_wb_api):
     """Считает СПП артикула"""
-    spp = int((1 - price_from_page / price_from_wb_api) * (
-        1 - discount_from_wb_api/100) * 100)
+    spp = int((1 - (price_from_page/price_from_wb_api /
+                    (1 - discount_from_wb_api/100))) * 100)
     return spp
 
 
@@ -114,7 +114,7 @@ def article_spp_info():
                   discount_from_wb_api,
                   spp)
 
-            spp1 = (1 - (price_from_page/price_from_wb_api /
-                         (1 - discount_from_wb_api/100))) * 100
+            spp1 = int((1 - (price_from_page/price_from_wb_api /
+                             (1 - discount_from_wb_api/100))) * 100)
             print(spp1)
     return group_spp_data_dict
