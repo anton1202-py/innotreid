@@ -425,6 +425,10 @@ def replenish_campaign_budget(campaign, budget, header):
         message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
     else:
         message = f'{campaign} - продаж {budget} руб. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+        common_budget = campaign_budget + virtual_budjet
+        info_campaign_obj.virtual_budget = common_budget
+        info_campaign_obj.virtual_budget_date = now_date
+        info_campaign_obj.save()
     return message
 
 
