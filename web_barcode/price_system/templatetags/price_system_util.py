@@ -25,7 +25,6 @@ def list_position(list_data, arg):
 
 @register.filter
 def multiplicity(value, arg):
-    print(value)
     return value * arg
 
 

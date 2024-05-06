@@ -37,7 +37,10 @@ def get_main_sales_data():
             year_sales_dict[data['lighter']] += int(data['summ'])
         else:
             year_sales_dict[data['lighter']] = int(data['summ'])
-    print(main_sales_dict)
+    print(year_sales_dict)
+    for i, j in year_sales_dict.items():
+        if j == None:
+            print(i, j)
     return year_sales_dict, main_sales_dict
 
 
