@@ -24,17 +24,10 @@ def doc_type(function_path):
     return docstring
 
 
-def wb_articles_list():
-    """Получаем массив арткулов с ценами и скидками для ВБ"""
-    n = 1 + '23'
-    print(n)
-
-
 def celery_tasks_view(request):
     """Показывает задачи celery на странице"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    wb_data()
     tasks_info = []
     for task_name, task_config in celery_app.conf.beat_schedule.items():
         inner_list = []
