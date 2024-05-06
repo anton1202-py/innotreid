@@ -9,6 +9,7 @@ from django.template.response import TemplateResponse
 from django.views.generic import ListView
 from ozon_system.supplyment import \
     delete_ozon_articles_with_low_price_current_ur_lico
+from price_system.spp_mode import article_spp_info
 
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
@@ -82,7 +83,7 @@ def gramoty_article_compare(request):
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
-    # loop = asyncio.get_event_loop()
+    article_spp_info()
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
