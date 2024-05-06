@@ -1,28 +1,16 @@
 from datetime import date, datetime, timedelta
 
 import pandas as pd
-import xlwt
-from celery import current_app
-from celery_tasks.celery import app as celery_app
-from celery_tasks.ozon_tasks import fbs_balance_maker_for_all_company
-from celery_tasks.tasks import get_current_ssp
-from celery_tasks.yandex_tasks import fbs_balance_updater
-from database.ozon_supplyment import save_ozon_sale_data_for_motivation
-from database.periodic_tasks import (process_ozon_sales_data,
-                                     process_wb_sales_data)
-from database.wb_supplyment import save_wildberries_sale_data_for_motivation
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db.models import Case, Count, IntegerField, Q, Sum, When
-from django.db.models.functions import (ExtractMonth, ExtractWeek, ExtractYear,
-                                        TruncWeek)
+from django.db.models.functions import ExtractWeek, ExtractYear, TruncWeek
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
-from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -33,9 +21,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
                     StocksForm)
-from .models import (Articles, CodingMarketplaces, OrdersFbsInfo, Sales,
-                     ShelvingStocks, Stocks, Stocks_wb_frontend,
-                     WildberriesStocks)
+from .models import (Articles, OrdersFbsInfo, Sales, ShelvingStocks, Stocks,
+                     Stocks_wb_frontend, WildberriesStocks)
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -110,7 +97,6 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    get_current_ssp()
     data = Articles.objects.all()
     context = {
         'data': data,
