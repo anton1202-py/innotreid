@@ -4,6 +4,7 @@ import pandas as pd
 import xlwt
 from celery import current_app
 from celery_tasks.celery import app as celery_app
+from celery_tasks.file_for_create import get_current_ssp
 from celery_tasks.ozon_tasks import fbs_balance_maker_for_all_company
 from celery_tasks.yandex_tasks import fbs_balance_updater
 from database.ozon_supplyment import save_ozon_sale_data_for_motivation
@@ -109,6 +110,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    get_current_ssp()
     data = Articles.objects.all()
     context = {
         'data': data,
