@@ -396,9 +396,9 @@ def replenish_campaign_budget(campaign, budget, header):
     add_to_virtual_bill = round_up_to_nearest_multiple(campaign_budget, 50)
     current_campaign_budget = wb_campaign_budget(campaign, header)
 
-    if campaign_budget < 500:
+    if campaign_budget < 1000:
         common_budget = campaign_budget + virtual_budjet
-        if common_budget >= 500:
+        if common_budget >= 1000:
             campaign_budget = common_budget
         else:
             info_campaign_obj.virtual_budget = common_budget
@@ -410,7 +410,7 @@ def replenish_campaign_budget(campaign, budget, header):
         campaign_budget = 10000
 
     message = ''
-    if campaign_budget >= 500 and campaign_budget >= current_campaign_budget:
+    if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
             campaign, campaign_budget, budget, koef, header)
         if 'Пытался' not in message:
@@ -421,7 +421,7 @@ def replenish_campaign_budget(campaign, budget, header):
         info_campaign_obj.virtual_budget_date = now_date
         info_campaign_obj.save()
 
-    elif campaign_budget < 500:
+    elif campaign_budget < 1000:
         message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
     else:
         message = f'{campaign} - продаж {budget} руб. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
