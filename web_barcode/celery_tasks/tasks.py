@@ -809,7 +809,6 @@ def get_current_ssp():
                     """
                 cursor.execute(postgreSQL_select_Query)
                 spp_form_db = cursor.fetchall()[0][0]
-                print(spp, spp_form_db)
                 if str(spp) != spp_form_db:
                     cursor.executemany(
                         "INSERT INTO price_control_dataforanalysis (seller_article, wb_article, price_date, price, spp, basic_sale) VALUES(%s, %s, %s, %s, %s, %s);",
