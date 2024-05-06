@@ -795,8 +795,8 @@ def get_current_ssp():
                 # Обход ошибки отсутствия spp
                 price = int(data['data']['products'][0]
                             ['salePriceU'])//100
-                spp = int((1 - price / (int(nom_id_discount_dict[int(i)][0]) * (
-                    1 - int(nom_id_discount_dict[int(i)][1])/100))) * 100)
+                spp = int((1 - (price/int(nom_id_discount_dict[int(i)][0]) /
+                                (1 - int(nom_id_discount_dict[int(i)][1])/100))) * 100)
                 basic_sale = int(data['data']['products'][0]
                                  ['salePriceU'])//100
                 set_with_price = [article_dict[i], i,
