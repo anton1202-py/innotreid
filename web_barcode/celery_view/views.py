@@ -36,7 +36,7 @@ def celery_tasks_view(request):
         if task_config['task'] in celery_app.tasks:
             inner_list.append(celery_app.tasks[task_config['task']].__doc__)
         else:
-            inner_list.append('doc_type(task_config["task"])')
+            inner_list.append(doc_type(task_config["task"]))
 
         next_run_time = task_config['schedule']
         hour = list(next_run_time.hour)[0] + 3

@@ -153,6 +153,10 @@ def yandex_add_price_info(ur_lico):
 
 @app.task
 def common_yandex_add_price_info():
+    """
+    Проверяет изменилась ли цена в базе данных на артикул YANDEX.
+    Если изменилась, то записывает новую цену.
+    """
     yandex_add_price_info('ИП Караваев')
     yandex_add_price_info('ООО Иннотрейд')
 
