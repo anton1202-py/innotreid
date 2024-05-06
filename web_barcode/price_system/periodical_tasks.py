@@ -10,6 +10,10 @@ from price_system.supplyment import (ozon_articles_list,
                                      yandex_articles_list,
                                      yandex_matching_articles)
 
+from web_barcode.constants_file import bot, spp_group_list
+
+spp_group_list
+
 
 @sender_error_to_tg
 def wb_add_price_info(ur_lico):
@@ -68,8 +72,6 @@ def ozon_add_price_info(ur_lico):
     Если изменилась, то записывает новую цену.
     """
     ozon_article_price_data = ozon_articles_list(ur_lico)
-    print('**************************')
-    print('прошли ozon_article_price_data')
     for data in ozon_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(ozon_product_id=data['product_id']).exists():
@@ -178,6 +180,12 @@ def write_group_spp_data():
     main_info = article_spp_info()
     for group_obj, spp in main_info.items():
         if group_obj.spp != spp:
+            message = f'SPP группы {group_obj.name} изменилась. Была {group_obj.spp}, стала - {spp}'
+
             group_obj.spp = spp
             group_obj.change_date_spp = time_now
             group_obj.save()
+
+            for chat_id in spp_group_list:
+                bot.send_message(chat_id=chat_id,
+                                 text=message, parse_mode='HTML')

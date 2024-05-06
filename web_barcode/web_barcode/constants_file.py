@@ -164,6 +164,8 @@ yandex_fbs_warehouse_id_dict = {
     'ИП Караваев': 938511
 }
 
+spp_group_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
+
 ur_lico_list_for_yandex_fbs_balance = ['ООО Иннотрейд', 'ИП Караваев']
 admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
