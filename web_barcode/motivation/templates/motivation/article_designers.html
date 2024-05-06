@@ -8,7 +8,7 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-        <div class='filter-data'>
+        <div class='filter-data' style="background-color: blue;">
             <form action="" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <label for="common_article_id" class="rand">
@@ -74,16 +74,24 @@
                             {% endfor %}
                         </select>
                     </td>
-                
-                <td>{{year_sales_dict|get_item:el.id}}</td>
-                <td>{{year_sales_dict|get_item:el.id}}</td>
-                {% for month in month_list %}
-                    {% if main_sales_dict|get_item:el.id %}
-                        <td>{{ main_sales_dict|get_item:el.id }}</td>
-                    {% else %}
+                {% if el.id in year_sales_dict %}
+                    <td>{{year_sales_dict|get_item:el.id}}</td>
+                    <td>{{year_sales_dict|get_item:el.id|multiplicity:0.02|round_number}}</td>
+                    {% for month in month_list %}
+                        {% if main_sales_dict|get_item:el.id|get_item:month %}
+                            <td>{{ main_sales_dict|get_item:el.id|get_item:month }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <td></td>
+                    <td></td>
+                    {% for month in month_list %}
                         <td></td>
-                    {% endif %}
-                {% endfor %}
+                    {% endfor %}
+                {% endif %}
+                
             </tr>
             {% endfor %}
         </table>
