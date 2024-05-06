@@ -76,7 +76,7 @@
                     </td>
                 
                 <td>{{year_sales_dict|get_item:el.id}}</td>
-                <td>{{year_sales_dict|get_item:el.id|multiplicity:0.02|round_number}}</td>
+                <td>{{year_sales_dict|get_item:el.id}}</td>
                 {% for month in month_list %}
                     {% if main_sales_dict|get_item:el.id|get_item:month %}
                         <td>{{ main_sales_dict|get_item:el.id|get_item:month }}</td>
