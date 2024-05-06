@@ -83,7 +83,7 @@ def gramoty_article_compare(request):
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
-
+    write_group_spp_data()
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
