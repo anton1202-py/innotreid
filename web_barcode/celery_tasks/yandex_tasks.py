@@ -7,39 +7,28 @@ from datetime import datetime
 import pandas as pd
 import requests
 import telegram
+from api_request.yandex_requests import fbs_warehouse_article_balance
 from celery_tasks.celery import app
 from dotenv import load_dotenv
+from price_system.supplyment import sender_error_to_tg
+
+from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_AN, CHAT_ID_EU,
+                                        bot, header_yandex_dict,
+                                        ur_lico_list_for_yandex_fbs_balance,
+                                        yandex_fbs_campaign_id_dict,
+                                        yandex_fbs_warehouse_id_dict,
+                                        yandex_fby_campaign_id_dict)
 
 from .helpers_func import error_message, stream_dropbox_file
 
-dotenv_path = os.path.join(os.path.dirname(
-    __file__), '..', 'web_barcode', '.env')
-load_dotenv(dotenv_path)
-
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
-YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
-YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
-
-CHAT_ID_EU = os.getenv('CHAT_ID_EU')
-CHAT_ID_AN = os.getenv('CHAT_ID_AN')
-
-YANDEX_OOO_FBY_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBY_CAMPAIGN_ID')
-YANDEX_OOO_FBS_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBS_CAMPAIGN_ID')
-YANDEX_IP_FBY_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBY_CAMPAIGN_ID')
-YANDEX_IP_FBS_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBS_CAMPAIGN_ID')
-
-yandex_headers_ooo = {
-    'Authorization': YANDEX_OOO_KEY,
-}
-yandex_headers_ip = {
-    'Authorization': YANDEX_IP_KEY,
-}
 tg_accounts = [CHAT_ID_EU, CHAT_ID_AN]
 
+warehouse_yandex_market_fbs_dict = {
 
+}
+
+
+@sender_error_to_tg
 def create_stop_article_list():
     """Формирует список стоп артикулов у которых не нужно корректировать остатки на FBS"""
     DROPBOX_STOP_FILE_ADDRESS = '/DATABASE/список сопоставления.xlsx'
@@ -59,6 +48,7 @@ def create_stop_article_list():
     return stop_list
 
 
+@sender_error_to_tg
 def sku_data_function(ur_headers, fby_campaign_id, nextPageToken='', main_sku_data=None):
     """Возвращает список sku продавца, которые готовы к продаже и остаток которых = 0"""
     stop_list = create_stop_article_list()
@@ -83,6 +73,7 @@ def sku_data_function(ur_headers, fby_campaign_id, nextPageToken='', main_sku_da
     return main_sku_data
 
 
+@sender_error_to_tg
 def request_info_fby_stocks_data(ur_headers, fby_campaign_id):
     """
     Функция делает запросы на эндпоинт:
@@ -120,6 +111,7 @@ def request_info_fby_stocks_data(ur_headers, fby_campaign_id):
     return main_stock_data_dict
 
 
+@sender_error_to_tg
 def fbs_stocks_data(ur_headers, fbs_campaign_id, nextPageToken='', fbs_sku_data=None):
     """Создает и возвращает словарь с данными fbs_sku_data {артикул: остаток_fbs}"""
     stop_list = create_stop_article_list()
@@ -152,6 +144,7 @@ def fbs_stocks_data(ur_headers, fbs_campaign_id, nextPageToken='', fbs_sku_data=
     return fbs_sku_data
 
 
+@sender_error_to_tg
 def create_action_lists(ur_headers, fbs_campaign_id, fby_campaign_id):
     """Создает списки для обнуления FBS остатков и для их увеличения"""
     fby_stock_dict = request_info_fby_stocks_data(ur_headers, fby_campaign_id)
@@ -168,66 +161,36 @@ def create_action_lists(ur_headers, fbs_campaign_id, fby_campaign_id):
     return article_for_null_list, article_for_greate_list
 
 
-def fbs_balance_maker(ur_headers, fbs_campaign_id, fby_campaign_id):
+@sender_error_to_tg
+def fbs_balance_maker(ur_lico, header, fbs_campaign_id, fby_campaign_id):
     """Обновляет остаток на FBS в зависимости от остатка на FBY складе"""
     try:
-        update_balance_url = f'https://api.partner.market.yandex.ru/campaigns/{fbs_campaign_id}/offers/stocks'
-        time_now = datetime.now()
-        now = time_now.strftime('%Y-%m-%dT%H:%M:%SZ')
         article_for_null_list, article_for_greate_list = create_action_lists(
-            ur_headers, fbs_campaign_id, fby_campaign_id)
+            header, fbs_campaign_id, fby_campaign_id)
+
         # Обнуляем остатки на FBS
+        warehouse_id = yandex_fbs_warehouse_id_dict[ur_lico]
         for article in article_for_null_list:
-            payload = json.dumps({
-                "skus": [
-                    {
-                        "sku": article,
-                        "warehouseId": 250643,
-                        "items": [
-                            {
-                                "count": 0,
-                                "type": "FIT",
-                                "updatedAt": now
-                            }
-                        ]
-                    }
-                ]
-            })
-            response = requests.request(
-                "PUT", update_balance_url, headers=ur_headers, data=payload)
+            fbs_warehouse_article_balance(
+                article, warehouse_id, 0, header, fbs_campaign_id)
         # Увеличиваем остатки на FBS
         for article in article_for_greate_list:
-            payload = json.dumps({
-                "skus": [
-                    {
-                        "sku": article,
-                        "warehouseId": 250643,
-                        "items": [
-                            {
-                                "count": 100,
-                                "type": "FIT",
-                                "updatedAt": now
-                            }
-                        ]
-                    }
-                ]
-            })
-            response = requests.request(
-                "PUT", update_balance_url, headers=ur_headers, data=payload)
+            fbs_warehouse_article_balance(
+                article, warehouse_id, 100, header, fbs_campaign_id)
         if len(article_for_null_list) != 0:
             message_text = f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}'
-            for chat_id in tg_accounts:
-                print(
-                    f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}')
-                bot.send_message(chat_id=chat_id,
-                                 text=message_text, parse_mode='HTML')
+            print(
+                f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}')
+            # for chat_id in tg_accounts:
+            # bot.send_message(chat_id=chat_id,
+            #                  text=message_text, parse_mode='HTML')
         if len(article_for_greate_list) != 0:
             message_text = f'Артикулы для увеличения остатков YANDEX FBS: {article_for_greate_list}'
             print(
                 f'Артикулы для увеличения остатков YANDEX FBS: {article_for_greate_list}')
-            for chat_id in tg_accounts:
-                bot.send_message(chat_id=chat_id,
-                                 text=message_text, parse_mode='HTML')
+            # for chat_id in tg_accounts:
+            #     bot.send_message(chat_id=chat_id,
+            #                      text=message_text, parse_mode='HTML')
     except Exception as e:
         # обработка ошибки и отправка сообщения через бота
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)
@@ -239,11 +202,11 @@ def fbs_balance_maker(ur_headers, fbs_campaign_id, fby_campaign_id):
 def fbs_balance_updater():
     """Вызывает функции для работы с остатками ФБС на ООО и ИП"""
     try:
-        fbs_balance_maker(yandex_headers_ooo,
-                          YANDEX_OOO_FBS_CAMPAIGN_ID, YANDEX_OOO_FBY_CAMPAIGN_ID)
-        time.sleep(60)
-        fbs_balance_maker(yandex_headers_ip,
-                          YANDEX_IP_FBS_CAMPAIGN_ID, YANDEX_IP_FBY_CAMPAIGN_ID)
+        for ur_lico in ur_lico_list_for_yandex_fbs_balance:
+            fbs_balance_maker(ur_lico, header_yandex_dict[ur_lico],
+                              yandex_fbs_campaign_id_dict[ur_lico],
+                              yandex_fby_campaign_id_dict[ur_lico])
+            time.sleep(60)
     except Exception as e:
         # обработка ошибки и отправка сообщения через бота
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)

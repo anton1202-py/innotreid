@@ -53,6 +53,11 @@ YANDEX_BUSINESS_ID_IP = os.getenv('YANDEX_BUSINESS_ID_IP')
 YANDEX_BUSINESS_ID_OOO = os.getenv('YANDEX_BUSINESS_ID_OOO')
 YANDEX_BUSINESS_ID_GRAMOTY = os.getenv('YANDEX_BUSINESS_ID_GRAMOTY')
 
+YANDEX_OOO_FBY_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBY_CAMPAIGN_ID')
+YANDEX_OOO_FBS_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBS_CAMPAIGN_ID')
+YANDEX_IP_FBY_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBY_CAMPAIGN_ID')
+YANDEX_IP_FBS_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBS_CAMPAIGN_ID')
+
 wb_headers_karavaev = {
     'Content-Type': 'application/json',
     'Authorization': API_KEY_WB_IP
@@ -145,5 +150,20 @@ yandex_business_id_dict = {
     'ООО Мастерская чудес': YANDEX_BUSINESS_ID_GRAMOTY
 }
 
+yandex_fbs_campaign_id_dict = {
+    'ООО Иннотрейд': YANDEX_OOO_FBS_CAMPAIGN_ID,
+    'ИП Караваев': YANDEX_IP_FBS_CAMPAIGN_ID
+}
+yandex_fby_campaign_id_dict = {
+    'ООО Иннотрейд': YANDEX_OOO_FBY_CAMPAIGN_ID,
+    'ИП Караваев': YANDEX_IP_FBY_CAMPAIGN_ID
+}
+
+yandex_fbs_warehouse_id_dict = {
+    'ООО Иннотрейд': 250643,
+    'ИП Караваев': 938511
+}
+
+ur_lico_list_for_yandex_fbs_balance = ['ООО Иннотрейд', 'ИП Караваев']
 admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)

@@ -31,7 +31,7 @@ headers = {
 # @app.task
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def change_fbs_amount():
     """
     Функция смотрит остаток артикулов на складе FBY, если остаток не равен 0,
@@ -94,7 +94,6 @@ def change_fbs_amount():
             "PUT", URL_FBS, headers=headers, data=payload)
 
 
-# @sender_error_to_tg
 @app.task
 def add_fby_amount_to_database():
     """
@@ -172,7 +171,7 @@ def add_fby_amount_to_database():
             print("Соединение с PostgreSQL закрыто")
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def sender_message():
     connection = psycopg2.connect(user=os.getenv('POSTGRES_USER'),
                                   # пароль, который указали при установке PostgreSQL
@@ -201,7 +200,6 @@ def sender_message():
     return sender_data
 
 
-# @sender_error_to_tg
 @app.task
 def sender_zero_balance():
     """

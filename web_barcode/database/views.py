@@ -5,6 +5,7 @@ import xlwt
 from celery import current_app
 from celery_tasks.celery import app as celery_app
 from celery_tasks.ozon_tasks import fbs_balance_maker_for_all_company
+from celery_tasks.yandex_tasks import fbs_balance_updater
 from database.ozon_supplyment import save_ozon_sale_data_for_motivation
 from database.periodic_tasks import (process_ozon_sales_data,
                                      process_wb_sales_data)
@@ -108,8 +109,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    # process_wb_sales_data()
-    # save_wildberries_sale_data_for_motivation()
+    fbs_balance_updater()
     data = Articles.objects.all()
     context = {
         'data': data,
