@@ -107,5 +107,10 @@ def article_spp_info():
         spp = calculate_spp(
             price_from_page, price_from_wb_api, discount_from_wb_api)
         group_spp_data_dict[group_object] = spp
-        print(group_object.name, spp)
+        if group_object.name == 'Диплом 10':
+            print(group_object.name,
+                  price_from_page,
+                  price_from_wb_api,
+                  discount_from_wb_api,
+                  spp)
     return group_spp_data_dict
