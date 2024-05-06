@@ -113,4 +113,7 @@ def article_spp_info():
                   price_from_wb_api,
                   discount_from_wb_api,
                   spp)
+            spp = int((1 - price_from_page / price_from_wb_api) * (
+                1 - discount_from_wb_api/100) * 100)
+            print(spp)
     return group_spp_data_dict
