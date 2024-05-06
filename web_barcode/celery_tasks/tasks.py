@@ -881,7 +881,7 @@ def add_one_article_info_to_db(seller_article, wb_article):
                 # Обход ошибки отсутствия spp
                 price = int(data['data']['products'][0]
                             ['salePriceU'])//100
-                spp = int((1 - price / (int(nom_id_discount_dict[int(wb_article)][0]) * (
+                spp = int((1 - price / (int(nom_id_discount_dict[int(wb_article)][0]) / (
                     1 - int(nom_id_discount_dict[int(wb_article)][1])/100))) * 100)
                 basic_sale = int(data['data']['products'][0]
                                  ['salePriceU'])//100
