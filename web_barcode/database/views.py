@@ -109,7 +109,6 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    fbs_balance_updater()
     data = Articles.objects.all()
     context = {
         'data': data,
