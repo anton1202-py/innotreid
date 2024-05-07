@@ -61,7 +61,9 @@
         document.querySelectorAll(".start_task").forEach(button => {
             button.addEventListener("click", function() {
                 const taskName = this.getAttribute("data-rowid");
-                fetch(```long_running_function//${taskName}```)
+                console.log(taskName)
+                console.log(`long_running_function/?row_id=${taskName}`)
+                fetch(`long_running_function/?row_id=${taskName}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
