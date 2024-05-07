@@ -49,31 +49,14 @@
         </table>
     </div> 
     <script>
-        // document.querySelectorAll(".start_task").forEach(function(button) {
-        //     button.addEventListener("click", function() {
-        //     var rowId = this.getAttribute("data-rowid");
-        //     var xhr = new XMLHttpRequest();
-        //     xhr.open("GET", "long_running_function/?row_id=" + rowId, true);
-        //     xhr.send();
-        //     });
-        // });
-
-        document.querySelectorAll(".start_task").forEach(button => {
+        document.querySelectorAll(".start_task").forEach(function(button) {
             button.addEventListener("click", function() {
-                const taskName = this.getAttribute("data-rowid");
-                console.log(taskName)
-                console.log(`long_running_function/?row_id=${taskName}`)
-                fetch(`long_running_function/?row_id=${taskName}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            console.log(`Задача ${taskName} успешно выполнена. Результат: ${data.result}`);
-                        } else {
-                            console.error(data.message);
-                        }
-                    })
-                    .catch(error => console.error(error));
+            var rowId = this.getAttribute("data-rowid");
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "long_running_function/?row_id=" + rowId, true);
+            xhr.send();
             });
         });
+
     </script>  
 {% endblock %}
