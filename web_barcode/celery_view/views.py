@@ -60,17 +60,10 @@ def celery_tasks_view(request):
 
 def long_running_function_view(request):
     row_id = request.GET.get('row_id')
-    print(f'Нажата кнопка для старта задачи {row_id}')
     scheduled_tasks = celery_app.conf.beat_schedule.items()
     for task, options in scheduled_tasks:
-        # print(task, row_id)
         if options['task'] == row_id:
-            print('**************************')
-            print(task, options['task'], row_id)
-            print('**************************')
             celery_app.send_task(row_id)
-            print(celery_app.send_task(row_id))
-            print('Функция должна отработать')
             return HttpResponse(f"Задача {row_id} запущена")
 
     return HttpResponse(f"Задача {row_id} не найдена в расписании")
