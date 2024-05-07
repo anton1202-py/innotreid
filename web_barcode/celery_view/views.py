@@ -7,7 +7,7 @@ from celery.schedules import crontab
 from celery_tasks.celery import app as celery_app
 from celery_tasks.file_for_create import get_current_ssp
 from celery_tasks.google_sheet_tasks import wb_data
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 
@@ -70,6 +70,6 @@ def long_running_function_view(request):
             print('**************************')
             celery_app.send_task(task)
             print('Функция должна отработать')
-            return HttpResponse(f"Задача {row_id} запущена")
+            return JsonResponse({'status': 'success', 'result': row_id})
 
-    return HttpResponse(f"Задача {row_id} не найдена в расписании")
+    return JsonResponse({'status': 'error', 'message': f"Задача {row_id} не найдена в расписании"})
