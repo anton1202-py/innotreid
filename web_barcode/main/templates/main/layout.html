@@ -343,6 +343,13 @@
                             </span>
                         </span>
                         <ul class="submenu">
+                            {% url 'motivation_article_type' as url_article_type %}
+                            <li>
+                                <a href="{{ url_article_type }}" {% if request.path == url_article_type %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Тип светильника</h3>
+                                </a>
+                            </li>
                             {% url 'motivation_article_designers' as url_article_designers %}
                             <li>
                                 <a href="{{ url_article_designers }}" {% if request.path == url_article_designers %}class="active"{% endif %}>
@@ -350,13 +357,7 @@
                                     <h3>Светильники дизайнеров</h3>
                                 </a>
                             </li>
-                            {% url 'motivation_article_sale' as url_article_sale %}
-                            <li>
-                                <a href="{{ url_article_sale }}" {% if request.path == url_article_sale %}class="active"{% endif %}>
-                                    <span class="material-symbols-sharp">filter_list</span>
-                                    <h3>Продажи светильников</h3>
-                                </a>
-                            </li>
+                            
                             {% url 'motivation_designers_rewards' as url_designers_rewards %}
                             <li>
                                 <a href="{{ url_designers_rewards }}" {% if request.path == url_designers_rewards %}class="active"{% endif %}>

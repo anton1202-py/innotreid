@@ -16,4 +16,4 @@ def test_func():
     print('Я все прошел')
 
 
-test_func()
+print(not False)

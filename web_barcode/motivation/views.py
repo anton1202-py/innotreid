@@ -1,3 +1,4 @@
+import ast
 import os
 from datetime import datetime
 
@@ -8,11 +9,13 @@ from django.shortcuts import redirect, render
 from dotenv import load_dotenv
 from motivation.models import DesignerReward, Selling
 from motivation.supplyment import (articles_data_merge, designer_data_merge,
-                                   get_current_selling)
+                                   get_current_selling,
+                                   motivation_article_type_excel_file_export,
+                                   motivation_article_type_excel_import)
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
-from .forms import DesignerChooseForm
+from .forms import DesignerChooseForm, DesinerArticleForm
 
 
 def get_main_sales_data():
@@ -78,22 +81,6 @@ def article_designers(request):
     sale_data = Selling.objects.all().values('lighter', 'month', 'summ')
 
     # Проверяю наличия данных из формы фильтра юр лица.
-
-    # filter_data = request.session.get('filter_data')
-    # common_article = request.session.get('common_article')
-    # designer = request.session.get('designer')
-    # print(filter_data, common_article, designer)
-    # if filter_data:
-    #     article_list = Articles.objects.filter(
-    #         company=filter_data).order_by('common_article')
-    # if common_article:
-    #     article_list = Articles.objects.filter(
-    #         Q(common_article=common_article)).order_by('common_article')
-    # if designer:
-    #     article_list = Articles.objects.filter(
-    #         Q(designer=designer)).order_by('common_article')
-
-    # Список месяцев в текущем году
     months = Selling.objects.filter(
         year=current_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]
@@ -149,20 +136,56 @@ def update_model_field(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
-def article_sale(request):
-    """Отображает список рекламных компаний WB и добавляет их"""
+def article_type(request):
+    """
+    Отображает тип светильника:
+    дизайнерский или нет, с правами собственности или нет.
+    """
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    page_name = 'Продажи светильников'
-    article_list = Articles.objects.all()
-    sale_data = Selling.objects.all()
-
+    page_name = 'Тип светильника'
+    ur_lico = 'ООО Иннотрейд'
+    article_list = Articles.objects.filter(company='ООО Иннотрейд').order_by('common_article').values(
+        'common_article', 'designer_article', 'copy_right')
+    if request.POST:
+        if request.POST.get('export') == 'create_file':
+            return motivation_article_type_excel_file_export(article_list)
+        elif 'import_file' in request.FILES:
+            motivation_article_type_excel_import(
+                request.FILES['import_file'], ur_lico)
     context = {
         'page_name': page_name,
         'article_list': article_list,
-        'sale_data': sale_data
     }
-    return render(request, 'motivation/article_designers.html', context)
+    return render(request, 'motivation/article_type.html', context)
+
+
+def update_article_designer_boolean_field(request):
+    if request.method == 'POST':
+
+        # Сохраняем значение в базу данных
+        article_type = request.POST.get('designer_article_type')
+        article = request.POST.get('article')
+        checkbox_value = not ast.literal_eval(article_type)
+        Articles.objects.filter(common_article=article).update(
+            designer_article=checkbox_value)
+
+        return JsonResponse({'message': 'Value saved successfully.'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def update_article_copyright_boolean_field(request):
+    if request.method == 'POST':
+
+        # Сохраняем значение в базу данных
+        copyright_type = request.POST.get('copyright_article_type')
+        article = request.POST.get('article')
+        checkbox_value = not ast.literal_eval(copyright_type)
+        Articles.objects.filter(common_article=article).update(
+            copy_right=checkbox_value)
+
+        return JsonResponse({'message': 'Value saved successfully.'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
 def designers_rewards(request):

@@ -10,3 +10,12 @@ class DesignerChooseForm(forms.Form):
         required=False,
         empty_label=' '
     )
+
+
+class DesinerArticleForm(forms.ModelForm):
+    class Meta:
+        model = Articles
+        fields = ['designer_article']
+        widgets = {
+            'designer_article': forms.CheckboxInput(),
+        }

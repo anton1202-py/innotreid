@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from users.models import InnotreidUser
@@ -109,6 +110,21 @@ class Articles(models.Model):
         null=True,
         blank=True
     )
+    designer_article = models.BooleanField(
+        verbose_name='Дизайнерский ночник',
+        default=False
+    )
+    copy_right = models.BooleanField(
+        verbose_name='С авторскими правами',
+        default=False
+    )
+
+    def save(self, *args, **kwargs):
+        if self.copy_right and self.designer_article == False:
+            raise ValidationError(
+                "Поле 'С авторскими правами' не может быть True, если 'Дизайнерский ночник' равен False.")
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.common_article

@@ -4,12 +4,16 @@ import os
 import time
 from datetime import datetime, timedelta
 
+import pandas as pd
 import requests
 import telegram
 from database.models import CodingMarketplaces, OzonSales, WildberriesSales
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, PatternFill, Side
 from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
@@ -70,3 +74,89 @@ def get_current_selling():
             quantity=quantity,
             data=date,
             marketplace=ozon_marketplace).save()
+
+
+def motivation_article_type_excel_file_export(data):
+    """Создает и скачивает excel файл"""
+    # Создаем DataFrame из данных
+    wb = Workbook()
+    # Получаем активный лист
+    ws = wb.active
+
+    # Заполняем лист данными
+    for row, item in enumerate(data, start=2):
+        ws.cell(row=row, column=1, value=str(item['common_article']))
+        if item['designer_article'] == False:
+            ws.cell(row=row, column=2, value='')
+        else:
+            ws.cell(row=row, column=2, value=str(item['designer_article']))
+        if item['copy_right'] == False:
+            ws.cell(row=row, column=3, value='')
+        else:
+            ws.cell(row=row, column=3, value=str(item['copy_right']))
+    # Устанавливаем заголовки столбцов
+    ws.cell(row=1, column=1, value='Артикул')
+    ws.cell(row=1, column=2, value='Дизайнерский ночник')
+    ws.cell(row=1, column=3, value='С правами')
+
+    al = Alignment(horizontal="center",
+                   vertical="center")
+    al_left = Alignment(horizontal="left",
+                        vertical="center")
+    thin = Side(border_style="thin", color="000000")
+
+    ws.column_dimensions['A'].width = 12
+    ws.column_dimensions['B'].width = 10
+    ws.column_dimensions['C'].width = 10
+
+    for i in range(len(data)+1):
+        for c in ws[f'A{i+1}:C{i+1}']:
+            for i in range(3):
+                c[i].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[i].alignment = al_left
+
+    # Сохраняем книгу Excel в память
+    response = HttpResponse(content_type='application/xlsx')
+    name = f'Article_type_{datetime.now().strftime("%Y.%m.%d")}.xlsx'
+    file_data = 'attachment; filename=' + name
+    response['Content-Disposition'] = file_data
+    wb.save(response)
+
+    return response
+
+
+def motivation_article_type_excel_import(xlsx_file, ur_lico):
+    """Импортирует данные о группе артикула из Excel"""
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    if 'Артикул' in column_list and 'Дизайнерский ночник' in column_list and 'С правами' in column_list:
+        excel_data = pd.DataFrame(excel_data_common, columns=[
+                                  'Артикул', 'Дизайнерский ночник', 'С правами'])
+        article_list = excel_data['Артикул'].to_list()
+        designer_type_list = excel_data['Дизайнерский ночник'].to_list()
+        copyright_type_list = excel_data['С правами'].to_list()
+
+        # Словарь {артикул: название_группы}
+        article_value_dict = {}
+        # Список для обновления строк в БД
+        new_objects = []
+
+        for i in range(len(article_list)):
+            article_value_dict[article_list[i]] = [
+                designer_type_list[i], copyright_type_list[i]]
+
+        for row in range(len(article_list)):
+            article_obj = Articles.objects.get(
+                company=ur_lico, common_article=article_list[row])
+            if str(article_value_dict[article_list[row]][0]) == 'nan':
+                article_obj.designer_article = False
+            else:
+                article_obj.designer_article = article_value_dict[article_list[row]][0]
+            if str(article_value_dict[article_list[row]][1]) == 'nan':
+                article_obj.copy_right = False
+            else:
+                article_obj.copy_right = article_value_dict[article_list[row]][1]
+            new_objects.append(article_obj)
+        Articles.objects.bulk_update(
+            new_objects, ['designer_article', 'copy_right'])

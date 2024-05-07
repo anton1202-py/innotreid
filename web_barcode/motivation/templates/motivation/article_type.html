@@ -1,0 +1,173 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        <div class="add-data">
+                <div class="inner-form-data-button">
+                    <br>
+                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                        {% csrf_token %}
+                        <div class="two_button_label">
+                            <button type="submit" name="export" value="create_file">
+                                Экспортировать в Excel
+                            </button>
+                            <label for="import_data">Импорт из EXCEL</label>
+                            <input type="file" id="import_data" name="import_file" class="input-file">
+                            <button type="submit">
+                                Загрузить
+                            </button> 
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field">
+                </label>
+                <label for="designer" class="rand">
+                    <span>Автор</span><br>
+                    <select id="designer" name="designer">
+                        <option value=""></option>
+                        {% for designer in designer_list %}
+                            <option value="{{ designer.id }}">{{ designer.username }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+                <div>
+                    <br>
+                    <input type="checkbox" id="articles_without_designer" name="checkbox_value" value="true">
+                    <label for="articles_without_group">Артикул без дизайнера</label>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter_data" value="ООО Иннотрейд" />
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter_data" value="ИП Караваев" />
+                </div>
+                
+            </form>
+        </div>
+        <table id="table" style="overflow-x: scroll; display: block;">
+            <tr>
+                <th>Ночник</th>
+                <th>Дизайнерский</th>
+                <th>С правами</th>
+            </tr>
+            
+            {% for el in article_list %}
+            <tr>
+                <td>{{ el.common_article }}</td>
+                <td>
+                    <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
+                </td>
+                <td>
+                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %}>
+                </td>
+            {% endfor %}
+        </table>
+    </div>    
+    <script>
+        document.querySelectorAll('.designcheckbox').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('designer_article_type', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_article_designer_boolean_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        document.querySelectorAll('.copyrightcheckbox').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('copyright_article_type', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_article_copyright_boolean_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+
+        document.getElementById('articles_without_designer').addEventListener('change', function() {
+            let table_n = document.getElementById("table");
+            let rows_n = table_n.getElementsByTagName("tr");
+            if (document.getElementById('articles_without_designer').checked) {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelector('select');
+                    if (input) {
+                        let an_input = input.options[0]
+                        if (an_input){
+                            if(an_input.innerText){
+                                rows_n[i].style.display = 'none';
+                            } else {
+                                rows_n[i].style.display = '';
+                            }
+                        };
+                    }}
+            } else {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelectorAll('select');
+                    input.forEach((input) => {
+                        rows_n[i].style.display = '';
+                    })
+                }
+            }
+        });
+    </script>
+        
+{% endblock %}
