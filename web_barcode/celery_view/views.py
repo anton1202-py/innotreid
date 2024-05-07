@@ -68,8 +68,8 @@ def long_running_function_view(request):
             print('**************************')
             print(task, options['task'], row_id)
             print('**************************')
-            celery_app.send_task(task)
-            print(celery_app.send_task(task))
+            celery_app.send_task(row_id)
+            print(celery_app.send_task(row_id))
             print('Функция должна отработать')
             return HttpResponse(f"Задача {row_id} запущена")
 
