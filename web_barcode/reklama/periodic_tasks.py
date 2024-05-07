@@ -163,6 +163,9 @@ def matching_wb_ooo_article_campaign():
                 if Articles.objects.filter(wb_nomenclature=article).exists():
                     article_obj = Articles.objects.get(
                         wb_nomenclature=article)
+                    if not DataOooWbArticle.objects.filter(
+                            wb_article=article_obj).exists():
+                        DataOooWbArticle(wb_article=article_obj).save()
                     matching_data = DataOooWbArticle.objects.get(
                         wb_article=article_obj)
                     if matching_data.ad_campaign:

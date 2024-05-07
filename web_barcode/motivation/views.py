@@ -17,7 +17,7 @@ from .forms import DesignerChooseForm
 
 def get_main_sales_data():
     """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.all().values('lighter', 'month', 'summ')
+    sale_data = Selling.objects.all().values('lighter', 'month', 'quantity')
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
     # Словарь с продажами артикула за текущий год
@@ -26,24 +26,24 @@ def get_main_sales_data():
         if data['lighter'] in main_sales_dict:
             if data['month'] in main_sales_dict[data['lighter']]:
                 main_sales_dict[data['lighter']
-                                ][data['month']] += int(data['summ'])
+                                ][data['month']] += int(data['quantity'])
             else:
                 main_sales_dict[data['lighter']
-                                ][data['month']] = int(data['summ'])
+                                ][data['month']] = int(data['quantity'])
         else:
             main_sales_dict[data['lighter']] = {
-                data['month']: int(data['summ'])}
+                data['month']: int(data['quantity'])}
         if data['lighter'] in year_sales_dict:
-            year_sales_dict[data['lighter']] += int(data['summ'])
+            year_sales_dict[data['lighter']] += int(data['quantity'])
         else:
-            year_sales_dict[data['lighter']] = int(data['summ'])
+            year_sales_dict[data['lighter']] = int(data['quantity'])
     return year_sales_dict, main_sales_dict
 
 
 def get_designers_sales_data():
     """Отдает данные по продажам дизайнеров"""
     sale_data = Selling.objects.all().values(
-        'lighter', 'month', 'summ', 'lighter__designer')
+        'lighter', 'month', 'quantity', 'lighter__designer')
     # Словарь с данными артикула по продажам по месяцам
     monthly_sales_dict = {}
     # Словарь с продажами артикула за текущий год
@@ -52,17 +52,17 @@ def get_designers_sales_data():
         if data['lighter__designer'] in monthly_sales_dict:
             if data['month'] in monthly_sales_dict[data['lighter__designer']]:
                 monthly_sales_dict[data['lighter__designer']
-                                   ][data['month']] += int(data['summ'])
+                                   ][data['month']] += int(data['quantity'])
             else:
                 monthly_sales_dict[data['lighter__designer']
-                                   ][data['month']] = int(data['summ'])
+                                   ][data['month']] = int(data['quantity'])
         else:
             monthly_sales_dict[data['lighter__designer']] = {
-                data['month']: int(data['summ'])}
+                data['month']: int(data['quantity'])}
         if data['lighter__designer'] in year_sales_dict:
-            year_sales_dict[data['lighter__designer']] += int(data['summ'])
+            year_sales_dict[data['lighter__designer']] += int(data['quantity'])
         else:
-            year_sales_dict[data['lighter__designer']] = int(data['summ'])
+            year_sales_dict[data['lighter__designer']] = int(data['quantity'])
     return year_sales_dict, monthly_sales_dict
 
 
