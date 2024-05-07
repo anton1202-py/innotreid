@@ -67,7 +67,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            console.log(```Задача ${taskName} успешно выполнена. Результат: ${data.result}```);
+                            console.log(`Задача ${taskName} успешно выполнена. Результат: ${data.result}`);
                         } else {
                             console.error(data.message);
                         }
