@@ -7,6 +7,7 @@ from celery.schedules import crontab
 from celery_tasks.celery import app as celery_app
 from celery_tasks.file_for_create import get_current_ssp
 from celery_tasks.google_sheet_tasks import wb_data
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 
@@ -50,9 +51,24 @@ def celery_tasks_view(request):
             time_str = f'*/{list(sorted(next_run_time.minute))[1]}'
         inner_list.append(time_str)
         tasks_info.append(inner_list)
-
     context = {
         'data': tasks_info,
     }
 
     return render(request, 'celery_view/celery_page.html', context)
+
+
+def long_running_function_view(request):
+    row_id = request.GET.get('row_id')
+    print(f'Нажата кнопка для старта задачи {row_id}')
+    scheduled_tasks = celery_app.conf.beat_schedule.items()
+    for task, options in scheduled_tasks:
+        # print(task, row_id)
+        if options['task'] == row_id:
+            print('**************************')
+            print(task, options['task'], row_id)
+            print('**************************')
+            current_app.send_task(task)
+            return HttpResponse(f"Задача {row_id} запущена")
+
+    return HttpResponse(f"Задача {row_id} не найдена в расписании")

@@ -32,7 +32,7 @@ from .wb_supplyment import (save_wildberries_sale_data_for_motivation,
 
 @app.task
 def process_wb_sales_data():
-    """Записывает данные по продажам WB в базу данных"""
+    """Записывает данные по продажам WB в базу данных. Ежедневно. Раз в сутки."""
     nessesary_date = datetime.now() - timedelta(days=2)
     check_date = nessesary_date.strftime('%Y-%m-%d')
     month_report = int(nessesary_date.strftime('%m'))
@@ -49,7 +49,7 @@ def process_wb_sales_data():
 
 @app.task
 def process_ozon_sales_data():
-    """Записывает данные по продажам Ozon в базу данных"""
+    """Записывает данные по продажам Ozon в базу данных. Включается 10 числа каждого месяца"""
     nessesary_date = datetime.now() - timedelta(days=20)
     month_report = int(nessesary_date.strftime('%m'))
     year_report = nessesary_date.strftime('%Y')

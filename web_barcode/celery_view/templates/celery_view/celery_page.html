@@ -28,16 +28,34 @@
         <table style="overflow-x: scroll; display: block; width: 100%; text-align: left">
             <tr>
                 <th>Задача</th>
+                <th>Start</th>
                 <th>Время включения по UTC</th>
                 <th>Что делает</th>
             </tr>
             {% for el in data %}   
             <tr>
                 <td style="text-align: left">{{ el.0 }}</a></td>
+                <td>
+                    <button class="start_task" data-rowid="{{ el.0 }}">
+                        <span class="material-symbols-outlined">
+                            start
+                        </span>
+                    </button>
+                </td>
                 <td style="text-align: left">{{ el.2 }}</td>
                 <td style="text-align: left">{{ el.1 }}</td>
             </tr>
             {% endfor %}
         </table>
-    </div>    
+    </div> 
+    <script>
+        document.querySelectorAll(".start_task").forEach(function(button) {
+            button.addEventListener("click", function() {
+            var rowId = this.getAttribute("data-rowid");
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "long_running_function/?row_id=" + rowId, true);
+            xhr.send();
+            });
+        });
+    </script>  
 {% endblock %}

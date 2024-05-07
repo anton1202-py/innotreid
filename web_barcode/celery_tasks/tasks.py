@@ -193,7 +193,7 @@ def orders_fbs_statistic():
 
 @app.task
 def add_stock_data_from_frontend():
-    """Добавляет данные в базу с сайта WB"""
+    """Добавляет данные по остаткам в базу данных с сайта WB. Ежедневно. Раз в сутки."""
     refresh_token_db = os.getenv('REFRESH_TOKEN_DB')
     app_key_db = os.getenv('APP_KEY_DB')
     app_secret_db = os.getenv('APP_SECRET_DB')
