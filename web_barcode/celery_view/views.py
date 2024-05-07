@@ -68,7 +68,7 @@ def long_running_function_view(request):
             print('**************************')
             print(task, options['task'], row_id)
             print('**************************')
-            current_app.send_task(task)
+            celery_app.send_task(task)
             return HttpResponse(f"Задача {row_id} запущена")
 
     return HttpResponse(f"Задача {row_id} не найдена в расписании")
