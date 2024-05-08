@@ -137,17 +137,40 @@ def update_model_field(request):
 
 
 def filter_get_request(request, ur_lico):
+    print(request)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         search_term = request.GET.get('search_term', None)
         article_list = Articles.objects.filter(
             common_article__contains=search_term)
         if search_term:
             filtered_articles = Articles.objects.filter(company=ur_lico,
-                                                        common_article__contains=search_term)
+                                                        common_article__contains=search_term).order_by('common_article')
+        else:
+            filtered_articles = Articles.objects.filter(
+                company=ur_lico).order_by('common_article')
+        data = [{'common_article': article.common_article,
+                'designer_article': article.designer_article,
+                 'copy_right': article.copy_right} for article in filtered_articles]
+        return JsonResponse(data, safe=False)
+
+
+def filter_get_delete_request(request):
+    """Показывает таблицу при удалении артикулов из строки фильтра"""
+    print(request)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        search_term = request.GET.get('search_term', None)
+        if search_term:
+            filtered_articles = Articles.objects.filter(
+                common_article__contains=search_term)
             data = [{'common_article': article.common_article,
                      'designer_article': article.designer_article,
                      'copy_right': article.copy_right} for article in filtered_articles]
-            return JsonResponse(data, safe=False)
+        else:
+            filtered_articles = Articles.objects.all()
+            data = [{'common_article': article.common_article,
+                     'designer_article': article.designer_article,
+                     'copy_right': article.copy_right} for article in filtered_articles]
+        return JsonResponse(data, safe=False)
 
 
 def article_type(request):
@@ -177,6 +200,7 @@ def article_type(request):
             request.session['filter_data'] = request.POST.get('filter_data')
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
+
                 return motivation_article_type_excel_file_export(article_list)
 
             elif 'import_file' in request.FILES:

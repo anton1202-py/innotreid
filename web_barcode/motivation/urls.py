@@ -17,4 +17,6 @@ urlpatterns = [
          name='update_article_designer_boolean_field'),
     path('update_article_copyright_boolean_field/', views.update_article_copyright_boolean_field,
          name='update_article_copyright_boolean_field'),
+    path('filter_get_delete_request/', views.filter_get_delete_request,
+         name='filter_get_delete_request'),
 ]

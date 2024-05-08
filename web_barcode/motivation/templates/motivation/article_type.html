@@ -8,16 +8,9 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-        
-        <div class="add-data">
-                <div class="inner-form-data-button">
-                    <br>
-                    
-                </div>
-            </div>
+
         <div class='filter-data'>
-           
-            <form action="" class="small-filter-form" method="POST">
+            <form id="left-form" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <label for="common_article_id" class="rand">
                     <span>Артикул</span><br>
@@ -29,7 +22,7 @@
                 </div>
             </form>
             
-            <form action="" class="small-filter-form" method="POST">
+            <form id="centr-form" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <div class="inner-form-data">
                     <br>
@@ -39,34 +32,34 @@
                     <br>
                     <input type="Submit" id="filter" name="filter_data" value="ИП Караваев" />
                 </div>
-                
             </form>
+        
             <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
                 {% csrf_token %}
                 <div class="inner-form-data">
                     <button type="submit" name="export" value="create_file" title="Экспорт в Excel">
-                        
                         <span class="material-symbols-outlined">
                             ios_share
                         </span>
                     </button>
                 </div>
+    
                 <div class="inner-form-data">
                     <label for="import_data" title="Импорт из Excel">
                         <span class="material-symbols-outlined">
                             download
                         </span>
                     </label>
-                    <input type="file" id="import_data" name="import_file" class="input-file" style="display: none;" onchange="submitForm()">
+                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
                 </div>
             </form>
         </div>
         {% if import_data %}
             <script>
-                alert("Значение переменной import_data: {{ import_data }}");
+                alert("{{ import_data }}");
             </script>
         {% endif %}
-        <table id="table" style="overflow-x: scroll; display: block;">
+        <table id="table" style="overflow-x: scroll; width: 100%;">
             <thead>
                 <tr>
                     <th>Ночник</th>
@@ -112,38 +105,38 @@
             });
         });
 
-
+        // ========== Показывает отфильтрованную таблицу ========= //
         $(document).ready(function() {
             $('#common_article_id').on('input', function() {
                 var search_term = $(this).val();
                 $.ajax({
-            url: '',
-            data: {'search_term': search_term},
-            success: function(data) {
-                $('#table tbody').empty();
-                if (data.length > 0) {
-                    $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
-                    data.forEach(function(article) {
-                        var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
-                        if (article.designer_article) {
-                            newRow += ' checked';
+                    url: '',
+                    data: {'search_term': search_term},
+                    success: function(data) {
+                        $('#table tbody').empty();
+                        if (data.length > 0) {
+                            $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
+                            data.forEach(function(article) {
+                                var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
+                                if (article.designer_article) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
+                                if (article.copy_right) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td></tr>';
+                                $('#table tbody').append(newRow);
+                            });
+                        } else {
+                            $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
                         }
-                        newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
-                        if (article.copy_right) {
-                            newRow += ' checked';
-                        }
-                        newRow += '></td></tr>';
-                        $('#table tbody').append(newRow);
-                    });
-                } else {
-                    $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
-                }
-            }
+                    }
+                });
+            });
         });
-    });
-});
            
-    
+        // ========== Записывает в БД нажатия чекбоксов .designcheckbox ========= //
         document.querySelectorAll('.designcheckbox').forEach(select => {
             select.addEventListener('change', function() {
                 var selectedSurname = this.value;
@@ -174,6 +167,7 @@
             });
         });
 
+        // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
         document.querySelectorAll('.copyrightcheckbox').forEach(select => {
             select.addEventListener('change', function() {
                 var selectedSurname = this.value;
@@ -204,26 +198,11 @@
             });
         });
 
-
+        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
         function submitForm() {
           document.getElementById('uploadForm').submit();
         }
 
-        // function filterData() {
-        //     var article = document.getElementById('common_article_id').value;
-        //     var formData = new FormData();
-        //     formData.append('csrfmiddlewaretoken', document.getElementsByName('csrfmiddlewaretoken')[0].value);
-        //     formData.append('common_article', article);
-
-        //     fetch('', {
-        //         method: 'POST',
-        //         body: formData
-        //     })
-        //     .then(response => response.text())
-        //     .then(data => {
-        //         // Обновление данных на странице или другие действия
-        //     });
-        // }
     </script>
         
 {% endblock %}

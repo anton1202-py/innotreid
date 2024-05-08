@@ -572,6 +572,7 @@ form{
     gap: 2rem;
 }
 .big-filter-form {
+    padding: 0;
     display: flex;
     width: 100%;
     margin: 0;
@@ -630,8 +631,23 @@ form {
     margin: 0;
     padding: 0;
     display: flex;
-    /*float: left;*/
+    justify-content: space-between;
+}
 
+#left-form {
+    flex: 1;
+    text-align: left;
+}
+
+#center-form {
+    flex: 1;
+    text-align: center;
+}
+
+#uploadForm {
+    margin-top: 10px;
+    flex: 1;
+    text-align: right;
 }
 
 .filter-form {
