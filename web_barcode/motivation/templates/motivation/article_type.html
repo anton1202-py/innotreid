@@ -8,49 +8,29 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
+        
         <div class="add-data">
                 <div class="inner-form-data-button">
                     <br>
-                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
-                        {% csrf_token %}
-                        <div class="two_button_label">
-                            <button type="submit" name="export" value="create_file">
-                                Экспортировать в Excel
-                            </button>
-                            <label for="import_data">Импорт из EXCEL</label>
-                            <input type="file" id="import_data" name="import_file" class="input-file">
-                            <button type="submit">
-                                Загрузить
-                            </button> 
-                        </div>
-                    </form>
+                    
                 </div>
             </div>
         <div class='filter-data'>
+           
             <form action="" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <label for="common_article_id" class="rand">
                     <span>Артикул</span><br>
-                    <input type="text" id="common_article_id" name="common_article" class="input-field">
-                </label>
-                <label for="designer" class="rand">
-                    <span>Автор</span><br>
-                    <select id="designer" name="designer">
-                        <option value=""></option>
-                        {% for designer in designer_list %}
-                            <option value="{{ designer.id }}">{{ designer.username }}</option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field" oninput="filterData()">
                 </label>
                 <div class="inner-form-data">
                     <br>
-                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" style="display: none;"/>
                 </div>
-                <div>
-                    <br>
-                    <input type="checkbox" id="articles_without_designer" name="checkbox_value" value="true">
-                    <label for="articles_without_group">Артикул без дизайнера</label>
-                </div>
+            </form>
+            
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
                 <div class="inner-form-data">
                     <br>
                     <input type="Submit" id="filter" name="filter_data" value="ООО Иннотрейд" />
@@ -61,27 +41,109 @@
                 </div>
                 
             </form>
+            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <button type="submit" name="export" value="create_file" title="Экспорт в Excel">
+                        
+                        <span class="material-symbols-outlined">
+                            ios_share
+                        </span>
+                    </button>
+                </div>
+                <div class="inner-form-data">
+                    <label for="import_data" title="Импорт из Excel">
+                        <span class="material-symbols-outlined">
+                            download
+                        </span>
+                    </label>
+                    <input type="file" id="import_data" name="import_file" class="input-file" style="display: none;" onchange="submitForm()">
+                </div>
+            </form>
         </div>
+        {% if import_data %}
+            <script>
+                alert("Значение переменной import_data: {{ import_data }}");
+            </script>
+        {% endif %}
         <table id="table" style="overflow-x: scroll; display: block;">
-            <tr>
-                <th>Ночник</th>
-                <th>Дизайнерский</th>
-                <th>С правами</th>
-            </tr>
-            
-            {% for el in article_list %}
-            <tr>
-                <td>{{ el.common_article }}</td>
-                <td>
-                    <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
-                </td>
-                <td>
-                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %}>
-                </td>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Ночник</th>
+                    <th>Дизайнерский</th>
+                    <th>С правами</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for el in article_list %}
+                <tr>
+                    <td>{{ el.common_article }}</td>
+                    <td>
+                        <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
+                    </td>
+                    <td>
+                        <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
+                    </td>
+                {% endfor %}
+            </tbody>
         </table>
-    </div>    
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
+        // Блокрует нажатие чекбокса copyrightcheckbox, если designcheckbox не нажат
+        document.querySelectorAll('.designcheckbox').forEach(checkbox => {
+            // Проверяем состояние чекбокса designer_checkbox_id при загрузке страницы
+            if (checkbox.checked) {
+                checkbox.closest('tr').querySelector('.copyrightcheckbox').disabled = false;
+            } else {
+                checkbox.closest('tr').querySelector('.copyrightcheckbox').checked = false;
+                checkbox.closest('tr').querySelector('.copyrightcheckbox').disabled = true;
+            }
+        
+            checkbox.addEventListener('change', function() {
+                let copyrightCheckbox = this.closest('tr').querySelector('.copyrightcheckbox');
+                if (this.checked) {
+                    copyrightCheckbox.disabled = false;
+                } else {
+                    copyrightCheckbox.checked = false;
+                    copyrightCheckbox.disabled = true;
+                }
+            });
+        });
+
+
+        $(document).ready(function() {
+            $('#common_article_id').on('input', function() {
+                var search_term = $(this).val();
+                $.ajax({
+            url: '',
+            data: {'search_term': search_term},
+            success: function(data) {
+                $('#table tbody').empty();
+                if (data.length > 0) {
+                    $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
+                    data.forEach(function(article) {
+                        var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
+                        if (article.designer_article) {
+                            newRow += ' checked';
+                        }
+                        newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
+                        if (article.copy_right) {
+                            newRow += ' checked';
+                        }
+                        newRow += '></td></tr>';
+                        $('#table tbody').append(newRow);
+                    });
+                } else {
+                    $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
+                }
+            }
+        });
+    });
+});
+           
+    
         document.querySelectorAll('.designcheckbox').forEach(select => {
             select.addEventListener('change', function() {
                 var selectedSurname = this.value;
@@ -143,31 +205,25 @@
         });
 
 
-        document.getElementById('articles_without_designer').addEventListener('change', function() {
-            let table_n = document.getElementById("table");
-            let rows_n = table_n.getElementsByTagName("tr");
-            if (document.getElementById('articles_without_designer').checked) {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelector('select');
-                    if (input) {
-                        let an_input = input.options[0]
-                        if (an_input){
-                            if(an_input.innerText){
-                                rows_n[i].style.display = 'none';
-                            } else {
-                                rows_n[i].style.display = '';
-                            }
-                        };
-                    }}
-            } else {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelectorAll('select');
-                    input.forEach((input) => {
-                        rows_n[i].style.display = '';
-                    })
-                }
-            }
-        });
+        function submitForm() {
+          document.getElementById('uploadForm').submit();
+        }
+
+        // function filterData() {
+        //     var article = document.getElementById('common_article_id').value;
+        //     var formData = new FormData();
+        //     formData.append('csrfmiddlewaretoken', document.getElementsByName('csrfmiddlewaretoken')[0].value);
+        //     formData.append('common_article', article);
+
+        //     fetch('', {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.text())
+        //     .then(data => {
+        //         // Обновление данных на странице или другие действия
+        //     });
+        // }
     </script>
         
 {% endblock %}

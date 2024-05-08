@@ -149,14 +149,18 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
         for row in range(len(article_list)):
             article_obj = Articles.objects.get(
                 company=ur_lico, common_article=article_list[row])
-            if str(article_value_dict[article_list[row]][0]) == 'nan':
+            if str(article_value_dict[article_list[row]][0]).capitalize() == 'True':
+                article_obj.designer_article = True
+                if str(article_value_dict[article_list[row]][1]).capitalize() == 'True':
+                    article_obj.copy_right = True
+                else:
+                    article_obj.copy_right = False
+            else:
                 article_obj.designer_article = False
-            else:
-                article_obj.designer_article = article_value_dict[article_list[row]][0]
-            if str(article_value_dict[article_list[row]][1]) == 'nan':
                 article_obj.copy_right = False
-            else:
-                article_obj.copy_right = article_value_dict[article_list[row]][1]
+
             new_objects.append(article_obj)
         Articles.objects.bulk_update(
             new_objects, ['designer_article', 'copy_right'])
+    else:
+        return f'Вы пытались загрузить ошибочный файл {xlsx_file}.'

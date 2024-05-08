@@ -19,3 +19,7 @@ class DesinerArticleForm(forms.ModelForm):
         widgets = {
             'designer_article': forms.CheckboxInput(),
         }
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()

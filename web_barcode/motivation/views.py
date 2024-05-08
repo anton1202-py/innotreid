@@ -15,7 +15,7 @@ from motivation.supplyment import (articles_data_merge, designer_data_merge,
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
-from .forms import DesignerChooseForm, DesinerArticleForm
+from .forms import UploadFileForm
 
 
 def get_main_sales_data():
@@ -77,7 +77,7 @@ def article_designers(request):
     current_year = datetime.now().strftime('%Y')
     page_name = 'Светильники дизайнеров'
     article_list = Articles.objects.filter(
-        company='ООО Иннотрейд').order_by('common_article')
+        designer_article=True).order_by('common_article')
     sale_data = Selling.objects.all().values('lighter', 'month', 'summ')
 
     # Проверяю наличия данных из формы фильтра юр лица.
@@ -96,10 +96,10 @@ def article_designers(request):
         filter_company = request.POST.get('filter_data')
         common_article = request.POST.get("common_article")
         designer = request.POST.get("designer")
-        if filter_company:
-            article_list = Articles.objects.filter(
-                company=filter_company).order_by('common_article')
-            # request.session['filter_data'] = request.POST.get('filter_data')
+        # if filter_company:
+        #     article_list = Articles.objects.filter(
+        #         company=filter_company).order_by('common_article')
+        # request.session['filter_data'] = request.POST.get('filter_data')
         if common_article:
             article_list = Articles.objects.filter(
                 Q(common_article=common_article)).order_by('common_article')
@@ -136,6 +136,20 @@ def update_model_field(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
+def filter_get_request(request, ur_lico):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        search_term = request.GET.get('search_term', None)
+        article_list = Articles.objects.filter(
+            common_article__contains=search_term)
+        if search_term:
+            filtered_articles = Articles.objects.filter(company=ur_lico,
+                                                        common_article__contains=search_term)
+            data = [{'common_article': article.common_article,
+                     'designer_article': article.designer_article,
+                     'copy_right': article.copy_right} for article in filtered_articles]
+            return JsonResponse(data, safe=False)
+
+
 def article_type(request):
     """
     Отображает тип светильника:
@@ -144,18 +158,44 @@ def article_type(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Тип светильника'
+
     ur_lico = 'ООО Иннотрейд'
-    article_list = Articles.objects.filter(company='ООО Иннотрейд').order_by('common_article').values(
+    if request.session['filter_data']:
+        ur_lico = request.session['filter_data']
+    article_list = Articles.objects.filter(company=ur_lico).order_by('common_article').values(
         'common_article', 'designer_article', 'copy_right')
+    import_data = ''
+    if request.GET:
+        return filter_get_request(request, ur_lico)
+
     if request.POST:
-        if request.POST.get('export') == 'create_file':
-            return motivation_article_type_excel_file_export(article_list)
-        elif 'import_file' in request.FILES:
-            motivation_article_type_excel_import(
-                request.FILES['import_file'], ur_lico)
+        filter_company = request.POST.get('filter_data')
+        if filter_company:
+            article_list = Articles.objects.filter(
+                company=filter_company).order_by('common_article').values(
+                'common_article', 'designer_article', 'copy_right')
+            request.session['filter_data'] = request.POST.get('filter_data')
+        if 'export' in request.POST or 'import_file' in request.FILES:
+            if request.POST.get('export') == 'create_file':
+                return motivation_article_type_excel_file_export(article_list)
+
+            elif 'import_file' in request.FILES:
+                import_data = motivation_article_type_excel_import(
+                    request.FILES['import_file'], ur_lico)
+                if type(import_data) == str:
+                    print('Ошибочка')
+                else:
+                    return redirect('motivation_article_type')
+        if 'common_article' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
+                'common_article', 'designer_article', 'copy_right')
+
     context = {
         'page_name': page_name,
         'article_list': article_list,
+        'import_data': import_data
     }
     return render(request, 'motivation/article_type.html', context)
 
