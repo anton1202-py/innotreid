@@ -252,7 +252,9 @@ def wb_matching_articles(ur_lico):
                 company=ur_lico,
                 wb_seller_article=wb_data[0],
                 wb_barcode=wb_data[1],
-                wb_nomenclature=wb_data[2]
+                wb_nomenclature=wb_data[2],
+                designer_article=False,
+                copy_right=False
             )
             wb.save()
 
@@ -314,7 +316,9 @@ def ozon_matching_articles(ur_lico):
                 ozon_product_id=int(ozon_data[2]),
                 ozon_sku=int(ozon_data[3]),
                 ozon_fbo_sku_id=int(ozon_data[4]),
-                ozon_fbs_sku_id=int(ozon_data[5])
+                ozon_fbs_sku_id=int(ozon_data[5]),
+                designer_article=False,
+                copy_right=False
             )
             ozon.save()
 
@@ -363,7 +367,9 @@ def yandex_matching_articles(ur_lico):
                 company=ur_lico,
                 yandex_seller_article=yandex_data[0],
                 yandex_barcode=yandex_data[1],
-                yandex_sku=int(yandex_data[2])
+                yandex_sku=int(yandex_data[2]),
+                designer_article=False,
+                copy_right=False
             )
             yandex.save()
         yandex_article = None
