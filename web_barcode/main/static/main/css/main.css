@@ -684,6 +684,12 @@ form {
     margin: 0;
     padding: 0;
 }
+.main-percent {
+    text-align: center;
+}
+.copyright-percent {
+    text-align: center;
+}
 /* ========= КОНЕЦ ФИЛЬТРА =========*/
 
 /* ==========ЗАГРУЗКА ИЗ EXCEL ========= */

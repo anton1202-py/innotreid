@@ -15,7 +15,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
     <script src="/static/main/js/main.js" defer></script>
     <!-- Chartjs CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     {% block mainmenu %}
@@ -334,6 +333,7 @@
                             <h3>Периодические задачи</h3>
                         </a>
                     </li>
+                    {% if user.is_superuser %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
@@ -348,6 +348,14 @@
                                 <a href="{{ url_article_type }}" {% if request.path == url_article_type %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
                                     <h3>Тип светильника</h3>
+                                </a>
+                            </li>
+                            
+                            {% url 'motivation_percent_rewards' as url_percent_rewards %}
+                            <li>
+                                <a href="{{ url_percent_rewards }}" {% if request.path == url_percent_rewards %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>% вознаграждения</h3>
                                 </a>
                             </li>
                             {% url 'motivation_article_designers' as url_article_designers %}
@@ -367,6 +375,7 @@
                             </li>
                         </ul>
                     </li>
+                {% endif %}
             </ul>
         </nav>
         </div>

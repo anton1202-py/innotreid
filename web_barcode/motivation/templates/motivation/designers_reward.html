@@ -23,10 +23,28 @@
             {% for el in designer_users %}
             <tr>
                 <td>{{ el.first_name }} {{ el.last_name }}</td>
-                <td>{{year_sales_dict|get_item:el.id}}</td>
-                <td>{{year_sales_dict|get_item:el.id|multiplicity:0.02|round_number}}</td>
+                {% if year_sales_dict|get_item:el.id %}
+                    <td>{{year_sales_dict|get_item:el.id}}</td>
+                {% else %}
+                    <td></td>
+                {% endif %} 
+                {% if monthly_sales_dict|get_item:el.id %}
+                    {% if designer_percent|get_item:el.id %}
+                        {% with percent=designer_percent|get_item:el.id  %}
+                            <td>{{year_sales_dict|get_item:el.id|multiplicity:percent|round_number}}</td>
+                        {% endwith %}
+                    {% else %}
+                    <td>{{year_sales_dict|get_item:el.id|multiplicity:0}}</td>
+                    {% endif %}
+                {% else %}
+                    <td></td>
+                {% endif %}    
                 {% for month in month_list %}
-                    <td>{{ monthly_sales_dict|get_item:el.id|get_item:month }}</td>
+                    {% if monthly_sales_dict|get_item:el.id %}
+                        <td>{{ monthly_sales_dict|get_item:el.id|get_item:month }}</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}    
                 {% endfor %}
             </tr>
             {% endfor %}

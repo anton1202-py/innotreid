@@ -1,0 +1,125 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="designer" class="rand">
+                    <span>Дизайнер</span><br>
+                    <select class="mySelectDesigner" id="designer" name="designer">
+                        <option value=""></option>
+                        {% for designer in percent_data %}
+                            <option value="{{ designer.designer.username }}">{{ designer.designer.last_name }} {{ designer.designer.first_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+        </div>
+        <table id="table" style="overflow-x: scroll; width: 100%;">
+            <thead>
+                <tr>
+                    <th>Дизайнер</th>
+                    <th>% за авторство</th>
+                    <th>% за права</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for el in percent_data %}
+                    <tr data-row="{{ el.designer.username }}">
+                        <td>{{ el.designer.last_name }} {{ el.designer.first_name }}</td>
+                        <td><input class="main-percent" value="{{ el.main_reward_persent }}" type="number" name="main_percent" data-row="{{ el.designer }}"/></td>
+                        <td><input class="copyright-percent" value="{{ el.copyright_reward_persent }}" type="number" name="copyright_percent" data-row="{{ el.designer }}"/></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>    
+    <script>
+        // =========== ОБНОВЛЯЕТ % ВОЗНАГРАЖДЕНИЯ ЗА АВТОРСТВО ========== //
+        document.querySelectorAll('.main-percent').forEach(select => {
+            select.addEventListener('input', function() {
+                var mainPercent = this.value;
+                console.log(mainPercent)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('main_percent', mainPercent);
+                formData.append('designer', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_percent_reward/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // =========== ОБНОВЛЯЕТ % ВОЗНАГРАЖДЕНИЯ ЗА ИНТЕЛЕКТУАЛЬНОЕ ПРАВО ========== //
+        document.querySelectorAll('.copyright-percent').forEach(select => {
+            select.addEventListener('input', function() {
+                var mainPercent = this.value;
+                console.log(mainPercent)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('copyright_percent', mainPercent);
+                formData.append('designer', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_percent_reward/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // ========== ПОКАЗЫВАЕТ ОТФИЛЬТРОВАННУЮ ТАБЛИЦУ ========= //
+        document.getElementById('designer').addEventListener('change', function() {
+        var selectedDesignerId = this.value;
+        console.log(selectedDesignerId)
+        var tableRows = document.querySelectorAll('#table tbody tr');
+        
+        tableRows.forEach(function(row) {
+            console.log(row.dataset.row)
+            if (row.dataset.row === selectedDesignerId || selectedDesignerId === '') {
+                row.style.display = 'table-row';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+        
+    </script>
+        
+{% endblock %}

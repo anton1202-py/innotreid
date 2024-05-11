@@ -48,5 +48,6 @@ class InnotreidUser(AbstractUser):
         return self.username
 
     class Meta:
+        db_table = 'users_innotreiduser'
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'

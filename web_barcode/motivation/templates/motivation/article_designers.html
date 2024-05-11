@@ -48,8 +48,7 @@
             <tr>
                 <th rowspan="2">Ночник</th>
                 <th rowspan="2">Автор</th>
-                <th rowspan="2">Продажи за год</th>
-                <th rowspan="2">Вознаграждение</th>
+                <th rowspan="2">Продажи за год, шт</th>
                 <th colspan="{{ month_list|length }}">{{ current_year }} год</th>
             </tr>
             <tr>
@@ -76,7 +75,6 @@
                     </td>
                 {% if el.id in year_sales_dict %}
                     <td>{{year_sales_dict|get_item:el.id}}</td>
-                    <td>{{year_sales_dict|get_item:el.id|multiplicity:0.02|round_number}}</td>
                     {% for month in month_list %}
                         {% if main_sales_dict|get_item:el.id|get_item:month %}
                             <td>{{ main_sales_dict|get_item:el.id|get_item:month }}</td>

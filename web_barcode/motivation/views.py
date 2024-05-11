@@ -2,6 +2,8 @@ import ast
 import os
 from datetime import datetime
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import Max, Q
 from django.http import JsonResponse
@@ -46,26 +48,30 @@ def get_main_sales_data():
 def get_designers_sales_data():
     """Отдает данные по продажам дизайнеров"""
     sale_data = Selling.objects.all().values(
-        'lighter', 'month', 'quantity', 'lighter__designer')
+        'lighter', 'month', 'summ', 'lighter__designer')
     # Словарь с данными артикула по продажам по месяцам
     monthly_sales_dict = {}
     # Словарь с продажами артикула за текущий год
     year_sales_dict = {}
     for data in sale_data:
-        if data['lighter__designer'] in monthly_sales_dict:
-            if data['month'] in monthly_sales_dict[data['lighter__designer']]:
-                monthly_sales_dict[data['lighter__designer']
-                                   ][data['month']] += int(data['quantity'])
+        if data['lighter__designer']:
+            if data['lighter__designer'] in monthly_sales_dict:
+                if data['month'] in monthly_sales_dict[data['lighter__designer']]:
+                    monthly_sales_dict[data['lighter__designer']
+                                       ][data['month']] += int(data['summ'])
+                else:
+                    monthly_sales_dict[data['lighter__designer']
+                                       ][data['month']] = int(data['summ'])
             else:
-                monthly_sales_dict[data['lighter__designer']
-                                   ][data['month']] = int(data['quantity'])
-        else:
-            monthly_sales_dict[data['lighter__designer']] = {
-                data['month']: int(data['quantity'])}
-        if data['lighter__designer'] in year_sales_dict:
-            year_sales_dict[data['lighter__designer']] += int(data['quantity'])
-        else:
-            year_sales_dict[data['lighter__designer']] = int(data['quantity'])
+                monthly_sales_dict[data['lighter__designer']] = {
+                    data['month']: int(data['summ'])}
+            if data['lighter__designer'] in year_sales_dict:
+                year_sales_dict[data['lighter__designer']
+                                ] += int(data['summ'])
+            else:
+                year_sales_dict[data['lighter__designer']] = int(
+                    data['summ'])
+    print(year_sales_dict)
     return year_sales_dict, monthly_sales_dict
 
 
@@ -92,7 +98,6 @@ def article_designers(request):
     designer_list = designer_group.user_set.all()
 
     if request.POST:
-        print(request.POST)
         filter_company = request.POST.get('filter_data')
         common_article = request.POST.get("common_article")
         designer = request.POST.get("designer")
@@ -125,6 +130,7 @@ def article_designers(request):
 
 
 def update_model_field(request):
+
     if request.method == 'POST':
         # Сохраняем значение в базу данных
         user_id = request.POST.get('selected_designer')
@@ -137,7 +143,6 @@ def update_model_field(request):
 
 
 def filter_get_request(request, ur_lico):
-    print(request)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         search_term = request.GET.get('search_term', None)
         article_list = Articles.objects.filter(
@@ -156,7 +161,6 @@ def filter_get_request(request, ur_lico):
 
 def filter_get_delete_request(request):
     """Показывает таблицу при удалении артикулов из строки фильтра"""
-    print(request)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         search_term = request.GET.get('search_term', None)
         if search_term:
@@ -253,7 +257,7 @@ def update_article_copyright_boolean_field(request):
 
 
 def designers_rewards(request):
-    """Отображает список рекламных компаний WB и добавляет их"""
+    """Отображает страницы с вознаграждением дизайнеров"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Вознаграждение дизайнеров'
@@ -263,13 +267,23 @@ def designers_rewards(request):
         year=current_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]
 
-    page_name = 'Вознаграждение дизайнеров'
-
     sale_data = Selling.objects.all().values(
         'lighter', 'month', 'summ', 'lighter__designer')
+    designer_main_percent = DesignUser.objects.values(
+        'designer__id', 'main_reward_persent', 'copyright_reward_persent')
+    designer_percent = {}
+    for data in designer_main_percent:
+        if data['main_reward_persent']:
+            if data['copyright_reward_persent']:
+                designer_percent[data['designer__id']
+                                 ] = data['copyright_reward_persent']/100
+            else:
+                designer_percent[data['designer__id']
+                                 ] = data['main_reward_persent']/100
 
+    print('designer_percent', designer_percent)
     year_sales_dict, monthly_sales_dict = get_designers_sales_data()
-
+    print('year_sales_dict', year_sales_dict)
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
 
@@ -281,9 +295,44 @@ def designers_rewards(request):
         'designer_users': designer_users,
         'sale_data': sale_data,
         'monthly_sales_dict': monthly_sales_dict,
+        'designer_percent': designer_percent,
         'year_sales_dict': year_sales_dict,
         'month_list': sorted(month_list),
         'current_year': current_year,
 
     }
     return render(request, 'motivation/designers_reward.html', context)
+
+
+def percent_designers_rewards(request):
+    """Отображает страницу с процентами награждения каждого дизайнера"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    page_name = 'Процент вознаграждения'
+    percent_data = DesignUser.objects.all().order_by('designer__first_name')
+    if request.GET:
+        print('Попал в фильтр')
+    context = {
+        'page_name': page_name,
+        'percent_data': percent_data
+    }
+    return render(request, 'motivation/percent_reward.html', context)
+
+
+def update_percent_reward(request):
+    if request.method == 'POST':
+        designer = request.POST.get('designer')
+        # Сохраняем значение % за авторство в базу данных
+        if 'main_percent' in request.POST:
+            main_persent = request.POST.get('main_percent')
+            DesignUser.objects.filter(designer__username=designer).update(
+                main_reward_persent=main_persent
+            )
+        # Сохраняем значение % за интелектуальное право в базу данных
+        if 'copyright_percent' in request.POST:
+            copyright_persent = request.POST.get('copyright_percent')
+            DesignUser.objects.filter(designer__username=designer).update(
+                copyright_reward_persent=copyright_persent
+            )
+        return JsonResponse({'message': 'Value saved successfully.'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)

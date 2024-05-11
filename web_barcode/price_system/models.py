@@ -261,16 +261,27 @@ class DesignUser(models.Model):
         InnotreidUser,
         on_delete=models.CASCADE,
         verbose_name='Дизайнер',
-        related_name='designer'
+        related_name='designer',
+        null=True
     )
     tg_chat_id = models.PositiveBigIntegerField(
         verbose_name='chat_id телеграма',
         null=True,
         blank=True
     )
+    main_reward_persent = models.IntegerField(
+        verbose_name='% вознаграждения',
+        blank=True,
+        null=True
+    )
+    copyright_reward_persent = models.IntegerField(
+        verbose_name='% вознаграждения право собственности',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return self.designer.last_name
+        return self.designer.username
 
     class Meta:
         verbose_name = 'Дизайнеры'

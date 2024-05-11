@@ -87,10 +87,10 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT')
     }
 }
-
+AUTH_USER_MODEL = 'users.InnotreidUser'
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-AUTH_USER_MODEL = 'users.InnotreidUser'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME':
