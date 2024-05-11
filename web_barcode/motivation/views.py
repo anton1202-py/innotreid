@@ -309,7 +309,7 @@ def percent_designers_rewards(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Процент вознаграждения'
-    percent_data = DesignUser.objects.all().order_by('designer__first_name')
+    percent_data = DesignUser.objects.all().order_by('designer__last_name')
     if request.GET:
         print('Попал в фильтр')
     context = {
