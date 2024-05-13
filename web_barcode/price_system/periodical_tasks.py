@@ -170,11 +170,19 @@ def periodic_compare_ip_articles():
 
 
 @app.task
-def periodic_compare_ooo_articles():
-    """Сверка артикулов ООО"""
+def periodic_compare_articles():
+    """Сверка артикулов"""
     wb_matching_articles('ООО Иннотрейд')
     ozon_matching_articles('ООО Иннотрейд')
     yandex_matching_articles('ООО Иннотрейд')
+
+    wb_matching_articles('ИП Караваев')
+    ozon_matching_articles('ИП Караваев')
+    yandex_matching_articles('ИП Караваев')
+
+    wb_matching_articles('ООО Мастерская чудес')
+    ozon_matching_articles('ООО Мастерская чудес')
+    yandex_matching_articles('ООО Мастерская чудес')
 
 
 @app.task

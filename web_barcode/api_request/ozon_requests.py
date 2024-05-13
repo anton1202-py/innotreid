@@ -26,8 +26,9 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
                                         yandex_business_id_dict)
 
 
+@sender_error_to_tg
 def ozon_sales_monthly_report(header, month, year, attempt=0):
-    """Получаем данные всех артикулов в ВБ. Максимум 1 запрос в минут"""
+    """Получаем данные по продажам с ОЗОН за предыдущий месяц"""
     url = f'https://api-seller.ozon.ru/v2/finance/realization'
     payload = json.dumps({
         "month": month,
@@ -55,5 +56,46 @@ def ozon_sales_monthly_report(header, month, year, attempt=0):
         message = f'статус код {response.status_code} у получения инфы всех артикулов ООО ВБ'
 
     if message:
-        message = f'api_request. wb_sales_statistic. {message}'
+        message = f'api_request.ozon_sales_monthly_report. {message}'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+
+
+@sender_error_to_tg
+def ozon_orsers_daily_report(header, check_date, attempt=0):
+    """Получаем данные по заказам с ОЗОН за позавчера"""
+    url = "https://api-seller.ozon.ru/v1/analytics/data"
+    payload = json.dumps({
+        "date_from": check_date,
+        "date_to": check_date,
+        "metrics": [
+            "revenue",
+            "ordered_units"
+        ],
+        "dimension": [
+            "sku"
+        ],
+        "limit": 1000,
+        "offset": 0
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    attempt += 1
+    message = ''
+    if attempt <= 50:
+        if response.status_code == 200:
+            all_data = json.loads(response.text)
+            return all_data
+        else:
+            time.sleep(65)
+            return ozon_orsers_daily_report(header, attempt)
+    elif response.status_code == 403:
+        message = f'статус код {response.status_code}. Доступ запрещен'
+    elif response.status_code == 429:
+        message = f'статус код {response.status_code}. Слишком много запросов'
+    elif response.status_code == 401:
+        message = f'статус код {response.status_code}. Не авторизован'
+    else:
+        message = f'статус код {response.status_code} у получения инфы заказов артикулов ОЗОН'
+    if message:
+        message = f'api_request.ozon_orsers_daily_report {message}'
+        print(message)
+        # bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

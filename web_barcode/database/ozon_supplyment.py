@@ -1,10 +1,14 @@
+import time
 from datetime import datetime, timedelta
 
 from motivation.models import Selling
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 
-from .models import CodingMarketplaces, OzonMonthlySalesData, OzonSales
+from web_barcode.constants_file import CHAT_ID_ADMIN, bot
+
+from .models import (CodingMarketplaces, OzonDailyOrders, OzonMonthlySalesData,
+                     OzonSales)
 
 
 @sender_error_to_tg
@@ -214,3 +218,69 @@ def save_ozon_sale_data_for_motivation():
                 quantity=quantity,
                 data=now_date,
                 marketplace=ozon_marketplace).save()
+
+
+@sender_error_to_tg
+def save_ozon_daily_orders(data, order_date, month, year, ur_lico):
+    """Сохраняет данные по заказам Озон в базу данных"""
+    if data['metrics'][0] != 0:
+        ozon_sku = data['dimensions'][0]['id']
+        amount = data['metrics'][1]
+        order_summ = data['metrics'][0]
+        OzonDailyOrders(
+            order_date_period=order_date,
+            month=month,
+            year=year,
+            ozon_sku=ozon_sku,
+            amount=amount,
+            order_summ=order_summ,
+            ur_lico=ur_lico
+        ).save()
+
+
+@sender_error_to_tg
+def save_ozon_daily_orders_data_for_motivation(data, order_date, month, year, ur_lico):
+    """Сохраняет данные по заказам Озон в базу по подсчету мотивации"""
+    if data['metrics'][0] > 0:
+        ozon_marketplace = CodingMarketplaces.objects.get(marketpalce='Ozon')
+        article_obj = ''
+        if Articles.objects.filter(ozon_sku=data['dimensions'][0]['id']).exists():
+            article_obj = Articles.objects.get(
+                ozon_fbo_sku_id=data['dimensions'][0]['id'])
+        elif Articles.objects.filter(ozon_fbo_sku_id=data['dimensions'][0]['id']).exists():
+            article_obj = Articles.objects.get(
+                ozon_fbo_sku_id=data['dimensions'][0]['id'])
+        elif Articles.objects.filter(ozon_fbs_sku_id=data['dimensions'][0]['id']).exists():
+            article_obj = Articles.objects.get(
+                ozon_fbs_sku_id=data['dimensions'][0]['id'])
+        if article_obj:
+            if Selling.objects.filter(lighter=article_obj,
+                                      ur_lico=ur_lico,
+                                      year=year,
+                                      month=month,
+                                      marketplace=ozon_marketplace).exists():
+                sell_obj = Selling.objects.get(lighter=article_obj,
+                                               ur_lico=ur_lico,
+                                               year=year,
+                                               month=month,
+                                               marketplace=ozon_marketplace)
+                sell_obj.summ += int(data['metrics'][0])
+                sell_obj.quantity += data['metrics'][1]
+                sell_obj.data = order_date
+                sell_obj.save()
+
+            else:
+                Selling(
+                    lighter=article_obj,
+                    ur_lico=ur_lico,
+                    year=year,
+                    month=month,
+                    summ=data['metrics'][1],
+                    quantity=int(data['metrics'][0]),
+                    data=order_date,
+                    marketplace=ozon_marketplace).save()
+        else:
+            message = f"В базе данных нет артикула {data['dimensions'][0]['name']} {data['metrics'][0]} {data['metrics'][1]} {ur_lico} {data['dimensions'][0]['id']}. Не смог загрузить по нему продажи в базу данных для мотивации"
+            print(message)
+            time.sleep(1)
+            bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

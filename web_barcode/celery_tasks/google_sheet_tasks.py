@@ -11,6 +11,7 @@ import gspread
 import pandas as pd
 import requests
 import telegram
+from api_request.wb_requests import wb_article_data_from_api
 from celery_tasks.celery import app
 from dotenv import load_dotenv
 from gspread_formatting import *
@@ -58,49 +59,6 @@ def dropbox_matching_data():
 
 
 @sender_error_to_tg
-def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
-    """Получаем данные всех артикулов в ВБ"""
-    if not common_data:
-        common_data = []
-    if update_date:
-        cursor = {
-            "limit": 100,
-            "updatedAt": update_date,
-            "nmID": mn_id
-        }
-    else:
-        cursor = {
-            "limit": 100,
-            "nmID": mn_id
-        }
-
-    url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
-    payload = json.dumps(
-        {
-            "settings": {
-                "cursor": cursor,
-                "filter": {
-                    "withPhoto": -1
-                }
-            }
-        }
-    )
-    response = requests.request(
-        "POST", url, headers=header, data=payload)
-    if response.status_code == 200:
-        all_data = json.loads(response.text)["cards"]
-        check_amount = json.loads(response.text)['cursor']
-        for data in all_data:
-            common_data.append(data)
-        if len(json.loads(response.text)["cards"]) == 100:
-            time.sleep(5)
-            return wb_article_data(header,
-                                   check_amount['updatedAt'], check_amount['nmID'], common_data)
-
-        return common_data
-
-
-@sender_error_to_tg
 def wb_data():
     """Собирает данные для Google Sheet"""
     now_day = datetime.datetime.now().strftime('%d-%m-%Y')
@@ -109,7 +67,7 @@ def wb_data():
         'Authorization': API_KEY_WB
     }
 
-    main_data = wb_article_data(headers)
+    main_data = wb_article_data_from_api(headers)
     raw_for_table_list = []
     counter = 2
     matching_list = dropbox_matching_data()

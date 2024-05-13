@@ -41,52 +41,11 @@ def sender_error_to_tg(func):
     return wrapper
 
 
-def wb_article_data(header, update_date=None, mn_id=0, common_data=None):
-    """Получаем данные всех артикулов в ВБ"""
-    if not common_data:
-        common_data = []
-    if update_date:
-        cursor = {
-            "limit": 100,
-            "updatedAt": update_date,
-            "nmID": mn_id
-        }
-    else:
-        cursor = {
-            "limit": 100,
-            "nmID": mn_id
-        }
-
-    url = 'https://suppliers-api.wildberries.ru/content/v2/get/cards/list'
-    payload = json.dumps(
-        {
-            "settings": {
-                "cursor": cursor,
-                "filter": {
-                    "withPhoto": -1
-                }
-            }
-        }
-    )
-    response = requests.request(
-        "POST", url, headers=header, data=payload)
-    if response.status_code == 200:
-        all_data = json.loads(response.text)["cards"]
-        check_amount = json.loads(response.text)['cursor']
-        for data in all_data:
-            common_data.append(data)
-        if len(json.loads(response.text)["cards"]) == 100:
-            time.sleep(5)
-            return wb_article_data(header,
-                                   check_amount['updatedAt'], check_amount['nmID'], common_data)
-        return common_data
-    else:
-        message = f'статус код {response.status_code} у получения инфы всех артикулов ООО ВБ'
-
-
+@sender_error_to_tg
 def wb_ip_article_compare():
     """Достаем данные всех артиуклов ВБ, необходимые для сверки"""
-    all_data = wb_article_data(wb_headers_karavaev)
+    from api_request.wb_requests import wb_article_data_from_api
+    all_data = wb_article_data_from_api(wb_headers_karavaev)
     article_dict = {}
     for data in all_data:
         if data["subjectName"] == "Ночники":
@@ -100,9 +59,11 @@ def wb_ip_article_compare():
     return sorted_article_dict
 
 
+@sender_error_to_tg
 def wb_ooo_article_compare(ur_lico):
     """Достаем данные всех артиуклов ВБ, необходимые для сверки"""
-    all_data = wb_article_data(header_wb_dict[ur_lico])
+    from api_request.wb_requests import wb_article_data_from_api
+    all_data = wb_article_data_from_api(header_wb_dict[ur_lico])
     article_dict = {}
     for data in all_data:
         article = data["vendorCode"]
@@ -112,6 +73,7 @@ def wb_ooo_article_compare(ur_lico):
     return sorted_article_dict
 
 
+@sender_error_to_tg
 def ozon_raw_articles(ur_lico, last_id='', main_stock_data=None):
     """Получает список product_id товаров с OZON"""
     header = header_ozon_dict[ur_lico]
@@ -135,6 +97,7 @@ def ozon_raw_articles(ur_lico, last_id='', main_stock_data=None):
     return main_stock_data
 
 
+@sender_error_to_tg
 def ozon_cleaning_articles(ur_lico):
     urls = 'https://api-seller.ozon.ru/v2/product/info/list'
     header = header_ozon_dict[ur_lico]
@@ -160,17 +123,18 @@ def ozon_cleaning_articles(ur_lico):
                 if 'Ночник' in dat["name"]:
                     article = dat["offer_id"].split('-')[0]
                     article_ozon_dict[article] = [
-                        dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+                        dat["offer_id"], dat["barcode"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
                 else:
                     article_ozon_dict[dat["offer_id"]] = [
-                        dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+                        dat["offer_id"], dat["barcode"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
         else:
             for dat in ozon_data:
                 article_ozon_dict[dat["offer_id"].capitalize()] = [
-                    dat["offer_id"], dat["barcode"], dat["id"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
+                    dat["offer_id"], dat["barcode"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
     return article_ozon_dict
 
 
+@sender_error_to_tg
 def yandex_raw_articles_data(ur_lico, nextPageToken='', raw_articles_list=None):
     """Создает и возвращает словарь с данными fbs_sku_data {артикул: остаток_fbs}"""
     header = header_yandex_dict[ur_lico]
@@ -202,6 +166,7 @@ def yandex_raw_articles_data(ur_lico, nextPageToken='', raw_articles_list=None):
     return raw_articles_list
 
 
+@sender_error_to_tg
 def yandex_articles(ur_lico):
     """Формирует данные для сопоставления"""
     raw_articles_list = yandex_raw_articles_data(ur_lico)
@@ -226,6 +191,7 @@ def wb_matching_articles(ur_lico):
         wb_article_data = wb_ip_article_compare()
     else:
         wb_article_data = wb_ooo_article_compare(ur_lico)
+    print()
     for common_article, wb_data in wb_article_data.items():
         if Articles.objects.filter(company=ur_lico, common_article=common_article).exists() == True:
             wb_article = Articles.objects.get(company=ur_lico,
@@ -234,8 +200,7 @@ def wb_matching_articles(ur_lico):
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
                 wb_article.save()
-                time.sleep(1)
-                message = (f'проверьте артикул {common_article} на вб вручную. \
+                message = (f'{ur_lico} проверьте артикул {common_article} на вб вручную. \
                            Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. \
                            Баркоды: {wb_article.wb_barcode} {wb_data[1]}. \
                            Ном номера: {wb_article.wb_nomenclature} {wb_data[2]}')
@@ -288,10 +253,23 @@ def ozon_matching_articles(ur_lico):
                 ozon_article.save()
                 # print('ozon_article.wb_barcode', ozon_article.wb_barcode, ozon_article.wb_seller_article,
                 #      ozon_article.ozon_seller_article, ozon_article.ozon_barcode)
-                message = (f'проверьте артикул {common_article} на ozon вручную.  \
+                time.sleep(1)
+                message = (f'{ur_lico} проверьте артикул {common_article} на ozon вручную.  \
+                           Артикул поставщика {ozon_article.ozon_seller_article} - {ozon_data[0]}. \
                            Barcode {ozon_article.ozon_barcode} - {ozon_data[1]}. \
-                           SKU {ozon_article.ozon_sku} - {ozon_data[2]}. \
+                           Product_id {ozon_article.ozon_product_id} - {ozon_data[2]}. \
+                           SKU {ozon_article.ozon_sku} - {ozon_data[3]}. \
+                           SKU_FBO {ozon_article.ozon_fbo_sku_id} - {ozon_data[4]}. \
+                           SKU_FBS {ozon_article.ozon_fbs_sku_id} - {ozon_data[5]}. \
                            Не совпали данные')
+                ozon_article.status = 'Сопоставлено'
+                ozon_article.ozon_seller_article = ozon_data[0]
+                ozon_article.ozon_barcode = ozon_data[1]
+                ozon_article.ozon_product_id = ozon_data[2]
+                ozon_article.ozon_sku = ozon_data[3]
+                ozon_article.ozon_fbo_sku_id = ozon_data[4]
+                ozon_article.ozon_fbs_sku_id = ozon_data[5]
+                ozon_article.save()
                 print(message)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif ozon_article.ozon_barcode == None:

@@ -4,9 +4,8 @@ import os
 import time
 from datetime import datetime, timedelta
 
-import requests
-import telegram
-from api_request.ozon_requests import ozon_sales_monthly_report
+from api_request.ozon_requests import (ozon_orsers_daily_report,
+                                       ozon_sales_monthly_report)
 from api_request.wb_requests import wb_sales_statistic
 from celery_tasks.celery import app
 from django.contrib.auth.models import User
@@ -25,6 +24,8 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
 
 from .models import WildberriesSales
 from .ozon_supplyment import (ozon_main_process_sale_data,
+                              save_ozon_daily_orders,
+                              save_ozon_daily_orders_data_for_motivation,
                               save_ozon_sale_data_for_motivation)
 from .wb_supplyment import (save_wildberries_sale_data_for_motivation,
                             wb_save_sales_data_to_database)
@@ -48,6 +49,24 @@ def process_wb_sales_data():
 
 
 @app.task
+def process_ozon_daily_orders():
+    """Записывает данные по заказам Озон в базу данных. Ежедневно. Раз в сутки."""
+    nessesary_date = datetime.now() - timedelta(days=2)
+    check_date = nessesary_date.strftime('%Y-%m-%d')
+    month_report = int(nessesary_date.strftime('%m'))
+    year_report = nessesary_date.strftime('%Y')
+    for ur_lico, header in header_ozon_dict.items():
+        main_data = ozon_orsers_daily_report(header, check_date)
+        for data in main_data['result']['data']:
+            save_ozon_daily_orders(
+                data, check_date, month_report, year_report, ur_lico)
+            save_ozon_daily_orders_data_for_motivation(
+                data, check_date, month_report, year_report, ur_lico)
+            # time.sleep(1)
+        time.sleep(65)
+
+
+@app.task
 def process_ozon_sales_data():
     """Записывает данные по продажам Ozon в базу данных. Включается 10 числа каждого месяца"""
     nessesary_date = datetime.now() - timedelta(days=20)
@@ -59,7 +78,5 @@ def process_ozon_sales_data():
         ozon_main_process_sale_data(
             main_data, ur_lico, month_report, year_report)
         time.sleep(65)
-    # Сохраняю данные в базу данных продаж для мотивации
-    save_ozon_sale_data_for_motivation()
     message = 'Сохранил продажи Озон за предыдущий месяц'
     bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

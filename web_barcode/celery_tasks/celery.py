@@ -38,6 +38,10 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=7, minute=20)
     },
     "database_ozon_sales_every_month": {
+        "task": "database.periodic_tasks.process_ozon_daily_orders",
+        "schedule": crontab(hour=7, minute=15)
+    },
+    "database_ozon_sales_every_month": {
         "task": "database.periodic_tasks.process_ozon_sales_data",
         "schedule": crontab(0, 0, day_of_month='10')
     },
@@ -129,16 +133,12 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=7, minute=18)
     },
     "price_system_compare_ooo_articles": {
-        "task": "price_system.periodical_tasks.periodic_compare_ooo_articles",
+        "task": "price_system.periodical_tasks.periodic_compare_articles",
         "schedule": crontab(hour=5, minute=0)
     },
     "price_system_compare_ip_articles": {
         "task": "price_system.periodical_tasks.write_group_spp_data",
         "schedule": crontab(minute='*/16')
-    },
-    "price_system_group_spp": {
-        "task": "price_system.periodical_tasks.periodic_compare_ip_articles",
-        "schedule": crontab(hour=5, minute=10, day_of_week=1)
     },
 
     "wb_reklama_campaign_budget_add": {
