@@ -40,3 +40,32 @@ def fbs_warehouse_article_balance(article, warehouse_id, amount, header, fbs_cam
     if response.status_code != 200:
         message = f'Статус код {response.status_code} для обновления остатка на ФБС складе ЯНдекс маркета. Для артикула {article}'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+
+
+def yandex_daily_orders(header, campaign_id, order_date, counter=0):
+    """
+    Получает ежедневные доставленные заказы с Яндекс Маркета
+    header - Хедер юр лица для запроса к АПИ
+    campaign_id - Идентификатор кампании в API и магазина в кабинете
+    order_date - Дата, за которую нужно получить заказ
+    """
+    url = f"https://api.partner.market.yandex.ru/campaigns/{campaign_id}/stats/orders?limit=200"
+    counter += 1
+    payload = json.dumps({
+        "dateFrom": order_date,
+        "dateTo": order_date,
+        "orders": [],
+        "statuses": [
+            "DELIVERED"
+        ],
+        "hasCis": False
+    })
+
+    response = requests.request("POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        return json.loads(response.text)
+    elif response.status_code != 200 and counter <= 50:
+        return yandex_daily_orders(header, campaign_id, order_date, counter)
+    else:
+        message = f'Статус код {response.status_code} api_request.yandex_daily_orders'
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

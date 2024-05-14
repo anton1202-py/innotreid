@@ -37,9 +37,13 @@ app.conf.beat_schedule = {
         "task": "database.periodic_tasks.process_wb_sales_data",
         "schedule": crontab(hour=7, minute=20)
     },
-    "database_ozon_sales_every_month": {
+    "database_ozon_orders_every_day": {
         "task": "database.periodic_tasks.process_ozon_daily_orders",
         "schedule": crontab(hour=7, minute=15)
+    },
+    "database_yandex_orders_every_day": {
+        "task": "database.periodic_tasks.process_yandex_daily_orders",
+        "schedule": crontab(hour=7, minute=10)
     },
     "database_ozon_sales_every_month": {
         "task": "database.periodic_tasks.process_ozon_sales_data",

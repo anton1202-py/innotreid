@@ -760,5 +760,51 @@ class OzonDailyOrders(models.Model):
         verbose_name_plural = 'Ежедневные заказы Ozon'
 
 
-class YandexSales(models.Model):
-    """Продажи Ozon со всех юр. лиц"""
+class YandexDailyOrders(models.Model):
+    """Заказы Яндекс Маркета со всех юр. лиц. Ежедневные данные"""
+    order_date_period = models.DateTimeField(
+        verbose_name='Дата заказа',
+        blank=True,
+        null=True
+    )
+    month = models.IntegerField(
+        verbose_name='Месяц',
+        null=True,
+        blank=True
+    )
+    year = models.IntegerField(
+        verbose_name='год',
+        null=True,
+        blank=True
+    )
+    yandex_sku = models.BigIntegerField(
+        verbose_name='SKU товара',
+        null=True,
+        blank=True
+    )
+    seller_article = models.CharField(
+        verbose_name='Артикул продавца',
+        max_length=100,
+        null=True,
+        blank=True
+    )
+    amount = models.IntegerField(
+        verbose_name='Количество',
+        null=True,
+        blank=True
+    )
+    order_summ = models.IntegerField(
+        verbose_name='Сумма заказов за день',
+        null=True,
+        blank=True
+    )
+    ur_lico = models.CharField(
+        verbose_name='Юр. лицо',
+        max_length=75,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Ежедневные заказы Yandex Market'
+        verbose_name_plural = 'Ежедневные заказы Yandex Market'

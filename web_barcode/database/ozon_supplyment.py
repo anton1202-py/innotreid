@@ -246,7 +246,7 @@ def save_ozon_daily_orders_data_for_motivation(data, order_date, month, year, ur
         article_obj = ''
         if Articles.objects.filter(ozon_sku=data['dimensions'][0]['id']).exists():
             article_obj = Articles.objects.get(
-                ozon_fbo_sku_id=data['dimensions'][0]['id'])
+                ozon_sku=data['dimensions'][0]['id'])
         elif Articles.objects.filter(ozon_fbo_sku_id=data['dimensions'][0]['id']).exists():
             article_obj = Articles.objects.get(
                 ozon_fbo_sku_id=data['dimensions'][0]['id'])
@@ -280,7 +280,7 @@ def save_ozon_daily_orders_data_for_motivation(data, order_date, month, year, ur
                     data=order_date,
                     marketplace=ozon_marketplace).save()
         else:
-            message = f"В базе данных нет артикула {data['dimensions'][0]['name']} {data['metrics'][0]} {data['metrics'][1]} {ur_lico} {data['dimensions'][0]['id']}. Не смог загрузить по нему продажи в базу данных для мотивации"
+            message = f"В базе данных ОЗОН нет артикула {data['dimensions'][0]['name']} {data['metrics'][0]} {data['metrics'][1]} {ur_lico} {data['dimensions'][0]['id']}. Не смог загрузить по нему продажи в базу данных для мотивации"
             print(message)
             time.sleep(1)
             bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

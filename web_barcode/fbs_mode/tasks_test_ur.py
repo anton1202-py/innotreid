@@ -23,12 +23,12 @@ import pythoncom
 import requests
 import telegram
 from dotenv import load_dotenv
-from helpers import (design_barcodes_dict_spec,
-                     merge_barcode_for_ozon_two_on_two,
-                     merge_barcode_for_yandex_two_on_two,
-                     new_data_for_ozon_ticket, new_data_for_yandex_ticket,
-                     print_barcode_to_pdf2, qrcode_print_for_products,
-                     supply_qrcode_to_standart_view)
+# from helpers import (design_barcodes_dict_spec,
+#                      merge_barcode_for_ozon_two_on_two,
+#                      merge_barcode_for_yandex_two_on_two,
+#                      new_data_for_ozon_ticket, new_data_for_yandex_ticket,
+#                      print_barcode_to_pdf2, qrcode_print_for_products,
+#                      supply_qrcode_to_standart_view)
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -231,7 +231,9 @@ class WildberriesFbsMode():
                 delta_order_time = now_time - create_order_time
                 if delta_order_time > timedelta(hours=1):
                     filters_order_data.append(order)
+            # print(filters_order_data)
             return filters_order_data
+
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -252,14 +254,19 @@ class WildberriesFbsMode():
                         "limit": 1
                     },
                     "filter": {
-                        "textSearch": article,
+                        "textSearch": 143477346,
                         "withPhoto": -1
                     }
                 }
             })
+
             response_data = requests.request(
                 "POST", url_data, headers=self.headers, data=payload)
+
             if response_data.status_code == 200:
+                print('**************************')
+                print(article, response_data.text)
+                print('**************************')
                 return response_data.text
             else:
                 text = f'Статус код = {response_data.status_code} у артикула {article}'
@@ -1573,18 +1580,18 @@ class YandexMarketFbsMode():
 
         done_tickets_folder = os.path.join(
             os.getcwd(), f'{self.main_save_folder_server}/yandex/tickets/done')
-        if not os.path.exists(done_tickets_folder):
-            os.makedirs(done_tickets_folder)
+        # if not os.path.exists(done_tickets_folder):
+        #     os.makedirs(done_tickets_folder)
 
-        new_data_for_yandex_ticket(folder_path, orders_info_list)
-        list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
-        folder_summary_file_name = f'{self.main_save_folder_server}/yandex/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
-        merge_barcode_for_yandex_two_on_two(
-            list_filenames, folder_summary_file_name)
-        folder = (
-            f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
-        with open(folder_summary_file_name, 'rb') as f:
-            dbx_db.files_upload(f.read(), folder)
+        # new_data_for_yandex_ticket(folder_path, orders_info_list)
+        # list_filenames = glob.glob(f'{done_tickets_folder}/*.pdf')
+        # folder_summary_file_name = f'{self.main_save_folder_server}/yandex/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf'
+        # merge_barcode_for_yandex_two_on_two(
+        #     list_filenames, folder_summary_file_name)
+        # folder = (
+        #     f'{self.dropbox_current_assembling_folder}/YANDEX - {self.file_add_name} этикетки {self.date_for_files}.pdf')
+        # with open(folder_summary_file_name, 'rb') as f:
+        #     dbx_db.files_upload(f.read(), folder)
 
     def create_yandex_selection_sheet_pdf(self):
         """
@@ -2107,15 +2114,15 @@ def action_wb(db_folder, file_add_name, headers_wb,
     clearning_folders()
     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
     # 1. Создаю сводный файл для производства
-    pivot_file = CreatePivotFile(db_folder, file_add_name,
-                                 headers_wb, headers_ozon,
-                                 headers_yandex)
-    pivot_file.create_pivot_xls()
+    # pivot_file = CreatePivotFile(db_folder, file_add_name,
+    #                              headers_wb, headers_ozon,
+    #                              headers_yandex)
+    # pivot_file.create_pivot_xls()
     # 2. Отправляю данные по сборке FBS
     # pivot_file.sender_message_to_telegram()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # # 1. Обрабатываю новые сборочные задания.
-    # wb_actions.create_dropbox_folder()
+    # 1. Обрабатываю новые сборочные задания.
+    wb_actions.article_data_for_tickets()
     # # 3. Создаю поставку
     # wb_actions.create_delivery()
     # # 2. Создаю шрихкоды для артикулов
@@ -2208,12 +2215,12 @@ def action_yandex(yandex_headers, db_folder, file_add_name):
     yandex_actions.saving_tickets()
 
     # Очищаем все папки на сервере
-    clearning_folders()
-    message_text = f'Сборка {file_add_name} сформирована'
-    bot.send_message(chat_id=CHAT_ID_MANAGER,
-                     text=message_text, parse_mode='HTML')
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message_text, parse_mode='HTML')
+    # clearning_folders()
+    # message_text = f'Сборка {file_add_name} сформирована'
+    # bot.send_message(chat_id=CHAT_ID_MANAGER,
+    #                  text=message_text, parse_mode='HTML')
+    # bot.send_message(chat_id=CHAT_ID_ADMIN,
+    #                  text=message_text, parse_mode='HTML')
 
 
 def ooo_wb_action():
@@ -2236,7 +2243,7 @@ def ooo_yandex_action():
     action_yandex(yandex_headers_ooo, db_ooo_folder, file_add_name_ooo)
 
 
-# ooo_yandex_action()
+ooo_yandex_action()
 
 
 def ip_wb_action():
@@ -2253,7 +2260,7 @@ def ip_ozon_action_morning():
                            db_ip_folder, file_add_name_ip)
 
 
-ip_ozon_action_morning()
+# ip_ozon_action_morning()
 
 
 def ip_ozon_action_day():

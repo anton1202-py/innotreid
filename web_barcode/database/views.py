@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
 
 import pandas as pd
-from database.periodic_tasks import process_ozon_daily_orders
+from database.periodic_tasks import (process_ozon_daily_orders,
+                                     process_yandex_daily_orders)
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -98,7 +99,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-
+    process_yandex_daily_orders()
     data = Articles.objects.all()
     context = {
         'data': data,

@@ -57,6 +57,8 @@ YANDEX_OOO_FBY_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBY_CAMPAIGN_ID')
 YANDEX_OOO_FBS_CAMPAIGN_ID = os.getenv('YANDEX_OOO_FBS_CAMPAIGN_ID')
 YANDEX_IP_FBY_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBY_CAMPAIGN_ID')
 YANDEX_IP_FBS_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBS_CAMPAIGN_ID')
+YANDEX_GRAMOTY_FBY_CAMPAIGN_ID = os.getenv('YANDEX_GRAMOTY_FBY_CAMPAIGN_ID')
+YANDEX_GRAMOTY_FBS_CAMPAIGN_ID = os.getenv('YANDEX_GRAMOTY_FBS_CAMPAIGN_ID')
 
 wb_headers_karavaev = {
     'Content-Type': 'application/json',
@@ -152,17 +154,21 @@ yandex_business_id_dict = {
 
 yandex_fbs_campaign_id_dict = {
     'ООО Иннотрейд': YANDEX_OOO_FBS_CAMPAIGN_ID,
-    'ИП Караваев': YANDEX_IP_FBS_CAMPAIGN_ID
+    'ИП Караваев': YANDEX_IP_FBS_CAMPAIGN_ID,
+    'ООО Мастерская чудес': YANDEX_GRAMOTY_FBS_CAMPAIGN_ID
 }
 yandex_fby_campaign_id_dict = {
     'ООО Иннотрейд': YANDEX_OOO_FBY_CAMPAIGN_ID,
-    'ИП Караваев': YANDEX_IP_FBY_CAMPAIGN_ID
+    'ИП Караваев': YANDEX_IP_FBY_CAMPAIGN_ID,
+    'ООО Мастерская чудес': YANDEX_GRAMOTY_FBY_CAMPAIGN_ID
 }
 
 yandex_fbs_warehouse_id_dict = {
     'ООО Иннотрейд': 250643,
     'ИП Караваев': 938511
 }
+yandex_campaign_id_dict_list = [
+    yandex_fbs_campaign_id_dict, yandex_fby_campaign_id_dict]
 
 spp_group_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
