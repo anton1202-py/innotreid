@@ -413,7 +413,7 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
         ws.cell(row=row, column=5, value=str(item.ozon_price))
         ws.cell(row=row, column=6, value=str(item.yandex_price))
         ws.cell(row=row, column=7, value=str(item.min_price))
-        ws.cell(row=row, column=8, value=str(item.old_price))
+        # ws.cell(row=row, column=8, value=str(item.old_price))
     # Устанавливаем заголовки столбцов
     ws.cell(row=1, column=1, value='Название')
     ws.cell(row=1, column=2, value='Юр. лицо')
@@ -606,7 +606,18 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
         yandex_price = list(worksheet.rows)[row][5].value
         min_price = list(worksheet.rows)[row][6].value
         old_price = list(worksheet.rows)[row][2].value
-        if group_name not in group_names:
+        if Groups.objects.filter(company=ur_lico, name=group_name).exists():
+            group_obj = Groups.objects.get(company=ur_lico, name=group_name)
+            group_obj.company = ur_lico
+            group_obj.wb_price = wb_price
+            group_obj.wb_discount = wb_discount
+            group_obj.ozon_price = ozon_price
+            group_obj.yandex_price = yandex_price
+            group_obj.min_price = min_price
+            group_obj.old_price = old_price
+            group_obj.save()
+
+        else:
             Groups(
                 name=group_name,
                 company=ur_lico,

@@ -114,8 +114,8 @@ def groups_view(request, ur_lico):
                 old_price=request_data['old_price']
             )
         elif 'del-button' in request.POST.keys():
-            data.get(
-                name=request.POST['del-button']).delete()
+            data.filter(company=ur_lico,
+                        name=request.POST['del-button'])[0].delete()
         elif 'action_price' in request.POST:
             names = ArticleGroup.objects.filter(
                 group=request.POST['action_price'])
