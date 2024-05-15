@@ -650,8 +650,8 @@ def excel_import_data(xlsx_file, ur_lico):
         article_obj = ArticleGroup.objects.get(
             common_article=Articles.objects.get(company=ur_lico, common_article=article_list[row]))
         if Groups.objects.filter(name=article_value_dict[article_obj.common_article.common_article]).exists():
-            article_obj.group = Groups.objects.get(
-                name=article_value_dict[article_obj.common_article.common_article])
+            article_obj.group = Groups.objects.get(company=ur_lico,
+                                                   name=article_value_dict[article_obj.common_article.common_article])
         else:
             article_obj.group = None
         new_objects.append(article_obj)
