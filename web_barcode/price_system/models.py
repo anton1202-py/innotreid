@@ -112,11 +112,13 @@ class Articles(models.Model):
     )
     designer_article = models.BooleanField(
         verbose_name='Дизайнерский ночник',
-        default=False
+        null=True,
+        blank=True
     )
     copy_right = models.BooleanField(
         verbose_name='С авторскими правами',
-        default=False
+        null=True,
+        blank=True
     )
 
     def save(self, *args, **kwargs):

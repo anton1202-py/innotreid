@@ -177,7 +177,6 @@ def yandex_articles(ur_lico):
             article_yandex_dict[common_article] = article[:3]
         else:
             article_yandex_dict[article[0].capitalize()] = article[:3]
-    print(len(article_yandex_dict.keys()))
     return article_yandex_dict
 
 
@@ -191,7 +190,6 @@ def wb_matching_articles(ur_lico):
         wb_article_data = wb_ip_article_compare()
     else:
         wb_article_data = wb_ooo_article_compare(ur_lico)
-    print()
     for common_article, wb_data in wb_article_data.items():
         if Articles.objects.filter(company=ur_lico, common_article=common_article).exists() == True:
             wb_article = Articles.objects.get(company=ur_lico,
@@ -419,12 +417,12 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     # Устанавливаем заголовки столбцов
     ws.cell(row=1, column=1, value='Название')
     ws.cell(row=1, column=2, value='Юр. лицо')
-    ws.cell(row=1, column=3, value='WB стоимость')
+    ws.cell(row=1, column=3, value='Старая цена')
     ws.cell(row=1, column=4, value='WB скидка продавца')
     ws.cell(row=1, column=5, value='OZON стоимость')
     ws.cell(row=1, column=6, value='YANDEX стоимость')
     ws.cell(row=1, column=7, value='Минимальная цена')
-    ws.cell(row=1, column=8, value='Старая цена')
+    # ws.cell(row=1, column=8, value='Старая цена')
 
     al_left = Alignment(horizontal="left",
                         vertical="center")
@@ -437,7 +435,7 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     ws.column_dimensions['E'].width = 10
     ws.column_dimensions['F'].width = 12
     ws.column_dimensions['G'].width = 12
-    ws.column_dimensions['H'].width = 12
+    # ws.column_dimensions['H'].width = 12
 
     for i in range(len(data)+1):
         for c in ws[f'A{i+1}:I{i+1}']:
@@ -607,7 +605,7 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
         ozon_price = list(worksheet.rows)[row][4].value
         yandex_price = list(worksheet.rows)[row][5].value
         min_price = list(worksheet.rows)[row][6].value
-        old_price = list(worksheet.rows)[row][7].value
+        old_price = list(worksheet.rows)[row][2].value
         if group_name not in group_names:
             Groups(
                 name=group_name,
@@ -671,7 +669,6 @@ def excel_import_article_costprice_data(xlsx_file, ur_lico):
         article_obj = Articles.objects.get(
             company=ur_lico, common_article=article_list[row])
         article_obj.cost_price = article_value_dict[article_obj.common_article]
-        print(article_obj.cost_price)
         new_objects.append(article_obj)
 
     Articles.objects.bulk_update(new_objects, ['cost_price'])

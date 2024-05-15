@@ -32,7 +32,13 @@
                     <br>
                     <input type="Submit" id="filter" name="filter_data" value="ИП Караваев" />
                 </div>
+                <div>
+                    <br>
+                    <input type="checkbox" id="articles_without_status" name="checkbox_value" value="true">
+                    <label for="articles_without_status">Артикулы без статуса</label>
+                </div>
             </form>
+
         
             <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
                 {% csrf_token %}
@@ -64,6 +70,7 @@
                 <tr>
                     <th>Ночник</th>
                     <th>Дизайнерский</th>
+                    <th>Не дизайнерский</th>
                     <th>С правами</th>
                 </tr>
             </thead>
@@ -75,6 +82,9 @@
                         <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
                     </td>
                     <td>
+                        <input class="nondesigncheckbox" data-row="{{ el.common_article }}" type="checkbox" name="nondesigner_checkbox" id="nondesigner_checkbox_id" value="{{el.designer_article}}" {% if not el.designer_article %} checked {% endif %}>
+                    </td>
+                    <td>
                         <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
                     </td>
                 {% endfor %}
@@ -84,7 +94,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // Блокрует нажатие чекбокса copyrightcheckbox, если designcheckbox не нажат
+        // ========== Блокрует нажатие чекбокса copyrightcheckbox, если designcheckbox не нажат
         document.querySelectorAll('.designcheckbox').forEach(checkbox => {
             // Проверяем состояние чекбокса designer_checkbox_id при загрузке страницы
             if (checkbox.checked) {
@@ -202,7 +212,32 @@
         function submitForm() {
           document.getElementById('uploadForm').submit();
         }
-
+        // ========== Показывает артикулы без статуса дизайнерский/не дизайнерский ==========//
+        document.getElementById('articles_without_status').addEventListener('change', function() {
+            let table_n = document.getElementById("table");
+            let rows_n = table_n.getElementsByTagName("tr");
+            if (document.getElementById('articles_without_status').checked) {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelector('input');
+                    if (input) {
+                        let an_input = input.options[0]
+                        if (an_input){
+                            if(an_input.innerText){
+                                rows_n[i].style.display = 'none';
+                            } else {
+                                rows_n[i].style.display = '';
+                            }
+                        };
+                    }}
+            } else {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelectorAll('select');
+                    input.forEach((input) => {
+                        rows_n[i].style.display = '';
+                    })
+                }
+            }
+        });
     </script>
         
 {% endblock %}
