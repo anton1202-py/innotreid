@@ -99,7 +99,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    process_yandex_daily_orders()
+    # process_yandex_daily_orders()
     data = Articles.objects.all()
     context = {
         'data': data,
