@@ -709,14 +709,14 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    print('response.status_code', response_data.status_code)
+    print('wb_price_changer', response_data.status_code)
 
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
     header = header_wb_dict[ur_lico]
-    print('header', header)
+    # print('header', header)
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -742,6 +742,7 @@ def ozon_price_changer(header, info_list: list):
 
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+    print('ozon_price_changer', response_data.status_code)
 
 
 def ozon_price_change(ur_lico, articles_list: list, price: float, min_price: float, old_price=0):
@@ -776,6 +777,7 @@ def yandex_price_changer(header, business_id, info_list: list):
     payload = json.dumps({"offers": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+    print('yandex_price_changer', response_data.status_code)
 
 
 def yandex_price_change(ur_lico, articles_list: list, price: float, old_price=0):
