@@ -83,11 +83,13 @@ def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
     page_name = f'Ценовые группы {ur_lico}'
+    import_data_error_text = ''
+
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
         elif 'import_file' in request.FILES:
-            excel_import_group_create_data(
+            import_data_error_text = excel_import_group_create_data(
                 request.FILES['import_file'], ur_lico)
         elif 'add_button' in request.POST.keys():
             request_data = request.POST
@@ -174,13 +176,13 @@ def groups_view(request, ur_lico):
         if 'delete_low_price_button' in request.POST:
             # Удаляем артикулы из акции, если цена в акции ниже,
             # чем установленная минимальная цена.
-
             delete_ozon_articles_with_low_price_current_ur_lico(ur_lico)
 
     context = {
         'data': data,
         'ur_lico': ur_lico,
         'page_name': page_name,
+        'import_data_error_text': import_data_error_text,
     }
     return render(request, 'price_system/groups.html', context)
 
@@ -206,6 +208,7 @@ def article_groups_view(request, ur_lico):
     page_name = f'Таблица соответствия группе {ur_lico}'
     filter_data = Groups.objects.all().values('name')
     form = FilterChooseGroupForm(request.POST)
+    import_data_error_text = ''
     for article_id in articles_data:
         if not ArticleGroup.objects.filter(common_article=article_id['pk']).exists():
             obj = ArticleGroup(
@@ -222,7 +225,8 @@ def article_groups_view(request, ur_lico):
         if request.POST.get('export') == 'create_file':
             return excel_creating_mod(data)
         elif 'import_file' in request.FILES:
-            excel_import_data(request.FILES['import_file'], ur_lico)
+            import_data_error_text = excel_import_data(
+                request.FILES['import_file'], ur_lico)
         elif 'filter' in request.POST:
             filter_data = request.POST
             article_filter = filter_data.get("common_article")
@@ -248,13 +252,13 @@ def article_groups_view(request, ur_lico):
                     id=request.POST['group_name'])
                 article.group = None
                 article.save()
-
     context = {
         'data': data,
         'form': form,
         'filter_data': filter_data,
         'ur_lico': ur_lico,
         'page_name': page_name,
+        'import_data_error_text': import_data_error_text
     }
     return render(request, 'price_system/article_groups.html', context)
 

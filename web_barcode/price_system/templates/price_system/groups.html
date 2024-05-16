@@ -5,6 +5,12 @@
 {% load price_system_util %}
 
 {% block content%}
+{% if import_data_error_text %}
+    <script>
+        var message = JSON.parse("{{ import_data_error_text|escapejs }}");
+        alert(message.text);
+    </script>
+{% endif %}
     <div class="features">
         <div class="top-befor-header">
             <h1>{{page_name}}</h1>
@@ -12,17 +18,17 @@
             <div class="add-data">
                 <div class="inner-form-data-button">
                     <br>
-                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                    <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
                         {% csrf_token %}
                         <div class="two_button_label">
                             <button type="submit" name="export" value="create_file">
-                                Экспортировать в Excel
+                                Экспорт в Excel
                             </button>
-                            <label for="import_data">EXCEL для данных групп</label>
-                            <input type="file" id="import_data" name="import_file" class="input-file">
-                            <button type="submit">
+                            <label for="import_data">Импорт из EXCEL</label>
+                            <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                            <!-- <button type="submit">
                                 Загрузить данные
-                            </button> 
+                            </button>  -->
                         </div>
                     </form>
                 </div>
@@ -175,6 +181,11 @@
                 } else {
                     document.getElementById('overlay-costprice').style.display = 'none';
                 }
+            }
+
+            // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+            function submitForm() {
+              document.getElementById('uploadForm').submit();
             }
         </script>
     

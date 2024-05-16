@@ -1,7 +1,12 @@
 {% extends 'main/layout.html' %}
 {% block title%}{{ page_name }}{% endblock %}
 {% block content%}
-
+{% if import_data_error_text %}
+    <script>
+        var message = JSON.parse("{{ import_data_error_text|escapejs }}");
+        alert(message.text);
+    </script>
+{% endif %}
     <div class="features">
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
@@ -9,17 +14,14 @@
             <div class="add-data">
                 <div class="inner-form-data-button">
                     <br>
-                    <form method="POST" enctype="multipart/form-data" class="big-filter-form" >
+                    <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
                         {% csrf_token %}
                         <div class="two_button_label">
                             <button type="submit" name="export" value="create_file">
-                                Экспортировать в Excel
+                                Экспорт в Excel
                             </button>
-                            <label for="import_data">EXCEL для сопоставления</label>
-                            <input type="file" id="import_data" name="import_file" class="input-file">
-                            <button type="submit">
-                                Загрузить
-                            </button> 
+                            <label for="import_data">Экспорт из EXCEL</label>
+                            <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
                         </div>
                     </form>
                 </div>
@@ -49,39 +51,39 @@
                 </div>
             </form>
         </div>
-            <table id="table" style="overflow-x: scroll; display: block; width: 100%;">
+        
+        <table id="table" style="overflow-x: scroll; display: block; width: 100%;">
+            <tr>
+                <th>Артикул</th>
+                <th>Название группы</th>
+                <th>Цена WB</th>
+                <th>Цена OZON</th>
+                <th>Цена YANDEX</th>
+                <th>Себестоимость</th>
+            </tr>
+            {% for el in data %}
                 <tr>
-                    <th>Артикул</th>
-                    <th>Название группы</th>
-                    <th>Цена WB</th>
-                    <th>Цена OZON</th>
-                    <th>Цена YANDEX</th>
-                    <th>Себестоимость</th>
-
+                    <td>{{ el.common_article }}</td>
+                    <form method="post" name="name" enctype="multipart/form-data" action="">
+                        {% csrf_token %}
+                        <td>
+                            <input value="{{el.group.name}}" type="text" name="change_group"/>
+                            <button type="Submit" value="{{el.id}}" class="custom-button" name="group_name" method="POST" style="display: none;">Добавить</button>
+                        </td>
+                    </form>
+                    <td>{{ el.group.wb_price }}</td>
+                    <td>{{ el.group.ozon_price }}</td>
+                    <td>{{ el.group.yandex_price }}</td>
+                    <td>{{ el.common_article.cost_price }}</td>
                 </tr>
-                {% for el in data %}
-                    <tr>
-                        <td>{{ el.common_article }}</td>
-                        <form method="post" name="name" enctype="multipart/form-data" action="">
-                            {% csrf_token %}
-                            <td>
-                                <input value="{{el.group.name}}" type="text" name="change_group"/>
-                                <button type="Submit" value="{{el.id}}" class="custom-button" name="group_name" method="POST" style="display: none;">Добавить</button>
-                            </td>
-                        </form>
-                        <td>{{ el.group.wb_price }}</td>
-                        <td>{{ el.group.ozon_price }}</td>
-                        <td>{{ el.group.yandex_price }}</td>
-                        <td>{{ el.common_article.cost_price }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-            <div class="overlay-costprice" id="overlay-costprice">
-                <div class="popup-costprice" id="popup-costprice">
-                    <span class="close-btn" onclick="closePopup()">X</span>
-                    <p id="popup-text"></p>
-                </div>
+            {% endfor %}
+        </table>
+        <div class="overlay-costprice" id="overlay-costprice">
+            <div class="popup-costprice" id="popup-costprice">
+                <span class="close-btn" onclick="closePopup()">X</span>
+                <p id="popup-text"></p>
             </div>
+        </div>
     <script>
         function openPopup(articleName) {
             document.getElementById('overlay-costprice').style.display = 'block';

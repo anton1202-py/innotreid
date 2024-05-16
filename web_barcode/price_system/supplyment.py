@@ -24,6 +24,9 @@ from .models import ArticleGroup, Articles, Groups
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
+COLUMN_EXCEL_CREATING_GROUP_LIST = ['Название', 'Юр. лицо', 'Старая цена',
+                                    'WB скидка продавца', 'OZON стоимость', 'YANDEX стоимость', 'Минимальная цена']
+
 
 def sender_error_to_tg(func):
     def wrapper(*args, **kwargs):
@@ -364,7 +367,7 @@ def excel_creating_mod(data):
         ws.cell(row=row, column=2, value=str(item.group))
     # Устанавливаем заголовки столбцов
     ws.cell(row=1, column=1, value='Артикул')
-    ws.cell(row=1, column=2, value='Группа')
+    ws.cell(row=1, column=2, value='Ценовая группа артикула')
 
     al = Alignment(horizontal="center",
                    vertical="center")
@@ -415,14 +418,8 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
         ws.cell(row=row, column=7, value=str(item.min_price))
         # ws.cell(row=row, column=8, value=str(item.old_price))
     # Устанавливаем заголовки столбцов
-    ws.cell(row=1, column=1, value='Название')
-    ws.cell(row=1, column=2, value='Юр. лицо')
-    ws.cell(row=1, column=3, value='Старая цена')
-    ws.cell(row=1, column=4, value='WB скидка продавца')
-    ws.cell(row=1, column=5, value='OZON стоимость')
-    ws.cell(row=1, column=6, value='YANDEX стоимость')
-    ws.cell(row=1, column=7, value='Минимальная цена')
-    # ws.cell(row=1, column=8, value='Старая цена')
+    for i in range(len(COLUMN_EXCEL_CREATING_GROUP_LIST)):
+        ws.cell(row=1, column=i+1, value=COLUMN_EXCEL_CREATING_GROUP_LIST[i])
 
     al_left = Alignment(horizontal="left",
                         vertical="center")
@@ -439,7 +436,7 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
 
     for i in range(len(data)+1):
         for c in ws[f'A{i+1}:I{i+1}']:
-            for i in range(9):
+            for i in range(len(COLUMN_EXCEL_CREATING_GROUP_LIST)):
                 c[i].border = Border(top=thin, left=thin,
                                      bottom=thin, right=thin)
                 c[i].alignment = al_left
@@ -592,71 +589,123 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
     """
     workbook = load_workbook(filename=xlsx_file, read_only=True)
     worksheet = workbook.active
-    group_names = []
-    group_names_queryset = Groups.objects.filter(
-        company=ur_lico).values('name')
-    # Читаем файл построчно и создаем объекты.
-    for data in group_names_queryset:
-        group_names.append(data['name'])
-    for row in range(1, len(list(worksheet.rows))):
-        group_name = list(worksheet.rows)[row][0].value
-        wb_price = list(worksheet.rows)[row][2].value
-        wb_discount = list(worksheet.rows)[row][3].value
-        ozon_price = list(worksheet.rows)[row][4].value
-        yandex_price = list(worksheet.rows)[row][5].value
-        min_price = list(worksheet.rows)[row][6].value
-        old_price = list(worksheet.rows)[row][2].value
-        if Groups.objects.filter(company=ur_lico, name=group_name).exists():
-            group_obj = Groups.objects.get(company=ur_lico, name=group_name)
-            group_obj.company = ur_lico
-            group_obj.wb_price = wb_price
-            group_obj.wb_discount = wb_discount
-            group_obj.ozon_price = ozon_price
-            group_obj.yandex_price = yandex_price
-            group_obj.min_price = min_price
-            group_obj.old_price = old_price
-            group_obj.save()
 
-        else:
-            Groups(
-                name=group_name,
-                company=ur_lico,
-                wb_price=wb_price,
-                wb_discount=wb_discount,
-                ozon_price=ozon_price,
-                yandex_price=yandex_price,
-                min_price=min_price,
-                old_price=old_price
-            ).save()
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    error_column_list = []
+    for i in COLUMN_EXCEL_CREATING_GROUP_LIST:
+        if i not in column_list:
+            error_column_list.append(i)
+    if not error_column_list:
+        excel_data = pd.DataFrame(
+            excel_data_common, columns=COLUMN_EXCEL_CREATING_GROUP_LIST)
+        name_list = excel_data['Название'].to_list()
+        ur_lico_list = excel_data['Юр. лицо'].to_list()
+        old_price_list = excel_data['Старая цена'].to_list()
+        wb_sale_list = excel_data['WB скидка продавца'].to_list()
+        ozon_price_list = excel_data['OZON стоимость'].to_list()
+        yandex_price_list = excel_data['YANDEX стоимость'].to_list()
+        min_price_list = excel_data['Минимальная цена'].to_list()
+
+        check_dict = {'Название': name_list,
+                      'Юр. лицо': ur_lico_list,
+                      'Старая цена': old_price_list,
+                      'WB скидка продавца': wb_sale_list,
+                      'OZON стоимость': ozon_price_list,
+                      'YANDEX стоимость': yandex_price_list,
+                      'Минимальная цена': min_price_list}
+        check_data_list = []
+        for column_name, value_list in check_dict.items():
+            if any('nan' in str(element) for element in value_list):
+                check_data_list.append(column_name)
+
+        if check_data_list:
+            column = ''
+            for data in check_data_list:
+                column += f' {data},'
+            message_for_user = f'''В файле {xlsx_file} проверьте длину столбца {column}. В нем не хватает данных'''
+            return json.dumps({"text": message_for_user})
+
+        for i in range(len(name_list)):
+            if Groups.objects.filter(company=ur_lico_list[i],
+                                     name=name_list[i]).exists():
+                group_obj = Groups.objects.get(company=ur_lico_list[i],
+                                               name=name_list[i])
+                group_obj.wb_price = old_price_list[i]
+                group_obj.wb_discount = wb_sale_list[i]
+                group_obj.ozon_price = ozon_price_list[i]
+                group_obj.yandex_price = yandex_price_list[i]
+                group_obj.min_price = min_price_list[i]
+                group_obj.old_price = old_price_list[i]
+                group_obj.save()
+            else:
+                Groups(
+                    name=name_list[i],
+                    company=ur_lico_list[i],
+                    wb_price=old_price_list[i],
+                    wb_discount=wb_sale_list[i],
+                    ozon_price=ozon_price_list[i],
+                    yandex_price=yandex_price_list[i],
+                    min_price=min_price_list[i],
+                    old_price=old_price_list[i]
+                ).save()
+
+    else:
+        message = ''
+        for group in error_column_list:
+            message += f'\n{group},'
+        message_for_user = f'''Вы пытались загрузить ошибочный файл для создания/обновления групп цен для юр. лица {ur_lico}.\
+        Название файла: {xlsx_file}.\
+        В этом файле нет необходимых названий столбцов: {message}'''
+        return json.dumps({"text": message_for_user})
 
 
 def excel_import_data(xlsx_file, ur_lico):
     """Импортирует данные о группе артикула из Excel"""
 
     excel_data_common = pd.read_excel(xlsx_file)
-    excel_data = pd.DataFrame(excel_data_common, columns=['Артикул', 'Группа'])
-    article_list = excel_data['Артикул'].to_list()
-    group_name_list = excel_data['Группа'].to_list()
+    column_list = excel_data_common.columns.tolist()
+    if 'Артикул' in column_list and 'Ценовая группа артикула' in column_list:
+        excel_data = pd.DataFrame(excel_data_common, columns=[
+                                  'Артикул', 'Ценовая группа артикула'])
+        article_list = excel_data['Артикул'].to_list()
+        group_name_list = excel_data['Ценовая группа артикула'].to_list()
 
-    # Словарь {артикул: название_группы}
-    article_value_dict = {}
-    # Список для обновления строк в БД
-    new_objects = []
+        # Словарь {артикул: название_группы}
+        article_value_dict = {}
+        # Список для обновления строк в БД
+        new_objects = []
+        error_group_name_list = []
+        for i in range(len(article_list)):
+            article_value_dict[article_list[i]] = group_name_list[i]
 
-    for i in range(len(article_list)):
-        article_value_dict[article_list[i]] = group_name_list[i]
+        for row in range(len(article_list)):
+            article_obj = ArticleGroup.objects.get(
+                common_article=Articles.objects.get(company=ur_lico, common_article=article_list[row]))
+            if Groups.objects.filter(name=article_value_dict[article_obj.common_article.common_article]).exists():
+                article_obj.group = Groups.objects.get(company=ur_lico,
+                                                       name=article_value_dict[article_obj.common_article.common_article])
+            elif str(article_value_dict[article_obj.common_article.common_article]) != 'nan':
+                error_group_name_list.append(
+                    article_value_dict[article_obj.common_article.common_article])
+                article_obj.group = None
+            else:
+                article_obj.group = None
+            new_objects.append(article_obj)
 
-    for row in range(len(article_list)):
-        article_obj = ArticleGroup.objects.get(
-            common_article=Articles.objects.get(company=ur_lico, common_article=article_list[row]))
-        if Groups.objects.filter(name=article_value_dict[article_obj.common_article.common_article]).exists():
-            article_obj.group = Groups.objects.get(company=ur_lico,
-                                                   name=article_value_dict[article_obj.common_article.common_article])
-        else:
-            article_obj.group = None
-        new_objects.append(article_obj)
+        ArticleGroup.objects.bulk_update(new_objects, ['group'])
+        if error_group_name_list:
+            message = ''
+            for group in error_group_name_list:
+                message += f'\n{group},'
+            message_for_user = f'''В базе данных {ur_lico} не нашел названия групп из файла {xlsx_file}: {message}.\n\nЭти группы не сохранил.'''
 
-    ArticleGroup.objects.bulk_update(new_objects, ['group'])
+            return json.dumps({"text": message_for_user})
+    else:
+        message_for_user = f'''Вы пытались загрузить ошибочный файл c ценовыми группами  для юр. лица {ur_lico}.\
+        Название файла: {xlsx_file}.\
+        В этом файле нет необходимых названий столбцов: Артикул, Ценовая группа артикула'''
+        return json.dumps({"text": message_for_user})
 
 
 def excel_import_article_costprice_data(xlsx_file, ur_lico):
@@ -709,10 +758,6 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    print('wb_price_changer', response_data.status_code)
-    print('info_list', info_list)
-    print('response_data.text', response_data.text)
-    print('************************')
 
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):

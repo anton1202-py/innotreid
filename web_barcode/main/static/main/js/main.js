@@ -1,57 +1,9 @@
 let xhttp = new XMLHttpRequest();
 
-// xhttp.onreadystatechange = function () {
-//     if (this.readyState == 4 && this.status == 200) {
-//         myFunction(this.responseText)
-//     }
-// }
-
-// xhttp.open("GET", "/production/delivery_number", true)
-// xhttp.send();
-
-
-// function myFunction(data) {
-//     console.log(data);
-// }
-
-
-// let xhttp2 = new XMLHttpRequest();
-// xhttp2.onreadystatechange = function() {
-//     if (this.readyState == 4 && this.status == 200) {
-//         myFunction2(this.responseText)
-//     }
-// }
-
-// xhttp2.open("POST", "/production/delivery_number", true)
-// xhttp2.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-// //xhttp2.setRequestHeader('Authorization', 'Basic ' + authorizationBasic);
-// xhttp2.setRequestHeader('Accept', 'application/json');
-// xhttp2.setRequestHeader('X-CSRFToken', csrftoken);
-// xhttp2.send("username=admin&password=admin&grant_type=password");
-
-
-// function myFunction2(data) {
-//     console.log(data);
-// }
-
-
-// const csrftoken = 'VeH9eLwlCXnmrPAj2JmMy7wCKKwYdKDgHq6yXOkf2al6YDcGTtoewNTvQFn1vxto';
-// console.log(csrftoken)
-
-// const xhttp2 = new XMLHttpRequest();
-// xhttp2.onreadystatechange = function() {
-//   if (this.readyState == 4 && this.status == 200) {
-//     console.log(this.responseText);
-//   }
-// };
-
-// const formData = new FormData();
-// formData.append('username', 'admin');
-// formData.append('password', 'admin');
-// formData.append('csrfmiddlewaretoken', csrftoken);
-
-// xhttp2.open("POST", "/production/delivery_number", true);
-// xhttp2.send(formData);
+// ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+function submitForm() {
+  document.getElementById('uploadForm').submit();
+}
 
 
 //  =========== ВЫДЕЛЕНИЕ  ЗЕЛЕНЫМ ЦВЕТОМ ВЫПОЛНЕННОГО ОБЪЕМА ПРОИЗВОДСТВА =========
