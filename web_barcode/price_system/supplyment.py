@@ -710,6 +710,8 @@ def wb_price_changer(header, info_list: list):
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
     print('wb_price_changer', response_data.status_code)
+    print('response_data.text', response_data.text)
+    print('************************')
 
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
@@ -731,7 +733,7 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                     "discount": discount
                 }
                 data_for_change.append(inner_data_dict)
-        print('data_for_change', data_for_change)
+        # print('data_for_change', data_for_change)
         wb_price_changer(header, data_for_change)
 
 
