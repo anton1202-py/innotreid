@@ -1,13 +1,13 @@
 {% extends 'main/layout.html' %}
 
 
-{% block title%}Артикулы для контроля цены{% endblock %}
+{% block title%}{{page_name}}{% endblock %}
 {% load price_system_util %}
 
 {% block content%}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Ценовые группы {{ ur_lico }}</h1>
+            <h1>{{page_name}}</h1>
             {% if request.user.is_staff %}
             <div class="add-data">
                 <div class="inner-form-data-button">

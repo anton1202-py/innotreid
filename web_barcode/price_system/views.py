@@ -30,6 +30,7 @@ def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
     if request.POST:
@@ -54,13 +55,11 @@ def article_compare(request, ur_lico: str):
         elif 'export_costprice' in request.POST:
             return excel_article_costprice_export(data)
         elif 'import_file_costprice' in request.FILES:
-            print('Я там где нужно)')
-            print('request.POST', request.POST)
-            print('request.FILES', request.FILES)
             excel_import_article_costprice_data(
                 request.FILES['import_file_costprice'], ur_lico)
     context = {
         'data': data,
+        'page_name': page_name,
     }
     return render(request, 'price_system/article_compare.html', context)
 
@@ -83,7 +82,7 @@ def gramoty_article_compare(request):
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
     data = Groups.objects.filter(company=ur_lico).order_by('id')
-
+    page_name = f'Ценовые группы {ur_lico}'
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
@@ -181,6 +180,7 @@ def groups_view(request, ur_lico):
     context = {
         'data': data,
         'ur_lico': ur_lico,
+        'page_name': page_name,
     }
     return render(request, 'price_system/groups.html', context)
 
@@ -203,6 +203,7 @@ def gramoty_groups_view(request):
 def article_groups_view(request, ur_lico):
     """Описывает общее представление сопоставление артикула и группы"""
     articles_data = Articles.objects.filter(company=ur_lico).values('pk')
+    page_name = f'Таблица соответствия группе {ur_lico}'
     filter_data = Groups.objects.all().values('name')
     form = FilterChooseGroupForm(request.POST)
     for article_id in articles_data:
@@ -253,6 +254,7 @@ def article_groups_view(request, ur_lico):
         'form': form,
         'filter_data': filter_data,
         'ur_lico': ur_lico,
+        'page_name': page_name,
     }
     return render(request, 'price_system/article_groups.html', context)
 

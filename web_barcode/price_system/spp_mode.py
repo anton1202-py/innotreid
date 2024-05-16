@@ -54,6 +54,7 @@ def price_group_article_info():
         article = ArticleGroup.objects.filter(group=group_obj)
         inner_dict = {}
         if article.exists():
+            print(article)
             inner_dict['group_object'] = group_obj
             inner_dict['wb_nmid'] = article[0].common_article.wb_nomenclature
             inner_dict['ur_lico'] = group_data[2]
@@ -62,7 +63,7 @@ def price_group_article_info():
 
 
 @sender_error_to_tg
-def get_front_api_wb_info(nm_id):
+def get_front_api_wb_info(nm_id, ur_lico):
     """Получаем цену артикула на странице ВБ от api фронта ВБ"""
     url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
     response = requests.request(
@@ -74,7 +75,7 @@ def get_front_api_wb_info(nm_id):
                                 ['salePriceU'])//100
         return price
     else:
-        message = f'Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
+        message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
 
@@ -96,25 +97,16 @@ def article_spp_info():
     group_db_data = price_group_article_info()
     group_spp_data_dict = {}
     for group_data in group_db_data:
+
         ur_lico = group_data['ur_lico']
         article = group_data['wb_nmid']
         group_object = group_data['group_object']
         article_info = return_article_discount_price_info(ur_lico, article)
 
-        price_from_page = get_front_api_wb_info(article)
+        price_from_page = get_front_api_wb_info(article, ur_lico)
         price_from_wb_api = article_info['price']
         discount_from_wb_api = article_info['discount']
         spp = calculate_spp(
             price_from_page, price_from_wb_api, discount_from_wb_api)
         group_spp_data_dict[group_object] = spp
-        if group_object.name == 'Диплом 10':
-            print(group_object.name,
-                  price_from_page,
-                  price_from_wb_api,
-                  discount_from_wb_api,
-                  spp)
-
-            spp1 = int((1 - (price_from_page/price_from_wb_api /
-                             (1 - discount_from_wb_api/100))) * 100)
-            print(spp1)
     return group_spp_data_dict

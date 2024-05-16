@@ -1,13 +1,13 @@
 {% extends 'main/layout.html' %}
 
 
-{% block title%}Работа с базой данных{% endblock %}
+{% block title%}{{page_name}}{% endblock %}
 
 
 {% block content%}
     <div class="features">
         <div class="top-befor-header">
-            <h1>Таблица сопоставления артикулов</h1>
+            <h1>{{page_name}}</h1>
             {% if request.user.is_staff %}
             
             <div class="add-data">
