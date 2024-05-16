@@ -735,6 +735,7 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                 }
                 data_for_change.append(inner_data_dict)
         # print('data_for_change', data_for_change)
+        print('ur_lico', ur_lico)
         wb_price_changer(header, data_for_change)
 
 
