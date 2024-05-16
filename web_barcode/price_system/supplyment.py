@@ -710,6 +710,7 @@ def wb_price_changer(header, info_list: list):
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
     print('wb_price_changer', response_data.status_code)
+    print('info_list', info_list)
     print('response_data.text', response_data.text)
     print('************************')
 
@@ -744,7 +745,7 @@ def ozon_price_changer(header, info_list: list):
 
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    print('ozon_price_changer', response_data.status_code)
+    # print('ozon_price_changer', response_data.status_code)
 
 
 def ozon_price_change(ur_lico, articles_list: list, price: float, min_price: float, old_price=0):
@@ -779,7 +780,7 @@ def yandex_price_changer(header, business_id, info_list: list):
     payload = json.dumps({"offers": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    print('yandex_price_changer', response_data.status_code)
+    # print('yandex_price_changer', response_data.status_code)
 
 
 def yandex_price_change(ur_lico, articles_list: list, price: float, old_price=0):
