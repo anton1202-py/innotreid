@@ -1897,45 +1897,45 @@ class CreatePivotFile(WildberriesFbsMode, OzonFbsMode, YandexMarketFbsMode):
 
 
 # # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПООЧЕРЕДИ ========== #
-# def common_action_wb_pivot_ozon_morning():
-#     wb_actions = WildberriesFbsMode()
-#     ozon_actions = OzonFbsMode()
+def common_action_wb_pivot_ozon_morning():
+    wb_actions = WildberriesFbsMode()
+    # ozon_actions = OzonFbsMode()
 
-#     clearning_folders()
-#     # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
-#     # 1. Создаю сводный файл для производства
-#     pivot_file = CreatePivotFile()
-#     pivot_file.create_pivot_xls()
-#     # 2. Отправляю данные по сборке FBS
-#     pivot_file.sender_message_to_telegram()
-#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-#     # 1. Обрабатываю новые сборочные задания.
-#     wb_actions.article_data_for_tickets()
-#     # 3. Создаю поставку
-#     wb_actions.create_delivery()
-#     # 2. Создаю шрихкоды для артикулов
-#     wb_actions.create_barcode_tickets()
-#     # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-#     # задания и сохраняю его в папку
-#     wb_actions.qrcode_order()
-#     # 5. Создаю лист сборки
-#     wb_actions.create_selection_list()
-#     # 6. Добавляю поставку в доставку, получаю QR код поставки
-#     # и преобразует этот QR код в необходимый формат.
-#     wb_actions.qrcode_supply()
-#     # 7. Создаю список с полными именами файлов, которые нужно объединить
-#     wb_actions.list_for_print_create()
+    clearning_folders()
+    # =========== СОЗДАЮ СВОДНЫЙ ФАЙЛ ========== #
+    # 1. Создаю сводный файл для производства
+    pivot_file = CreatePivotFile()
+    pivot_file.create_pivot_xls()
+    # 2. Отправляю данные по сборке FBS
+    pivot_file.sender_message_to_telegram()
+    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
+    # 1. Обрабатываю новые сборочные задания.
+    wb_actions.article_data_for_tickets()
+    # 3. Создаю поставку
+    # wb_actions.create_delivery()
+    # 2. Создаю шрихкоды для артикулов
+    # wb_actions.create_barcode_tickets()
+    # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # задания и сохраняю его в папку
+    # wb_actions.qrcode_order()
+    # 5. Создаю лист сборки
+    wb_actions.create_selection_list()
+    # 6. Добавляю поставку в доставку, получаю QR код поставки
+    # и преобразует этот QR код в необходимый формат.
+    # wb_actions.qrcode_supply()
+    # 7. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
 
-#     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
-#     # 1. Готовлю данные для подтверждения отгрузки
-#     ozon_actions.prepare_data_for_confirm_delivery()
-#     # 2. Создаем лист подбора для ОЗОН
-#     ozon_actions.create_ozone_selection_sheet_pdf()
-#     # Очищаем все папки на сервере
-#     clearning_folders()
-#     message_text = 'Утренняя сборка WB сформирована'
-#     bot.send_message(chat_id=CHAT_ID_MANAGER,
-#                      text=message_text, parse_mode='HTML')
+    # =========== АЛГОРИТМ  ДЕЙСТВИЙ С ОЗОН ========== #
+    # 1. Готовлю данные для подтверждения отгрузки
+    # ozon_actions.prepare_data_for_confirm_delivery()
+    # 2. Создаем лист подбора для ОЗОН
+    # ozon_actions.create_ozone_selection_sheet_pdf()
+    # Очищаем все папки на сервере
+    # clearning_folders()
+    # message_text = 'Утренняя сборка WB сформирована'
+    # bot.send_message(chat_id=CHAT_ID_MANAGER,
+    #                 text=message_text, parse_mode='HTML')
 
 
 # def common_action_ozon_morning():

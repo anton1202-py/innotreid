@@ -458,9 +458,8 @@ class WildberriesFbsMode():
             sheet['E1'] = 'Артикул продавца'
             sheet['F1'] = 'Стикер'
             for key, value in self.selection_dict.items():
-                # # загружаем изображение
-                response = requests.get(value[0])
-                img = image.Image(io.BytesIO(response.content))
+                # загружаем изображение
+                img = image.Image(value[0])
                 # задаем размеры изображения
                 img.width = 30
                 img.height = 50
