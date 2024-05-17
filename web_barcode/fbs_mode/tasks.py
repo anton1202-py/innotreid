@@ -124,7 +124,9 @@ def clearning_folders():
             'fbs_mode/data_for_barcodes/ozon_docs',
             'fbs_mode/data_for_barcodes/ozon_delivery_barcode',
             'fbs_mode/data_for_barcodes/yandex',
-            'fbs_mode/data_for_barcodes/new_pivot_excel'
+            'fbs_mode/data_for_barcodes/new_pivot_excel',
+            'fbs_mode/data_for_barcodes/photo',
+            'fbs_mode/data_for_barcodes/raw_photo'
             ]
     for dir in dirs:
         for filename in glob.glob(os.path.join(dir, "*")):
@@ -207,6 +209,28 @@ class WildberriesFbsMode():
                 self.dropbox_current_assembling_folder)
 
     @sender_error_to_tg
+    def check_folder_availability(self, folder):
+        """Проверяет наличие папки, если ее нет, то создает"""
+        folder_path = os.path.join(
+            os.getcwd(), folder)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+    @sender_error_to_tg
+    def convert_photo_from_webp_to_jpg(self, photo_address, article_barcode, name_raw_photo_folder, name_photo_folder):
+        """Конвертирует webp изображение в jpg и сохраняет в нужных папках."""
+        response = requests.get(photo_address)
+        image = Image.open(BytesIO(response.content))
+        name_raw_photo = f"{name_raw_photo_folder}/{article_barcode}.jpg"
+        image.save(name_raw_photo)
+        # Открываем изображение в формате We
+        webp_image = Image.open(name_raw_photo)
+        name_photo = f"{name_photo_folder}/{article_barcode}.jpg"
+        # Сохраняем изображение в формате JPEG
+        webp_image.save(name_photo, 'JPEG')
+        return name_photo
+
+    @sender_error_to_tg
     def process_new_orders(self):
         """
         WILDBERRIES
@@ -285,6 +309,13 @@ class WildberriesFbsMode():
         self.clear_article_list = []
         # Словарь для данных листа подбора {order_id: [photo_link, brand, name, seller_article]}
         self.selection_dict = {}
+        # Папка для сохранения фото в webp формате
+        name_raw_photo_folder = f"fbs_mode/data_for_barcodes/raw_photo"
+        self.check_folder_availability(self, name_raw_photo_folder)
+        # Папка для сохранения фото в jpg формате
+        name_photo_folder = f"fbs_mode/data_for_barcodes/photo"
+        self.check_folder_availability(self, name_photo_folder)
+
         for data in orders_data:
             answer = self.article_info(data['article'])
             if json.loads(answer)['cards']:
@@ -300,6 +331,8 @@ class WildberriesFbsMode():
                         title, barcode]
                     photo = json.loads(answer)[
                         'cards'][0]['photos'][0]['big']
+                    photo_name = self.convert_photo_from_webp_to_jpg(
+                        self, photo, barcode, name_raw_photo_folder, name_photo_folder)
                     brand = json.loads(answer)[
                         'cards'][0]['brand']
                     title_article = json.loads(answer)[
@@ -307,7 +340,7 @@ class WildberriesFbsMode():
                     seller_article = data['article']
                     # Заполняем словарь данными для Листа подбора
                     self.selection_dict[data['id']] = [
-                        photo, brand, title_article, seller_article]
+                        photo_name, brand, title_article, seller_article]
             time.sleep(2)
         # Словарь с данными: {артикул_продавца: количество}
         self.amount_articles = dict(Counter(self.clear_article_list))

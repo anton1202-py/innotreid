@@ -254,7 +254,7 @@ class WildberriesFbsMode():
                         "limit": 1
                     },
                     "filter": {
-                        "textSearch": 143477346,
+                        "textSearch": article,
                         "withPhoto": -1
                     }
                 }
@@ -264,9 +264,6 @@ class WildberriesFbsMode():
                 "POST", url_data, headers=self.headers, data=payload)
 
             if response_data.status_code == 200:
-                print('**************************')
-                print(article, response_data.text)
-                print('**************************')
                 return response_data.text
             else:
                 text = f'Статус код = {response_data.status_code} у артикула {article}'
@@ -309,8 +306,22 @@ class WildberriesFbsMode():
                         'cards'][0]['title']
                     self.data_article_info_dict[data['article']] = [
                         title, barcode]
+                    print('************************')
+                    print(json.loads(answer)[
+                        'cards'][0]['photos'])
+                    print('************************')
                     photo = json.loads(answer)[
                         'cards'][0]['photos'][0]['big']
+                    response = requests.get(photo)
+                    image = Image.open(BytesIO(response.content))
+                    name_photo = f"fbs_mode/data_for_barcodes/raw/{barcode}.jpg"
+                    image.save(name_photo)
+                    # Открываем изображение в формате WebP
+
+                    webp_image = Image.open(name_photo)
+                    name_good_photo = f"fbs_mode/data_for_barcodes/photo/{barcode}.jpg"
+                    # Сохраняем изображение в формате JPEG
+                    webp_image.save(name_good_photo, 'JPEG')
                     brand = json.loads(answer)[
                         'cards'][0]['brand']
                     title_article = json.loads(answer)[
@@ -318,7 +329,7 @@ class WildberriesFbsMode():
                     seller_article = data['article']
                     # Заполняем словарь данными для Листа подбора
                     self.selection_dict[data['id']] = [
-                        photo, brand, title_article, seller_article]
+                        name_good_photo, brand, title_article, seller_article]
                 time.sleep(2)
             # Словарь с данными: {артикул_продавца: количество}
             self.amount_articles = dict(Counter(self.clear_article_list))
@@ -438,9 +449,11 @@ class WildberriesFbsMode():
             sheet['E1'] = 'Артикул продавца'
             sheet['F1'] = 'Стикер'
             for key, value in self.selection_dict.items():
+                print(key, value)
+                print('**********************')
                 # # загружаем изображение
-                response = requests.get(value[0])
-                img = image.Image(io.BytesIO(response.content))
+                # response = requests.get(value[0])
+                img = image.Image(value[0])
                 # задаем размеры изображения
                 img.width = 30
                 img.height = 50
@@ -2130,8 +2143,8 @@ def action_wb(db_folder, file_add_name, headers_wb,
     # # # 4. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # # # задания и сохраняю его в папку
     # # wb_actions.qrcode_order()
-    # # 5. Создаю лист сборки
-    # wb_actions.create_selection_list()
+    # 5. Создаю лист сборки
+    wb_actions.create_selection_list()
     # # # 6. Добавляю поставку в доставку, получаю QR код поставки
     # # # и преобразует этот QR код в необходимый формат.
     # # wb_actions.qrcode_supply()
@@ -2243,7 +2256,7 @@ def ooo_yandex_action():
     action_yandex(yandex_headers_ooo, db_ooo_folder, file_add_name_ooo)
 
 
-ooo_yandex_action()
+# ooo_yandex_action()
 
 
 def ip_wb_action():
@@ -2252,7 +2265,7 @@ def ip_wb_action():
         ozon_headers_karavaev, yandex_headers_karavaev)
 
 
-# ip_wb_action()
+ip_wb_action()
 
 
 def ip_ozon_action_morning():
