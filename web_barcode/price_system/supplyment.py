@@ -364,10 +364,13 @@ def excel_creating_mod(data):
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
         ws.cell(row=row, column=1, value=str(item.common_article))
-        ws.cell(row=row, column=2, value=str(item.group))
+        if item.group:
+            ws.cell(row=row, column=2, value=str(item.group.company))
+        ws.cell(row=row, column=3, value=str(item.group))
     # Устанавливаем заголовки столбцов
     ws.cell(row=1, column=1, value='Артикул')
-    ws.cell(row=1, column=2, value='Ценовая группа артикула')
+    ws.cell(row=1, column=2, value='Юр. лицо')
+    ws.cell(row=1, column=3, value='Ценовая группа артикула')
 
     al = Alignment(horizontal="center",
                    vertical="center")
@@ -380,10 +383,11 @@ def excel_creating_mod(data):
 
     ws.column_dimensions['A'].width = 12
     ws.column_dimensions['B'].width = 10
+    ws.column_dimensions['C'].width = 10
 
     for i in range(len(data)+1):
-        for c in ws[f'A{i+1}:I{i+1}']:
-            for i in range(9):
+        for c in ws[f'A{i+1}:C{i+1}']:
+            for i in range(3):
                 c[i].border = Border(top=thin, left=thin,
                                      bottom=thin, right=thin)
                 c[i].alignment = al_left
@@ -582,6 +586,23 @@ def excel_article_costprice_export(data):
     return response
 
 
+def check_ur_lico_in_file(ur_lico_list, ur_lico, xlsx_file):
+    """Проверка на совпадения юр. лица в файле и рабочей страницы"""
+    checker_list = []
+    for company_ind in range(len(ur_lico_list)):
+        if ur_lico_list[company_ind] and str(ur_lico_list[company_ind]) != 'nan' and ur_lico != ur_lico_list[company_ind]:
+            checker_list.append(ur_lico_list[company_ind])
+
+    if checker_list:
+        ur_lico_message = ''
+        for ur in checker_list:
+            ur_lico_message += f' \n{ur},'
+        message_for_user = f'''В файле {xlsx_file} не совпадают юр. лица с выбранной вкладкой.\
+            На вкладке юр. лицо {ur_lico}, в файле найдено {ur_lico_message}.\n
+            Проверьте верно ли выбран файл?'''
+        return json.dumps({"text": message_for_user})
+
+
 def excel_import_group_create_data(xlsx_file, ur_lico):
     """
     Импортирует данные о группе из Excel
@@ -606,6 +627,11 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
         ozon_price_list = excel_data['OZON стоимость'].to_list()
         yandex_price_list = excel_data['YANDEX стоимость'].to_list()
         min_price_list = excel_data['Минимальная цена'].to_list()
+
+        ur_lico_checker = check_ur_lico_in_file(
+            ur_lico_list, ur_lico, xlsx_file)
+        if ur_lico_checker:
+            return ur_lico_checker
 
         check_dict = {'Название': name_list,
                       'Юр. лицо': ur_lico_list,
@@ -665,10 +691,11 @@ def excel_import_data(xlsx_file, ur_lico):
 
     excel_data_common = pd.read_excel(xlsx_file)
     column_list = excel_data_common.columns.tolist()
-    if 'Артикул' in column_list and 'Ценовая группа артикула' in column_list:
+    if 'Артикул' in column_list and 'Юр. лицо' in column_list and 'Ценовая группа артикула' in column_list:
         excel_data = pd.DataFrame(excel_data_common, columns=[
-                                  'Артикул', 'Ценовая группа артикула'])
+                                  'Артикул', 'Юр. лицо', 'Ценовая группа артикула'])
         article_list = excel_data['Артикул'].to_list()
+        ur_lico_list = excel_data['Юр. лицо'].to_list()
         group_name_list = excel_data['Ценовая группа артикула'].to_list()
 
         # Словарь {артикул: название_группы}
@@ -676,6 +703,12 @@ def excel_import_data(xlsx_file, ur_lico):
         # Список для обновления строк в БД
         new_objects = []
         error_group_name_list = []
+
+        ur_lico_checker = check_ur_lico_in_file(
+            ur_lico_list, ur_lico, xlsx_file)
+        if ur_lico_checker:
+            return ur_lico_checker
+
         for i in range(len(article_list)):
             article_value_dict[article_list[i]] = group_name_list[i]
 
