@@ -79,7 +79,7 @@ def get_front_api_wb_info(nm_id, ur_lico, group_object):
                 company=ur_lico, wb_nomenclature=nm_id)
             ArticleGroup.objects.get(
                 common_article=article_obj, group=group_object).delete()
-            ArticlesPrice.objects.get(common_article=article_obj).delete()
+            ArticlesPrice.objects.filter(common_article=article_obj).delete()
             Articles.objects.get(
                 company=ur_lico, wb_nomenclature=nm_id).delete()
         message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
