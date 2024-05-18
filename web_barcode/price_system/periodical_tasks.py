@@ -190,14 +190,15 @@ def write_group_spp_data():
     """Записывает в базу данных информацию об СПП ценовой группы"""
     time_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     main_info = article_spp_info()
-    for group_obj, spp in main_info.items():
-        if group_obj.spp != spp:
-            message = f'SPP группы {group_obj.name} изменилась. Была {group_obj.spp}, стала - {spp}'
+    if main_info:
+        for group_obj, spp in main_info.items():
+            if group_obj.spp != spp:
+                message = f'SPP группы {group_obj.name} изменилась. Была {group_obj.spp}, стала - {spp}'
 
-            group_obj.spp = spp
-            group_obj.change_date_spp = time_now
-            group_obj.save()
+                group_obj.spp = spp
+                group_obj.change_date_spp = time_now
+                group_obj.save()
 
-            for chat_id in spp_group_list:
-                bot.send_message(chat_id=chat_id,
-                                 text=message, parse_mode='HTML')
+                for chat_id in spp_group_list:
+                    bot.send_message(chat_id=chat_id,
+                                     text=message, parse_mode='HTML')

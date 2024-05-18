@@ -10,7 +10,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
                                         wb_headers_karavaev, wb_headers_ooo,
                                         yandex_business_id_dict)
 
-from .models import ArticleGroup, Groups
+from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .supplyment import sender_error_to_tg
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
@@ -54,7 +54,6 @@ def price_group_article_info():
         article = ArticleGroup.objects.filter(group=group_obj)
         inner_dict = {}
         if article.exists():
-            print(article)
             inner_dict['group_object'] = group_obj
             inner_dict['wb_nmid'] = article[0].common_article.wb_nomenclature
             inner_dict['ur_lico'] = group_data[2]
@@ -63,7 +62,7 @@ def price_group_article_info():
 
 
 @sender_error_to_tg
-def get_front_api_wb_info(nm_id, ur_lico):
+def get_front_api_wb_info(nm_id, ur_lico, group_object):
     """Получаем цену артикула на странице ВБ от api фронта ВБ"""
     url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
     response = requests.request(
@@ -75,9 +74,18 @@ def get_front_api_wb_info(nm_id, ur_lico):
                                 ['salePriceU'])//100
         return price
     else:
+        if response.status_code == 200:
+            article_obj = Articles.objects.get(
+                company=ur_lico, wb_nomenclature=nm_id)
+            ArticleGroup.objects.get(
+                common_article=article_obj, group=group_object).delete()
+            ArticlesPrice.objects.get(common_article=article_obj).delete()
+            Articles.objects.get(
+                company=ur_lico, wb_nomenclature=nm_id).delete()
         message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
+        return 0
 
 
 @sender_error_to_tg
@@ -103,10 +111,11 @@ def article_spp_info():
         group_object = group_data['group_object']
         article_info = return_article_discount_price_info(ur_lico, article)
 
-        price_from_page = get_front_api_wb_info(article, ur_lico)
+        price_from_page = get_front_api_wb_info(article, ur_lico, group_object)
         price_from_wb_api = article_info['price']
         discount_from_wb_api = article_info['discount']
-        spp = calculate_spp(
-            price_from_page, price_from_wb_api, discount_from_wb_api)
-        group_spp_data_dict[group_object] = spp
+        if price_from_page != 0:
+            spp = calculate_spp(
+                price_from_page, price_from_wb_api, discount_from_wb_api)
+            group_spp_data_dict[group_object] = spp
     return group_spp_data_dict
