@@ -119,10 +119,11 @@ def article_spp_info():
         article_info = return_article_discount_price_info(ur_lico, article)
 
         price_from_page = get_front_api_wb_info(article, ur_lico, group_object)
-        price_from_wb_api = article_info['price']
-        discount_from_wb_api = article_info['discount']
-        if price_from_page != 0:
-            spp = calculate_spp(
-                price_from_page, price_from_wb_api, discount_from_wb_api)
-            group_spp_data_dict[group_object] = spp
+        if article_info:
+            price_from_wb_api = article_info['price']
+            discount_from_wb_api = article_info['discount']
+            if price_from_page != 0:
+                spp = calculate_spp(
+                    price_from_page, price_from_wb_api, discount_from_wb_api)
+                group_spp_data_dict[group_object] = spp
     return group_spp_data_dict
