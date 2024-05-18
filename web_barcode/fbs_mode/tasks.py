@@ -311,10 +311,10 @@ class WildberriesFbsMode():
         self.selection_dict = {}
         # Папка для сохранения фото в webp формате
         name_raw_photo_folder = f"fbs_mode/data_for_barcodes/raw_photo"
-        self.check_folder_availability(self, name_raw_photo_folder)
+        self.check_folder_availability(name_raw_photo_folder)
         # Папка для сохранения фото в jpg формате
         name_photo_folder = f"fbs_mode/data_for_barcodes/photo"
-        self.check_folder_availability(self, name_photo_folder)
+        self.check_folder_availability(name_photo_folder)
 
         for data in orders_data:
             answer = self.article_info(data['article'])
@@ -332,7 +332,7 @@ class WildberriesFbsMode():
                     photo = json.loads(answer)[
                         'cards'][0]['photos'][0]['big']
                     photo_name = self.convert_photo_from_webp_to_jpg(
-                        self, photo, barcode, name_raw_photo_folder, name_photo_folder)
+                        photo, barcode, name_raw_photo_folder, name_photo_folder)
                     brand = json.loads(answer)[
                         'cards'][0]['brand']
                     title_article = json.loads(answer)[
