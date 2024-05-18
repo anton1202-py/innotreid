@@ -34,11 +34,13 @@ def return_article_discount_price_info(ur_lico, article):
     """Возвращает данные о цене и скидке артикула"""
     header = header_wb_data_dict[ur_lico]
     main_data = wb_discounts_prices_single_article_info(header, article)
+
     data_dict = {}
-    for data in main_data:
-        data_dict['nmId'] = data['nmID']
-        data_dict['price'] = data['sizes'][0]['price']
-        data_dict['discount'] = data['discount']
+    if main_data:
+        for data in main_data:
+            data_dict['nmId'] = data['nmID']
+            data_dict['price'] = data['sizes'][0]['price']
+            data_dict['discount'] = data['discount']
     return data_dict
 
 
@@ -63,7 +65,12 @@ def price_group_article_info():
 
 @sender_error_to_tg
 def get_front_api_wb_info(nm_id, ur_lico, group_object):
-    """Получаем цену артикула на странице ВБ от api фронта ВБ"""
+    """
+    Получаем цену артикула на странице ВБ от api фронта ВБ
+    nm_id - номенклатурный номер артикула на WB
+    ur_lico - юр лицо, которому принадлежит артикул
+    group_object - щиъект группы цен, в которой находится артикул
+    """
     url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
     response = requests.request(
         "GET", url)
@@ -80,8 +87,8 @@ def get_front_api_wb_info(nm_id, ur_lico, group_object):
             ArticleGroup.objects.get(
                 common_article=article_obj, group=group_object).delete()
             ArticlesPrice.objects.filter(common_article=article_obj).delete()
-            Articles.objects.get(
-                company=ur_lico, wb_nomenclature=nm_id).delete()
+            # Articles.objects.get(
+            #     company=ur_lico, wb_nomenclature=nm_id).delete()
         message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
