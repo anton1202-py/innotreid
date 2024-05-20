@@ -86,18 +86,20 @@ def motivation_article_type_excel_file_export(data):
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
         ws.cell(row=row, column=1, value=str(item['common_article']))
+        ws.cell(row=row, column=2, value=str(item['company']))
         if item['designer_article'] == False:
-            ws.cell(row=row, column=2, value='')
-        else:
-            ws.cell(row=row, column=2, value=str(item['designer_article']))
-        if item['copy_right'] == False:
             ws.cell(row=row, column=3, value='')
         else:
-            ws.cell(row=row, column=3, value=str(item['copy_right']))
+            ws.cell(row=row, column=3, value=str(item['designer_article']))
+        if item['copy_right'] == False:
+            ws.cell(row=row, column=4, value='')
+        else:
+            ws.cell(row=row, column=4, value=str(item['copy_right']))
     # Устанавливаем заголовки столбцов
     ws.cell(row=1, column=1, value='Артикул')
-    ws.cell(row=1, column=2, value='Дизайнерский ночник')
-    ws.cell(row=1, column=3, value='С правами')
+    ws.cell(row=1, column=2, value='Компания')
+    ws.cell(row=1, column=3, value='Дизайнерский ночник')
+    ws.cell(row=1, column=4, value='С правами')
 
     al = Alignment(horizontal="center",
                    vertical="center")
@@ -108,10 +110,11 @@ def motivation_article_type_excel_file_export(data):
     ws.column_dimensions['A'].width = 12
     ws.column_dimensions['B'].width = 10
     ws.column_dimensions['C'].width = 10
+    ws.column_dimensions['D'].width = 10
 
     for i in range(len(data)+1):
-        for c in ws[f'A{i+1}:C{i+1}']:
-            for i in range(3):
+        for c in ws[f'A{i+1}:D{i+1}']:
+            for i in range(4):
                 c[i].border = Border(top=thin, left=thin,
                                      bottom=thin, right=thin)
                 c[i].alignment = al_left
@@ -143,23 +146,35 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
         new_objects = []
 
         for i in range(len(article_list)):
+            print(article_list[i])
+            print(int(copyright_type_list[i]))
+            if int(copyright_type_list[i]) == 1:
+                copyright_type_list[i] == True
+            else:
+                copyright_type_list[i] == False
             article_value_dict[article_list[i]] = [
                 designer_type_list[i], copyright_type_list[i]]
 
-        for row in range(len(article_list)):
-            article_obj = Articles.objects.get(
-                company=ur_lico, common_article=article_list[row])
-            if str(article_value_dict[article_list[row]][0]).capitalize() == 'True':
-                article_obj.designer_article = True
-                if str(article_value_dict[article_list[row]][1]).capitalize() == 'True':
-                    article_obj.copy_right = True
-                else:
-                    article_obj.copy_right = False
-            else:
-                article_obj.designer_article = False
-                article_obj.copy_right = False
+            print(designer_type_list[i], copyright_type_list[i])
 
-            new_objects.append(article_obj)
+        for row in range(len(article_list)):
+            # print('article_list[row]', article_list[row])
+            if Articles.objects.filter(
+                    company=ur_lico, common_article=article_list[row]).exists():
+                article_obj = Articles.objects.get(
+                    company=ur_lico, common_article=article_list[row])
+                # print(article_value_dict[article_list[row]][1])
+                if str(article_value_dict[article_list[row]][0]).capitalize() == 'True':
+                    article_obj.designer_article = True
+                    if str(article_value_dict[article_list[row]][1]) == 'True':
+                        article_obj.copy_right = True
+                    else:
+                        article_obj.copy_right = False
+                else:
+                    article_obj.designer_article = False
+                    article_obj.copy_right = False
+
+                new_objects.append(article_obj)
         Articles.objects.bulk_update(
             new_objects, ['designer_article', 'copy_right'])
     else:

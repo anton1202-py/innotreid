@@ -24,10 +24,12 @@ from .supplyment import (excel_article_costprice_export, excel_compare_table,
                          ozon_price_change, wb_articles_list,
                          wb_matching_articles, wilberries_price_change,
                          yandex_matching_articles, yandex_price_change)
+from .testsss import test_excel_file
 
 
 def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
+    test_excel_file()
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
