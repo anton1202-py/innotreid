@@ -187,7 +187,7 @@ def article_type(request):
     page_name = 'Тип светильника'
 
     ur_lico = 'ООО Иннотрейд'
-    if request.session['filter_data']:
+    if 'filter_data' in request.session:
         ur_lico = request.session['filter_data']
     article_list = Articles.objects.filter(company=ur_lico).order_by('common_article').values(
         'common_article', 'company', 'designer_article', 'copy_right')
