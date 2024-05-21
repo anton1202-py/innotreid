@@ -766,43 +766,43 @@ def create_sales(request):
     return render(request, 'database/create_sales.html', data)
 
 
-def user_login(request):
-    if request.method == 'POST':
-        user_n = authenticate(username='yana_kostenkova',
-                              password='y9f-2PB-9c2')
-        form = LoginUserForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            user = authenticate(
-                username=cd['username'], password=cd['password'])
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return redirect('database_home')
-                else:
-                    return render(request,
-                                  'database/login.html')
-            else:
-                return render(request,
-                              'database/login.html')
-    else:
-        form = LoginUserForm()
-    return render(request, 'database/login.html', {'form': form})
+# def user_login(request):
+#     if request.method == 'POST':
+#         user_n = authenticate(username='yana_kostenkova',
+#                               password='y9f-2PB-9c2')
+#         form = LoginUserForm(request.POST)
+#         if form.is_valid():
+#             cd = form.cleaned_data
+#             user = authenticate(
+#                 username=cd['username'], password=cd['password'])
+#             if user is not None:
+#                 if user.is_active:
+#                     login(request, user)
+#                     return redirect('database_home')
+#                 else:
+#                     return render(request,
+#                                   'database/login.html')
+#             else:
+#                 return render(request,
+#                               'database/login.html')
+#     else:
+#         form = LoginUserForm()
+#     return render(request, 'database/login.html', {'form': form})
 
 
-# class LoginUser(LoginView):
-#     form_class = LoginUserForm
-#     template_name = 'database/login.html'
+class LoginUser(LoginView):
+    form_class = LoginUserForm
+    template_name = 'database/login.html'
 
-#     def get_context_data(self, *, object_list=None, **kwargs):
-#         print(kwargs)
-#         context = super().get_context_data(**kwargs)
-#         print(context)
-#         return dict(list(context.items()))
+    def get_context_data(self, *, object_list=None, **kwargs):
+        print(kwargs)
+        context = super().get_context_data(**kwargs)
+        print(context)
+        return dict(list(context.items()))
 
-#     def get_success_url(self):
-#         print('Должна быть удача')
-#         return reverse_lazy('database_home')
+    def get_success_url(self):
+        print('Должна быть удача')
+        return reverse_lazy('database_home')
 
 
 def logout_user(request):
