@@ -328,7 +328,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% url 'motivation_article_type' as url_article_type %}
+                    {% if user.group == "Руководитель дизайнеров" and request.user.is_staff %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
@@ -337,9 +337,10 @@
                                 chevron_right
                             </span>
                         </span>
-                        {% if user.group == "Руководитель дизайнеров" or user.is_superuser%}
                         <ul class="submenu">
+                            {% if user.group == "Руководитель дизайнеров" and request.user.is_staff %}
                             {% url 'motivation_article_type' as url_article_type %}
+                            
                             <li>
                                 <a href="{{ url_article_type }}" {% if request.path == url_article_type %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
@@ -354,6 +355,7 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if user.is_superuser %}
                             {% url 'motivation_percent_rewards' as url_percent_rewards %}
                             <li>
                                 <a href="{{ url_percent_rewards }}" {% if request.path == url_percent_rewards %}class="active"{% endif %}>
@@ -369,6 +371,7 @@
                                     <h3>Вознаграждение дизайнеров</h3>
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
                 {% endif %}
