@@ -122,9 +122,15 @@ class ShelvingForm(ModelForm):
         }
 
 
-class LoginUserForm(forms.Form):
-    username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput)
+class LoginUserForm(AuthenticationForm):
+    username = CharField(
+        label='Логин',
+        widget=TextInput(attrs={'class': 'form-control'})
+    )
+    password = CharField(
+        label='Пароль',
+        widget=PasswordInput(attrs={'class': 'form-control'})
+    )
 
 
 class SalesForm(ModelForm):
