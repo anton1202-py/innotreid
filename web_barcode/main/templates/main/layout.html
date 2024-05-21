@@ -23,8 +23,8 @@
                 
                 {% if request.user.is_authenticated %}
                     <li class="logout">
-                        <p>{{ request.user.group }}</p>
-                        <p><b>{{ user.username }}</b></p>
+                        <p>{{ user.group }}</p>
+                        <p><b>{{ user.username }} {{ user.group.all }}</b></p>
                         <a href="{% url 'logout' %}">
                             <p>Выйти</p>
                             <span class="material-symbols-sharp">logout</span>
