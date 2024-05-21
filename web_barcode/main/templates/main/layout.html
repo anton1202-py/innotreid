@@ -328,7 +328,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if user.is_superuser %}
+                    {% url 'motivation_article_type' as url_article_type %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
