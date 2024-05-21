@@ -65,9 +65,8 @@
                         <select class="mySelect" data-row="{{ el.common_article }}">
                             {% if el.designer != None %}
                                 <option value="">{{ el.designer.last_name }} {{ el.designer.first_name }}</option>
-                            {% else %}
-                                <option value=""></option>
                             {% endif %}
+                            <option value=""></option>
                             {% for designer in designer_list %}
                                 <option value="{{ designer.id }}">{{ designer.last_name }} {{ designer.first_name }}</option>
                             {% endfor %}

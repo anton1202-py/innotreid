@@ -134,9 +134,13 @@ def update_model_field(request):
         # Сохраняем значение в базу данных
         user_id = request.POST.get('selected_designer')
         article = request.POST.get('article')
-        user_obj = InnotreidUser.objects.get(id=int(user_id))
-        Articles.objects.filter(common_article=article).update(
-            designer=user_obj)
+        if user_id:
+            user_obj = InnotreidUser.objects.get(id=int(user_id))
+            Articles.objects.filter(common_article=article).update(
+                designer=user_obj)
+        else:
+            Articles.objects.filter(common_article=article).update(
+                designer=None)
         return JsonResponse({'message': 'Value saved successfully.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 

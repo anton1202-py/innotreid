@@ -275,12 +275,11 @@ def save_ozon_daily_orders_data_for_motivation(data, order_date, month, year, ur
                     ur_lico=ur_lico,
                     year=year,
                     month=month,
-                    summ=data['metrics'][1],
-                    quantity=int(data['metrics'][0]),
+                    summ=int(data['metrics'][0]),
+                    quantity=int(data['metrics'][1]),
                     data=order_date,
                     marketplace=ozon_marketplace).save()
         else:
             message = f"В базе данных ОЗОН нет артикула {data['dimensions'][0]['name']} {data['metrics'][0]} {data['metrics'][1]} {ur_lico} {data['dimensions'][0]['id']}. Не смог загрузить по нему продажи в базу данных для мотивации"
-            print(message)
             time.sleep(1)
             bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
