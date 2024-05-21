@@ -328,7 +328,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if user.group == "Руководитель дизайнеров" and request.user.is_staff %}
+                    {% if user.group == "Руководитель дизайнеров" or request.user.is_staff %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
@@ -338,7 +338,7 @@
                             </span>
                         </span>
                         <ul class="submenu">
-                            {% if user.group == "Руководитель дизайнеров" and request.user.is_staff %}
+                            {% if user.group == "Руководитель дизайнеров" or request.user.is_staff %}
                             {% url 'motivation_article_type' as url_article_type %}
                             
                             <li>
