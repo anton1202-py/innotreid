@@ -50,7 +50,7 @@
         
         <div class="sidebar">
             <nav class="menu">
-                {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
+                {% if request.user.is_staff %}
                 <ul class="main-menu">
                     <li class="parent">
                         <span class="expanded">
@@ -128,8 +128,6 @@
                         </ul>
                     </li>
                 
-                    {% endif %}
-                    {% if request.user.is_staff %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
@@ -307,10 +305,6 @@
                         </ul>
                     </li>          
                     
-                    {% endif %}
-                    
-                    {% if request.user.username == 'yaroslav_pavlenko' or request.user.is_staff %}
-                    
                     {% url 'task_creation' as url_delivery_number %}
                     <li>
                         <a href="{{ url_delivery_number }}" {% if request.path == url_delivery_number %}class="active"{% endif %}>
@@ -318,7 +312,7 @@
                             <h3>Поставки</h3>
                         </a>
                     </li>
-                    {% endif %}
+                    
                     {% url 'add_article' as url_add_article %}
                     <li>
                         <a href="{{ url_add_article }}" {% if request.path == url_add_article %}class="active"{% endif %}>
@@ -333,6 +327,7 @@
                             <h3>Периодические задачи</h3>
                         </a>
                     </li>
+                    {% endif %}
                     {% if user.is_superuser %}
                     <li class="parent">
                         <span class="expanded">
@@ -344,18 +339,11 @@
                         </span>
                         <ul class="submenu">
                             {% url 'motivation_article_type' as url_article_type %}
+                            {% if user.group == "Руководитель дизайнеров" or user.is_superuser%}
                             <li>
                                 <a href="{{ url_article_type }}" {% if request.path == url_article_type %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
                                     <h3>Тип светильника</h3>
-                                </a>
-                            </li>
-                            
-                            {% url 'motivation_percent_rewards' as url_percent_rewards %}
-                            <li>
-                                <a href="{{ url_percent_rewards }}" {% if request.path == url_percent_rewards %}class="active"{% endif %}>
-                                    <span class="material-symbols-sharp">filter_list</span>
-                                    <h3>% вознаграждения</h3>
                                 </a>
                             </li>
                             {% url 'motivation_article_designers' as url_article_designers %}
@@ -363,6 +351,14 @@
                                 <a href="{{ url_article_designers }}" {% if request.path == url_article_designers %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
                                     <h3>Светильники дизайнеров</h3>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% url 'motivation_percent_rewards' as url_percent_rewards %}
+                            <li>
+                                <a href="{{ url_percent_rewards }}" {% if request.path == url_percent_rewards %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>% вознаграждения</h3>
                                 </a>
                             </li>
                             

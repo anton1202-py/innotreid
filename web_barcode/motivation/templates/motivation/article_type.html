@@ -115,7 +115,7 @@
             });
         });
 
-        // ========== Показывает отфильтрованную таблицу ========= //
+        // ========== Показывает отфильтрованную по артикулам таблицу ========= //
         $(document).ready(function() {
             $('#common_article_id').on('input', function() {
                 var search_term = $(this).val();
@@ -214,29 +214,23 @@
         }
         // ========== Показывает артикулы без статуса дизайнерский/не дизайнерский ==========//
         document.getElementById('articles_without_status').addEventListener('change', function() {
-            let table_n = document.getElementById("table");
-            let rows_n = table_n.getElementsByTagName("tr");
-            if (document.getElementById('articles_without_status').checked) {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelector('input');
-                    if (input) {
-                        let an_input = input.options[0]
-                        if (an_input){
-                            if(an_input.innerText){
-                                rows_n[i].style.display = 'none';
-                            } else {
-                                rows_n[i].style.display = '';
-                            }
-                        };
-                    }}
-            } else {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelectorAll('select');
-                    input.forEach((input) => {
-                        rows_n[i].style.display = '';
-                    })
+            var isChecked = this.checked;
+            var rows = document.querySelectorAll('#table tbody tr');
+                
+            rows.forEach(function(row) {
+                var designCheckbox = row.querySelector('.designcheckbox');
+                var nondesignCheckbox = row.querySelector('.nondesigncheckbox');
+                
+                if (isChecked) {
+                    if (!designCheckbox.checked && !nondesignCheckbox.checked) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    row.style.display = 'table-row';
                 }
-            }
+            });
         });
     </script>
         
