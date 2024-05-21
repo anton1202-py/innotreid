@@ -9,7 +9,6 @@ from api_request.ozon_requests import (ozon_orsers_daily_report,
 from api_request.wb_requests import wb_sales_statistic
 from api_request.yandex_requests import yandex_daily_orders
 from celery_tasks.celery import app
-from django.contrib.auth.models import User
 from dotenv import load_dotenv
 from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg

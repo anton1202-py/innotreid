@@ -10,8 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from dotenv import load_dotenv
 from motivation.models import DesignerReward, Selling
-from motivation.supplyment import (articles_data_merge, designer_data_merge,
-                                   get_current_selling,
+from motivation.supplyment import (articles_data_merge, get_current_selling,
                                    motivation_article_type_excel_file_export,
                                    motivation_article_type_excel_import)
 from price_system.models import Articles, DesignUser

@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 import requests
 import telegram
-from django.contrib.auth.models import User
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles, DesignUser

@@ -30,6 +30,11 @@ class InnotreidUser(AbstractUser):
         verbose_name="Фамилия",
         max_length=150,
         blank=True)
+    password = models.CharField(
+        verbose_name='Пароль',
+        max_length=150,
+        help_text=('Обязательно для заполнения.Максимум 150 символов.')
+    )
     tg_chat_id = models.CharField(
         verbose_name="телеграм chat ID",
         max_length=20,
@@ -48,6 +53,7 @@ class InnotreidUser(AbstractUser):
         return self.username
 
     class Meta:
+        app_label = 'users'
         db_table = 'users_innotreiduser'
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'

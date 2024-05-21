@@ -8,7 +8,6 @@ import pandas as pd
 import requests
 import telegram
 from database.models import CodingMarketplaces, OzonSales, WildberriesSales
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
@@ -35,16 +34,6 @@ from .models import Selling
 
 def articles_data_merge():
     main_data = Articles.objects.all()
-    print(len(main_data))
-
-
-def designer_data_merge():
-    main_data = User.objects.all()
-    for data in main_data:
-        print(data)
-        DesignUser(
-            designer=data
-        ).save()
     print(len(main_data))
 
 

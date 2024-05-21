@@ -103,7 +103,7 @@ class Articles(models.Model):
         null=True,
     )
     designer = models.ForeignKey(
-        InnotreidUser,
+        'DesignUser',
         on_delete=models.CASCADE,
         verbose_name='Дизайнер',
         related_name='lighter_designer',
