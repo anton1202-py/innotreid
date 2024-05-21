@@ -4,15 +4,17 @@ import pandas as pd
 from database.periodic_tasks import (process_ozon_daily_orders,
                                      process_yandex_daily_orders)
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.db.models import Case, Count, IntegerField, Q, Sum, When
 from django.db.models.functions import ExtractWeek, ExtractYear, TruncWeek
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import (DeleteView, DetailView, FormView, ListView,
+                                  UpdateView)
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -97,8 +99,8 @@ START_LIST = [
 
 
 def database_home(request):
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
+    # if str(request.user) == 'AnonymousUser':
+    #     return redirect('login')
     # process_yandex_daily_orders()
     data = Articles.objects.all()
     context = {
@@ -764,16 +766,43 @@ def create_sales(request):
     return render(request, 'database/create_sales.html', data)
 
 
-class LoginUser(LoginView):
-    form_class = LoginUserForm
-    template_name = 'database/login.html'
+def user_login(request):
+    if request.method == 'POST':
+        user_n = authenticate(username='yana_kostenkova',
+                              password='y9f-2PB-9c2')
+        form = LoginUserForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            user = authenticate(
+                username=cd['username'], password=cd['password'])
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('database_home')
+                else:
+                    return render(request,
+                                  'database/login.html')
+            else:
+                return render(request,
+                              'database/login.html')
+    else:
+        form = LoginUserForm()
+    return render(request, 'database/login.html', {'form': form})
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return dict(list(context.items()))
 
-    def get_success_url(self):
-        return reverse_lazy('database_home')
+# class LoginUser(LoginView):
+#     form_class = LoginUserForm
+#     template_name = 'database/login.html'
+
+#     def get_context_data(self, *, object_list=None, **kwargs):
+#         print(kwargs)
+#         context = super().get_context_data(**kwargs)
+#         print(context)
+#         return dict(list(context.items()))
+
+#     def get_success_url(self):
+#         print('Должна быть удача')
+#         return reverse_lazy('database_home')
 
 
 def logout_user(request):

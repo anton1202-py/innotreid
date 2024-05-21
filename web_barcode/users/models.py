@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
@@ -57,3 +58,30 @@ class InnotreidUser(AbstractUser):
         db_table = 'users_innotreiduser'
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+
+User = get_user_model()
+
+
+class CustomUserBackend:
+
+    def authenticate(self, request, username=None, password=None):
+
+        print('я в классе бэкенда')
+        try:
+            user = User.objects.get(username=username)
+            print('user from backend', user)
+            print(user.password)
+            print('user.check_password(password)',
+                  user.check_password(password))
+            if not user.check_password(password):
+                print('проверил в классе пароль')
+                return user
+        except User.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return None

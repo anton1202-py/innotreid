@@ -122,15 +122,9 @@ class ShelvingForm(ModelForm):
         }
 
 
-class LoginUserForm(AuthenticationForm):
-    username = CharField(
-        label='Логин',
-        widget=TextInput(attrs={'class': 'form-control'})
-    )
-    password = CharField(
-        label='Пароль',
-        widget=PasswordInput(attrs={'class': 'form-control'})
-    )
+class LoginUserForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
 
 
 class SalesForm(ModelForm):
@@ -182,6 +176,7 @@ class SelectDateForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control',
         }))
+
 
 class SelectDateStocksForm(forms.Form):
     datestart = forms.DateField(
