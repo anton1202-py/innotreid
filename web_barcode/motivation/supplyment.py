@@ -146,16 +146,8 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
         new_objects = []
 
         for i in range(len(article_list)):
-            print(article_list[i])
-            print(int(copyright_type_list[i]))
-            if int(copyright_type_list[i]) == 1:
-                copyright_type_list[i] == True
-            else:
-                copyright_type_list[i] == False
             article_value_dict[article_list[i]] = [
                 designer_type_list[i], copyright_type_list[i]]
-
-            print(designer_type_list[i], copyright_type_list[i])
 
         for row in range(len(article_list)):
             # print('article_list[row]', article_list[row])

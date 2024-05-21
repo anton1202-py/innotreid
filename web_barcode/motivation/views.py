@@ -76,7 +76,7 @@ def get_designers_sales_data():
 
 
 def article_designers(request):
-    """Отображает список рекламных компаний WB и добавляет их"""
+    """Отображает артикулы дизайнеров"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # get_current_selling()

@@ -20,7 +20,7 @@
                     <select id="designer" name="designer">
                         <option value=""></option>
                         {% for designer in designer_list %}
-                            <option value="{{ designer.id }}">{{ designer.username }}</option>
+                            <option value="{{ designer.id }}">{{ designer.last_name }} {{ designer.firstname }}</option>
                         {% endfor %}
                     </select>
                 </label>
@@ -69,7 +69,7 @@
                                 <option value=""></option>
                             {% endif %}
                             {% for designer in designer_list %}
-                                <option value="{{ designer.id }}">{{ designer.username }}</option>
+                                <option value="{{ designer.id }}">{{ designer.last_name }} {{ designer.firstname }}</option>
                             {% endfor %}
                         </select>
                     </td>
