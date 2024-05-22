@@ -67,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'main.context_processors.user_groups',
             ],
         },
     },
@@ -88,7 +89,7 @@ DATABASES = {
     }
 }
 AUTH_USER_MODEL = 'users.InnotreidUser'
-# AUTHENTICATION_BACKENDS = ['users.models.CustomUserBackend']
+AUTHENTICATION_BACKENDS = ['users.models.CustomUserBackend']
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

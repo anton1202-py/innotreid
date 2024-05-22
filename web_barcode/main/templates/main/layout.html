@@ -20,7 +20,6 @@
     {% block mainmenu %}
         <menu>
             <ul id="mainmenu" class="mainmenu">
-                
                 {% if request.user.is_authenticated %}
                     <li class="logout">
                         <p>{{ user.group }}</p>
@@ -329,7 +328,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if request.user.group == "Руководитель дизайнеров" or request.user.is_staff %}
+                    {% if 'Руководитель дизайнеров' in user_groups or request.user.is_staff %}
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>
@@ -339,7 +338,7 @@
                             </span>
                         </span>
                         <ul class="submenu">
-                            {% if request.user.group == "Руководитель дизайнеров" or request.user.is_staff %}
+                            {% if 'Руководитель дизайнеров' in user_groups or request.user.is_staff %}
                             {% url 'motivation_article_type' as url_article_type %}
                             
                             <li>
