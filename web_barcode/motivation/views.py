@@ -78,10 +78,10 @@ def get_designers_sales_data():
                     data['month']: int(data['summ']*designer_rew_dict[data['lighter__designer']]/100)}
             if data['lighter__designer'] in year_sales_dict:
                 year_sales_dict[data['lighter__designer']
-                                ] += int(data['summ'])
+                                ] += int(data['summ']*designer_rew_dict[data['lighter__designer']]/100)
             else:
                 year_sales_dict[data['lighter__designer']] = int(
-                    data['summ'])
+                    data['summ']*designer_rew_dict[data['lighter__designer']]/100)
     return year_sales_dict, monthly_sales_dict
 
 
