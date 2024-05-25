@@ -34,8 +34,8 @@
                 {% for el in percent_data %}
                     <tr data-row="{{ el.designer.username }}">
                         <td>{{ el.designer.last_name }} {{ el.designer.first_name }}</td>
-                        <td><input class="main-percent" value="{{ el.main_reward_persent }}" type="number" name="main_percent" data-row="{{ el.designer }}"/></td>
-                        <td><input class="copyright-percent" value="{{ el.copyright_reward_persent }}" type="number" name="copyright_percent" data-row="{{ el.designer }}"/></td>
+                        <td><input class="main-percent" placeholder="{{ el.main_reward_persent }}" type="number" step="0.01" name="main_percent" data-row="{{ el.designer }}"/></td>
+                        <td><input class="copyright-percent" placeholder="{{ el.copyright_reward_persent }}" type="number" name="copyright_percent" data-row="{{ el.designer }}"/></td>
                     </tr>
                 {% endfor %}
             </tbody>

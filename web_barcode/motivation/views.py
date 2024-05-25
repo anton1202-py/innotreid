@@ -48,6 +48,18 @@ def get_designers_sales_data():
     """Отдает данные по продажам дизайнеров"""
     sale_data = Selling.objects.all().values(
         'lighter', 'month', 'summ', 'lighter__designer')
+    print(sale_data)
+    designer_rew_dict = {}
+    designer_persent = DesignUser.objects.all().values(
+        'designer', 'main_reward_persent', 'copyright_reward_persent')
+    for i in designer_persent:
+        if i['copyright_reward_persent']:
+            designer_rew_dict[i['designer']] = i['copyright_reward_persent']
+        elif not i['copyright_reward_persent'] and i['main_reward_persent']:
+            designer_rew_dict[i['designer']] = i['main_reward_persent']
+        else:
+            designer_rew_dict[i['designer']] = 0
+    print(designer_rew_dict)
     # Словарь с данными артикула по продажам по месяцам
     monthly_sales_dict = {}
     # Словарь с продажами артикула за текущий год
@@ -57,20 +69,19 @@ def get_designers_sales_data():
             if data['lighter__designer'] in monthly_sales_dict:
                 if data['month'] in monthly_sales_dict[data['lighter__designer']]:
                     monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] += int(data['summ'])
+                                       ][data['month']] += int(data['summ'])*designer_rew_dict[data['lighter__designer']]
                 else:
                     monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] = int(data['summ'])
+                                       ][data['month']] = int(data['summ'])*designer_rew_dict[data['lighter__designer']]
             else:
                 monthly_sales_dict[data['lighter__designer']] = {
-                    data['month']: int(data['summ'])}
+                    data['month']: int(data['summ'])*designer_rew_dict[data['lighter__designer']]}
             if data['lighter__designer'] in year_sales_dict:
                 year_sales_dict[data['lighter__designer']
                                 ] += int(data['summ'])
             else:
                 year_sales_dict[data['lighter__designer']] = int(
                     data['summ'])
-    print(year_sales_dict)
     return year_sales_dict, monthly_sales_dict
 
 
@@ -313,6 +324,10 @@ def percent_designers_rewards(request):
         return redirect('login')
     page_name = 'Процент вознаграждения'
     percent_data = DesignUser.objects.all().order_by('designer__last_name')
+    print(percent_data[0])
+    for el in percent_data:
+        print(el.main_reward_persent)
+        print(el.copyright_reward_persent)
     if request.GET:
         print('Попал в фильтр')
     context = {
