@@ -271,12 +271,12 @@ class DesignUser(models.Model):
         null=True,
         blank=True
     )
-    main_reward_persent = models.IntegerField(
+    main_reward_persent = models.FloatField(
         verbose_name='% вознаграждения',
         blank=True,
         null=True
     )
-    copyright_reward_persent = models.IntegerField(
+    copyright_reward_persent = models.FloatField(
         verbose_name='% вознаграждения право собственности',
         blank=True,
         null=True

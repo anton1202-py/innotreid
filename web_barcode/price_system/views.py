@@ -34,7 +34,6 @@ def article_compare(request, ur_lico: str):
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
     if request.POST:
-        print(request.POST)
         if "compare" in request.POST:
             wb_matching_articles(ur_lico)
             ozon_matching_articles(ur_lico)

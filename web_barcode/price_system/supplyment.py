@@ -58,6 +58,9 @@ def wb_ip_article_compare():
         else:
             article_dict[data["vendorCode"]] = [data["vendorCode"],
                                                 data["sizes"][0]["skus"][0], data["nmID"]]
+        if 'V296' in data["vendorCode"]:
+            print(data["vendorCode"], data["sizes"]
+                  [0]["skus"][0], data["nmID"])
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
@@ -70,8 +73,10 @@ def wb_ooo_article_compare(ur_lico):
     article_dict = {}
     for data in all_data:
         article = data["vendorCode"]
+
         article_dict[article.capitalize()] = [data["vendorCode"],
                                               data["sizes"][0]["skus"][0], data["nmID"]]
+
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
