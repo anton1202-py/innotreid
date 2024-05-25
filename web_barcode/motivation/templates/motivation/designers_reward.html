@@ -31,7 +31,7 @@
                 {% if monthly_sales_dict|get_item:el.id %}
                     {% if designer_percent|get_item:el.id %}
                         {% with percent=designer_percent|get_item:el.id  %}
-                            <td>{{year_sales_dict|get_item:el.id}}</td>
+                            <td>{{year_sales_dict|get_item:el.id|multiplicity:percent|round_number}}</td>
                         {% endwith %}
                     {% else %}
                     <td>{{year_sales_dict|get_item:el.id|multiplicity:0}}</td>
