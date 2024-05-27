@@ -73,7 +73,7 @@
                     </select>
                 </td>
                 <td>
-                    <input class="copyrightcheckbox" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
+                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %}>
                 </td>
                 {% if el.id in year_sales_dict %}
                     <td>{{year_sales_dict|get_item:el.id}}</td>
@@ -153,6 +153,38 @@
                 }
             }
         });
+
+        // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
+        document.querySelectorAll('.copyrightcheckbox').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('copyright_article_type', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_article_copyright_boolean_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
     </script>
         
 {% endblock %}
