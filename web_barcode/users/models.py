@@ -51,7 +51,7 @@ class InnotreidUser(AbstractUser):
     )
 
     def __str__(self):
-        return self.username
+        return f'{self.id} {self.username}'
 
     class Meta:
         app_label = 'users'

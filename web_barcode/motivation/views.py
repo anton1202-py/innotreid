@@ -48,7 +48,6 @@ def get_designers_sales_data():
     """Отдает данные по продажам дизайнеров"""
     sale_data = Selling.objects.all().values(
         'lighter', 'month', 'summ', 'lighter__designer')
-    print(sale_data)
     designer_rew_dict = {}
     designer_persent = DesignUser.objects.all().values(
         'designer', 'main_reward_persent', 'copyright_reward_persent')
@@ -67,6 +66,7 @@ def get_designers_sales_data():
     year_sales_dict = {}
     for data in sale_data:
         if data['lighter__designer']:
+            print(data)
             if data['lighter__designer'] in monthly_sales_dict:
                 if data['month'] in monthly_sales_dict[data['lighter__designer']]:
                     monthly_sales_dict[data['lighter__designer']

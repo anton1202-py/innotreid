@@ -76,7 +76,6 @@ def wb_ooo_article_compare(ur_lico):
 
         article_dict[article.capitalize()] = [data["vendorCode"],
                                               data["sizes"][0]["skus"][0], data["nmID"]]
-
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
