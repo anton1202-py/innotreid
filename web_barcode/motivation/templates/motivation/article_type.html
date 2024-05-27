@@ -82,7 +82,7 @@
                         <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
                     </td>
                     <td>
-                        <input class="nondesigncheckbox" data-row="{{ el.common_article }}" type="checkbox" name="nondesigner_checkbox" id="nondesigner_checkbox_id" value="{{el.designer_article}}" {% if not el.designer_article %} checked {% endif %}>
+                        <input class="nondesigncheckbox" data-row="{{ el.common_article }}" type="checkbox" name="nondesigner_checkbox" id="nondesigner_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article == False %} checked {% endif %}>
                     </td>
                     <td>
                         <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
@@ -177,6 +177,37 @@
             });
         });
 
+         // ========== Записывает в БД нажатия чекбоксов .nondesigncheckbox ========= //
+         document.querySelectorAll('.nondesigncheckbox').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('non_designer_article_type', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_article_designer_boolean_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
         // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
         document.querySelectorAll('.copyrightcheckbox').forEach(select => {
             select.addEventListener('change', function() {
@@ -190,7 +221,7 @@
                 formData.append('article', rowNumber);
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
             
-                fetch('update_article_copyright_boolean_field/', {
+                fetch('update_article_designer_boolean_field/', {
                     method: 'POST',
                     body: formData,
                 })

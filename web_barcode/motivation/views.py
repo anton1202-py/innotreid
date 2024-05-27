@@ -279,19 +279,42 @@ def article_type(request):
 
 def update_article_designer_boolean_field(request):
     if request.method == 'POST':
-
+        print(request.POST)
         # Сохраняем значение в базу данных
-        article_type = request.POST.get('designer_article_type')
-        article = request.POST.get('article')
-        checkbox_value = not ast.literal_eval(article_type)
-        Articles.objects.filter(common_article=article).update(
-            designer_article=checkbox_value)
+        if 'designer_article_type' in request.POST:
+            article_type = request.POST.get('designer_article_type')
+            article = request.POST.get('article')
+            checkbox_value = not ast.literal_eval(article_type)
+            Articles.objects.filter(common_article=article).update(
+                designer_article=checkbox_value)
+            if article_type == 'None':
+                Articles.objects.filter(common_article=article).update(
+                    designer_article=True)
+            elif article_type == 'True':
+                Articles.objects.filter(common_article=article).update(
+                    designer_article=None)
+        elif 'non_designer_article_type' in request.POST:
+            article_type = request.POST.get('non_designer_article_type')
+            article = request.POST.get('article')
+            if article_type == 'False':
+                Articles.objects.filter(common_article=article).update(
+                    designer_article=None)
+            elif article_type == 'None':
+                Articles.objects.filter(common_article=article).update(
+                    designer_article=False)
+        elif 'copyright_article_type' in request.POST:
+            copyright_type = request.POST.get('copyright_article_type')
+            article = request.POST.get('article')
+            checkbox_value = not ast.literal_eval(copyright_type)
+            Articles.objects.filter(common_article=article).update(
+                copy_right=checkbox_value)
 
         return JsonResponse({'message': 'Value saved successfully.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
 def update_article_copyright_boolean_field(request):
+    print(request.POST)
     if request.method == 'POST':
 
         # Сохраняем значение в базу данных
