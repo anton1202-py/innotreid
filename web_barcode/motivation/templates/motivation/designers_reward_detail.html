@@ -1,0 +1,139 @@
+{% extends 'main/layout.html' %}
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>             
+            </form>
+        </div>
+
+        <table id="table" style="overflow-x: scroll; width: 100%;">
+            <tr>
+                <th rowspan="3">Ночник</th>
+                <th rowspan="3">С правами</th>
+                <th rowspan="2" colspan="2">Продажи за {{ current_year }} год, шт</th>
+                <th colspan="{{ month_list|length|multiplicity:2 }}">{{ current_year }} год</th>
+            </tr>
+            <tr>
+                {% for month in month_list %}
+                    <th colspan="2">{{ month }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th>шт</th>
+                <th>руб</th>
+                {% for month in month_list %}
+                    <th>шт</th>
+                    <th>руб</th>
+                {% endfor %}
+            </tr>
+            
+            {% for el in article_list %}
+            <tr>
+                <td>{{ el.common_article }}</td>
+                <td>
+                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %}>
+                </td>
+                {% if el.id in year_sales_dict %}
+                    
+                    <td>{{year_sales_dict|get_item:el.id|get_item:'quantity'}}</td>
+                    <td>{{year_sales_dict|get_item:el.id|get_item:'summ'}}</td>
+                    {% for month in month_list %}
+                        {% if main_sales_dict|get_item:el.id|get_item:month %}
+                            <td>{{ main_sales_dict|get_item:el.id|get_item:month|get_item:'quantity' }}</td>
+                            <td>{{ main_sales_dict|get_item:el.id|get_item:month|get_item:'summ' }}</td>
+                        {% else %}
+                            <td></td>
+                            <td></td>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <td></td>
+                    <td></td>
+                    {% for month in month_list %}
+                        <td></td>
+                    {% endfor %}
+                {% endif %}
+                
+            </tr>
+            {% endfor %}
+        </table>
+    </div>    
+    <script>
+        document.querySelectorAll('.mySelect').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('selected_designer', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_model_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
+        document.querySelectorAll('.copyrightcheckbox').forEach(select => {
+            select.addEventListener('change', function() {
+                var selectedSurname = this.value;
+                console.log(selectedSurname)
+                var rowNumber = this.dataset.row;
+                console.log(rowNumber)
+
+                var formData = new FormData();
+                formData.append('copyright_article_type', selectedSurname);
+                formData.append('article', rowNumber);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('../update_article_copyright_boolean_field/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+    </script>
+        
+{% endblock %}

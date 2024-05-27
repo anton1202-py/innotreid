@@ -15,6 +15,7 @@ def integer(value):
 
 @register.filter
 def get_item(dictionary, key):
+    # print('dictionary', dictionary, key)
     return dictionary.get(key)
 
 

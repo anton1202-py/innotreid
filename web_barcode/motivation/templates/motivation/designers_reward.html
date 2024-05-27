@@ -22,7 +22,7 @@
             </tr>
             {% for el in designer_users %}
             <tr>
-                <td>{{ el.first_name }} {{ el.last_name }}</td>
+                <td><a href="{% url 'motivation_designers_rewards_detail' el.id %}">{{ el.first_name }} {{ el.last_name }}</a></td>
                 {% if year_sales_dict|get_item:el.id %}
                     <td>{{year_sales_dict|get_item:el.id}}</td>
                 {% else %}

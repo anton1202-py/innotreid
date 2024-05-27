@@ -9,6 +9,8 @@ from .models import InnotreidUser
 @receiver(m2m_changed, sender=Group.user_set.through)
 def add_user_to_another_table(sender, instance, action, reverse, model, pk_set, **kwargs):
     """Если Пользователю присваивается группа Дизайнеры, то он добавляется в таблицу DesignUser"""
+    print(type(instance))
+    print(instance)
     if instance.groups.filter(name='Дизайнеры').exists():
         if not DesignUser.objects.filter(designer=instance).exists():
             DesignUser(designer=instance).save()

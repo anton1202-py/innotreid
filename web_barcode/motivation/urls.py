@@ -11,6 +11,10 @@ urlpatterns = [
          name='motivation_article_designers'),
     path('motivation_designers_rewards', views.designers_rewards,
          name='motivation_designers_rewards'),
+    path('motivation_designers_rewards/<str:designer>',
+         views.MotivationDesignersRewardsDetailView.as_view(),
+         name='motivation_designers_rewards_detail'
+         ),
 
     # ========== JQUERY поля ===========#
     path('update_model_field/', views.update_model_field,
