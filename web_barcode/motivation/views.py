@@ -2,22 +2,16 @@ import ast
 import os
 from datetime import datetime
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.db.models import Max, Q
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
-from dotenv import load_dotenv
-from motivation.models import DesignerReward, Selling
-from motivation.supplyment import (articles_data_merge, get_current_selling,
-                                   motivation_article_type_excel_file_export,
+from motivation.models import Selling
+from motivation.supplyment import (motivation_article_type_excel_file_export,
                                    motivation_article_type_excel_import)
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
-
-from .forms import UploadFileForm
 
 
 def get_main_sales_data():
@@ -80,10 +74,57 @@ def get_amount_summ_sales_data():
     return year_sales_dict, main_sales_dict
 
 
+def get_designers_amount_summ_sales_data(innotreiduser):
+    """Отдает данные по продажам артикулов"""
+    sale_data = Selling.objects.all().values(
+        'lighter', 'month', 'quantity', 'summ', 'lighter__designer_article', 'lighter__copy_right', 'lighter__designer')
+    designer_obj = DesignUser.objects.filter(designer=innotreiduser)[0]
+    main_percent = designer_obj.main_reward_persent/100
+    copyright_percent = designer_obj.copyright_reward_persent/100
+
+    # Словарь с данными артикула по продажам по месяцам
+    main_sales_dict = {}
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    for data in sale_data:
+        percent = 0
+        if data['lighter__copy_right'] == True:
+            percent = copyright_percent
+        else:
+            percent = main_percent
+        if data['lighter__designer'] == innotreiduser.id:
+            if data['lighter'] in main_sales_dict:
+                if data['month'] in main_sales_dict[data['lighter']]:
+                    main_sales_dict[data['lighter']
+                                    ][data['month']]['quantity'] += int(data['quantity'])
+                    main_sales_dict[data['lighter']
+                                    ][data['month']]['summ'] += int(data['summ'])*percent
+
+                else:
+                    main_sales_dict[data['lighter']
+                                    ][data['month']] = {'quantity': int(data['quantity']),
+                                                        'summ': int(data['summ'])*percent}
+            else:
+                main_sales_dict[data['lighter']] = {
+                    data['month']: {
+                        'quantity': int(data['quantity']),
+                        'summ': int(data['summ'])*percent}}
+
+            if data['lighter'] in year_sales_dict:
+                year_sales_dict[data['lighter']
+                                ]['quantity'] += int(data['quantity'])
+                year_sales_dict[data['lighter']
+                                ]['summ'] += int(data['summ'])*percent
+            else:
+                year_sales_dict[data['lighter']] = {'quantity': int(data['quantity']),
+                                                    'summ': int(data['summ'])*percent}
+    return year_sales_dict, main_sales_dict
+
+
 def get_designers_sales_data():
     """Отдает данные по продажам дизайнеров"""
     sale_data = Selling.objects.all().values(
-        'lighter', 'month', 'summ', 'lighter__designer')
+        'lighter', 'month', 'summ', 'lighter__designer', 'lighter__designer_article', 'lighter__copy_right')
     designer_rew_dict = {}
     designer_persent = DesignUser.objects.all().values(
         'designer', 'main_reward_persent', 'copyright_reward_persent')
@@ -100,24 +141,54 @@ def get_designers_sales_data():
     # Словарь с продажами артикула за текущий год
     year_sales_dict = {}
     for data in sale_data:
+
         if data['lighter__designer']:
+            designer_obj = DesignUser.objects.filter(
+                designer__id=data['lighter__designer'])[0]
+            main_percent = designer_obj.main_reward_persent/100
+            if designer_obj.copyright_reward_persent:
+                copyright_percent = designer_obj.copyright_reward_persent/100
+            percent = 0
+            if data['lighter__copy_right'] == True:
+                percent = copyright_percent
+            else:
+                percent = main_percent
+
             if data['lighter__designer'] in monthly_sales_dict:
                 if data['month'] in monthly_sales_dict[data['lighter__designer']]:
                     monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] += round(int(data['summ'])*designer_rew_dict[data['lighter__designer']])
+                                       ][data['month']] += int(data['summ'])*percent
                 else:
                     monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] = round(int(data['summ'])*designer_rew_dict[data['lighter__designer']])
+                                       ][data['month']] = int(data['summ'])*percent
             else:
                 monthly_sales_dict[data['lighter__designer']] = {
-                    data['month']: round(int(data['summ'])*designer_rew_dict[data['lighter__designer']])}
+                    data['month']: int(data['summ'])*percent}
+            if data['lighter__designer'] in year_sales_dict:
+                year_sales_dict[data['lighter__designer']
+                                ] += int(data['summ'])*percent
+            else:
+                year_sales_dict[data['lighter__designer']] = int(
+                    data['summ'])*percent
+    return year_sales_dict, monthly_sales_dict
+
+
+def get_article_sales_data():
+    """Отдает данные по продажам артикулов"""
+    sale_data = Selling.objects.all().values(
+        'lighter', 'month', 'summ', 'lighter__designer')
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    for data in sale_data:
+        if data['lighter__designer']:
+
             if data['lighter__designer'] in year_sales_dict:
                 year_sales_dict[data['lighter__designer']
                                 ] += int(data['summ'])
             else:
                 year_sales_dict[data['lighter__designer']] = int(
                     data['summ'])
-    return year_sales_dict, monthly_sales_dict
+    return year_sales_dict
 
 
 def article_designers(request):
@@ -279,7 +350,6 @@ def article_type(request):
 
 def update_article_designer_boolean_field(request):
     if request.method == 'POST':
-        print(request.POST)
         # Сохраняем значение в базу данных
         if 'designer_article_type' in request.POST:
             article_type = request.POST.get('designer_article_type')
@@ -314,7 +384,6 @@ def update_article_designer_boolean_field(request):
 
 
 def update_article_copyright_boolean_field(request):
-    print(request.POST)
     if request.method == 'POST':
 
         # Сохраняем значение в базу данных
@@ -353,9 +422,8 @@ def designers_rewards(request):
                 designer_percent[data['designer__id']
                                  ] = data['main_reward_persent']/100
 
-    print('designer_percent', designer_percent)
     year_sales_dict, monthly_sales_dict = get_designers_sales_data()
-    print('year_sales_dict', year_sales_dict)
+    year_article_sales_dict = get_article_sales_data()
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
 
@@ -371,26 +439,29 @@ def designers_rewards(request):
         'year_sales_dict': year_sales_dict,
         'month_list': sorted(month_list),
         'current_year': current_year,
+        'year_article_sales_dict': year_article_sales_dict
 
     }
     return render(request, 'motivation/designers_reward.html', context)
 
 
-class MotivationDesignersRewardsDetailView(ListView):
+class MotivationDesignersRewardDetailView(ListView):
     model = Selling
     template_name = 'motivation/designers_reward_detail.html'
     context_object_name = 'rewards'
 
     def get_context_data(self, **kwargs):
-        context = super(MotivationDesignersRewardsDetailView,
+        context = super(MotivationDesignersRewardDetailView,
                         self).get_context_data(**kwargs)
         user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
         current_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=current_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
-        year_sales_dict, main_sales_dict = get_amount_summ_sales_data()
-        print(year_sales_dict)
+        year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+            user_data)
+        designer_id = int(self.kwargs['designer'])
+
         context.update({
             'article_list': Articles.objects.filter(
                 designer=self.kwargs['designer']).values(),
@@ -398,14 +469,43 @@ class MotivationDesignersRewardsDetailView(ListView):
             'month_list': sorted(month_list),
             'current_year': current_year,
             'year_sales_dict': year_sales_dict,
-            'main_sales_dict': main_sales_dict
+            'main_sales_dict': main_sales_dict,
+            'designer_id': designer_id,
+        })
+        return context
+
+
+class MotivationDesignersSaleDetailView(ListView):
+    model = Selling
+    template_name = 'motivation/designers_sale_detail.html'
+    context_object_name = 'rewards'
+
+    def get_context_data(self, **kwargs):
+        context = super(MotivationDesignersSaleDetailView,
+                        self).get_context_data(**kwargs)
+        user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
+        current_year = datetime.now().strftime('%Y')
+        designer_id = int(self.kwargs['designer'])
+        months = Selling.objects.filter(
+            year=current_year).values('month').distinct()
+        month_list = [int(value['month']) for value in months]
+        year_sales_dict, main_sales_dict = get_amount_summ_sales_data()
+        context.update({
+            'article_list': Articles.objects.filter(
+                designer=self.kwargs['designer']).values(),
+            'page_name': f"Продажи артикулов дизайнера {user_data.last_name} {user_data.first_name}",
+            'month_list': sorted(month_list),
+            'current_year': current_year,
+            'year_sales_dict': year_sales_dict,
+            'main_sales_dict': main_sales_dict,
+            'designer_id': designer_id
 
         })
         return context
 
-    def get_queryset(self):
-        return Selling.objects.filter(
-            lighter__designer=self.kwargs['designer'])
+    # def get_queryset(self):
+    #     return Selling.objects.filter(
+    #         lighter__designer=self.kwargs['designer'])
 
 
 def percent_designers_rewards(request):
@@ -414,12 +514,6 @@ def percent_designers_rewards(request):
         return redirect('login')
     page_name = 'Процент вознаграждения'
     percent_data = DesignUser.objects.all().order_by('designer__last_name')
-    print(percent_data[0])
-    for el in percent_data:
-        print(el.main_reward_persent)
-        print(el.copyright_reward_persent)
-    if request.GET:
-        print('Попал в фильтр')
     context = {
         'page_name': page_name,
         'percent_data': percent_data

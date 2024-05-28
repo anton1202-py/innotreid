@@ -139,12 +139,10 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
                 designer_type_list[i], copyright_type_list[i]]
 
         for row in range(len(article_list)):
-            # print('article_list[row]', article_list[row])
             if Articles.objects.filter(
                     company=ur_lico, common_article=article_list[row]).exists():
                 article_obj = Articles.objects.get(
                     company=ur_lico, common_article=article_list[row])
-                # print(article_value_dict[article_list[row]][1])
                 if str(article_value_dict[article_list[row]][0]).capitalize() == 'True':
                     article_obj.designer_article = True
                     if str(article_value_dict[article_list[row]][1]) == 'True':
