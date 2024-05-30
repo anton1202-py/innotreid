@@ -351,8 +351,8 @@ class ArticleCompareDetailView(ListView):
     def post(self, request, *args, **kwargs):
         if request.POST:
             post_data = request.POST
-            article = Articles.objects.get(
-                common_article=self.kwargs['common_article'])
+            article = Articles.objects.get(company=self.ur_lico,
+                                           common_article=self.kwargs['common_article'])
             article.status = 'Сопоставлено'
             article.wb_seller_article = post_data.get('wb_seller_article')
             article.wb_barcode = post_data.get('wb_barcode')
