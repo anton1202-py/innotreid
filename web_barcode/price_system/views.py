@@ -345,13 +345,13 @@ class ArticleCompareDetailView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ArticleCompareDetailView,
                         self).get_context_data(**kwargs)
-        print(kwargs)
         return context
 
     def post(self, request, *args, **kwargs):
         if request.POST:
             post_data = request.POST
-            article = Articles.objects.get(company=self.ur_lico,
+            print('self.ur_lico в post', self.ur_lico)
+            article = Articles.objects.get(company=self.kwargs['ur_lico'],
                                            common_article=self.kwargs['common_article'])
             article.status = 'Сопоставлено'
             article.wb_seller_article = post_data.get('wb_seller_article')
@@ -370,10 +370,11 @@ class ArticleCompareDetailView(ListView):
             article.yandex_barcode = post_data.get('yandex_barcode')
             article.yandex_sku = post_data.get('yandex_sku')
             article.save()
-        return redirect('article_compare_detail_ooo', self.kwargs['common_article'])
+        return redirect('article_compare_detail', self.kwargs['ur_lico'], self.kwargs['common_article'])
 
     def get_queryset(self):
         common_article = self.kwargs['common_article']
+        self.ur_lico = self.kwargs['ur_lico']
         return Articles.objects.filter(company=self.ur_lico, common_article=common_article)
 
 
@@ -392,4 +393,4 @@ class ArticleCompareDetailKaravaev(ArticleCompareDetailView):
 class ArticleCompareDetailChudes(ArticleCompareDetailView):
     def __init__(self, *args, **kwargs):
         super(ArticleCompareDetailChudes, self).__init__(*args, **kwargs)
-        self.ur_lico = 'ООО Мастерская Чудес'
+        self.ur_lico = 'ООО Мастерская чудес'

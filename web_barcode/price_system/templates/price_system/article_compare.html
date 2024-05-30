@@ -79,7 +79,7 @@
                 </tr>
                 {% for el in data %}   
                 <tr>
-                    <td><a href="{% url 'article_compare_detail_ip' el.common_article %}">{{ el.common_article }}</a></td>
+                    <td><a href="{% url 'article_compare_detail' el.company el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
                     <td>{{ el.cost_price }}</td>

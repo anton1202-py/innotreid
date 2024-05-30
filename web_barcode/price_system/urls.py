@@ -10,17 +10,17 @@ urlpatterns = [
     path('article_compare_gramoty', views.gramoty_article_compare,
          name='price_system_article_compare_gramoty'),
 
-    path('article_compare/<str:common_article>',
+    path('article_compare/<ur_lico>/<str:common_article>',
          views.ArticleCompareDetailKaravaev.as_view(),
-         name='article_compare_detail_ip'
+         name='article_compare_detail'
          ),
-    path('article_compare/<str:common_article>',
+    path('article_compare/<ur_lico>/<str:common_article>',
          views.ArticleCompareDetailInnotreid.as_view(),
-         name='article_compare_detail_ooo'
+         name='article_compare_detail'
          ),
-    path('article_compare/<str:common_article>',
+    path('article_compare/<ur_lico>/<str:common_article>',
          views.ArticleCompareDetailChudes.as_view(),
-         name='article_compare_detail_gramoty'
+         name='article_compare_detail'
          ),
 
     path('price_groups_ip', views.ip_groups_view,
