@@ -338,6 +338,10 @@ class ArticleCompareDetailView(ListView):
     template_name = 'price_system/article_compare_detail.html'
     context_object_name = 'data'
 
+    def __init__(self, *args, **kwargs):
+        self.ur_lico = kwargs.pop('ur_lico', None)
+        super(ArticleCompareDetailView, self).__init__(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(ArticleCompareDetailView,
                         self).get_context_data(**kwargs)
@@ -346,7 +350,6 @@ class ArticleCompareDetailView(ListView):
 
     def post(self, request, *args, **kwargs):
         if request.POST:
-            print(kwargs)
             post_data = request.POST
             article = Articles.objects.get(
                 common_article=self.kwargs['common_article'])
@@ -370,6 +373,23 @@ class ArticleCompareDetailView(ListView):
         return redirect('article_compare_detail_ooo', self.kwargs['common_article'])
 
     def get_queryset(self):
-        print(self.kwargs)
-        return Articles.objects.filter(
-            common_article=self.kwargs['common_article'])
+        common_article = self.kwargs['common_article']
+        return Articles.objects.filter(company=self.ur_lico, common_article=common_article)
+
+
+class ArticleCompareDetailInnotreid(ArticleCompareDetailView):
+    def __init__(self, *args, **kwargs):
+        super(ArticleCompareDetailInnotreid, self).__init__(*args, **kwargs)
+        self.ur_lico = 'ООО Иннотрейд'
+
+
+class ArticleCompareDetailKaravaev(ArticleCompareDetailView):
+    def __init__(self, *args, **kwargs):
+        super(ArticleCompareDetailKaravaev, self).__init__(*args, **kwargs)
+        self.ur_lico = 'ИП Караваев'
+
+
+class ArticleCompareDetailChudes(ArticleCompareDetailView):
+    def __init__(self, *args, **kwargs):
+        super(ArticleCompareDetailChudes, self).__init__(*args, **kwargs)
+        self.ur_lico = 'ООО Мастерская Чудес'

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'main',
+    'analytika_reklama',
     'database',
     'database_yandex',
     'import_export',

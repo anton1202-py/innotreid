@@ -11,15 +11,15 @@ urlpatterns = [
          name='price_system_article_compare_gramoty'),
 
     path('article_compare/<str:common_article>',
-         views.ArticleCompareDetailView.as_view(),
+         views.ArticleCompareDetailKaravaev.as_view(),
          name='article_compare_detail_ip'
          ),
     path('article_compare/<str:common_article>',
-         views.ArticleCompareDetailView.as_view(),
+         views.ArticleCompareDetailInnotreid.as_view(),
          name='article_compare_detail_ooo'
          ),
     path('article_compare/<str:common_article>',
-         views.ArticleCompareDetailView.as_view(),
+         views.ArticleCompareDetailChudes.as_view(),
          name='article_compare_detail_gramoty'
          ),
 
