@@ -246,7 +246,7 @@ def article_designers(request):
 
 
 def update_model_field(request):
-
+    print(request)
     if request.method == 'POST':
         # Сохраняем значение в базу данных
         user_id = request.POST.get('selected_designer')

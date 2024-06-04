@@ -175,3 +175,22 @@ spp_group_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 ur_lico_list_for_yandex_fbs_balance = ['ООО Иннотрейд', 'ИП Караваев']
 admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
+
+
+WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT = {
+    -1: 'в процессе удаления',
+    4: 'готова к запуску',
+    7: 'завершена',
+    8: 'отказался',
+    9: 'идут показы',
+    11: 'на паузе'
+}
+
+WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT = {
+    4: 'в каталоге',
+    5: 'в карточке товара',
+    6: 'в поиске',
+    7: 'в рекомендациях на главной странице',
+    8: 'автоматическая',
+    9: 'поиск + каталог'
+}

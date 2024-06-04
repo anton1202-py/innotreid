@@ -98,10 +98,8 @@ START_LIST = [
 ]
 
 
+@login_required
 def database_home(request):
-    # if str(request.user) == 'AnonymousUser':
-    #     return redirect('login')
-    # process_yandex_daily_orders()
     data = Articles.objects.all()
     context = {
         'data': data,
@@ -109,6 +107,7 @@ def database_home(request):
     return render(request, 'database/database_home.html', context)
 
 
+@login_required
 def article_compare(request):
     data = Articles.objects.all()
     form = SelectArticlesForm(request.POST or None)
@@ -129,6 +128,7 @@ def article_compare(request):
     return render(request, 'database/article_compare.html', context)
 
 
+@login_required
 def database_stock(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')

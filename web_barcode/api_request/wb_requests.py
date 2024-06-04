@@ -2,6 +2,7 @@ import json
 import time
 
 import requests
+from api_request.common_func import api_retry_decorator
 from price_system.supplyment import sender_error_to_tg
 
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot
@@ -84,3 +85,110 @@ def wb_sales_statistic(header, check_date, attempt=0):
     if message:
         message = f'api_request.wb_sales_statistic. {message}'
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+
+
+# =========== API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
+
+@api_retry_decorator
+def advertisment_campaign_list(header):
+    """
+    Получаем списки рекламных кампаний
+    Допускается 5 запросов в секунду
+    """
+    url = 'https://advert-api.wb.ru/adv/v1/promotion/count'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
+def advertisment_campaigns_list_info(adv_list: list, header: str):
+    """
+    Получаем информацию о каждой рекламной кампании, которая находится
+    в списке adv_list
+
+    переменные:
+    adv_list - список рекламных кампаний
+    header - хедер для запроса
+
+    return: response от запроса к методу https://advert-api.wb.ru/adv/v1/promotion/adverts
+
+    Допускается 5 запросов в секунду.
+    Список ID кампаний. Максимум 50.
+    """
+    url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
+    payload = json.dumps(adv_list)
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+
+
+@api_retry_decorator
+def advertisment_statistic_info(adv_list: list, header: str):
+    """
+    Статистика рекламной кампании ВБ за все время существования
+
+    переменные:
+    adv_list - список словарей рекламных кампаний вида:
+        [
+            {
+                "id": 8960367,
+                "interval": {
+                    "begin": "2023-10-08",
+                    "end": "2023-10-10"
+                }
+            }
+        ]
+    header - хедер для запроса
+
+    Получаем данные из: https://advert-api.wb.ru/adv/v2/fullstats
+    https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1fullstats/post
+
+    Максимум 1 запрос в минуту.
+    Данные вернутся для кампаний в статусе 7, 9 и 11.
+    В списке максимум 100 элементов
+    """
+    url = 'https://advert-api.wb.ru/adv/v2/fullstats'
+    payload = json.dumps(adv_list)
+    print(adv_list)
+    response = requests.request("POST", url, headers=header, data=payload)
+    print(response.status_code)
+    return response
+
+
+@api_retry_decorator
+def advertisment_campaign_clusters_statistic(header, campaign_number):
+    """
+    Возвращает статистику по ключевым фразам за каждый день, когда кампания была активна.
+    Информация обновляется раз в 15 минут.
+    Максимум — 4 запроса секунду.
+    """
+    url = f'https://advert-api.wb.ru/adv/v2/auto/stat-words?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    print(campaign_number, response.status_code)
+    return response
+
+
+@api_retry_decorator
+def statistic_search_campaign_keywords(header, campaign_number):
+    """
+    Статистика поисковой кампании по ключевым фразам.
+    Метод позволяет получать статистику поисковой кампании по ключевым фразам.
+    Допускается максимум 4 запроса в секунду.
+    Информация обновляется примерно каждые полчаса.
+    """
+    url = f'https://advert-api.wb.ru/adv/v1/stat/words?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    print(campaign_number, response.status_code)
+    return response
+
+
+@api_retry_decorator
+def statistic_catalog_search_campaign_with_keywords(header, campaign_number):
+    """
+    Статистика кампаний Поиск + Каталог.
+    Метод позволяет получать статистику по кампаниям Поиск + Каталог.
+    Допускается 2 запроса в секунду.
+    """
+    url = f'https://advert-api.wb.ru/adv/v1/seacat/stat?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    print(campaign_number, response.status_code)
+    return response

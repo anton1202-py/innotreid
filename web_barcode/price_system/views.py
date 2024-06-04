@@ -1,6 +1,11 @@
 import asyncio
 from datetime import datetime, timedelta
 
+from analytika_reklama.wb_supplyment import (
+    add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
+    get_catalog_searchcampaign_keywords_statistic,
+    get_clusters_statistic_for_autocampaign,
+    get_searchcampaign_keywords_statistic, type_adv_campaigns)
 from asgiref.sync import sync_to_async
 from django.db.models import Q
 from django.http import JsonResponse
@@ -10,6 +15,12 @@ from django.views.generic import ListView
 from ozon_system.supplyment import \
     delete_ozon_articles_with_low_price_current_ur_lico
 from price_system.spp_mode import article_spp_info
+
+from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
+                                        header_ozon_dict, header_wb_data_dict,
+                                        header_wb_dict, header_yandex_dict,
+                                        wb_headers_karavaev, wb_headers_ooo,
+                                        yandex_business_id_dict)
 
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
@@ -30,6 +41,7 @@ def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    get_searchcampaign_keywords_statistic()
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")

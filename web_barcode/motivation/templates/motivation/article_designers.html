@@ -73,7 +73,7 @@
                     </select>
                 </td>
                 <td>
-                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %}>
+                    <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
                 </td>
                 {% if el.id in year_sales_dict %}
                     <td>{{year_sales_dict|get_item:el.id}}</td>
