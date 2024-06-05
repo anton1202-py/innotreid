@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 
 import requests
 import telegram
+from api_request.wb_requests import (advertisment_campaign_list,
+                                     advertisment_statistic_info,
+                                     get_budget_adv_campaign)
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles
@@ -344,6 +347,38 @@ def wb_campaign_budget(campaign, header, counter=0):
                          text=message, parse_mode='HTML')
 
 
+def check_campaign_type(header, campaign):
+    """Проверяет тип рекламной кампании"""
+    campaigns_data = advertisment_campaign_list(header)
+
+
+def view_statistic_adv_campaign(header, campaign):
+    """Возвращает статистику показов рекламной кампании за вчерашний день"""
+    statistic_date_raw = datetime.now() - timedelta(days=2)
+    statistic_date = statistic_date_raw.strftime('%Y-%m-%d')
+
+    data_dict = [{
+        "id": int(campaign),
+        "interval": {
+            "begin": statistic_date,
+            "end": statistic_date
+        }
+    }]
+    time.sleep(60)
+    main_adv_data = advertisment_statistic_info(data_dict, header)
+    if main_adv_data:
+        return
+
+
+def current_budget_adv_campaign(header, campaign):
+    """Определяет бюджет рекламной кампании"""
+    budget_data = get_budget_adv_campaign(header, campaign)
+    if budget_data:
+        return budget_data['total']
+    else:
+        return 'Не определено'
+
+
 def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter=0):
     """
     Пополняет бюджет рекламной кампаний
@@ -363,8 +398,10 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
     time.sleep(5)
     attempt_counter += 1
     if response.status_code == 200:
+        time.sleep(5)
+        current_budget = current_budget_adv_campaign(header, campaign)
         message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
-                   f"Итого бюджет: {json.loads(response.text)['total']}.")
+                   f"Итого бюджет: {current_budget}.")
         return message
     else:
         if attempt_counter <= 50:
@@ -401,7 +438,8 @@ def replenish_campaign_budget(campaign, budget, header):
         if common_budget >= 1000:
             campaign_budget = common_budget
         else:
-            info_campaign_obj.virtual_budget = common_budget
+            # Женя попросил безусловное пополнение раз в день.
+            info_campaign_obj.virtual_budget = common_budget + 30
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
             campaign_budget = common_budget

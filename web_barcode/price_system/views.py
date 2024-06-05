@@ -362,7 +362,6 @@ class ArticleCompareDetailView(ListView):
     def post(self, request, *args, **kwargs):
         if request.POST:
             post_data = request.POST
-            print('self.ur_lico в post', self.ur_lico)
             article = Articles.objects.get(company=self.kwargs['ur_lico'],
                                            common_article=self.kwargs['common_article'])
             article.status = 'Сопоставлено'

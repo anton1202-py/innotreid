@@ -148,7 +148,6 @@ def advertisment_statistic_info(adv_list: list, header: str):
     """
     url = 'https://advert-api.wb.ru/adv/v2/fullstats'
     payload = json.dumps(adv_list)
-    print(adv_list)
     response = requests.request("POST", url, headers=header, data=payload)
     print(response.status_code)
     return response
@@ -189,6 +188,19 @@ def statistic_catalog_search_campaign_with_keywords(header, campaign_number):
     Допускается 2 запроса в секунду.
     """
     url = f'https://advert-api.wb.ru/adv/v1/seacat/stat?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    print(campaign_number, response.status_code)
+    return response
+
+
+@api_retry_decorator
+def get_budget_adv_campaign(header, campaign_number):
+    """
+    Определяет бюджет рекламной кампании.
+    Метод позволяет получать информацию о бюджете кампании.
+    Допускается 4 запроса в секунду.
+    """
+    url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
     return response

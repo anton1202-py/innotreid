@@ -65,28 +65,25 @@
                 alert("{{ import_data }}");
             </script>
         {% endif %}
-        <table id="table" style="overflow-x: scroll; width: 100%;">
+        <table id="table" style="overflow-x: scroll;">
             <thead>
                 <tr>
-                    <th>Ночник</th>
-                    <th>Дизайнерский</th>
-                    <th>Не дизайнерский</th>
-                    <th>С правами</th>
+                    <th>Кампания</th>
+                    <th>Название</th>
+                    <th>Юр. лицо</th>
+                    <th>Кластеры</th>
+                    <th>Показы кластера</th>
                 </tr>
             </thead>
             <tbody>
-                {% for el in article_list %}
+                {% for el in campaign_clusters %}
                 <tr>
-                    <td>{{ el.common_article }}</td>
-                    <td>
-                        <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
-                    </td>
-                    <td>
-                        <input class="nondesigncheckbox" data-row="{{ el.common_article }}" type="checkbox" name="nondesigner_checkbox" id="nondesigner_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article == False %} checked {% endif %}>
-                    </td>
-                    <td>
-                        <input class="copyrightcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="copyright_checkbox" id="copyright_checkbox_id" value="{{el.copy_right}}" {% if el.copy_right %} checked {% endif %} disabled>
-                    </td>
+                    <td>{{ el.campaign.campaign_number }}</td>
+                    <td>{{ el.campaign.campaign_name }}</td>
+                    <td>{{ el.campaign.ur_lico }}</td>
+                    <td>{{ el.cluster }}</td>
+                    <td>{{ el.count }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

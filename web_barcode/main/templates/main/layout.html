@@ -277,6 +277,38 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Ключевые слова</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'reklama_data_info' as url_reklama_data %}
+                            <li>
+                                <a href="{{ url_reklama_data }}" {% if request.path == url_reklama_data %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Информация о РК WB</h3>
+                                </a>
+                            </li>
+                            {% url 'common_adv_statistic' as url_adv_statistic %}
+                            <li>
+                                <a href="{{ url_adv_statistic }}" {% if request.path == url_adv_statistic %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Статистика РК WB</h3>
+                                </a>
+                            </li>
+                            {% url 'adv_campaign_clusters' as url_adv_campaign_clusters %}
+                            <li>
+                                <a href="{{ url_adv_campaign_clusters }}" {% if request.path == url_adv_campaign_clusters %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Кластеры РК WB</h3>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="parent"> 
                         <span class="expanded">
                             <span class="material-symbols-outlined">

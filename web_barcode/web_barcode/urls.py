@@ -15,6 +15,7 @@ urlpatterns = [
     path('reklama/', include('reklama.urls')),
     path('celery_view/', include('celery_view.urls')),
     path('motivation/', include('motivation.urls')),
+    path('analytika_reklama/', include('analytika_reklama.urls')),
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -13,6 +13,7 @@ app = Celery('celery_tasks',
                       'celery_tasks.tasks',
                       'celery_tasks.tasks_yandex_fby_fbs',
                       'celery_tasks.yandex_tasks',
+                      'analytika_reklama.periodic_tasks',
                       'database.periodic_tasks',
                       'ozon_system.tasks',
                       'fbs_mode.tasks',
@@ -77,6 +78,26 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.tasks.get_current_ssp",
         'schedule': crontab(minute='*/15'),
     },
+    # =========== ЗАДАЧИ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
+    "analytika_reklama_adv_common_info": {
+        "task": "analytika_reklama.periodic_tasks.add_info_to_db_about_all_campaigns",
+        "schedule": crontab(hour=18, minute=20)
+    },
+    "analytika_reklama_adv_common_statistic": {
+        "task": "analytika_reklama.periodic_tasks.add_campaigns_statistic_to_db",
+        "schedule": crontab(hour=18, minute=23)
+    },
+    "analytika_reklama_cluster_statistic_auto_adv": {
+        "task": "analytika_reklama.periodic_tasks.get_clusters_statistic_for_autocampaign",
+        "schedule": crontab(hour=18, minute=25)
+    },
+    "analytika_reklama_keywords_statistic_search_catalog_adv": {
+        "task": "analytika_reklama.periodic_tasks.get_searchcampaign_keywords_statistic",
+        "schedule": crontab(hour=18, minute=27)
+    },
+    # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
+
+
     "stop-adv-all-ozon-company": {
         "task": "ozon_system.tasks.stop_adv_company",
         'schedule': crontab(day_of_month=30, hour=20, minute=0),
