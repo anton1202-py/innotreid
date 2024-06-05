@@ -2,10 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 
 from analytika_reklama.wb_supplyment import (
-    add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
-    get_catalog_searchcampaign_keywords_statistic,
-    get_clusters_statistic_for_autocampaign,
-    get_searchcampaign_keywords_statistic, type_adv_campaigns)
+    get_catalog_searchcampaign_keywords_statistic, type_adv_campaigns)
 from asgiref.sync import sync_to_async
 from django.db.models import Q
 from django.http import JsonResponse
