@@ -1,8 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 
-from analytika_reklama.wb_supplyment import (
-    get_catalog_searchcampaign_keywords_statistic, type_adv_campaigns)
+from analytika_reklama.wb_supplyment import type_adv_campaigns
 from asgiref.sync import sync_to_async
 from django.db.models import Q
 from django.http import JsonResponse

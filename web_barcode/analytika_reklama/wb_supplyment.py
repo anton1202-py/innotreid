@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from analytika_reklama.models import (CommonCampaignDescription,
                                       DailyCampaignParameters,
+                                      MainArticleKeyWords,
                                       MainCampaignClusters,
                                       MainCampaignClustersKeywords,
                                       MainCampaignExcluded,
@@ -13,6 +14,7 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_campaigns_list_info,
                                      advertisment_statistic_info,
                                      statistic_search_campaign_keywords)
+from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
@@ -213,29 +215,6 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
             ).save()
 
 
-def get_catalog_searchcampaign_keywords_statistic():
-    """
-    Получает общую статистику рекламной кампании каталог + поиск по ключевым фразам
-
-    """
-    ur_lico_data = UrLico.objects.all()
-    main_data_dict = {}
-    for ur_lico_obj in ur_lico_data:
-        main_data = CommonCampaignDescription.objects.filter(
-            ur_lico=ur_lico_obj, camnpaign_type__in=[9])
-
-        header = header_wb_data_dict[ur_lico_obj.ur_lice_name]
-        for campaign_data in main_data:
-            campaign_number = campaign_data.campaign_number
-            print(ur_lico_obj, campaign_data.camnpaign_status, campaign_number)
-            # keywords_data = statistic_search_campaign_keywords(
-            #     header, campaign_number)
-            # time.sleep(0.25)
-            # # Добавляем статистику по кластерам к кампании
-            # save_main_keywords_searchcampaign_statistic(
-            #     campaign_data, keywords_data)
-
-
 def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
     """
     Сохраняет статистику кластера для кампании.
@@ -287,7 +266,6 @@ def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
     campaign_obj - объект кампании, для которой будет сохраняться статистика
     keyword_data - информация о кластерах
     """
-    print(keywords_data)
 
     incoming_excluded_frases = keywords_data['words']
     incoming_keywords = []
@@ -322,3 +300,35 @@ def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
                 current_cluster_obj.count = keyword['count']
                 current_cluster_obj.save()
         print('Сохранил кластер')
+
+
+def articles_for_keywords():
+    """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
+
+    # Смотрим РК в которых только один артикул
+
+    campaign_with_one_article = MainCampaignClusters.objects.filter(
+        Q(cluster__isnull=False) & Q(campaign__articles_amount=1))
+
+    for cluster_obj in campaign_with_one_article:
+
+        articles_name = 0
+        if type(cluster_obj.campaign.articles_name) == int:
+            articles_name = cluster_obj.campaign.articles_name
+        elif (type(cluster_obj.campaign.articles_name)) == list:
+            articles_name = cluster_obj.campaign.articles_name[0]
+        if Articles.objects.filter(
+            company=cluster_obj.campaign.ur_lico.ur_lice_name,
+            wb_nomenclature=articles_name
+        ).exists():
+            article_obj = Articles.objects.get(
+                company=cluster_obj.campaign.ur_lico.ur_lice_name,
+                wb_nomenclature=articles_name
+            )
+            if not MainArticleKeyWords.objects.filter(
+                    article=article_obj,
+                    cluster=cluster_obj.cluster).exists():
+                MainArticleKeyWords(
+                    article=article_obj,
+                    cluster=cluster_obj.cluster,
+                    views=cluster_obj.count).save()

@@ -1,6 +1,7 @@
 from analytika_reklama.models import (CommonCampaignDescription,
                                       MainCampaignClusters,
                                       MainCampaignParameters)
+from analytika_reklama.wb_supplyment import articles_for_keywords
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.generic import ListView
@@ -14,6 +15,7 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
+    # articles_for_keywords()
     campaign_list = CommonCampaignDescription.objects.all().order_by('id')
 
     context = {

@@ -1,5 +1,4 @@
 import math
-import time
 from datetime import datetime, timedelta
 
 from analytika_reklama.models import CommonCampaignDescription
@@ -82,7 +81,6 @@ def add_campaigns_statistic_to_db():
             if main_adv_data:
                 # Записываем/обновляем информацию о РК в базу данных
                 add_adv_statistic_to_db(ur_lico_obj, main_adv_data)
-            time.sleep(60)
 
 
 @app.task
@@ -102,7 +100,6 @@ def get_clusters_statistic_for_autocampaign():
             campaign_number = campaign_data.campaign_number
             clusters = advertisment_campaign_clusters_statistic(
                 header, campaign_number)
-            time.sleep(0.25)
             # Добавляем статистику по кластерам к кампании
             save_main_clusters_statistic_for_campaign(campaign_data, clusters)
 
@@ -123,7 +120,6 @@ def get_searchcampaign_keywords_statistic():
             campaign_number = campaign_data.campaign_number
             keywords_data = statistic_search_campaign_keywords(
                 header, campaign_number)
-            time.sleep(0.25)
             if keywords_data:
                 # Добавляем статистику по кластерам к кампании
                 save_main_keywords_searchcampaign_statistic(

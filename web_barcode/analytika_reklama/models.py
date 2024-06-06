@@ -513,11 +513,6 @@ class MainArticleKeyWords(models.Model):
         verbose_name='Название кластера',
         max_length=300
     )
-    excluded = models.TextField(
-        verbose_name='Минус-фразы для артикула',
-        blank=True,
-        null=True
-    )
     views = models.IntegerField(
         verbose_name='Просмотры',
         blank=True,
@@ -533,3 +528,25 @@ class MainArticleKeyWords(models.Model):
         blank=True,
         null=True
     )
+
+
+class MainArticleExcluded(models.Model):
+    """
+    Минус-фразы для артикула
+    Если в рекламной кампании один артикул, тогда соотносим 
+    все минус слова с этим артикулом.
+    """
+    article = models.ForeignKey(
+        Articles,
+        on_delete=models.CASCADE,
+        verbose_name='Артикул',
+        related_name='excluded_for_article'
+    )
+    excluded = models.CharField(
+        verbose_name='Минус слово артикула',
+        max_length=300
+    )
+
+    class Meta:
+        verbose_name = 'Минус слово артикула'
+        verbose_name_plural = 'Минус слово артикула'

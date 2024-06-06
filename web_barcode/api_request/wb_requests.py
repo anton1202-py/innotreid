@@ -95,6 +95,7 @@ def advertisment_campaign_list(header):
     Получаем списки рекламных кампаний
     Допускается 5 запросов в секунду
     """
+    time.sleep(0.3)
     url = 'https://advert-api.wb.ru/adv/v1/promotion/count'
     response = requests.request("GET", url, headers=header)
     return response
@@ -115,6 +116,7 @@ def advertisment_campaigns_list_info(adv_list: list, header: str):
     Допускается 5 запросов в секунду.
     Список ID кампаний. Максимум 50.
     """
+    time.sleep(0.3)
     url = 'https://advert-api.wb.ru/adv/v1/promotion/adverts'
     payload = json.dumps(adv_list)
     response = requests.request("POST", url, headers=header, data=payload)
@@ -146,6 +148,7 @@ def advertisment_statistic_info(adv_list: list, header: str):
     Данные вернутся для кампаний в статусе 7, 9 и 11.
     В списке максимум 100 элементов
     """
+    time.sleep(60)
     url = 'https://advert-api.wb.ru/adv/v2/fullstats'
     payload = json.dumps(adv_list)
     response = requests.request("POST", url, headers=header, data=payload)
@@ -160,6 +163,7 @@ def advertisment_campaign_clusters_statistic(header, campaign_number):
     Информация обновляется раз в 15 минут.
     Максимум — 4 запроса секунду.
     """
+    time.sleep(0.3)
     url = f'https://advert-api.wb.ru/adv/v2/auto/stat-words?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
@@ -174,6 +178,7 @@ def statistic_search_campaign_keywords(header, campaign_number):
     Допускается максимум 4 запроса в секунду.
     Информация обновляется примерно каждые полчаса.
     """
+    time.sleep(0.3)
     url = f'https://advert-api.wb.ru/adv/v1/stat/words?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
@@ -187,6 +192,7 @@ def statistic_catalog_search_campaign_with_keywords(header, campaign_number):
     Метод позволяет получать статистику по кампаниям Поиск + Каталог.
     Допускается 2 запроса в секунду.
     """
+    time.sleep(0.6)
     url = f'https://advert-api.wb.ru/adv/v1/seacat/stat?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
@@ -200,6 +206,7 @@ def get_budget_adv_campaign(header, campaign_number):
     Метод позволяет получать информацию о бюджете кампании.
     Допускается 4 запроса в секунду.
     """
+    time.sleep(0.3)
     url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
