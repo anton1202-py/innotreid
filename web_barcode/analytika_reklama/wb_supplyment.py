@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from analytika_reklama.models import (CommonCampaignDescription,
                                       DailyCampaignParameters,
-                                      MainArticleKeyWords,
+                                      MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
                                       MainCampaignClustersKeywords,
                                       MainCampaignExcluded,
@@ -306,12 +306,10 @@ def articles_for_keywords():
     """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
 
     # Смотрим РК в которых только один артикул
-
     campaign_with_one_article = MainCampaignClusters.objects.filter(
         Q(cluster__isnull=False) & Q(campaign__articles_amount=1))
 
     for cluster_obj in campaign_with_one_article:
-
         articles_name = 0
         if type(cluster_obj.campaign.articles_name) == int:
             articles_name = cluster_obj.campaign.articles_name
@@ -332,3 +330,29 @@ def articles_for_keywords():
                     article=article_obj,
                     cluster=cluster_obj.cluster,
                     views=cluster_obj.count).save()
+
+
+def articles_excluded():
+    """Определяем слова исключения для артикула"""
+    # Смотрим РК в которых только один артикул
+    campaign_with_one_article = MainCampaignExcluded.objects.filter(
+        Q(excluded__isnull=False) & Q(campaign__articles_amount=1))
+
+    for excluded_obj in campaign_with_one_article:
+
+        articles_name = excluded_obj.campaign.articles_name
+        if Articles.objects.filter(
+            company=excluded_obj.campaign.ur_lico.ur_lice_name,
+            wb_nomenclature=articles_name
+        ).exists():
+            article_obj = Articles.objects.get(
+                company=excluded_obj.campaign.ur_lico.ur_lice_name,
+                wb_nomenclature=articles_name
+            )
+            if not MainArticleExcluded.objects.filter(
+                    article=article_obj,
+                    excluded=excluded_obj.excluded).exists():
+                MainArticleExcluded(
+                    article=article_obj,
+                    excluded=excluded_obj.excluded
+                ).save()
