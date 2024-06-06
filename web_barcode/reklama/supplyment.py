@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import requests
 import telegram
+from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_statistic_info,
                                      get_budget_adv_campaign)
@@ -356,18 +357,23 @@ def view_statistic_adv_campaign(header, campaign):
     """Возвращает статистику показов рекламной кампании за вчерашний день"""
     statistic_date_raw = datetime.now() - timedelta(days=2)
     statistic_date = statistic_date_raw.strftime('%Y-%m-%d')
+    ur_lico = ''
+    for ur_lico_data, header_data in header_wb_dict.items():
+        if header_data == header:
+            ur_lico = ur_lico_data
+    if DailyCampaignParameters.objects.filter(
+            campaign__ur_lico__ur_lice_name=ur_lico,
+            campaign__campaign_number=campaign,
+            statistic_date__icontains=statistic_date).exists():
+        statistic_obj = DailyCampaignParameters.objects.get(
+            campaign__ur_lico__ur_lice_name=ur_lico,
+            campaign__campaign_number=campaign,
+            statistic_date__icontains=statistic_date)
+        view_statistic = statistic_obj.views
 
-    data_dict = [{
-        "id": int(campaign),
-        "interval": {
-            "begin": statistic_date,
-            "end": statistic_date
-        }
-    }]
-    time.sleep(60)
-    main_adv_data = advertisment_statistic_info(data_dict, header)
-    if main_adv_data:
-        return
+        return view_statistic
+    else:
+        return 0
 
 
 def current_budget_adv_campaign(header, campaign):
@@ -400,8 +406,13 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
     if response.status_code == 200:
         time.sleep(5)
         current_budget = current_budget_adv_campaign(header, campaign)
-        message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
-                   f"Итого бюджет: {current_budget}.")
+        view_statistic = view_statistic_adv_campaign(header, campaign)
+        if view_statistic:
+            message = (f"Пополнил {campaign}. Продаж {budget} руб. Показов: {view_statistic}. Пополнил на {campaign_budget}руб ({koef}%)"
+                       f"Итого бюджет: {current_budget}.")
+        else:
+            message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
+                       f"Итого бюджет: {current_budget}.")
         return message
     else:
         if attempt_counter <= 50:
@@ -448,6 +459,7 @@ def replenish_campaign_budget(campaign, budget, header):
         campaign_budget = 10000
 
     message = ''
+    view_statistic = view_statistic_adv_campaign(header, campaign)
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
             campaign, campaign_budget, budget, koef, header)
@@ -460,9 +472,9 @@ def replenish_campaign_budget(campaign, budget, header):
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
-        message = f'{campaign} - продаж {budget} руб. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+        message = f'{campaign} - продаж {budget} руб. Показов: {view_statistic}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
     else:
-        message = f'{campaign} - продаж {budget} руб. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+        message = f'{campaign} - продаж {budget} руб. Показов: {view_statistic}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
     return message
 
 
