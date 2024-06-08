@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import requests
 import telegram
+from analytika_reklama.models import DailyCampaignParameters
 from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles

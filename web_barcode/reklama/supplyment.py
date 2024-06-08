@@ -16,7 +16,7 @@ from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
+                            ProcentForAd, SalesArticleStatistic, UrLico,
                             WbArticleCommon, WbArticleCompany)
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
@@ -250,70 +250,45 @@ def count_sum_adv_campaign(data_list: list):
 
 
 @sender_error_to_tg
-def count_sum_orders_action(article_list, begin_date, end_date, header):
-    """Получает данные о заказах рекламной кампании за позавчера"""
-    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
-    payload = json.dumps({
-        "brandNames": [],
-        "objectIDs": [],
-        "tagIDs": [],
-        "nmIDs": article_list,
-        "timezone": "Europe/Moscow",
-        "period": {
-            "begin": begin_date,
-            "end": end_date
-        },
-        "orderBy": {
-            "field": "ordersSumRub",
-            "mode": "asc"
-        },
-        "page": 1
-    })
-    response = requests.request(
-        "POST", url, headers=header, data=payload)
-    if response.status_code == 200:
-        data_list = json.loads(response.text)['data']['cards']
-        return data_list
-    else:
-        print(
-            f'count_sum_orders_action. response.status_code = {response.status_code}')
-        text = f'count_sum_orders_action. response.status_code = {response.status_code}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=text, parse_mode='HTML')
-        time.sleep(25)
-        return count_sum_orders_action(article_list, begin_date, end_date, header)
+def count_sum_orders_action(campaigns_data, ur_lico):
+    """Обрабатывает данные о продажах каждой рекламной кампании"""
+    campaign_sales_dict = {}
+    for data in campaigns_data:
+        campaign_sales_dict[data['advertId']] = data['sum_price']
+    return campaign_sales_dict
 
 
 @sender_error_to_tg
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
-    campaign_list = ad_list()
-
-    calculate_data = datetime.now() - timedelta(days=2)
-    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
-    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
-    # Словарь вида: {номер_компании: заказов_за_позавчера}
-    wb_koef = math.ceil(len(campaign_list)/3)
-
+    ur_lico_campaign_dict = {}
     campaign_orders_money_dict = {}
-    for i in range(wb_koef):
-        start_point = i*3
-        finish_point = (i+1)*3
-        small_info_list = campaign_list[
-            start_point:finish_point]
+    ur_lico_data = UrLico.objects.all()
+    calculate_data = datetime.now() - timedelta(days=2)
+    begin_date = calculate_data.strftime('%Y-%m-%d')
 
-        for campaign in small_info_list:
-            header = header_determinant(campaign)
-            article_list = wb_articles_in_campaign(campaign, header)
+    for ur_lico in ur_lico_data:
+        campaign_data = AdvertisingCampaign.objects.filter(ur_lico=ur_lico)
+        if campaign_data:
+            inner_campaign_list = []
+            for campaign in campaign_data:
+                campaign_data_for_request = {
+                    "id": int(campaign.campaign_number),
+                    "interval": {
+                        "begin": begin_date,
+                        "end": begin_date
+                    }
+                }
+                inner_campaign_list.append(campaign_data_for_request)
 
-            # if article_list:
-            data_list = count_sum_orders_action(
-                article_list, begin_date, end_date, header)
-            sum = count_sum_adv_campaign(data_list)
-            campaign_orders_money_dict[campaign] = sum
-
-            time.sleep(22)
-
+            header = header_wb_dict[ur_lico.ur_lice_name]
+            campaign_main_data = advertisment_statistic_info(
+                inner_campaign_list, header)
+            campaign_summ_inner_dict = count_sum_orders_action(
+                campaign_main_data, ur_lico)
+            ur_lico_campaign_dict[ur_lico] = inner_campaign_list
+            print(ur_lico, campaign_summ_inner_dict)
+            campaign_orders_money_dict.update(campaign_summ_inner_dict)
     return campaign_orders_money_dict
 
 
@@ -363,14 +338,12 @@ def view_statistic_adv_campaign(header, campaign):
             ur_lico = ur_lico_data
     if DailyCampaignParameters.objects.filter(
             campaign__ur_lico__ur_lice_name=ur_lico,
-            campaign__campaign_number=campaign,
+            campaign__campaign_number=str(campaign),
             statistic_date__icontains=statistic_date).exists():
         statistic_obj = DailyCampaignParameters.objects.get(
             campaign__ur_lico__ur_lice_name=ur_lico,
             campaign__campaign_number=campaign,
             statistic_date__icontains=statistic_date)
-        view_statistic = statistic_obj.views
-
         return statistic_obj
     else:
         return None
@@ -394,6 +367,7 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
     koef - коэффициент от суммы заказов, который идет на рекламу
     header - header юр. лица для запроса к  АПИ ВБ
     """
+    campaign_budget = round_up_to_nearest_multiple(campaign_budget, 50)
     url = f'https://advert-api.wb.ru/adv/v1/budget/deposit?id={campaign}'
     payload = json.dumps({
         "sum": campaign_budget,

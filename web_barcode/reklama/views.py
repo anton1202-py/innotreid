@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from analytika_reklama.models import DailyCampaignParameters
 from django.db.models import Max, Q
 from django.shortcuts import redirect, render
 from dotenv import load_dotenv
@@ -79,7 +80,6 @@ def wb_article_campaign(request):
     """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    # ozon_add_campaign_data_to_database()
     data = DataOooWbArticle.objects.all()
     if request.method == 'POST':
         if 'filter' in request.POST:
@@ -125,8 +125,6 @@ def ozon_ad_campaigns(request):
         elif 'del-button' in request.POST:
             OzonCampaign.objects.get(
                 campaign_number=request_data['del-button']).delete()
-
-            print(request.POST)
         return redirect('ozon_ad_campaigns')
 
     context = {

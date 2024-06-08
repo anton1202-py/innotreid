@@ -213,6 +213,7 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
                 cpc=cpc,
                 cr=cr
             ).save()
+            print('Сохранил в DailyCampaignParameters')
 
 
 def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
@@ -227,7 +228,7 @@ def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
     incoming_clusters = clusters_info['clusters']
     if incoming_excluded_frases:
         for incoming_frase in incoming_excluded_frases:
-            if not MainCampaignExcluded.objects.filter(campaign=campaign_obj, excluded=incoming_frase).exists():
+            if not MainCampaignExcluded.objects.filter(campaign=campaign_obj, excluded=str(incoming_frase)).exists():
                 MainCampaignExcluded(
                     campaign=campaign_obj,
                     excluded=str(incoming_frase)).save()
