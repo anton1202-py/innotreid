@@ -89,7 +89,7 @@ class CampaignClustersView(ListView):
 
 
 class CampaignDailyStatisticView(ListView):
-    model = DailyCampaignParameters
+    model = CommonCampaignDescription
     template_name = 'analytika_reklama/adv_campaign_daily_statistic.html'
     context_object_name = 'data'
 
@@ -106,6 +106,7 @@ class CampaignDailyStatisticView(ListView):
             id=self.kwargs['id'])
         statistic_data = DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id'])
+        print(self.kwargs['id'])
         context.update({
             'statistic_data': statistic_data,
             'page_name': f"Статистика кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",
@@ -113,5 +114,7 @@ class CampaignDailyStatisticView(ListView):
         return context
 
     def get_queryset(self):
+        print(DailyCampaignParameters.objects.filter(
+            campaign=self.kwargs['id']))
         return DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id'])

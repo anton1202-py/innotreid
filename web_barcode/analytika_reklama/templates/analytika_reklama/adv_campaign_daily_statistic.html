@@ -68,8 +68,7 @@
         <table id="table" style="overflow-x: scroll;">
             <thead>
                 <tr>
-                    <th>Кампания</th>
-                    <th>Юр. лицо</th>
+                    <th>Дата</th>
                     <th>Просмотры</th>
                     <th>Клики</th>
                     <th>CTR</th>
@@ -83,10 +82,9 @@
                 </tr>
             </thead>
             <tbody>
-                {% for el in campaign_info %}
+                {% for el in data %}
                 <tr>
-                    <td>{{ el.campaign.campaign_number }}</td>
-                    <td>{{ el.campaign.ur_lico }}</td>
+                    <td>{{ el.statistic_date }}</td>
     
                     <td>{{ el.views }}</td>
                     <td>{{ el.clicks }}</td>
