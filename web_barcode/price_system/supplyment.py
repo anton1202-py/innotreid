@@ -898,6 +898,7 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&offset={offset}'
     header = header_wb_data_dict[ur_lico]
     response = requests.request("GET", url, headers=header)
+    iter_numb += 1
     if response.status_code == 200:
         main_data = json.loads(response.text)['data']['listGoods']
         for data in main_data:
@@ -907,16 +908,17 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
             inner_dict['discount'] = data['discount']
             article_price_data.append(inner_dict)
         if len(main_data) == 1000:
-            iter_numb += 1
+
             offset = 1000 * iter_numb
             wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
         return article_price_data
+    elif response.status_code != 200 and iter_numb < 10:
+        time.sleep(10)
+        return wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
     else:
         text = f'Приложение price_system. supplyment. Функция: wb_articles_list. Статус код: {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
-        time.sleep(10)
-        return wb_articles_list(ur_lico, offset, article_price_data, iter_numb)
 
 
 @sender_error_to_tg

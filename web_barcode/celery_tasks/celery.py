@@ -116,7 +116,7 @@ app.conf.beat_schedule = {
     },
     "ip_fbs_morning_action": {
         "task": "fbs_mode.tasks.ip_morning_task",
-        "schedule": crontab(hour=9, minute=15)
+        "schedule": crontab(hour=5, minute=40)
     },
     "ip_ozon_day": {
         "task": "fbs_mode.tasks.ip_ozon_action_day",
