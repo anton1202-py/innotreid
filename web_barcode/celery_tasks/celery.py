@@ -166,9 +166,10 @@ app.conf.beat_schedule = {
         "schedule": crontab(minute='*/16')
     },
 
+    # =========== ЗАДАЧИ РАЗДЕЛА REKLAMA ========== #
     "wb_reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=21, minute=1)
+        "schedule": crontab(hour=6, minute=20)
     },
     "wb_ooo_article_add_to_db": {
         "task": "reklama.periodic_tasks.ooo_wb_articles_data",
@@ -186,9 +187,5 @@ app.conf.beat_schedule = {
         "task": "reklama.periodic_tasks.wb_ooo_fbo_stock_count",
         "schedule": crontab(hour=22, minute=20)
     },
-
-    # "ozon_reklama_stop_start_campaign": {
-    #     "task": "reklama.periodic_tasks.ozon_start_stop_nessessary_campaign",
-    #     "schedule": crontab(hour=21, minute=0)
-    # },
+    # =========== КОНЕЦ РАЗДЕЛА REKLAMA ========== #
 }
