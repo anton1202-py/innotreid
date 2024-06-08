@@ -68,6 +68,7 @@
         <table id="table" style="overflow-x: scroll;">
             <thead>
                 <tr>
+                    <th>Кампания</th>
                     <th>Дата</th>
                     <th>Просмотры</th>
                     <th>Клики</th>
@@ -84,6 +85,7 @@
             <tbody>
                 {% for el in data %}
                 <tr>
+                    <td>{{ el.campaign.campaign_number }}</td>
                     <td>{{ el.statistic_date }}</td>
     
                     <td>{{ el.views }}</td>

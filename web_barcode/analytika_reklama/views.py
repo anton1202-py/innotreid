@@ -37,10 +37,11 @@ def common_adv_statistic(request):
     """Отображает статистику кампаний"""
     page_name = 'Статитстика рекламных кампаний'
     campaign_info = MainCampaignParameters.objects.all().order_by('id')
-
     context = {
         'page_name': page_name,
         'campaign_info': campaign_info,
+        'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+        'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
     return render(request, 'analytika_reklama/adv_campaign_statistic.html', context)
 
@@ -110,6 +111,8 @@ class CampaignDailyStatisticView(ListView):
         context.update({
             'statistic_data': statistic_data,
             'page_name': f"Статистика кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",
+            'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+            'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
         })
         return context
 
