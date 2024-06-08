@@ -10,6 +10,7 @@ from analytika_reklama.wb_supplyment import articles_for_keywords
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.generic import ListView
+from reklama.models import UrLico
 
 from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
@@ -21,11 +22,22 @@ def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
     # articles_for_keywords()
-    campaign_list = CommonCampaignDescription.objects.all().order_by('id')
-
+    campaign_list = CommonCampaignDescription.objects.filter(
+        ur_lico=1).order_by('id')
+    ur_lico_data = UrLico.objects.all()
+    if request.POST:
+        if 'campaign_number' in request.POST:
+            campaign_number = request.POST['campaign_number']
+            campaign_list = CommonCampaignDescription.objects.filter(
+                campaign_number=campaign_number).order_by('id')
+        if 'ur_lico_select' in request.POST:
+            filter_ur_lico = request.POST['ur_lico_select']
+            campaign_list = CommonCampaignDescription.objects.filter(
+                ur_lico=int(filter_ur_lico)).order_by('id')
     context = {
         'page_name': page_name,
         'campaign_list': campaign_list,
+        'ur_lico_data': ur_lico_data,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
@@ -37,9 +49,20 @@ def common_adv_statistic(request):
     """Отображает статистику кампаний"""
     page_name = 'Статитстика рекламных кампаний'
     campaign_info = MainCampaignParameters.objects.all().order_by('id')
+    ur_lico_data = UrLico.objects.all()
+    if request.POST:
+        if 'campaign_number' in request.POST:
+            campaign_number = request.POST['campaign_number']
+            campaign_info = MainCampaignParameters.objects.filter(
+                campaign__campaign_number=campaign_number).order_by('id')
+        if 'ur_lico_select' in request.POST:
+            filter_ur_lico = request.POST['ur_lico_select']
+            campaign_info = MainCampaignParameters.objects.filter(
+                campaign__ur_lico=int(filter_ur_lico)).order_by('id')
     context = {
         'page_name': page_name,
         'campaign_info': campaign_info,
+        'ur_lico_data': ur_lico_data,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }

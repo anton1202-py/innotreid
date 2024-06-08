@@ -9,57 +9,8 @@
             <h1>{{ page_name }}</h1>
         </div>
 
-        <div class='filter-data'>
-            <form id="left-form" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <label for="common_article_id" class="rand">
-                    <span>Артикул</span><br>
-                    <input type="text" id="common_article_id" name="common_article" class="input-field" oninput="filterData()">
-                </label>
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="filter" name="filter" value="Фильтровать" style="display: none;"/>
-                </div>
-            </form>
-            
-            <form id="centr-form" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="filter" name="filter_data" value="ООО Иннотрейд" />
-                </div>
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="filter" name="filter_data" value="ИП Караваев" />
-                </div>
-                <div>
-                    <br>
-                    <input type="checkbox" id="articles_without_status" name="checkbox_value" value="true">
-                    <label for="articles_without_status">Артикулы без статуса</label>
-                </div>
-            </form>
-
         
-            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <button type="submit" name="export" value="create_file" title="Экспорт в Excel">
-                        <span class="material-symbols-outlined">
-                            ios_share
-                        </span>
-                    </button>
-                </div>
-    
-                <div class="inner-form-data">
-                    <label for="import_data" title="Импорт из Excel">
-                        <span class="material-symbols-outlined">
-                            download
-                        </span>
-                    </label>
-                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
-                </div>
-            </form>
-        </div>
+
         {% if import_data %}
             <script>
                 alert("{{ import_data }}");
