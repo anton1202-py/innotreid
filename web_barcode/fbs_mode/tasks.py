@@ -2218,19 +2218,22 @@ def ooo_common_task():
 @app.task
 def ip_morning_task():
     """Запускает утреннюю FBS сборку ИП (Без документов ОЗОН)"""
-    action_wb(
-        db_folder, file_add_name_ip, wb_headers_karavaev,
-        ozon_headers_karavaev, yandex_headers_karavaev)
-    time.sleep(60)
-    action_ozon_ip_morning(ozon_headers_karavaev,
-                           db_folder, file_add_name_ip)
-    time.sleep(60)
-    action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
-    time.sleep(60)
-    production_file(
-        db_folder, file_add_name_ip, wb_headers_karavaev,
-        ozon_headers_karavaev, yandex_headers_karavaev)
-    time.sleep(60)
+    # try:
+    #     action_wb(
+    #         db_folder, file_add_name_ip, wb_headers_karavaev,
+    #         ozon_headers_karavaev, yandex_headers_karavaev)
+    #     time.sleep(60)
+    #     action_ozon_ip_morning(ozon_headers_karavaev,
+    #                            db_folder, file_add_name_ip)
+    #     time.sleep(60)
+    #     action_yandex(yandex_headers_karavaev, db_folder, file_add_name_ip)
+    #     time.sleep(60)
+    #     production_file(
+    #         db_folder, file_add_name_ip, wb_headers_karavaev,
+    #         ozon_headers_karavaev, yandex_headers_karavaev)
+    #     time.sleep(60)
+    # except:
+    #     print('Не сработа сборка ВБ')
     action_wb(
         db_folder, file_add_name_ooo, wb_headers_ooo,
         ozon_headers_ooo, yandex_headers_ooo)
