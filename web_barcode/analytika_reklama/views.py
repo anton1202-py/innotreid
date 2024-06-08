@@ -1,4 +1,5 @@
 from analytika_reklama.models import (CommonCampaignDescription,
+                                      DailyCampaignParameters,
                                       MainCampaignClusters,
                                       MainCampaignParameters)
 from analytika_reklama.periodic_tasks import (
@@ -71,11 +72,46 @@ class CampaignClustersView(ListView):
 
         context = super(CampaignClustersView,
                         self).get_context_data(**kwargs)
-        print(self.kwargs)
+        # print(self.kwargs['ur_lico'])
+        campaign_object = CommonCampaignDescription.objects.get(
+            id=self.kwargs['id'])
         cluster_data = MainCampaignClusters.objects.filter(
             campaign=self.kwargs['id'])
         context.update({
             'clusters_data': cluster_data,
-            'page_name': f"Кластеры кампании {self.kwargs['id']}",
+            'page_name': f"Кластеры кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",
         })
         return context
+
+    def get_queryset(self):
+        return MainCampaignClusters.objects.filter(
+            campaign=self.kwargs['id'])
+
+
+class CampaignDailyStatisticView(ListView):
+    model = DailyCampaignParameters
+    template_name = 'analytika_reklama/adv_campaign_daily_statistic.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        self.ur_lico = kwargs.pop('ur_lico', None)
+        super(CampaignDailyStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+
+        context = super(CampaignDailyStatisticView,
+                        self).get_context_data(**kwargs)
+        # print(self.kwargs['ur_lico'])
+        campaign_object = CommonCampaignDescription.objects.get(
+            id=self.kwargs['id'])
+        statistic_data = DailyCampaignParameters.objects.filter(
+            campaign=self.kwargs['id'])
+        context.update({
+            'statistic_data': statistic_data,
+            'page_name': f"Статистика кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",
+        })
+        return context
+
+    def get_queryset(self):
+        return DailyCampaignParameters.objects.filter(
+            campaign=self.kwargs['id'])

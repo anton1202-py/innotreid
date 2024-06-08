@@ -85,7 +85,7 @@
             <tbody>
                 {% for el in campaign_info %}
                 <tr>
-                    <td><a href="{% url 'adv_campaign_daily_statistic'  el.id %}">{{ el.campaign.campaign_number }}</a></td>
+                    <td>{{ el.campaign.campaign_number }}</td>
                     <td>{{ el.campaign.ur_lico }}</td>
     
                     <td>{{ el.views }}</td>

@@ -12,4 +12,8 @@ urlpatterns = [
          views.CampaignClustersView.as_view(),
          name='adv_campaign_clusters'
          ),
+    path('adv_campaign_daily_statistic/<int:id>',
+         views.CampaignDailyStatisticView.as_view(),
+         name='adv_campaign_daily_statistic'
+         ),
 ]
