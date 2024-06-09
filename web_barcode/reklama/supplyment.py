@@ -19,55 +19,17 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             ProcentForAd, SalesArticleStatistic, UrLico,
                             WbArticleCommon, WbArticleCompany)
 
-from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
-                                        header_ozon_dict, header_wb_data_dict,
-                                        header_wb_dict, header_yandex_dict,
+from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
+                                        TELEGRAM_TOKEN, bot, header_ozon_dict,
+                                        header_wb_data_dict, header_wb_dict,
+                                        header_yandex_dict,
                                         ozon_adv_client_access_id_dict,
                                         ozon_adv_client_secret_dict,
                                         ozon_api_token_dict,
                                         wb_headers_karavaev, wb_headers_ooo,
                                         yandex_business_id_dict)
 
-# Загрузка переменных окружения из файла .env
-dotenv_path = os.path.join(os.path.dirname(
-    __file__), '..', 'web_barcode', '.env')
-load_dotenv(dotenv_path)
-
-
-REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
-APP_KEY_DB = os.getenv('APP_KEY_DB')
-APP_SECRET_DB = os.getenv('APP_SECRET_DB')
-
-API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
-YANDEX_IP_KEY = os.getenv('YANDEX_IP_KEY')
-
-OZON_IP_API_TOKEN = os.getenv('OZON_IP__API_TOKEN')
-API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
-CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
-
-OZON_OOO_API_TOKEN = os.getenv('OZON_OOO_API_TOKEN')
-OZON_OOO_CLIENT_ID = os.getenv('OZON_OOO_CLIENT_ID')
-
-OZON_IP_ADV_CLIENT_ACCESS_ID = os.getenv('OZON_IP_ADV_CLIENT_ACCESS_ID')
-OZON_IP_ADV_CLIENT_SECRET = os.getenv('OZON_IP_ADV_CLIENT_SECRET')
-
-OZON_OOO_ADV_CLIENT_ACCESS_ID = os.getenv('OZON_OOO_ADV_CLIENT_ACCESS_ID')
-OZON_OOO_ADV_CLIENT_SECRET = os.getenv('OZON_OOO_ADV_CLIENT_SECRET')
-
-YANDEX_OOO_KEY = os.getenv('YANDEX_OOO_KEY')
-WB_OOO_API_KEY = os.getenv('WB_OOO_API_KEY')
-
-
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
-CHAT_ID_EU = os.getenv('CHAT_ID_EU')
-CHAT_ID_AN = os.getenv('CHAT_ID_AN')
-
 campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
-
-bot = telegram.Bot(token=TELEGRAM_TOKEN)
-
 
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ WILDBERRIES ========== #
 
@@ -127,6 +89,7 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
     ])
     attempt += 1
     response = requests.request("POST", url, headers=header, data=payload)
+    print(response.status_code)
     if response.status_code == 200:
         return json.loads(response.text)
     elif response.status_code == 404:
@@ -150,6 +113,7 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
 def wb_articles_in_campaign(campaign_number, header):
     """Достает артикулы, которые есть у компании в Wildberries"""
     campaign_data = get_wb_campaign_info(campaign_number, header)
+    print('campaign_data', campaign_data)
     if campaign_data:
         articles_list = []
         if 'autoParams' not in campaign_data[0]:
@@ -157,10 +121,10 @@ def wb_articles_in_campaign(campaign_number, header):
                 0]['unitedParams'][0]['nms']
         else:
             articles_list = campaign_data[0]['autoParams']['nms']
-        if articles_list == None:
-            time.sleep(5)
-            return wb_articles_in_campaign(campaign_number, header)
-        return articles_list
+        if articles_list != None:
+            return articles_list
+        else:
+            return []
     else:
         return []
 
@@ -250,45 +214,76 @@ def count_sum_adv_campaign(data_list: list):
 
 
 @sender_error_to_tg
-def count_sum_orders_action(campaigns_data, ur_lico):
-    """Обрабатывает данные о продажах каждой рекламной кампании"""
-    campaign_sales_dict = {}
-    for data in campaigns_data:
-        campaign_sales_dict[data['advertId']] = data['sum_price']
-    return campaign_sales_dict
+def count_sum_orders_action(article_list, begin_date, end_date, header):
+    """Получает данные о заказах рекламной кампании за позавчера"""
+    url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
+    payload = json.dumps({
+        "brandNames": [],
+        "objectIDs": [],
+        "tagIDs": [],
+        "nmIDs": article_list,
+        "timezone": "Europe/Moscow",
+        "period": {
+            "begin": begin_date,
+            "end": end_date
+        },
+        "orderBy": {
+            "field": "ordersSumRub",
+            "mode": "asc"
+        },
+        "page": 1
+    })
+    response = requests.request(
+        "POST", url, headers=header, data=payload)
+    if response.status_code == 200:
+        data_list = json.loads(response.text)['data']['cards']
+        return data_list
+    else:
+        print(
+            f'count_sum_orders_action. response.status_code = {response.status_code}')
+        text = f'count_sum_orders_action. response.status_code = {response.status_code}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+        time.sleep(25)
+        return count_sum_orders_action(article_list, begin_date, end_date, header)
 
 
 @sender_error_to_tg
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
-    ur_lico_campaign_dict = {}
-    campaign_orders_money_dict = {}
-    ur_lico_data = UrLico.objects.all()
+    campaign_list = ad_list()
+    print(campaign_list)
+
     calculate_data = datetime.now() - timedelta(days=2)
-    begin_date = calculate_data.strftime('%Y-%m-%d')
+    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
+    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+    # Словарь вида: {номер_компании: заказов_за_позавчера}
+    wb_koef = math.ceil(len(campaign_list)/3)
 
-    for ur_lico in ur_lico_data:
-        campaign_data = AdvertisingCampaign.objects.filter(ur_lico=ur_lico)
-        if campaign_data:
-            inner_campaign_list = []
-            for campaign in campaign_data:
-                campaign_data_for_request = {
-                    "id": int(campaign.campaign_number),
-                    "interval": {
-                        "begin": begin_date,
-                        "end": begin_date
-                    }
-                }
-                inner_campaign_list.append(campaign_data_for_request)
+    campaign_orders_money_dict = {}
+    for i in range(wb_koef):
+        start_point = i*3
+        finish_point = (i+1)*3
+        small_info_list = campaign_list[
+            start_point:finish_point]
 
-            header = header_wb_dict[ur_lico.ur_lice_name]
-            campaign_main_data = advertisment_statistic_info(
-                inner_campaign_list, header)
-            campaign_summ_inner_dict = count_sum_orders_action(
-                campaign_main_data, ur_lico)
-            ur_lico_campaign_dict[ur_lico] = inner_campaign_list
-            print(ur_lico, campaign_summ_inner_dict)
-            campaign_orders_money_dict.update(campaign_summ_inner_dict)
+        for campaign in small_info_list:
+            print('campaign', campaign)
+            header = header_determinant(campaign)
+            print('header', header)
+            article_list = wb_articles_in_campaign(campaign, header)
+            print('article_list', article_list)
+
+            # if article_list:
+            data_list = count_sum_orders_action(
+                article_list, begin_date, end_date, header)
+            sum = count_sum_adv_campaign(data_list)
+            print('sum', sum)
+            campaign_orders_money_dict[campaign] = sum
+
+            time.sleep(22)
+    for i, j in campaign_orders_money_dict:
+        print(i, j)
     return campaign_orders_money_dict
 
 

@@ -74,10 +74,10 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.tasks.sender_change_price_info",
         "schedule": crontab(hour=9, minute=5)
     },
-    "run-every-15-minutes": {
-        "task": "celery_tasks.tasks.get_current_ssp",
-        'schedule': crontab(minute='*/15'),
-    },
+    # "run-every-15-minutes": {
+    #     "task": "celery_tasks.tasks.get_current_ssp",
+    #     'schedule': crontab(minute='*/15'),
+    # },
     # =========== ЗАДАЧИ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
     "analytika_reklama_adv_common_info": {
         "task": "analytika_reklama.periodic_tasks.add_info_to_db_about_all_campaigns",
