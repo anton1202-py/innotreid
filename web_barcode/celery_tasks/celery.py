@@ -169,7 +169,7 @@ app.conf.beat_schedule = {
     # =========== ЗАДАЧИ РАЗДЕЛА REKLAMA ========== #
     "wb_reklama_campaign_budget_add": {
         "task": "reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=6, minute=20)
+        "schedule": crontab(hour=8, minute=10)
     },
     "wb_ooo_article_add_to_db": {
         "task": "reklama.periodic_tasks.ooo_wb_articles_data",
