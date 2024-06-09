@@ -98,8 +98,9 @@ START_LIST = [
 ]
 
 
-@login_required
 def database_home(request):
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
     data = Articles.objects.all()
     context = {
         'data': data,
@@ -107,8 +108,9 @@ def database_home(request):
     return render(request, 'database/database_home.html', context)
 
 
-@login_required
 def article_compare(request):
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
     data = Articles.objects.all()
     form = SelectArticlesForm(request.POST or None)
     article_data = []
@@ -128,7 +130,6 @@ def article_compare(request):
     return render(request, 'database/article_compare.html', context)
 
 
-@login_required
 def database_stock(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
@@ -445,7 +446,8 @@ def database_sales(request):
 
 def analytic_sales_data(request):
     """Функция отвечает за отображение данных недельных продаж"""
-
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
     sales = Sales.objects.filter(sum_sale__gte=0).annotate(
         week=ExtractWeek('pub_date'),
         year=ExtractYear('pub_date')
