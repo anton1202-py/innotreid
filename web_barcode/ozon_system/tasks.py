@@ -96,7 +96,7 @@ def stop_adv_company():
 def delete_ozon_articles_with_low_price_from_actions():
     """
     Удаляет артикулы из акций ОЗОН,
-    если цна в акции меньше, чем в базе даных
+    если цена в акции меньше, чем в базе даных
     """
     for url_lico in list(header_ozon_dict.keys()):
         header = header_ozon_dict[url_lico]
