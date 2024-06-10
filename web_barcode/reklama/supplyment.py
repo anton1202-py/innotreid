@@ -117,8 +117,6 @@ def wb_articles_in_campaign(campaign_number, header, counter=0):
         articles_list = []
         if 'autoParams' in campaign_data[0]:
             articles_list = campaign_data[0]['autoParams']['nms']
-            articles_list = campaign_data[
-                0]['unitedParams'][0]['nms']
         elif 'unitedParams' in campaign_data[0]:
             articles_list = campaign_data[
                 0]['unitedParams'][0]['nms']
