@@ -15,11 +15,12 @@ from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
 
-def get_main_sales_data():
+def get_main_sales_data(year):
     """Отдает данные по продажам артикулов"""
 
-    sale_data = Selling.objects.filter(year=2023).values(
+    sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'quantity', 'summ')
+    print('year get_main_sales_data', year)
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
     # Словарь с продажами артикула за текущий год
@@ -123,9 +124,9 @@ def get_designers_amount_summ_sales_data(innotreiduser):
     return year_sales_dict, main_sales_dict
 
 
-def get_designers_sales_data():
+def get_designers_sales_data(year):
     """Отдает данные по продажам дизайнеров"""
-    sale_data = Selling.objects.all().values(
+    sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'summ', 'lighter__designer', 'lighter__designer_article', 'lighter__copy_right')
     designer_rew_dict = {}
     designer_persent = DesignUser.objects.all().values(
@@ -175,9 +176,9 @@ def get_designers_sales_data():
     return year_sales_dict, monthly_sales_dict
 
 
-def get_article_sales_data():
+def get_article_sales_data(year):
     """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.all().values(
+    sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'summ', 'lighter__designer')
     # Словарь с продажами артикула за текущий год
     year_sales_dict = {}
@@ -202,20 +203,19 @@ def article_designers(request):
     page_name = 'Светильники дизайнеров'
     article_list = Articles.objects.filter(
         designer_article=True).order_by('common_article')
-    sale_data = Selling.objects.all().values('lighter', 'month', 'summ')
 
     # Проверяю наличия данных из формы фильтра юр лица.
     months = Selling.objects.filter(
         year=current_year).values('month').distinct()
-    month_list = [int(value['month']) for value in months]
 
-    year_sales_dict, main_sales_dict = get_main_sales_data()
+    year_sales_dict, main_sales_dict = get_main_sales_data(current_year)
 
     # Получаем список пользователей из группы "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
     designer_list = designer_group.user_set.all()
     year_filter = Selling.objects.all().values('year').distinct()
     year_list = [int(value['year']) for value in year_filter]
+    sales_year = current_year
     if request.POST:
         filter_company = request.POST.get('filter_data')
         common_article = request.POST.get("common_article")
@@ -234,12 +234,14 @@ def article_designers(request):
             article_list = Articles.objects.filter(
                 Q(designer=designer)).order_by('common_article')
             # request.session['designer'] = request.POST.get('designer')
-        # if select_year:
-        #     article_list = Articles.objects.filter(
-        #         Q(year=select_year)).order_by('common_article')
-        #     year_sales_dict, main_sales_dict = get_main_sales_data()
+        if select_year:
+            months = Selling.objects.filter(
+                year=select_year).values('month').distinct()
+            year_sales_dict, main_sales_dict = get_main_sales_data(select_year)
+            sales_year = select_year
+
         # return redirect('motivation_article_designers')
-    print(year_list)
+    month_list = [int(value['month']) for value in months]
     context = {
         'page_name': page_name,
         'article_list': article_list,
@@ -248,7 +250,7 @@ def article_designers(request):
         'designer_list': designer_list,
         'month_list': sorted(month_list),
         'main_sales_dict': main_sales_dict,
-        'current_year': current_year
+        'sales_year': sales_year
     }
     return render(request, 'motivation/article_designers.html', context)
 
@@ -323,7 +325,6 @@ def article_type(request):
         return filter_get_request(request, ur_lico)
 
     if request.POST:
-        print(request.FILES)
         filter_company = request.POST.get('filter_data')
         if filter_company:
             article_list = Articles.objects.filter(
@@ -421,13 +422,13 @@ def designers_rewards(request):
         return redirect('login')
     page_name = 'Вознаграждение дизайнеров'
     current_year = datetime.now().strftime('%Y')
+    year_filter = Selling.objects.all().values('year').distinct()
+    year_list = [int(value['year']) for value in year_filter]
     # Список месяцев в текущем году
     months = Selling.objects.filter(
         year=current_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]
 
-    sale_data = Selling.objects.all().values(
-        'lighter', 'month', 'summ', 'lighter__designer')
     designer_main_percent = DesignUser.objects.values(
         'designer__id', 'main_reward_persent', 'copyright_reward_persent')
     designer_percent = {}
@@ -440,18 +441,28 @@ def designers_rewards(request):
                 designer_percent[data['designer__id']
                                  ] = data['main_reward_persent']/100
 
-    year_sales_dict, monthly_sales_dict = get_designers_sales_data()
-    year_article_sales_dict = get_article_sales_data()
+    year_sales_dict, monthly_sales_dict = get_designers_sales_data(
+        current_year)
+    year_article_sales_dict = get_article_sales_data(current_year)
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
 
     # Получаем список пользователей из группы "Дизайнер"
     designer_users = designer_group.user_set.all()
 
+    if request.POST:
+        select_year = request.POST.get("year_select")
+        if select_year:
+            year_sales_dict, monthly_sales_dict = get_designers_sales_data(
+                select_year)
+            year_article_sales_dict = get_article_sales_data(select_year)
+            months = Selling.objects.filter(
+                year=select_year).values('month').distinct()
+    month_list = [int(value['month']) for value in months]
     context = {
         'page_name': page_name,
         'designer_users': designer_users,
-        'sale_data': sale_data,
+        'year_list': year_list,
         'monthly_sales_dict': monthly_sales_dict,
         'designer_percent': designer_percent,
         'year_sales_dict': year_sales_dict,
@@ -480,17 +491,37 @@ class MotivationDesignersRewardDetailView(ListView):
             user_data)
         designer_id = int(self.kwargs['designer'])
 
+        year_filter = Selling.objects.all().values('year').distinct()
+        year_list = [int(value['year']) for value in year_filter]
+
         context.update({
             'article_list': Articles.objects.filter(
                 designer=self.kwargs['designer']).values(),
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
             'current_year': current_year,
+            'year_list': year_list,
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST:
+            print(request.POST)
+        designer_id = int(self.kwargs['designer'])
+        # Предположим, что вы хотите фильтровать по статусу
+        status = request.POST.get('status')
+        filtered_articles = Articles.objects.filter(
+            designer=designer_id, status=status).values()
+        user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
+        context = {
+            'article_list': filtered_articles,
+            'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
+            # Другие необходимые данные
+        }
+        return render(designer_id, 'motivation/designers_reward_detail.html', context)
 
 
 class MotivationDesignersSaleDetailView(ListView):
