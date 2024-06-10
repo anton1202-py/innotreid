@@ -129,6 +129,7 @@ def del_articles_from_action(header, action_id, articles_list, ur_lico):
         "product_ids": articles_list
     })
     response = requests.request("POST", url, headers=header, data=payload)
+    print('response.status_code', response.status_code)
     if response.status_code == 200:
         text = f'{ur_lico}. Из акции {action_id} удалили артикулы: {articles_list}'
         for chat_id in admins_chat_id_list:
@@ -143,6 +144,7 @@ def delete_articles_with_low_price(header, ur_lico):
     чем выставленная минимальная цена
     """
     action_data = compare_action_articles_and_database(header, ur_lico)
+    print('delete_articles_with_low_price action_data', action_data)
     if action_data:
         for action_id, articles_list in action_data.items():
             del_articles_from_action(header, action_id, articles_list, ur_lico)
