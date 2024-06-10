@@ -8,7 +8,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
 from motivation.models import Selling
-from motivation.supplyment import (motivation_article_type_excel_file_export,
+from motivation.supplyment import (import_sales_2023,
+                                   motivation_article_type_excel_file_export,
                                    motivation_article_type_excel_import)
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
@@ -16,7 +17,8 @@ from users.models import InnotreidUser
 
 def get_main_sales_data():
     """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.all().values(
+
+    sale_data = Selling.objects.filter(year=2023).values(
         'lighter', 'month', 'quantity', 'summ')
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
@@ -212,11 +214,13 @@ def article_designers(request):
     # Получаем список пользователей из группы "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
     designer_list = designer_group.user_set.all()
-
+    year_filter = Selling.objects.all().values('year').distinct()
+    year_list = [int(value['year']) for value in year_filter]
     if request.POST:
         filter_company = request.POST.get('filter_data')
         common_article = request.POST.get("common_article")
         designer = request.POST.get("designer")
+        select_year = request.POST.get("year_select")
         # if filter_company:
         #     article_list = Articles.objects.filter(
         #         company=filter_company).order_by('common_article')
@@ -230,13 +234,17 @@ def article_designers(request):
             article_list = Articles.objects.filter(
                 Q(designer=designer)).order_by('common_article')
             # request.session['designer'] = request.POST.get('designer')
-
+        # if select_year:
+        #     article_list = Articles.objects.filter(
+        #         Q(year=select_year)).order_by('common_article')
+        #     year_sales_dict, main_sales_dict = get_main_sales_data()
         # return redirect('motivation_article_designers')
-
+    print(year_list)
     context = {
         'page_name': page_name,
         'article_list': article_list,
         'year_sales_dict': year_sales_dict,
+        'year_list': year_list,
         'designer_list': designer_list,
         'month_list': sorted(month_list),
         'main_sales_dict': main_sales_dict,
@@ -246,7 +254,6 @@ def article_designers(request):
 
 
 def update_model_field(request):
-    print(request)
     if request.method == 'POST':
         # Сохраняем значение в базу данных
         user_id = request.POST.get('selected_designer')
@@ -316,6 +323,7 @@ def article_type(request):
         return filter_get_request(request, ur_lico)
 
     if request.POST:
+        print(request.FILES)
         filter_company = request.POST.get('filter_data')
         if filter_company:
             article_list = Articles.objects.filter(
@@ -324,7 +332,6 @@ def article_type(request):
             request.session['filter_data'] = request.POST.get('filter_data')
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
-
                 return motivation_article_type_excel_file_export(article_list)
 
             elif 'import_file' in request.FILES:
@@ -339,6 +346,17 @@ def article_type(request):
             article_filter = filter_data.get("common_article")
             article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
                 'common_article', 'company', 'designer_article', 'copy_right')
+
+        # ========== ВРЕМЕННЫЙ КОД ДЛЯ ЗАГРУЗКИ ПРОДАЖ ЗА 2023 ========== #
+        if 'sales_input' in request.FILES:
+
+            import_data = import_sales_2023(
+                request.FILES['sales_input'], ur_lico)
+            if type(import_data) == str:
+                print('Ошибочка')
+            else:
+                return redirect('motivation_article_type')
+        # ========= КОНЕЦ ВРЕМЕННОГО КОДА ========= #
 
     context = {
         'page_name': page_name,

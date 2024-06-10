@@ -32,11 +32,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 from .models import Selling
 
 
-def articles_data_merge():
-    main_data = Articles.objects.all()
-    print(len(main_data))
-
-
 def get_current_selling():
     """Получаем текущие продажи артикулов"""
     # ozon_sale_data = OzonSales.objects.all()
@@ -158,3 +153,62 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
             new_objects, ['designer_article', 'copy_right'])
     else:
         return f'Вы пытались загрузить ошибочный файл {xlsx_file}.'
+
+
+def import_sales_2023(xlsx_file, ur_lico):
+    """Импортирует продажи за 2023"""
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    excel_data = pd.DataFrame(excel_data_common, columns=[
+                              'День', 'Артикул продавца', 'Заказано, шт.', 'Сумма заказов минус комиссия WB, руб.'])
+    article_list = excel_data['Артикул продавца'].to_list()
+    date_list = excel_data['День'].to_list()
+    orders_list = excel_data['Заказано, шт.'].to_list()
+    summ_list = excel_data['Сумма заказов минус комиссия WB, руб.'].to_list()
+
+    # Словарь {артикул: название_группы}
+    article_value_dict = {}
+    # Список для обновления строк в БД
+    new_objects = []
+    marketplace_obj = CodingMarketplaces.objects.get(id=1)
+    for row in range(len(article_list)):
+        if Articles.objects.filter(
+                company='ООО Иннотрейд', common_article=article_list[row].capitalize()).exists():
+            article_obj = Articles.objects.get(
+                company=ur_lico, common_article=article_list[row].capitalize())
+            month = date_list[row].month
+            year = date_list[row].year
+            data = date_list[row]
+            marketplace = marketplace_obj
+            quantity = orders_list[row]
+            summ = summ_list[row]
+            ur_lico = 'ООО Иннотрейд'
+            if Selling.objects.filter(ur_lico='ООО Иннотрейд',
+                                      marketplace=marketplace_obj,
+                                      lighter=article_obj,
+                                      year=date_list[row].year,
+                                      month=date_list[row].month
+                                      ).exists():
+                sale_obj = Selling.objects.get(ur_lico='ООО Иннотрейд',
+                                               marketplace=marketplace_obj,
+                                               lighter=article_obj,
+                                               year=date_list[row].year,
+                                               month=date_list[row].month
+                                               )
+                sale_obj.quantity += quantity
+                sale_obj.summ += summ
+                sale_obj.save()
+                print('Прибавил к существующией')
+            else:
+                Selling(ur_lico='ООО Иннотрейд',
+                        marketplace=marketplace_obj,
+                        lighter=article_obj,
+                        year=date_list[row].year,
+                        month=date_list[row].month,
+                        quantity=quantity,
+                        summ=summ
+                        ).save()
+                print('сохранил новую продажу')
+    #         new_objects.append(article_obj)
+    # Articles.objects.bulk_update(
+    #     new_objects, ['designer_article', 'copy_right'])

@@ -90,7 +90,9 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
     attempt += 1
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
+        print(json.loads(response.text))
         return json.loads(response.text)
+
     elif response.status_code == 404:
         text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
         for user in campaign_budget_users_list:
@@ -125,32 +127,38 @@ def wb_articles_in_campaign(campaign_number, header, counter=0):
                 0]['params'][0]
             for article in articles_data:
                 articles_list.append(article['nm'])
-
+        print('articles_list ', articles_list)
         if articles_list == None and counter < 50:
             time.sleep(3)
             return wb_articles_in_campaign(campaign_number, header)
+
         else:
-            return []
+            return articles_list
     else:
         return []
 
 
 @sender_error_to_tg
-def wb_articles_in_campaign_and_name(campaign_number, header):
+def wb_articles_in_campaign_and_name(campaign_number, header, counter=0):
     """Достает артикулы, которые есть у компании в Wildberries"""
     campaign_data = get_wb_campaign_info(campaign_number, header)
     if campaign_data:
         articles_list = []
-        if 'autoParams' not in campaign_data[0]:
+        if 'autoParams' in campaign_data[0]:
+            articles_list = campaign_data[0]['autoParams']['nms']
+        elif 'unitedParams' in campaign_data[0]:
             articles_list = campaign_data[
                 0]['unitedParams'][0]['nms']
-        else:
-            articles_list = campaign_data[0]['autoParams']['nms']
-        if articles_list == None:
-            time.sleep(5)
-            return wb_articles_in_campaign_and_name(campaign_number, header)
-        campaign_name = campaign_data[0]['name']
-        return articles_list, campaign_name
+        elif 'params' in campaign_data[0]:
+            articles_data = campaign_data[
+                0]['params'][0]
+            for article in articles_data:
+                articles_list.append(article['nm'])
+
+        if articles_list == None and counter < 50:
+            time.sleep(3)
+            return wb_articles_in_campaign(campaign_number, header)
+        return articles_list, campaign_number
     else:
         return [], ''
 
@@ -258,7 +266,6 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
-    print(campaign_list)
 
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
@@ -276,9 +283,8 @@ def count_sum_orders():
         for campaign in small_info_list:
             print('campaign', campaign)
             header = header_determinant(campaign)
-            print('header', header)
             article_list = wb_articles_in_campaign(campaign, header)
-            print('article_list', article_list)
+            print('article_list в count_sum_orders', article_list)
 
             # if article_list:
             data_list = count_sum_orders_action(

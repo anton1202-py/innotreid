@@ -43,6 +43,18 @@
                 </div> -->
                 
             </form>
+            <form id="right-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Год</span><br>
+                    <select class="mySelect_year" name="year_select">
+                        <option value=""></option>
+                        {% for year in year_list %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
         </div>
         <table id="table" style="overflow-x: scroll; width: 100%;">
             <tr>
@@ -185,6 +197,15 @@
             });
         });
 
+
+        // ========== Обрабатывает выбор года из выпадающего списка ========= //
+        document.addEventListener('DOMContentLoaded', function() {
+            var mySelect = document.querySelector('.mySelect_year');
+    
+            mySelect.addEventListener('change', function() {
+                document.getElementById('right-form').submit();
+            });
+        });
     </script>
         
 {% endblock %}

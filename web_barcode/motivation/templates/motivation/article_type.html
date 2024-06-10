@@ -39,7 +39,16 @@
                 </div>
             </form>
 
-        
+            <form method="POST" id="uploadForm_sales" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}    
+                <div class="inner-form-data">
+                    <label for="import_data" title="Импорт из Excel">
+                        ЗАГРУЗИТЬ ПРОДАЖИ
+                    </label>
+                    <input type="file" id="import_data" name="sales_input" class="input-file" onchange="submitForm_sales()">
+                </div>
+            </form>
+
             <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
                 {% csrf_token %}
                 <div class="inner-form-data">
@@ -242,6 +251,12 @@
         // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
         function submitForm() {
           document.getElementById('uploadForm').submit();
+        }
+
+        
+        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+        function submitForm_sales() {
+          document.getElementById('uploadForm_sales').submit();
         }
         // ========== Показывает артикулы без статуса дизайнерский/не дизайнерский ==========//
         document.getElementById('articles_without_status').addEventListener('change', function() {
