@@ -63,7 +63,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    return campaign_list
+    return campaign_list[:3]
 
 
 @sender_error_to_tg
@@ -319,7 +319,7 @@ def count_sum_orders():
             campaign_orders_money_dict[campaign] = sum
 
             time.sleep(22)
-    for i, j in campaign_orders_money_dict:
+    for i, j in campaign_orders_money_dict.items():
         print(i, j)
     return campaign_orders_money_dict
 
