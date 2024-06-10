@@ -115,12 +115,20 @@ def wb_articles_in_campaign(campaign_number, header, counter=0):
     counter += 1
     if campaign_data:
         articles_list = []
-        if 'autoParams' not in campaign_data[0]:
+        if 'autoParams' in campaign_data[0]:
+            articles_list = campaign_data[0]['autoParams']['nms']
             articles_list = campaign_data[
                 0]['unitedParams'][0]['nms']
-        else:
-            articles_list = campaign_data[0]['autoParams']['nms']
-        if articles_list and counter < 50 == None:
+        elif 'unitedParams' in campaign_data[0]:
+            articles_list = campaign_data[
+                0]['unitedParams'][0]['nms']
+        elif 'params' in campaign_data[0]:
+            articles_data = campaign_data[
+                0]['params'][0]
+            for article in articles_data:
+                articles_list.append(article['nm'])
+
+        if articles_list == None and counter < 50:
             time.sleep(3)
             return wb_articles_in_campaign(campaign_number, header)
         else:
