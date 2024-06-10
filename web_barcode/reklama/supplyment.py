@@ -63,7 +63,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    return campaign_list[:10]
+    return campaign_list
 
 
 @sender_error_to_tg
