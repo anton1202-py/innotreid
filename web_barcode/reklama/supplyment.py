@@ -89,7 +89,6 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
     ])
     attempt += 1
     response = requests.request("POST", url, headers=header, data=payload)
-    print(response.status_code)
     if response.status_code == 200:
         return json.loads(response.text)
     elif response.status_code == 404:
@@ -110,10 +109,10 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
 
 
 @sender_error_to_tg
-def wb_articles_in_campaign(campaign_number, header):
+def wb_articles_in_campaign(campaign_number, header, counter=0):
     """Достает артикулы, которые есть у компании в Wildberries"""
     campaign_data = get_wb_campaign_info(campaign_number, header)
-    print('campaign_data', campaign_data)
+    counter += 1
     if campaign_data:
         articles_list = []
         if 'autoParams' not in campaign_data[0]:
@@ -121,8 +120,9 @@ def wb_articles_in_campaign(campaign_number, header):
                 0]['unitedParams'][0]['nms']
         else:
             articles_list = campaign_data[0]['autoParams']['nms']
-        if articles_list != None:
-            return articles_list
+        if articles_list and counter < 50 == None:
+            time.sleep(3)
+            return wb_articles_in_campaign(campaign_number, header)
         else:
             return []
     else:
