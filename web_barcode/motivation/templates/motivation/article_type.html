@@ -46,6 +46,11 @@
                         ЗАГРУЗИТЬ ПРОДАЖИ
                     </label>
                     <input type="file" id="import_data" name="sales_input" class="input-file" onchange="submitForm_sales()">
+                    <div class="label-button">
+                        <button type="submit" class="custom-button-delete-add">
+                            Загрузить
+                        </button> 
+                    </div>
                 </div>
             </form>
 
@@ -255,9 +260,9 @@
 
         
         // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
-        function submitForm_sales() {
-          document.getElementById('uploadForm_sales').submit();
-        }
+        // function submitForm_sales() {
+        //   document.getElementById('uploadForm_sales').submit();
+        // }
         // ========== Показывает артикулы без статуса дизайнерский/не дизайнерский ==========//
         document.getElementById('articles_without_status').addEventListener('change', function() {
             var isChecked = this.checked;
