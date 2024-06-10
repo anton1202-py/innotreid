@@ -124,6 +124,7 @@ def budget_working():
     """Работа с бюджетом компании"""
     messages_list = []
     campaign_data = count_sum_orders()
+    print('budget_working campaign_data', campaign_data)
     if campaign_data:
         for campaign, budget in campaign_data.items():
             header = header_determinant(campaign)

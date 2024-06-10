@@ -63,7 +63,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    return campaign_list
+    return campaign_list[:10]
 
 
 @sender_error_to_tg
@@ -110,6 +110,31 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
             return []
 
 
+def get_campaign_article_from_statistic(campaign_number, header):
+    """Получаем список артикулов кампании из статистики"""
+    date_today = datetime.now().strftime('%Y-%m-%d')
+    date_early_raw = datetime.now() - timedelta(20)
+    date_early = date_early_raw.strftime('%Y-%m-%d')
+
+    adv_list = [
+        {
+            "id": campaign_number,
+            "interval": {
+                "begin": date_early,
+                "end": date_today
+            }
+        }
+    ]
+    main_data = advertisment_statistic_info(adv_list, header)
+    article_list = []
+    booster_info = main_data[0]['boosterStats']
+
+    for article in booster_info:
+        if article['nm'] not in article_list:
+            article_list.append(article['nm'])
+    return article_list
+
+
 @sender_error_to_tg
 def wb_articles_in_campaign(campaign_number, header, counter=0):
     """Достает артикулы, которые есть у компании в Wildberries"""
@@ -128,12 +153,11 @@ def wb_articles_in_campaign(campaign_number, header, counter=0):
             for article in articles_data:
                 articles_list.append(article['nm'])
         print('articles_list ', articles_list)
-        if articles_list == None and counter < 50:
-            time.sleep(3)
-            return wb_articles_in_campaign(campaign_number, header)
-
-        else:
-            return articles_list
+        if articles_list == None:
+            articles_list = get_campaign_article_from_statistic(
+                campaign_number, header)
+        print('articles_list ', articles_list)
+        return articles_list
     else:
         return []
 
@@ -155,9 +179,9 @@ def wb_articles_in_campaign_and_name(campaign_number, header, counter=0):
             for article in articles_data:
                 articles_list.append(article['nm'])
 
-        if articles_list == None and counter < 50:
-            time.sleep(3)
-            return wb_articles_in_campaign(campaign_number, header)
+        if articles_list == None:
+            articles_list = get_campaign_article_from_statistic(
+                campaign_number, header)
         return articles_list, campaign_number
     else:
         return [], ''
@@ -266,6 +290,7 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
+    print('count_sum_orders campaign_list', campaign_list)
 
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
