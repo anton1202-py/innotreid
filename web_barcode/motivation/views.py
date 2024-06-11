@@ -421,12 +421,12 @@ def designers_rewards(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Вознаграждение дизайнеров'
-    current_year = datetime.now().strftime('%Y')
+    sales_year = datetime.now().strftime('%Y')
     year_filter = Selling.objects.all().values('year').distinct()
     year_list = [int(value['year']) for value in year_filter]
     # Список месяцев в текущем году
     months = Selling.objects.filter(
-        year=current_year).values('month').distinct()
+        year=sales_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]
 
     designer_main_percent = DesignUser.objects.values(
@@ -442,8 +442,8 @@ def designers_rewards(request):
                                  ] = data['main_reward_persent']/100
 
     year_sales_dict, monthly_sales_dict = get_designers_sales_data(
-        current_year)
-    year_article_sales_dict = get_article_sales_data(current_year)
+        sales_year)
+    year_article_sales_dict = get_article_sales_data(sales_year)
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
 
@@ -453,9 +453,10 @@ def designers_rewards(request):
     if request.POST:
         select_year = request.POST.get("year_select")
         if select_year:
+            sales_year = select_year
             year_sales_dict, monthly_sales_dict = get_designers_sales_data(
                 select_year)
-            year_article_sales_dict = get_article_sales_data(select_year)
+            year_article_sales_dict = get_article_sales_data(sales_year)
             months = Selling.objects.filter(
                 year=select_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]
@@ -467,7 +468,7 @@ def designers_rewards(request):
         'designer_percent': designer_percent,
         'year_sales_dict': year_sales_dict,
         'month_list': sorted(month_list),
-        'current_year': current_year,
+        'sales_year': sales_year,
         'year_article_sales_dict': year_article_sales_dict
 
     }
@@ -489,7 +490,9 @@ class MotivationDesignersRewardDetailView(DetailView):
         year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
             user_data, sales_year)
         designer_id = int(self.kwargs['pk'])
-
+        year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+            sales_year)
+        year_reward = round(year_common_sales_dict[self.kwargs['pk']])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         context.update({
@@ -502,6 +505,7 @@ class MotivationDesignersRewardDetailView(DetailView):
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
+            'year_reward': year_reward,
         })
         return context
 
@@ -511,6 +515,9 @@ class MotivationDesignersRewardDetailView(DetailView):
             year=sales_year).values('month').distinct()
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
+        year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+            sales_year)
+
         if request.POST:
             select_year = request.POST.get("year_select")
             user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
@@ -520,12 +527,15 @@ class MotivationDesignersRewardDetailView(DetailView):
                 sales_year = select_year
                 year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
                     user_data, sales_year)
+                year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+                    sales_year)
 
         designer_id = int(self.kwargs['pk'])
 
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         # context = self.get_context_data()
         month_list = [int(value['month']) for value in months]
+        year_reward = round(year_common_sales_dict[self.kwargs['pk']])
         context = {
             'article_list': Articles.objects.filter(
                 designer=self.kwargs['pk']).values(),
@@ -536,7 +546,7 @@ class MotivationDesignersRewardDetailView(DetailView):
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
-            # Другие необходимые данные
+            'year_reward': year_reward,
         }
         return self.render_to_response(context)
 
@@ -556,6 +566,10 @@ class MotivationDesignersSaleDetailView(DetailView):
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
             sales_year)
+
+        year_article_sales_dict = get_article_sales_data(sales_year)
+        year_sales = round(year_article_sales_dict[self.kwargs['pk']])
+        print(year_article_sales_dict)
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         context.update({
@@ -567,7 +581,8 @@ class MotivationDesignersSaleDetailView(DetailView):
             'year_list': year_list,
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
-            'designer_id': designer_id
+            'designer_id': designer_id,
+            'year_sales': year_sales,
 
         })
         return context
