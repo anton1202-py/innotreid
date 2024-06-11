@@ -63,7 +63,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    return campaign_list
+    return campaign_list[:2]
 
 
 @sender_error_to_tg
@@ -90,7 +90,6 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
     attempt += 1
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
-        print(json.loads(response.text))
         return json.loads(response.text)
 
     elif response.status_code == 404:

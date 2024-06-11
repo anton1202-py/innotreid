@@ -594,6 +594,7 @@ class MotivationDesignersSaleDetailView(DetailView):
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+        year_article_sales_dict = get_article_sales_data(sales_year)
         designer_id = int(self.kwargs['pk'])
         if request.POST:
             select_year = request.POST.get("year_select")
@@ -604,9 +605,11 @@ class MotivationDesignersSaleDetailView(DetailView):
                 sales_year = select_year
                 year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
                     sales_year)
+                year_article_sales_dict = get_article_sales_data(sales_year)
 
         # context = self.get_context_data()
         month_list = [int(value['month']) for value in months]
+        year_sales = round(year_article_sales_dict[self.kwargs['pk']])
         context = {
             'article_list': Articles.objects.filter(
                 designer=self.kwargs['pk']).values(),
@@ -617,6 +620,7 @@ class MotivationDesignersSaleDetailView(DetailView):
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
+            'year_sales': year_sales,
             # Другие необходимые данные
         }
         return self.render_to_response(context)
