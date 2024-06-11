@@ -63,7 +63,7 @@ def ad_list():
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
-    return campaign_list[:2]
+    return campaign_list
 
 
 @sender_error_to_tg
@@ -367,6 +367,7 @@ def view_statistic_adv_campaign(header, campaign):
     for ur_lico_data, header_data in header_wb_dict.items():
         if header_data == header:
             ur_lico = ur_lico_data
+
     if DailyCampaignParameters.objects.filter(
             campaign__ur_lico__ur_lice_name=ur_lico,
             campaign__campaign_number=str(campaign),

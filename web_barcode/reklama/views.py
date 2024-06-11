@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from analytika_reklama.models import DailyCampaignParameters
 from django.db.models import Max, Q
@@ -32,6 +32,7 @@ def ad_campaign_add(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # budget_working()
+
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
