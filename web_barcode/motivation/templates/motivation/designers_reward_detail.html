@@ -46,8 +46,8 @@
             <tr>
                 <th rowspan="3">Ночник</th>
                 <th rowspan="3">С правами</th>
-                <th rowspan="2" colspan="2">Продажи за {{ current_year }} год, шт</th>
-                <th colspan="{{ month_list|length|multiplicity:2 }}">{{ current_year }} год</th>
+                <th rowspan="2" colspan="2">Вознаграждение за {{ sales_year }} год, шт</th>
+                <th colspan="{{ month_list|length|multiplicity:2 }}">{{ sales_year }} год</th>
             </tr>
             <tr>
                 {% for month in month_list %}

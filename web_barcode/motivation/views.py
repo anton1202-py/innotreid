@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 from motivation.models import Selling
 from motivation.supplyment import (import_sales_2023,
                                    motivation_article_type_excel_file_export,
@@ -43,9 +43,9 @@ def get_main_sales_data(year):
     return year_sales_dict, main_sales_dict
 
 
-def get_amount_summ_sales_data():
+def get_amount_summ_sales_data(year):
     """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.all().values(
+    sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'quantity', 'summ')
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
@@ -77,9 +77,9 @@ def get_amount_summ_sales_data():
     return year_sales_dict, main_sales_dict
 
 
-def get_designers_amount_summ_sales_data(innotreiduser):
+def get_designers_amount_summ_sales_data(innotreiduser, year):
     """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.all().values(
+    sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'quantity', 'summ', 'lighter__designer_article', 'lighter__copy_right', 'lighter__designer')
     designer_obj = DesignUser.objects.filter(designer=innotreiduser)[0]
     main_percent = designer_obj.main_reward_persent/100
@@ -474,32 +474,30 @@ def designers_rewards(request):
     return render(request, 'motivation/designers_reward.html', context)
 
 
-class MotivationDesignersRewardDetailView(ListView):
-    model = Selling
+class MotivationDesignersRewardDetailView(DetailView):
+    model = InnotreidUser
     template_name = 'motivation/designers_reward_detail.html'
-    context_object_name = 'rewards'
 
     def get_context_data(self, **kwargs):
         context = super(MotivationDesignersRewardDetailView,
                         self).get_context_data(**kwargs)
-        user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
-        current_year = datetime.now().strftime('%Y')
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+        sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
-            year=current_year).values('month').distinct()
+            year=sales_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
-            user_data)
-        designer_id = int(self.kwargs['designer'])
+            user_data, sales_year)
+        designer_id = int(self.kwargs['pk'])
 
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
-
         context.update({
             'article_list': Articles.objects.filter(
-                designer=self.kwargs['designer']).values(),
+                designer=self.kwargs['pk']).values(),
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
-            'current_year': current_year,
+            'sales_year': sales_year,
             'year_list': year_list,
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
@@ -508,49 +506,105 @@ class MotivationDesignersRewardDetailView(ListView):
         return context
 
     def post(self, request, *args, **kwargs):
+        sales_year = datetime.now().strftime('%Y')
+        months = Selling.objects.filter(
+            year=sales_year).values('month').distinct()
+        year_filter = Selling.objects.all().values('year').distinct()
+        year_list = [int(value['year']) for value in year_filter]
         if request.POST:
-            print(request.POST)
-        designer_id = int(self.kwargs['designer'])
-        # Предположим, что вы хотите фильтровать по статусу
-        status = request.POST.get('status')
-        filtered_articles = Articles.objects.filter(
-            designer=designer_id, status=status).values()
-        user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
+            select_year = request.POST.get("year_select")
+            user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+            if select_year:
+                months = Selling.objects.filter(
+                    year=select_year).values('month').distinct()
+                sales_year = select_year
+                year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+                    user_data, sales_year)
+
+        designer_id = int(self.kwargs['pk'])
+
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+        # context = self.get_context_data()
+        month_list = [int(value['month']) for value in months]
         context = {
-            'article_list': filtered_articles,
+            'article_list': Articles.objects.filter(
+                designer=self.kwargs['pk']).values(),
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
+            'month_list': sorted(month_list),
+            'sales_year': sales_year,
+            'year_list': year_list,
+            'year_sales_dict': year_sales_dict,
+            'main_sales_dict': main_sales_dict,
+            'designer_id': designer_id,
             # Другие необходимые данные
         }
-        return render(designer_id, 'motivation/designers_reward_detail.html', context)
+        return self.render_to_response(context)
 
 
-class MotivationDesignersSaleDetailView(ListView):
-    model = Selling
+class MotivationDesignersSaleDetailView(DetailView):
+    model = InnotreidUser
     template_name = 'motivation/designers_sale_detail.html'
-    context_object_name = 'rewards'
 
     def get_context_data(self, **kwargs):
         context = super(MotivationDesignersSaleDetailView,
                         self).get_context_data(**kwargs)
-        user_data = InnotreidUser.objects.get(id=self.kwargs['designer'])
-        current_year = datetime.now().strftime('%Y')
-        designer_id = int(self.kwargs['designer'])
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+        sales_year = datetime.now().strftime('%Y')
+        designer_id = int(self.kwargs['pk'])
         months = Selling.objects.filter(
-            year=current_year).values('month').distinct()
+            year=sales_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
-        year_sales_dict, main_sales_dict = get_amount_summ_sales_data()
+        year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
+            sales_year)
+        year_filter = Selling.objects.all().values('year').distinct()
+        year_list = [int(value['year']) for value in year_filter]
         context.update({
             'article_list': Articles.objects.filter(
-                designer=self.kwargs['designer']).values(),
+                designer=self.kwargs['pk']).values(),
             'page_name': f"Продажи артикулов дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
-            'current_year': current_year,
+            'sales_year': sales_year,
+            'year_list': year_list,
             'year_sales_dict': year_sales_dict,
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id
 
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        sales_year = datetime.now().strftime('%Y')
+        months = Selling.objects.filter(
+            year=sales_year).values('month').distinct()
+        year_filter = Selling.objects.all().values('year').distinct()
+        year_list = [int(value['year']) for value in year_filter]
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+        designer_id = int(self.kwargs['pk'])
+        if request.POST:
+            select_year = request.POST.get("year_select")
+            user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+            if select_year:
+                months = Selling.objects.filter(
+                    year=select_year).values('month').distinct()
+                sales_year = select_year
+                year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
+                    sales_year)
+
+        # context = self.get_context_data()
+        month_list = [int(value['month']) for value in months]
+        context = {
+            'article_list': Articles.objects.filter(
+                designer=self.kwargs['pk']).values(),
+            'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
+            'month_list': sorted(month_list),
+            'sales_year': sales_year,
+            'year_list': year_list,
+            'year_sales_dict': year_sales_dict,
+            'main_sales_dict': main_sales_dict,
+            'designer_id': designer_id,
+            # Другие необходимые данные
+        }
+        return self.render_to_response(context)
 
     # def get_queryset(self):
     #     return Selling.objects.filter(

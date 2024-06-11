@@ -48,8 +48,8 @@
             <tr>
                 <th rowspan="3">Ночник</th>
                 <th rowspan="3">С правами</th>
-                <th rowspan="2" colspan="2">Продажи за {{ current_year }} год, шт</th>
-                <th colspan="{{ month_list|length|multiplicity:2 }}">{{ current_year }} год</th>
+                <th rowspan="2" colspan="2">Продажи за {{ sales_year }} год, шт</th>
+                <th colspan="{{ month_list|length|multiplicity:2 }}">{{ sales_year }} год</th>
             </tr>
             <tr>
                 {% for month in month_list %}
@@ -171,6 +171,14 @@
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                 .forEach(tr => table.appendChild(tr) );
         })));
+        // ========== Обрабатывает выбор года из выпадающего списка ========= //
+        document.addEventListener('DOMContentLoaded', function() {
+            var mySelect = document.querySelector('.mySelect_year');
+    
+            mySelect.addEventListener('change', function() {
+                document.getElementById('right-form').submit();
+            });
+        });
     </script>
         
 {% endblock %}

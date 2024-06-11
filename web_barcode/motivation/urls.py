@@ -11,11 +11,11 @@ urlpatterns = [
          name='motivation_article_designers'),
     path('motivation_designers_rewards', views.designers_rewards,
          name='motivation_designers_rewards'),
-    path('motivation_designers_sale/<str:designer>',
+    path('motivation_designers_sale/<int:pk>',
          views.MotivationDesignersSaleDetailView.as_view(),
          name='motivation_designers_sale_detail'
          ),
-    path('motivation_designers_reward/<str:designer>',
+    path('motivation_designers_reward/<int:pk>',
          views.MotivationDesignersRewardDetailView.as_view(),
          name='motivation_designers_rewards_detail'
          ),
