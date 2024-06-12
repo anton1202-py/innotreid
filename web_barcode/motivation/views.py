@@ -621,7 +621,6 @@ class MotivationDesignersSaleDetailView(DetailView):
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
             'year_sales': year_sales,
-            # Другие необходимые данные
         }
         return self.render_to_response(context)
 

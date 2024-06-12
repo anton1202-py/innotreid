@@ -370,12 +370,13 @@ def view_statistic_adv_campaign(header, campaign):
 
     if DailyCampaignParameters.objects.filter(
             campaign__ur_lico__ur_lice_name=ur_lico,
-            campaign__campaign_number=str(campaign),
-            statistic_date__icontains=statistic_date).exists():
-        statistic_obj = DailyCampaignParameters.objects.get(
+            campaign__campaign_number=str(campaign)
+    ).exists():
+        statistic_obj_raw = DailyCampaignParameters.objects.filter(
             campaign__ur_lico__ur_lice_name=ur_lico,
-            campaign__campaign_number=campaign,
-            statistic_date__icontains=statistic_date)
+            campaign__campaign_number=campaign
+        ).order_by('-id')
+        statistic_obj = statistic_obj_raw.first()
         return statistic_obj
     else:
         return None
@@ -415,7 +416,8 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
         view_statistic = view_statistic_adv_campaign(header, campaign)
         if view_statistic:
             message = (f"Пополнил {campaign}: {view_statistic.campaign.campaign_name}. Продаж {budget} руб. Показов: {view_statistic.views}. Пополнил на {campaign_budget}руб ({koef}%)"
-                       f"Итого бюджет: {current_budget}.")
+                       f"Итого бюджет: {current_budget}."
+                       f"Дата статистики: {view_statistic.statistic_date}")
         else:
             message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
                        f"Итого бюджет: {current_budget}.")
@@ -484,9 +486,11 @@ def replenish_campaign_budget(campaign, budget, header):
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
-        message = f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+        message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+                   f'Дата статистики: {view_statistic.statistic_date}')
     else:
-        message = f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+        message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+                   f'Дата статистики: {view_statistic.statistic_date}')
     return message
 
 
