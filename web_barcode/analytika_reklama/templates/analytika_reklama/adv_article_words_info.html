@@ -1,0 +1,91 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+
+        
+        {% if import_data %}
+            <script>
+                alert("{{ import_data }}");
+            </script>
+        {% endif %}
+        <table id="table" style="overflow-x: scroll;">
+            <thead>
+                <tr>
+                    <th>Артикул</th>
+                    <th>Кол-во ключей</th>
+                    <th>Кол-во минус фраз</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article, data in article_key_words_info.items %}
+                <tr>
+                    <td><a href="{% url 'adv_article_clusters'  article.id %}">{{ article.common_article }}</a></td>
+                    <td>{{ data|get_item:cluster_count}}</td>
+                    {% if data|get_item:excluded_count %}
+                        <td>{{ data|get_item:excluded_count}}</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // ========== Показывает отфильтрованную по артикулам таблицу ========= //
+        $(document).ready(function() {
+            $('#common_article_id').on('input', function() {
+                var search_term = $(this).val();
+                $.ajax({
+                    url: '',
+                    data: {'search_term': search_term},
+                    success: function(data) {
+                        $('#table tbody').empty();
+                        if (data.length > 0) {
+                            $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
+                            data.forEach(function(article) {
+                                var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
+                                if (article.designer_article) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
+                                if (article.copy_right) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td></tr>';
+                                $('#table tbody').append(newRow);
+                            });
+                        } else {
+                            $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+            
+        // do the work...
+        document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+            const table = th.closest('table');
+            Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                .forEach(tr => table.appendChild(tr) );
+        })));
+       
+    </script>
+        
+{% endblock %}

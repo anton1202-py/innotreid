@@ -137,6 +137,7 @@ def add_adv_data_to_db_about_all_campaigns(ur_lico: str, campaign_data_list: lis
                 finish_date=finish_date).save()
 
 
+@sender_error_to_tg
 def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     """
     Записывает информацию в базу данных о всех входящих кампаний.
@@ -144,7 +145,6 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     ur_lico - юр. лицо
     campaign_data_list - данные для рекламных кампаний ur_lico юр. лица (макс 50 кампаний)
     """
-    print(ur_lico, campaign_data_list)
     for data in campaign_data_list:
         campaign_data = data['advertId']
         campaign = CommonCampaignDescription.objects.get(
@@ -171,9 +171,9 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
             campaign_params_obj.orders += orders
             campaign_params_obj.shks += shks
             campaign_params_obj.sum_price += sum_price
-
             campaign_params_obj.ctr = round(
                 (campaign_params_obj.clicks/campaign_params_obj.views)*100, 2)
+
             if campaign_params_obj.clicks != 0:
                 campaign_params_obj.cpc = round(
                     campaign_params_obj.summ/campaign_params_obj.clicks, 2)
@@ -182,7 +182,6 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
             else:
                 campaign_params_obj.cpc = 0
                 campaign_params_obj.cr = 0
-
             campaign_params_obj.save()
 
         else:
@@ -213,9 +212,9 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
                 cpc=cpc,
                 cr=cr
             ).save()
-            print('Сохранил в DailyCampaignParameters')
 
 
+@sender_error_to_tg
 def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
     """
     Сохраняет статистику кластера для кампании.
@@ -256,9 +255,9 @@ def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
                         MainCampaignClustersKeywords(
                             cluster=cluster_obj,
                             keywords=incoming_keywords).save()
-        print('Сохранил кластер')
 
 
+@sender_error_to_tg
 def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
     """
     Сохраняет статистику ключевых слов для кампаний поиска
@@ -300,60 +299,3 @@ def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
                     campaign=campaign_obj, cluster=str(keyword['keyword']))
                 current_cluster_obj.count = keyword['count']
                 current_cluster_obj.save()
-        print('Сохранил кластер')
-
-
-def articles_for_keywords():
-    """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
-
-    # Смотрим РК в которых только один артикул
-    campaign_with_one_article = MainCampaignClusters.objects.filter(
-        Q(cluster__isnull=False) & Q(campaign__articles_amount=1))
-
-    for cluster_obj in campaign_with_one_article:
-        articles_name = 0
-        if type(cluster_obj.campaign.articles_name) == int:
-            articles_name = cluster_obj.campaign.articles_name
-        elif (type(cluster_obj.campaign.articles_name)) == list:
-            articles_name = cluster_obj.campaign.articles_name[0]
-        if Articles.objects.filter(
-            company=cluster_obj.campaign.ur_lico.ur_lice_name,
-            wb_nomenclature=articles_name
-        ).exists():
-            article_obj = Articles.objects.get(
-                company=cluster_obj.campaign.ur_lico.ur_lice_name,
-                wb_nomenclature=articles_name
-            )
-            if not MainArticleKeyWords.objects.filter(
-                    article=article_obj,
-                    cluster=cluster_obj.cluster).exists():
-                MainArticleKeyWords(
-                    article=article_obj,
-                    cluster=cluster_obj.cluster,
-                    views=cluster_obj.count).save()
-
-
-def articles_excluded():
-    """Определяем слова исключения для артикула"""
-    # Смотрим РК в которых только один артикул
-    campaign_with_one_article = MainCampaignExcluded.objects.filter(
-        Q(excluded__isnull=False) & Q(campaign__articles_amount=1))
-
-    for excluded_obj in campaign_with_one_article:
-
-        articles_name = excluded_obj.campaign.articles_name
-        if Articles.objects.filter(
-            company=excluded_obj.campaign.ur_lico.ur_lice_name,
-            wb_nomenclature=articles_name
-        ).exists():
-            article_obj = Articles.objects.get(
-                company=excluded_obj.campaign.ur_lico.ur_lice_name,
-                wb_nomenclature=articles_name
-            )
-            if not MainArticleExcluded.objects.filter(
-                    article=article_obj,
-                    excluded=excluded_obj.excluded).exists():
-                MainArticleExcluded(
-                    article=article_obj,
-                    excluded=excluded_obj.excluded
-                ).save()

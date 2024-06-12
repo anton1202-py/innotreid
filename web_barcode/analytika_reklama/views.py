@@ -1,15 +1,17 @@
 from analytika_reklama.models import (CommonCampaignDescription,
                                       DailyCampaignParameters,
+                                      MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
                                       MainCampaignParameters)
 from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
-from analytika_reklama.wb_supplyment import articles_for_keywords
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.shortcuts import render
 from django.views.generic import ListView
+from price_system.models import Articles
 from reklama.models import UrLico
 
 from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
@@ -140,7 +142,58 @@ class CampaignDailyStatisticView(ListView):
         return context
 
     def get_queryset(self):
-        print(DailyCampaignParameters.objects.filter(
-            campaign=self.kwargs['id']))
         return DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id'])
+
+
+@login_required
+def articles_words_main_info(request):
+    """Отображает общую статистику наличия ключевых и минус фраз у артикула"""
+    page_name = 'Наличие ключевых фраз артикула'
+    article_key_words_info = {}
+    common_keywords_info = MainArticleKeyWords.objects.values(
+        'article').annotate(cluster_count=Count('cluster')).order_by('-cluster_count')
+
+    common_excludes_info = MainArticleExcluded.objects.values(
+        'article').annotate(excluded_count=Count('excluded'))
+    for data in common_keywords_info:
+        article_key_words_info[Articles.objects.get(id=data['article'])] = {
+            'cluster_count': data['cluster_count']}
+    for data in common_excludes_info:
+        article_key_words_info[Articles.objects.get(id=data['article'])
+                               ]['excluded_count'] = data['excluded_count']
+    context = {
+        'page_name': page_name,
+        'article_key_words_info': article_key_words_info,
+        'excluded_count': 'excluded_count',
+        'cluster_count': 'cluster_count'
+    }
+    return render(request, 'analytika_reklama/adv_article_words_info.html', context)
+
+
+class ArticleClustersView(ListView):
+    model = MainArticleKeyWords
+    template_name = 'analytika_reklama/article_clusters.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        self.ur_lico = kwargs.pop('ur_lico', None)
+        super(ArticleClustersView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ArticleClustersView,
+                        self).get_context_data(**kwargs)
+
+        cluster_data = MainArticleKeyWords.objects.filter(
+            article=self.kwargs['id'])
+        article_description = MainArticleKeyWords.objects.filter(
+            article=self.kwargs['id'])[0].article
+        context.update({
+            'clusters_data': cluster_data,
+            'page_name': f"Кластеры артикула {article_description.common_article}: {article_description}",
+        })
+        return context
+
+    def get_queryset(self):
+        return MainArticleKeyWords.objects.filter(
+            article=self.kwargs['id'])

@@ -1,7 +1,10 @@
 import math
 from datetime import datetime, timedelta
 
-from analytika_reklama.models import CommonCampaignDescription
+from analytika_reklama.models import (CommonCampaignDescription,
+                                      MainArticleExcluded, MainArticleKeyWords,
+                                      MainCampaignClusters,
+                                      MainCampaignExcluded)
 from analytika_reklama.wb_supplyment import (
     add_adv_data_to_db_about_all_campaigns, add_adv_statistic_to_db,
     save_main_clusters_statistic_for_campaign,
@@ -11,6 +14,8 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_statistic_info,
                                      statistic_search_campaign_keywords)
 from celery_tasks.celery import app
+from django.db.models import Q
+from price_system.models import Articles
 from reklama.models import UrLico
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
@@ -124,3 +129,60 @@ def get_searchcampaign_keywords_statistic():
                 # Добавляем статистику по кластерам к кампании
                 save_main_keywords_searchcampaign_statistic(
                     campaign_data, keywords_data)
+
+
+@app.task
+def keyword_for_articles():
+    """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
+
+    campaign_with_one_article = MainCampaignClusters.objects.filter(
+        Q(cluster__isnull=False) & Q(campaign__articles_amount=1))
+
+    for cluster_obj in campaign_with_one_article:
+        articles_name = 0
+        if type(cluster_obj.campaign.articles_name) == int:
+            articles_name = cluster_obj.campaign.articles_name
+        elif (type(cluster_obj.campaign.articles_name)) == list:
+            articles_name = cluster_obj.campaign.articles_name[0]
+        if Articles.objects.filter(
+            company=cluster_obj.campaign.ur_lico.ur_lice_name,
+            wb_nomenclature=articles_name
+        ).exists():
+            article_obj = Articles.objects.get(
+                company=cluster_obj.campaign.ur_lico.ur_lice_name,
+                wb_nomenclature=articles_name
+            )
+            if not MainArticleKeyWords.objects.filter(
+                    article=article_obj,
+                    cluster=cluster_obj.cluster).exists():
+                MainArticleKeyWords(
+                    article=article_obj,
+                    cluster=cluster_obj.cluster,
+                    views=cluster_obj.count).save()
+
+
+@app.task
+def articles_excluded():
+    """Определяем слова исключения для артикула"""
+
+    campaign_with_one_article = MainCampaignExcluded.objects.filter(
+        Q(excluded__isnull=False) & Q(campaign__articles_amount=1))
+
+    for excluded_obj in campaign_with_one_article:
+
+        articles_name = excluded_obj.campaign.articles_name
+        if Articles.objects.filter(
+            company=excluded_obj.campaign.ur_lico.ur_lice_name,
+            wb_nomenclature=articles_name
+        ).exists():
+            article_obj = Articles.objects.get(
+                company=excluded_obj.campaign.ur_lico.ur_lice_name,
+                wb_nomenclature=articles_name
+            )
+            if not MainArticleExcluded.objects.filter(
+                    article=article_obj,
+                    excluded=excluded_obj.excluded).exists():
+                MainArticleExcluded(
+                    article=article_obj,
+                    excluded=excluded_obj.excluded
+                ).save()

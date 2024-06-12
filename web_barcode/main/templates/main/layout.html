@@ -300,6 +300,13 @@
                                     <h3>Статистика РК WB</h3>
                                 </a>
                             </li>
+                            {% url 'adv_article_words_info' as url_adv_statistic %}
+                            <li>
+                                <a href="{{ url_adv_statistic }}" {% if request.path == url_adv_statistic %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Слова артикулов</h3>
+                                </a>
+                            </li>
                             
                         </ul>
                     </li>

@@ -347,18 +347,6 @@ def article_type(request):
             article_filter = filter_data.get("common_article")
             article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
                 'common_article', 'company', 'designer_article', 'copy_right')
-
-        # ========== ВРЕМЕННЫЙ КОД ДЛЯ ЗАГРУЗКИ ПРОДАЖ ЗА 2023 ========== #
-        if 'sales_input' in request.FILES:
-
-            import_data = import_sales_2023(
-                request.FILES['sales_input'], ur_lico)
-            if type(import_data) == str:
-                print('Ошибочка')
-            else:
-                return redirect('motivation_article_type')
-        # ========= КОНЕЦ ВРЕМЕННОГО КОДА ========= #
-
     context = {
         'page_name': page_name,
         'article_list': article_list,

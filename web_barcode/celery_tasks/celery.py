@@ -95,6 +95,14 @@ app.conf.beat_schedule = {
         "task": "analytika_reklama.periodic_tasks.get_searchcampaign_keywords_statistic",
         "schedule": crontab(hour=18, minute=27)
     },
+    "analytika_reklama_keywords_articles": {
+        "task": "analytika_reklama.periodic_tasks.keyword_for_articles",
+        "schedule": crontab(hour=18, minute=29)
+    },
+    "analytika_reklama_articles_excluded": {
+        "task": "analytika_reklama.periodic_tasks.articles_excluded",
+        "schedule": crontab(hour=18, minute=31)
+    },
     # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
 
 
