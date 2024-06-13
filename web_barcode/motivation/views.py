@@ -318,7 +318,7 @@ def article_type(request):
     if 'filter_data' in request.session:
         ur_lico = request.session['filter_data']
     article_list = Articles.objects.filter(company=ur_lico).order_by('common_article').values(
-        'common_article', 'company', 'designer_article', 'copy_right')
+        'common_article', 'name', 'company', 'designer_article', 'copy_right')
     import_data = ''
     if request.GET:
         return filter_get_request(request, ur_lico)
@@ -328,7 +328,7 @@ def article_type(request):
         if filter_company:
             article_list = Articles.objects.filter(
                 company=filter_company).order_by('common_article').values(
-                'common_article', 'company', 'designer_article', 'copy_right')
+                'common_article', 'name', 'company', 'designer_article', 'copy_right')
             request.session['filter_data'] = request.POST.get('filter_data')
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
@@ -343,7 +343,7 @@ def article_type(request):
             filter_data = request.POST
             article_filter = filter_data.get("common_article")
             article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
-                'common_article', 'company', 'designer_article', 'copy_right')
+                'common_article', 'name', 'company', 'designer_article', 'copy_right')
     context = {
         'page_name': page_name,
         'article_list': article_list,
