@@ -16,6 +16,7 @@ app = Celery('celery_tasks',
                       'analytika_reklama.periodic_tasks',
                       'database.periodic_tasks',
                       'ozon_system.tasks',
+                      'motivation.google_sheet_report',
                       'fbs_mode.tasks',
                       'price_system.periodical_tasks',
                       'reklama.periodic_tasks',
@@ -144,6 +145,14 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.google_sheet_tasks.google_sheet",
         "schedule": crontab(hour=19, minute=0, day_of_week=1)
     },
+
+    # =========== ЗАДАЧИ РАЗДЕЛА МОТИВАЦИЯ ========== #
+    "designer_google_sheet_articles": {
+        "task": "motivation.google_sheet_report.designer_google_sheet",
+        "schedule": crontab(hour=20, minute=50)
+    },
+    # =========== КОНЕЦ РАЗДЕЛА МОТИВАЦИЯ ========== #
+
     "ozon_balance_task": {
         "task": "celery_tasks.ozon_tasks.fbs_balance_maker_for_all_company",
         "schedule": crontab(hour=5, minute=0)

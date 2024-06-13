@@ -270,6 +270,26 @@
                 }
             });
         });
+
+        // ========= Фотография при наведении на артикул ========== //
+        $(document).ready(function(){
+            $('#table tbody').on('mouseover', 'td:first-child', function(){
+                var common_article = $(this).text();
+
+                $.ajax({
+                    url: 'https://api.example.com/getPhoto?common_article=' + common_article,
+                    type: 'GET',
+                    success: function(data){
+                        // Обработка успешного ответа от API
+                        var photoUrl = data.photoUrl;
+                        // Показать фотографию в модальном окне или другом способе
+                    },
+                    error: function(){
+                        // Обработка ошибки
+                    }
+                });
+            });
+        });
     </script>
         
 {% endblock %}

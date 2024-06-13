@@ -48,6 +48,12 @@ class Articles(models.Model):
         blank=True,
         null=True,
     )
+    wb_photo_address = models.CharField(
+        verbose_name='WB адрес фото',
+        max_length=300,
+        blank=True,
+        null=True,
+    )
     ozon_seller_article = models.CharField(
         verbose_name='OZON арт пост',
         max_length=50,
