@@ -874,6 +874,11 @@ table tr:hover {
 	background: var(--color-table-highliter);
 }
 
+#table {
+    overflow-x: scroll; 
+    display: block; 
+    width: 100%;
+}
 .first {
     font-size: 1em;
     font-weight: bold;

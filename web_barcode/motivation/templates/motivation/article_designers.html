@@ -56,9 +56,10 @@
                 </div>
             </form>
         </div>
-        <table id="table" style="overflow-x: scroll; width: 100%;">
+        <table id="table">
             <tr>
                 <th rowspan="2">Ночник</th>
+                <th rowspan="2">Название</th>
                 <th rowspan="2">Автор</th>
                 <th rowspan="2">С правами</th>
                 <th rowspan="2">Продажи за год, шт</th>
@@ -73,6 +74,7 @@
             {% for el in article_list %}
             <tr>
                 <td>{{ el.common_article }}</td>
+                <td>{{ el.name }}</td>
                 <td>
                     <select class="mySelect" data-row="{{ el.common_article }}">
                         {% if el.designer != None %}
@@ -140,64 +142,9 @@
         });
 
 
-        document.getElementById('articles_without_designer').addEventListener('change', function() {
-            let table_n = document.getElementById("table");
-            let rows_n = table_n.getElementsByTagName("tr");
-            if (document.getElementById('articles_without_designer').checked) {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelector('select');
-                    if (input) {
-                        let an_input = input.options[0]
-                        if (an_input){
-                            if(an_input.innerText){
-                                rows_n[i].style.display = 'none';
-                            } else {
-                                rows_n[i].style.display = '';
-                            }
-                        };
-                    }}
-            } else {
-                for (let i = 0; i < rows_n.length; i++) {
-                    let input = rows_n[i].querySelectorAll('select');
-                    input.forEach((input) => {
-                        rows_n[i].style.display = '';
-                    })
-                }
-            }
-        });
+        
 
-        // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
-        document.querySelectorAll('.copyrightcheckbox').forEach(select => {
-            select.addEventListener('change', function() {
-                var selectedSurname = this.value;
-                console.log(selectedSurname)
-                var rowNumber = this.dataset.row;
-                console.log(rowNumber)
-
-                var formData = new FormData();
-                formData.append('copyright_article_type', selectedSurname);
-                formData.append('article', rowNumber);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('update_article_copyright_boolean_field/', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-
+       
         // ========== Обрабатывает выбор года из выпадающего списка ========= //
         document.addEventListener('DOMContentLoaded', function() {
             var mySelect = document.querySelector('.mySelect_year');

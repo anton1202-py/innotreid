@@ -25,6 +25,12 @@ class Articles(models.Model):
         blank=True,
         null=True
     )
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=300,
+        blank=True,
+        null=True
+    )
     wb_seller_article = models.CharField(
         verbose_name='WB арт пост',
         max_length=50,

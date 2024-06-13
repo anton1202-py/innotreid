@@ -54,13 +54,11 @@ def wb_ip_article_compare():
         if data["subjectName"] == "Ночники":
             article = data["vendorCode"].split('-')[0]
             article_dict[article.capitalize()] = [data["vendorCode"],
-                                                  data["sizes"][0]["skus"][0], data["nmID"]]
+                                                  data["sizes"][0]["skus"][0], data["nmID"], data["title"]]
         else:
             article_dict[data["vendorCode"]] = [data["vendorCode"],
-                                                data["sizes"][0]["skus"][0], data["nmID"]]
-        if 'V296' in data["vendorCode"]:
-            print(data["vendorCode"], data["sizes"]
-                  [0]["skus"][0], data["nmID"])
+                                                data["sizes"][0]["skus"][0], data["nmID"], data["title"]]
+
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
@@ -75,7 +73,7 @@ def wb_ooo_article_compare(ur_lico):
         article = data["vendorCode"]
 
         article_dict[article.capitalize()] = [data["vendorCode"],
-                                              data["sizes"][0]["skus"][0], data["nmID"]]
+                                              data["sizes"][0]["skus"][0], data["nmID"], data["title"]]
     sorted_article_dict = dict(sorted(article_dict.items()))
     return sorted_article_dict
 
@@ -204,6 +202,7 @@ def wb_matching_articles(ur_lico):
             if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or wb_article.wb_nomenclature != wb_data[2]:
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
+                wb_article.name = wb_data[3]
                 wb_article.save()
                 message = (f'{ur_lico} проверьте артикул {common_article} на вб вручную. \
                            Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. \
@@ -213,12 +212,14 @@ def wb_matching_articles(ur_lico):
             else:
                 wb_article.status = 'Сопоставлено'
                 wb_article.company = ur_lico
+                wb_article.name = wb_data[3]
                 wb_article.save()
         else:
             wb = Articles(
                 common_article=common_article,
                 status='Сопоставлено',
                 company=ur_lico,
+                name=wb_data[3],
                 wb_seller_article=wb_data[0],
                 wb_barcode=wb_data[1],
                 wb_nomenclature=wb_data[2],

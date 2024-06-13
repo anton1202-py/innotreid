@@ -64,10 +64,11 @@
                 alert("{{ import_data }}");
             </script>
         {% endif %}
-        <table id="table" style="overflow-x: scroll; width: 100%;">
+        <table id="table">
             <thead>
                 <tr>
                     <th>Ночник</th>
+                    <th>Название</th>
                     <th>Дизайнерский</th>
                     <th>Не дизайнерский</th>
                     <th>С правами</th>
@@ -77,6 +78,7 @@
                 {% for el in article_list %}
                 <tr>
                     <td>{{ el.common_article }}</td>
+                    <td>{{ el.name }}</td>
                     <td>
                         <input class="designcheckbox" data-row="{{ el.common_article }}" type="checkbox" name="designer_checkbox" id="designer_checkbox_id" value="{{el.designer_article}}" {% if el.designer_article %} checked {% endif %}>
                     </td>

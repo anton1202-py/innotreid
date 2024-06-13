@@ -61,6 +61,7 @@
                     <th>Артикул</th>
                     <th>Статус</th>
                     <th>Компания</th>
+                    <th>Название</th>
                     <th>Себестоимость</th>
 
                     <th>WB арт пост</th>
@@ -83,6 +84,7 @@
                     <td><a href="{% url 'article_compare_detail' el.company el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
+                    <td>{{ el.name }}</td>
                     <td>{{ el.cost_price }}</td>
 
                     <td>{{ el.wb_seller_article }}</td>

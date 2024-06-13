@@ -20,7 +20,6 @@ def get_main_sales_data(year):
 
     sale_data = Selling.objects.filter(year=year).values(
         'lighter', 'month', 'quantity', 'summ')
-    print('year get_main_sales_data', year)
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
     # Словарь с продажами артикула за текущий год
@@ -338,9 +337,7 @@ def article_type(request):
             elif 'import_file' in request.FILES:
                 import_data = motivation_article_type_excel_import(
                     request.FILES['import_file'], ur_lico)
-                if type(import_data) == str:
-                    print('Ошибочка')
-                else:
+                if type(import_data) != str:
                     return redirect('motivation_article_type')
         if 'common_article' in request.POST:
             filter_data = request.POST
@@ -557,7 +554,6 @@ class MotivationDesignersSaleDetailView(DetailView):
 
         year_article_sales_dict = get_article_sales_data(sales_year)
         year_sales = round(year_article_sales_dict[self.kwargs['pk']])
-        print(year_article_sales_dict)
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         context.update({
