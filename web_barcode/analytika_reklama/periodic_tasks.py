@@ -169,8 +169,11 @@ def articles_excluded():
         Q(excluded__isnull=False) & Q(campaign__articles_amount=1))
 
     for excluded_obj in campaign_with_one_article:
-
-        articles_name = excluded_obj.campaign.articles_name
+        articles_name = 0
+        if type(excluded_obj.campaign.articles_name) == int:
+            articles_name = excluded_obj.campaign.articles_name
+        elif (type(excluded_obj.campaign.articles_name)) == list:
+            articles_name = excluded_obj.campaign.articles_name[0]
         if Articles.objects.filter(
             company=excluded_obj.campaign.ur_lico.ur_lice_name,
             wb_nomenclature=articles_name
