@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'web_barcode.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME_S'),
-        'USER': os.getenv('POSTGRES_USER_S'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD_S'),
-        'HOST': os.getenv('DB_HOST_S'),
-        'PORT': os.getenv('DB_PORT_S')
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
 AUTH_USER_MODEL = 'users.InnotreidUser'

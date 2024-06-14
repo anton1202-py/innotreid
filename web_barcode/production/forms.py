@@ -12,17 +12,17 @@ class TaskCreatorForm(ModelForm):
         model = TaskCreator
         fields = ['task_name', 'market_name',  'remainder',
                   'stickers', 'printing', 'printed', 'shipment_status']
-        market_name = forms.ChoiceField(choices=CodingMarketplaces.objects.all())
-    
+        # market_name = forms.ChoiceField(choices=CodingMarketplaces.objects.all())
+
         printing = forms.BooleanField()
         printed = forms.BooleanField()
         shipment_status = forms.BooleanField()
-        widgets = {            
+        widgets = {
             'task_name': TextInput(attrs={
                 'class': 'form-control',
             }),
         }
-    
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(TaskCreatorForm, self).__init__(*args, **kwargs)
