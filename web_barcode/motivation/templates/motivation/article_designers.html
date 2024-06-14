@@ -153,6 +153,33 @@
                 document.getElementById('right-form').submit();
             });
         });
+
+        document.getElementById('articles_without_designer').addEventListener('change', function() {
+            let table_n = document.getElementById("table");
+            let rows_n = table_n.getElementsByTagName("tr");
+            if (document.getElementById('articles_without_designer').checked) {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelector('select');
+                    if (input) {
+                        let an_input = input.options[0]
+                        if (an_input){
+                            if(an_input.innerText){
+                                rows_n[i].style.display = 'none';
+                            } else {
+                                rows_n[i].style.display = '';
+                            }
+                        };
+                    }}
+            } else {
+                for (let i = 0; i < rows_n.length; i++) {
+                    let input = rows_n[i].querySelectorAll('select');
+                    input.forEach((input) => {
+                        rows_n[i].style.display = '';
+                    })
+                }
+            }
+        });
+
     </script>
         
 {% endblock %}
