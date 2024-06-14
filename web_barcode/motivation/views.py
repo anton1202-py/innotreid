@@ -7,8 +7,9 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
-from motivation.google_sheet_report import (article_data_for_sheet,
-                                            designer_google_sheet)
+from motivation.google_sheet_report import (
+    article_data_for_sheet, article_last_month_sales_google_sheet,
+    designer_google_sheet, sale_article_per_month)
 from motivation.models import Selling
 from motivation.supplyment import (import_sales_2023,
                                    motivation_article_type_excel_file_export,
@@ -315,7 +316,6 @@ def article_type(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Тип светильника'
-    designer_google_sheet()
     ur_lico = 'ООО Иннотрейд'
     if 'filter_data' in request.session:
         ur_lico = request.session['filter_data']

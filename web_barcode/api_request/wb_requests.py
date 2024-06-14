@@ -211,3 +211,20 @@ def get_budget_adv_campaign(header, campaign_number):
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
     return response
+
+
+# =========== РЕЙТИНГ И ОТЗЫВЫ ========== #
+@api_retry_decorator
+def average_rating_feedbacks_amount(header, wb_nmid):
+    """
+    Метод позволяет получить среднюю оценку товара по его артикулу WB.
+    Допускается 1 запрос в секунду.
+
+    Входящие переменные:
+    wb_nmid - WB номенклатура артикула
+    header - хедер для запроса
+    """
+    time.sleep(1)
+    url = f'https://feedbacks-api.wb.ru/api/v1/feedbacks/products/rating/nmid?nmId={wb_nmid}'
+    response = requests.request("GET", url, headers=header)
+    return response

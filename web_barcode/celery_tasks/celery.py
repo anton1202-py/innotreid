@@ -148,8 +148,8 @@ app.conf.beat_schedule = {
 
     # =========== ЗАДАЧИ РАЗДЕЛА МОТИВАЦИЯ ========== #
     "designer_google_sheet_articles": {
-        "task": "motivation.google_sheet_report.designer_google_sheet",
-        "schedule": crontab(hour=20, minute=50)
+        "task": "motivation.google_sheet_report.get_data_designer_articles_to_google_sheet",
+        "schedule": crontab(hour=10, minute=45)
     },
     # =========== КОНЕЦ РАЗДЕЛА МОТИВАЦИЯ ========== #
 

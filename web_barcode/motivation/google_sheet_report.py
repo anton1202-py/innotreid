@@ -4,7 +4,7 @@ import json
 import os
 import time
 from contextlib import closing
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import dropbox
 import gspread
@@ -14,8 +14,10 @@ import telegram
 from api_request.wb_requests import wb_article_data_from_api
 from celery_tasks.celery import app
 from celery_tasks.helpers_func import error_message
+from django.db.models import Q, Sum
 from dotenv import load_dotenv
 from gspread_formatting import *
+from motivation.models import Selling
 from oauth2client.service_account import ServiceAccountCredentials
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
@@ -26,19 +28,40 @@ load_dotenv(dotenv_path)
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
-REFRESH_TOKEN_DB = os.getenv('REFRESH_TOKEN_DB')
-APP_KEY_DB = os.getenv('APP_KEY_DB')
-APP_SECRET_DB = os.getenv('APP_SECRET_DB')
-API_KEY_WB = os.getenv('API_KEY_WB_IP')
-MATCHING_DB_FILE = '/DATABASE/список сопоставления.xlsx'
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 @sender_error_to_tg
-def article_data_for_sheet():
-    """Собирает данные для Google Sheet"""
+def sale_article_per_month():
+    """Собирает данные по продаже артикулов за последние 30 дней"""
+    # Получаем текущую дату
+    current_date = datetime.today()
+    current_year = current_date.year
+    # Вычитаем один месяц из текущей даты
+    previous_month_date = current_date - timedelta(days=current_date.day)
+    previous_month_number = previous_month_date.month
+    # Получаем отсортированные данные о продажах за предыдущий месяц
+    sales_last_month = Selling.objects.filter(Q(month=previous_month_number), Q(lighter__designer_article=True), year=current_year) \
+        .values('lighter') \
+        .annotate(total_sales=Sum('quantity')) \
+        .order_by('-total_sales')
 
+    main_sales_data = []
+    for data in sales_last_month:
+
+        article_obj = Articles.objects.get(
+            id=data['lighter'])
+        inner_sales_article_list = ['', article_obj.common_article, article_obj.name,
+                                    f'{article_obj.designer.last_name} {article_obj.designer.first_name}', data['total_sales'], datetime.now().strftime('%d-%m-%Y'), article_obj.wb_photo_address]
+        main_sales_data.append(inner_sales_article_list)
+    return main_sales_data
+    # print(sales_last_month)
+
+
+@sender_error_to_tg
+def article_data_for_sheet():
+    """Собирает данные для Google Sheet по артикулам дизайнеров"""
     main_data = Articles.objects.filter(
         designer_article=True
     )
@@ -59,11 +82,11 @@ def article_data_for_sheet():
     return designers_data
 
 
-@app.task
+@sender_error_to_tg
 def designer_google_sheet():
-    """Заполняет Гугл таблицу"""
+    """Заполняет Гугл таблицу артикулами для каждого дизайнера"""
     try:
-        now_day = datetime.datetime.now().strftime('%d-%m-%Y')
+        now_day = datetime.now().strftime('%d-%m-%Y')
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
                  "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
         creds = ServiceAccountCredentials.from_json_keyfile_name(
@@ -123,3 +146,74 @@ def designer_google_sheet():
         message_text = error_message('google_sheet', designer_google_sheet, e)
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
+
+
+@sender_error_to_tg
+def article_last_month_sales_google_sheet():
+    """
+    Заполняет таблицу по продаже дизайнерских светильников
+    за прошлый месяц. Сортирует по количеству
+    """
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
+                 "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            'celery_tasks/innotreid-2c0a6335afd1.json', scope)
+        client = gspread.authorize(creds)
+        # Open the Google Sheet using its name
+        main_data = sale_article_per_month()
+        sheet = client.open("Ночники дизайнеров")
+        sheet_name = 'Статистика'
+        statistic_sheet = sheet.worksheet(sheet_name)
+
+        current_date = datetime.today()
+
+        previous_month_date = current_date - timedelta(days=current_date.day)
+        previous_month_number = previous_month_date.month
+        previous_month_year = previous_month_date.year
+
+        statistic_sheet.clear()
+        # Добавьте названия столбцов
+        statistic_sheet.update_cell(1, 1, "Фото")
+        statistic_sheet.update_cell(1, 2, "Артикул")
+        statistic_sheet.update_cell(1, 3, "Название")
+        statistic_sheet.update_cell(1, 4, "Дизайнер")
+        statistic_sheet.update_cell(
+            1, 5, f"Продажи за {previous_month_number}.{previous_month_year}")
+        statistic_sheet.update_cell(1, 6, "Дата обновления")
+
+        set_row_height(
+            statistic_sheet, f'2:{len(main_data)+1}', 90)
+        set_column_width(statistic_sheet, 'A', 70)
+        set_column_width(statistic_sheet, 'B', 100)
+        set_column_width(statistic_sheet, 'C', 200)
+        set_column_width(statistic_sheet, 'D', 110)
+        set_column_width(statistic_sheet, 'F', 120)
+
+        counter = 2
+        for row in main_data:
+            time.sleep(3)
+            row_list = row
+            statistic_sheet.append_row(row_list)
+
+            time.sleep(5)
+            try:
+                statistic_sheet.update_cell(
+                    counter, 1, f'=IMAGE(G{counter};1)')
+            except:
+                pass
+            counter += 1
+
+    except Exception as e:
+        # обработка ошибки и отправка сообщения через бота
+        message_text = error_message(
+            'google_sheet', article_last_month_sales_google_sheet, e)
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message_text, parse_mode='HTML')
+
+
+@app.task
+def get_data_designer_articles_to_google_sheet():
+    """Записывает данные по светильникам дизайнеров и продажам в гугл таблицу"""
+    designer_google_sheet()
+    article_last_month_sales_google_sheet()
