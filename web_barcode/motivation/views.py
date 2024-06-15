@@ -11,7 +11,9 @@ from motivation.google_sheet_report import (
     article_data_for_sheet, article_last_month_sales_google_sheet,
     designer_google_sheet, sale_article_per_month)
 from motivation.models import Selling
-from motivation.supplyment import (import_sales_2023,
+from motivation.supplyment import (get_article_draw_authors_sales_data,
+                                   get_draw_authors_year_monthly_reward,
+                                   import_sales_2023,
                                    motivation_article_type_excel_file_export,
                                    motivation_article_type_excel_import)
 from price_system.models import Articles, DesignUser
@@ -428,9 +430,11 @@ def designers_rewards(request):
                 designer_percent[data['designer__id']
                                  ] = data['main_reward_persent']/100
 
-    year_sales_dict, monthly_sales_dict = get_designers_sales_data(
+    year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
         sales_year)
-    year_article_sales_dict = get_article_sales_data(sales_year)
+    print(year_sales_dict)
+    # year_article_sales_dict = get_article_sales_data(sales_year)
+    year_article_sales_dict = get_article_draw_authors_sales_data(sales_year)
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')
 
@@ -441,9 +445,10 @@ def designers_rewards(request):
         select_year = request.POST.get("year_select")
         if select_year:
             sales_year = select_year
-            year_sales_dict, monthly_sales_dict = get_designers_sales_data(
+            year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
                 select_year)
-            year_article_sales_dict = get_article_sales_data(sales_year)
+            year_article_sales_dict = get_article_draw_authors_sales_data(
+                sales_year)
             months = Selling.objects.filter(
                 year=select_year).values('month').distinct()
     month_list = [int(value['month']) for value in months]

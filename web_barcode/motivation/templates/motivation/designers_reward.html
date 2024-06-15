@@ -22,14 +22,20 @@
                 </div>
             </form>
         </div>
-        <table style="overflow-x: scroll; width: 100%;">
+        <table id="table">
             <tr>
                 <th rowspan="2">Дизайнер</th>
-                <th rowspan="2">Продажи за год</th>
-                <th rowspan="2">Вознаграждение за год</th>
+                <th colspan="3">Продажи за год {{ sales_year }}</th>
+                <th colspan="3">Вознаграждение за год {{ sales_year }}</th>
                 <th colspan="{{ month_list|length }}">{{ sales_year }} год</th>
             </tr>
             <tr>
+                <th>Отрисованные</th>
+                <th>Авторские</th>
+                <th>Всего</th>
+                <th>Отрисованные</th>
+                <th>Авторские</th>
+                <th>Всего</th>
                 {% for month in month_list %}
                     <th>{{ month }}</th>
                 {% endfor %}
@@ -38,19 +44,22 @@
             <tr>
                 <td><a href="{% url 'motivation_designers_sale_detail' el.id %}">{{ el.first_name }} {{ el.last_name }}</a></td>
                 {% if year_article_sales_dict|get_item:el.id %}
-                    <td>{{year_article_sales_dict|get_item:el.id}}</td>
+                    <td>{{year_article_sales_dict|get_item:el.id|get_item:"draw"}}</td>
+                    <td>{{year_article_sales_dict|get_item:el.id|get_item:"author"}}</td>
+                    <td>{{year_article_sales_dict|get_item:el.id|get_item:"summ"}}</td>
                 {% else %}
                     <td></td>
+                    <td></td>
+                    <td></td>
                 {% endif %} 
+
                 {% if monthly_sales_dict|get_item:el.id %}
-                    {% if designer_percent|get_item:el.id %}
-                        {% with percent=designer_percent|get_item:el.id  %}
-                            <td>{{year_sales_dict|get_item:el.id|round_number}}</td>
-                        {% endwith %}
-                    {% else %}
-                    <td>{{year_sales_dict|get_item:el.id}}</td>
-                    {% endif %}
+                    <td>{{year_sales_dict|get_item:el.id|get_item:"draw"|round_number}}</td>
+                    <td>{{year_sales_dict|get_item:el.id|get_item:"author"|round_number}}</td>
+                    <td>{{year_sales_dict|get_item:el.id|get_item:"summ"|round_number}}</td>
                 {% else %}
+                    <td></td>
+                    <td></td>
                     <td></td>
                 {% endif %}    
                 {% for month in month_list %}

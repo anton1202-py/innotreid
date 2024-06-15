@@ -212,3 +212,125 @@ def import_sales_2023(xlsx_file, ur_lico):
     #         new_objects.append(article_obj)
     # Articles.objects.bulk_update(
     #     new_objects, ['designer_article', 'copy_right'])
+
+
+def get_article_draw_authors_sales_data(year):
+    """
+    Возвращает информацию по продажам авторских,
+    отрисованных светильников и общие продажи каждого дизайнера
+    """
+    sale_data = Selling.objects.filter(year=year,
+                                       lighter__designer_article=True,
+                                       lighter__designer__isnull=False).values(
+        'lighter', 'month', 'summ',
+        'lighter__designer', 'lighter__designer_article',
+        'lighter__copy_right')
+
+    # Словарь с продажами артикула за текущий год
+    year_draw_author_data = {}
+    for data in sale_data:
+        if data['lighter__designer'] in year_draw_author_data:
+            if data['lighter__copy_right'] == True:
+                if 'author' in year_draw_author_data[data['lighter__designer']]:
+                    year_draw_author_data[data['lighter__designer']
+                                          ]['author'] += int(data['summ'])
+                else:
+                    year_draw_author_data[data['lighter__designer']
+                                          ]['author'] = int(data['summ'])
+            else:
+                if 'draw' in year_draw_author_data[data['lighter__designer']]:
+                    year_draw_author_data[data['lighter__designer']
+                                          ]['draw'] += int(data['summ'])
+                else:
+                    year_draw_author_data[data['lighter__designer']]['draw'] = int(
+                        data['summ'])
+            year_draw_author_data[data['lighter__designer']]['summ'] += int(
+                data['summ'])
+        else:
+
+            if data['lighter__copy_right'] == True:
+                year_draw_author_data[data['lighter__designer']] = {'author': int(
+                    data['summ'])}
+            else:
+                year_draw_author_data[data['lighter__designer']] = {'draw': int(
+                    data['summ'])}
+            year_draw_author_data[data['lighter__designer']]['summ'] = int(
+                data['summ'])
+
+    return year_draw_author_data
+
+
+def get_draw_authors_year_monthly_reward(year):
+    """
+    Возвращает информацию по вознаграждению для авторских и
+    отрисованных светильников за год и за каждый месяц
+    """
+    sale_data = Selling.objects.filter(year=year,
+                                       lighter__designer_article=True,
+                                       lighter__designer__isnull=False).values(
+        'lighter', 'month', 'summ',
+        'lighter__designer', 'lighter__designer_article',
+        'lighter__copy_right')
+    designer_raw_dict = {}
+    designer_persent = DesignUser.objects.all().values(
+        'designer', 'main_reward_persent', 'copyright_reward_persent')
+    for i in designer_persent:
+        if i['copyright_reward_persent']:
+            designer_raw_dict[i['designer']
+                              ] = i['copyright_reward_persent']/100
+        elif not i['copyright_reward_persent'] and i['main_reward_persent']:
+            designer_raw_dict[i['designer']] = i['main_reward_persent']/100
+        else:
+            designer_raw_dict[i['designer']] = 0
+    # Словарь с данными артикула по продажам по месяцам
+    monthly_sales_dict = {}
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    for data in sale_data:
+        designer_obj = DesignUser.objects.filter(
+            designer__id=data['lighter__designer'])[0]
+        main_percent = designer_obj.main_reward_persent/100
+        if designer_obj.copyright_reward_persent:
+            copyright_percent = designer_obj.copyright_reward_persent/100
+        percent = 0
+        if data['lighter__copy_right'] == True:
+            percent = copyright_percent
+        else:
+            percent = main_percent
+        if data['lighter__designer'] in monthly_sales_dict:
+            if data['month'] in monthly_sales_dict[data['lighter__designer']]:
+                monthly_sales_dict[data['lighter__designer']
+                                   ][data['month']] += int(data['summ'])*percent
+            else:
+                monthly_sales_dict[data['lighter__designer']
+                                   ][data['month']] = int(data['summ'])*percent
+        else:
+            monthly_sales_dict[data['lighter__designer']] = {
+                data['month']: int(data['summ'])*percent}
+        if data['lighter__designer'] in year_sales_dict:
+            if data['lighter__copy_right'] == True:
+                if 'author' in year_sales_dict[data['lighter__designer']]:
+                    year_sales_dict[data['lighter__designer']
+                                    ]['author'] += int(data['summ'])*percent
+                else:
+                    year_sales_dict[data['lighter__designer']
+                                    ]['author'] = int(data['summ'])*percent
+            else:
+                if 'draw' in year_sales_dict[data['lighter__designer']]:
+                    year_sales_dict[data['lighter__designer']
+                                    ]['draw'] += int(data['summ'])*percent
+                else:
+                    year_sales_dict[data['lighter__designer']
+                                    ]['draw'] = int(data['summ'])*percent
+            year_sales_dict[data['lighter__designer']
+                            ]['summ'] += int(data['summ'])*percent
+        else:
+            if data['lighter__copy_right'] == True:
+                year_sales_dict[data['lighter__designer']] = {'author': int(
+                    data['summ'])*percent}
+            else:
+                year_sales_dict[data['lighter__designer']] = {'draw': int(
+                    data['summ'])*percent}
+            year_sales_dict[data['lighter__designer']]['summ'] = int(
+                data['summ'])*percent
+    return year_sales_dict, monthly_sales_dict
