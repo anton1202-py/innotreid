@@ -193,69 +193,39 @@
         })));
 
         // ========== ОБРАБАТЫВАЕТ НАЖАТИЕ КНОПКИ СКАЧАТЬ EXCEL ФАЙЛ ========= //
-//         document.getElementById('downloadBtn').addEventListener('click', function() {
-//     var dataToPass = {
-//         yearSalesDict: "{{ year_sales_dict|escapejs }}",
-//         articleList: "{{ article_list|escapejs }}",
-//         mainSalesDict: "{{ main_sales_dict|escapejs }}",
-//         designerId: "{{ designer_id|escapejs }}",
-//         salesYear: "{{ sales_year|escapejs }}",
-//         monthList: "{{ month_list|escapejs }}"
-//     };
+       
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            var url = '../designer_rewards_download_excel/';
+            var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            var formData = new FormData();
+            formData.append('year_sales_dict', "{{ year_sales_dict|escapejs }}");
+            formData.append('article_list', "{{ article_list|escapejs }}");
+            formData.append('main_sales_dict', "{{ main_sales_dict|escapejs }}");
+            formData.append('designer_id', "{{ designer_id|escapejs }}");
+            formData.append('sales_year', "{{ sales_year|escapejs }}");
+            formData.append('month_list', "{{ month_list|escapejs }}");
 
-//     $.ajax({
-//         url: '../designer_rewards_download_excel/', // URL вашего представления Django для скачивания Excel файла
-//         type: 'GET',
-//         data: { data: JSON.stringify(dataToPass) },
-//         success: function(response) {
-//             var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-//             var url = window.URL.createObjectURL(blob);
-//             var a = document.createElement('a');
-//             a.href = url;
-//             // a.download = 'data.xlsx';
-//             // document.body.appendChild(a);
-//             // a.click();
-//             // window.URL.revokeObjectURL(url);
-//         }
-//     });
-// });
+            formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
 
-document.getElementById('downloadBtn').addEventListener('click', function() {
-    var url = '../designer_rewards_download_excel/';
-    var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-    var formData = new FormData();
-    formData.append('year_sales_dict', "{{ year_sales_dict|escapejs }}");
-    formData.append('article_list', "{{ article_list|escapejs }}");
-    formData.append('main_sales_dict', "{{ main_sales_dict|escapejs }}");
-    formData.append('designer_id', "{{ designer_id|escapejs }}");
-    formData.append('sales_year', "{{ sales_year|escapejs }}");
-    formData.append('month_list', "{{ month_list|escapejs }}");
-    
-    formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-    
-    fetch(url, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.blob())
-    .then(blob => {
-        const url = window.URL.createObjectURL(new Blob([blob]));
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'designer_rewards.xlsx'; // Указываем имя файла для скачивания
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-});
-
-
-            
-
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'Вознаграждение дизайнера {{ designer_name }}.xlsx'; // Указываем имя файла для скачивания
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
     </script>
         
 {% endblock %}

@@ -499,6 +499,7 @@ class MotivationDesignersRewardDetailView(DetailView):
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
             'year_reward': year_reward,
+            'designer_name': f"{user_data.last_name} {user_data.first_name}",
         })
         return context
 
@@ -542,6 +543,7 @@ class MotivationDesignersRewardDetailView(DetailView):
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
             'year_reward': year_reward,
+            'designer_name': f"{user_data.last_name} {user_data.first_name}",
         }
         return self.render_to_response(context)
 
@@ -577,6 +579,8 @@ class MotivationDesignersSaleDetailView(DetailView):
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         sales_year = datetime.now().strftime('%Y')
         designer_id = int(self.kwargs['pk'])
+        article_list = list(Articles.objects.filter(
+            designer=self.kwargs['pk']).values())
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
@@ -588,8 +592,7 @@ class MotivationDesignersSaleDetailView(DetailView):
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         context.update({
-            'article_list': Articles.objects.filter(
-                designer=self.kwargs['pk']).values(),
+            'article_list': article_list,
             'page_name': f"Продажи артикулов дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
             'sales_year': sales_year,
@@ -598,6 +601,7 @@ class MotivationDesignersSaleDetailView(DetailView):
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
             'year_sales': year_sales,
+            'designer_name': f"{user_data.last_name} {user_data.first_name}",
 
         })
         return context
@@ -608,6 +612,8 @@ class MotivationDesignersSaleDetailView(DetailView):
             year=sales_year).values('month').distinct()
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
+        article_list = list(Articles.objects.filter(
+            designer=self.kwargs['pk']).values())
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         year_article_sales_dict = get_article_sales_data(sales_year)
         designer_id = int(self.kwargs['pk'])
@@ -626,8 +632,7 @@ class MotivationDesignersSaleDetailView(DetailView):
         month_list = [int(value['month']) for value in months]
         year_sales = round(year_article_sales_dict[self.kwargs['pk']])
         context = {
-            'article_list': Articles.objects.filter(
-                designer=self.kwargs['pk']).values(),
+            'article_list': article_list,
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
             'sales_year': sales_year,
@@ -636,12 +641,9 @@ class MotivationDesignersSaleDetailView(DetailView):
             'main_sales_dict': main_sales_dict,
             'designer_id': designer_id,
             'year_sales': year_sales,
+            'designer_name': f"{user_data.last_name} {user_data.first_name}",
         }
         return self.render_to_response(context)
-
-    # def get_queryset(self):
-    #     return Selling.objects.filter(
-    #         lighter__designer=self.kwargs['designer'])
 
 
 def percent_designers_rewards(request):

@@ -41,6 +41,15 @@
                     <br>
                     <a href="{% url 'motivation_designers_rewards_detail' designer_id %}">Вознаграждение</a>
                 </div>
+
+                <div class="inner-form-data">
+                    <button type="button" id="downloadBtn" name="export">
+                        <span class="material-symbols-outlined">
+                            download
+                        </span>
+                    </button>
+                </div>
+
             </div>
         </div>
         <h2>Итого продаж {{ year_sales }} руб</h2>
@@ -179,6 +188,41 @@
     
             mySelect.addEventListener('change', function() {
                 document.getElementById('right-form').submit();
+            });
+        });
+
+        // ========== ОБРАБАТЫВАЕТ НАЖАТИЕ КНОПКИ СКАЧАТЬ EXCEL ФАЙЛ ========= //
+       
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            var url = '../designer_rewards_download_excel/';
+            var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            var formData = new FormData();
+            formData.append('year_sales_dict', "{{ year_sales_dict|escapejs }}");
+            formData.append('article_list', "{{ article_list|escapejs }}");
+            formData.append('main_sales_dict', "{{ main_sales_dict|escapejs }}");
+            formData.append('designer_id', "{{ designer_id|escapejs }}");
+            formData.append('sales_year', "{{ sales_year|escapejs }}");
+            formData.append('month_list', "{{ month_list|escapejs }}");
+
+            formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'Продажи дизайнера {{ designer_name }}.xlsx'; // Указываем имя файла для скачивания
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
         });
     </script>
