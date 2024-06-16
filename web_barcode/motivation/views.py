@@ -565,7 +565,10 @@ def download_designer_rewards_excel(request):
     sales_year = int(request.POST.get('sales_year'))
     month_list = ast.literal_eval(request.POST.get('month_list'))
     user_data = InnotreidUser.objects.get(id=designer_id)
-
+    for i in article_list:
+        print('************')
+        print(type(i), i)
+        print('************')
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{user_data.last_name}_{user_data.first_name}_rewards.xlsx"'
