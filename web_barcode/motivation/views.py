@@ -478,8 +478,8 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
-        article_list = Articles.objects.filter(
-            designer=self.kwargs['pk']).values()
+        article_list = list(Articles.objects.filter(
+            designer=self.kwargs['pk']).values())
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
             user_data, sales_year)
