@@ -1,3 +1,4 @@
+import ast
 import json
 import math
 import os
@@ -378,13 +379,13 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
         start_name_numb += 2
         ws.cell(row=4, column=start_name_numb-1, value=f'руб')
 
-    for row, (item) in enumerate(article_list, start=5):
+    for row, item in enumerate(article_list, start=5):
         copy_right_file = ' '
         if type(item) != dict:
             print(item)
-        print(dict(item)['copy_right'], type(item['copy_right']))
+
         print('******************')
-        if dict(item)['copy_right'] == True:
+        if ast.literal_eval(item)['copy_right'] == True:
             copy_right_file = 'Да'
         ws.cell(row=row, column=1, value=item['common_article'])
         ws.cell(row=row, column=2, value=item['name'])
