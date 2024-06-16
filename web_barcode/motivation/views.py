@@ -518,7 +518,6 @@ class MotivationDesignersRewardDetailView(DetailView):
 
         if request.POST:
             select_year = request.POST.get("year_select")
-
             if select_year:
                 months = Selling.objects.filter(
                     year=select_year).values('month').distinct()
@@ -527,12 +526,6 @@ class MotivationDesignersRewardDetailView(DetailView):
                     user_data, sales_year)
                 year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
                     sales_year)
-            if 'export' in request.POST:
-                month_list = [int(value['month']) for value in months]
-                month_list.sort()
-                return motivation_designer_rewards_excel_file_export(article_list,
-                                                                     year_sales_dict, main_sales_dict, f'{user_data.last_name} {user_data.first_name}', sales_year, month_list)
-
         designer_id = int(self.kwargs['pk'])
 
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
@@ -557,7 +550,6 @@ def download_designer_rewards_excel(request):
 
     year_sales_dict = ast.literal_eval(request.POST.get('year_sales_dict'))
     article_list = request.POST.get('article_list')
-    print(article_list)
     cleaned_string = article_list.strip("<QuerySet").strip(">")
 
     article_list = ast.literal_eval(cleaned_string)
@@ -566,10 +558,6 @@ def download_designer_rewards_excel(request):
     sales_year = int(request.POST.get('sales_year'))
     month_list = ast.literal_eval(request.POST.get('month_list'))
     user_data = InnotreidUser.objects.get(id=designer_id)
-    for i in article_list:
-        print('************')
-        print(type(i), i)
-        print('************')
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{user_data.last_name}_{user_data.first_name}_rewards.xlsx"'

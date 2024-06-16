@@ -381,15 +381,11 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
     row = 5
     for item in article_list:
         copy_right_file = ' '
-
-        # print('******************')
-        # print(row, item)
-        # print('******************')
-        # if item['copy_right'] == True:
-        #     copy_right_file = 'Да'
+        if item['copy_right'] == True:
+            copy_right_file = 'Да'
         ws.cell(row=row, column=1, value=item['common_article'])
         ws.cell(row=row, column=2, value=item['name'])
-        ws.cell(row=row, column=3, value=item['copy_right'])
+        ws.cell(row=row, column=3, value=copy_right_file)
         if item['id'] in year_sales_dict:
             ws.cell(row=row, column=4,
                     value=year_sales_dict[item['id']]['quantity'])
