@@ -378,32 +378,32 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
         start_cell_numb += 2
         start_name_numb += 2
         ws.cell(row=4, column=start_name_numb-1, value=f'руб')
-
-    for row, item in enumerate(article_list, start=5):
+    row = 5
+    for item in article_list:
         copy_right_file = ' '
-        if type(item) == dict:
-            print('******************')
-            print(row, item)
 
-            print('******************')
-            # if item['copy_right'] == True:
-            #     copy_right_file = 'Да'
-            ws.cell(row=row, column=1, value=item['common_article'])
-            ws.cell(row=row, column=2, value=item['name'])
-            ws.cell(row=row, column=3, value=item['copy_right'])
-            if item['id'] in year_sales_dict:
-                ws.cell(row=row, column=4,
-                        value=year_sales_dict[item['id']]['quantity'])
-                ws.cell(row=row, column=5,
-                        value=round(year_sales_dict[item['id']]['summ']))
-                start_name_numb = 6
-                for month in month_list:
-                    if month in main_sales_dict[item['id']]:
-                        ws.cell(row=row, column=start_name_numb,
-                                value=main_sales_dict[item['id']][month]['quantity'])
-                        start_name_numb += 2
-                        ws.cell(row=row, column=start_name_numb-1,
-                                value=round(main_sales_dict[item['id']][month]['summ']))
+        print('******************')
+        print(row, item)
+        print('******************')
+        # if item['copy_right'] == True:
+        #     copy_right_file = 'Да'
+        ws.cell(row=row, column=1, value=item['common_article'])
+        ws.cell(row=row, column=2, value=item['name'])
+        ws.cell(row=row, column=3, value=item['copy_right'])
+        if item['id'] in year_sales_dict:
+            ws.cell(row=row, column=4,
+                    value=year_sales_dict[item['id']]['quantity'])
+            ws.cell(row=row, column=5,
+                    value=round(year_sales_dict[item['id']]['summ']))
+            start_name_numb = 6
+            for month in month_list:
+                if month in main_sales_dict[item['id']]:
+                    ws.cell(row=row, column=start_name_numb,
+                            value=main_sales_dict[item['id']][month]['quantity'])
+                    start_name_numb += 2
+                    ws.cell(row=row, column=start_name_numb-1,
+                            value=round(main_sales_dict[item['id']][month]['summ']))
+        row += 1
 
     al = Alignment(horizontal="center",
                    vertical="center")
