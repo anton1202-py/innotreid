@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CSRF_TRUSTED_ORIGINS = ['http://158.160.28.219',  'https://masterchudes.ru']
 ROOT_URLCONF = 'web_barcode.urls'
 TEMPLATES = [
     {
