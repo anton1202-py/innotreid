@@ -31,4 +31,6 @@ urlpatterns = [
          name='filter_get_delete_request'),
     path('update_percent_reward/', views.update_percent_reward,
          name='update_percent_reward'),
+    path('designer_rewards_download_excel/', views.download_designer_rewards_excel,
+         name='designer_rewards_download_excel'),
 ]

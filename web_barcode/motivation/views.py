@@ -1,21 +1,22 @@
 import ast
+import json
 import os
 from datetime import datetime
 
 from django.contrib.auth.models import Group
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from motivation.google_sheet_report import (
     article_data_for_sheet, article_last_month_sales_google_sheet,
     designer_google_sheet, sale_article_per_month)
 from motivation.models import Selling
-from motivation.supplyment import (get_article_draw_authors_sales_data,
-                                   get_draw_authors_year_monthly_reward,
-                                   import_sales_2023,
-                                   motivation_article_type_excel_file_export,
-                                   motivation_article_type_excel_import)
+from motivation.supplyment import (
+    get_article_draw_authors_sales_data, get_draw_authors_year_monthly_reward,
+    import_sales_2023, motivation_article_type_excel_file_export,
+    motivation_article_type_excel_import,
+    motivation_designer_rewards_excel_file_export)
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
@@ -432,7 +433,6 @@ def designers_rewards(request):
 
     year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
         sales_year)
-    print(year_sales_dict)
     # year_article_sales_dict = get_article_sales_data(sales_year)
     year_article_sales_dict = get_article_draw_authors_sales_data(sales_year)
     # Находим группу "Дизайнеры"
@@ -478,6 +478,8 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
+        article_list = Articles.objects.filter(
+            designer=self.kwargs['pk']).values()
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
             user_data, sales_year)
@@ -488,8 +490,7 @@ class MotivationDesignersRewardDetailView(DetailView):
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         context.update({
-            'article_list': Articles.objects.filter(
-                designer=self.kwargs['pk']).values(),
+            'article_list': article_list,
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
             'sales_year': sales_year,
@@ -505,14 +506,19 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
+        article_list = Articles.objects.filter(
+            designer=self.kwargs['pk']).values()
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
         year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
             sales_year)
+        year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+            user_data, sales_year)
 
         if request.POST:
             select_year = request.POST.get("year_select")
-            user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+
             if select_year:
                 months = Selling.objects.filter(
                     year=select_year).values('month').distinct()
@@ -521,6 +527,11 @@ class MotivationDesignersRewardDetailView(DetailView):
                     user_data, sales_year)
                 year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
                     sales_year)
+            if 'export' in request.POST:
+                month_list = [int(value['month']) for value in months]
+                month_list.sort()
+                return motivation_designer_rewards_excel_file_export(article_list,
+                                                                     year_sales_dict, main_sales_dict, f'{user_data.last_name} {user_data.first_name}', sales_year, month_list)
 
         designer_id = int(self.kwargs['pk'])
 
@@ -529,8 +540,7 @@ class MotivationDesignersRewardDetailView(DetailView):
         month_list = [int(value['month']) for value in months]
         year_reward = round(year_common_sales_dict[self.kwargs['pk']])
         context = {
-            'article_list': Articles.objects.filter(
-                designer=self.kwargs['pk']).values(),
+            'article_list': article_list,
             'page_name': f"Вознаграждение дизайнера {user_data.last_name} {user_data.first_name}",
             'month_list': sorted(month_list),
             'sales_year': sales_year,
@@ -541,6 +551,28 @@ class MotivationDesignersRewardDetailView(DetailView):
             'year_reward': year_reward,
         }
         return self.render_to_response(context)
+
+
+def download_designer_rewards_excel(request):
+
+    year_sales_dict = ast.literal_eval(request.POST.get('year_sales_dict'))
+    article_list = request.POST.get('article_list')
+    cleaned_string = article_list.strip("<QuerySet").strip(">")
+
+    article_list = ast.literal_eval(cleaned_string)
+    main_sales_dict = ast.literal_eval(request.POST.get('main_sales_dict'))
+    designer_id = int(request.POST.get('designer_id'))
+    sales_year = int(request.POST.get('sales_year'))
+    month_list = ast.literal_eval(request.POST.get('month_list'))
+    user_data = InnotreidUser.objects.get(id=designer_id)
+    print(article_list)
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{user_data.last_name}_{user_data.first_name}_rewards.xlsx"'
+    motivation_designer_rewards_excel_file_export(
+        article_list, year_sales_dict, main_sales_dict, f'{user_data.last_name} {user_data.first_name}', sales_year, month_list, response)
+
+    return response
 
 
 class MotivationDesignersSaleDetailView(DetailView):
