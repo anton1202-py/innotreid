@@ -559,7 +559,7 @@ def download_designer_rewards_excel(request):
     article_list = request.POST.get('article_list')
     cleaned_string = article_list.strip("<QuerySet").strip(">")
 
-    article_list = ast.literal_eval(article_list)
+    article_list = ast.literal_eval(cleaned_string)
     main_sales_dict = ast.literal_eval(request.POST.get('main_sales_dict'))
     designer_id = int(request.POST.get('designer_id'))
     sales_year = int(request.POST.get('sales_year'))
