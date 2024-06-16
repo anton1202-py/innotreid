@@ -380,7 +380,8 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
 
     for row, (item) in enumerate(article_list, start=5):
         copy_right_file = ' '
-        print(type(item))
+        if type(item) != dict:
+            print(item)
         print(item['copy_right'], type(item['copy_right']))
         print('******************')
         if item['copy_right'] == True:
