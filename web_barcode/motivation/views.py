@@ -506,8 +506,8 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
-        article_list = Articles.objects.filter(
-            designer=self.kwargs['pk']).values()
+        article_list = list(Articles.objects.filter(
+            designer=self.kwargs['pk']).values())
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
