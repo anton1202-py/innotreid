@@ -378,10 +378,10 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
         start_name_numb += 2
         ws.cell(row=4, column=start_name_numb-1, value=f'руб')
 
-    for row, item in enumerate(article_list, start=5):
+    for row, (item) in enumerate(article_list, start=5):
         copy_right_file = ' '
-        print(item)
-        print(item['copy_right'])
+        print(type(item))
+        print(item['copy_right'], type(item['copy_right']))
         print('******************')
         if item['copy_right'] == True:
             copy_right_file = 'Да'
