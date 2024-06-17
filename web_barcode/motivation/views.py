@@ -10,7 +10,8 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from motivation.google_sheet_report import (
     article_data_for_sheet, article_last_month_sales_google_sheet,
-    designer_google_sheet, sale_article_per_month)
+    common_designer_sales_last_month_google_sheet, designer_google_sheet,
+    sale_amount_per_month_for_designer, sale_article_per_month)
 from motivation.models import Selling
 from motivation.supplyment import (
     get_article_draw_authors_sales_data, get_draw_authors_year_monthly_reward,
@@ -318,6 +319,7 @@ def article_type(request):
     """
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    common_designer_sales_last_month_google_sheet()
     page_name = 'Тип светильника'
     ur_lico = 'ООО Иннотрейд'
     if 'filter_data' in request.session:

@@ -21,6 +21,7 @@ from motivation.models import Selling
 from oauth2client.service_account import ServiceAccountCredentials
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
+from users.models import InnotreidUser
 
 dotenv_path = os.path.join(os.path.dirname(
     __file__), '..', 'web_barcode', '.env')
@@ -56,7 +57,37 @@ def sale_article_per_month():
                                     f'{article_obj.designer.last_name} {article_obj.designer.first_name}', data['total_sales'], datetime.now().strftime('%d-%m-%Y'), article_obj.wb_photo_address]
         main_sales_data.append(inner_sales_article_list)
     return main_sales_data
-    # print(sales_last_month)
+
+
+# @sender_error_to_tg
+def sale_amount_per_month_for_designer():
+    """Собирает сумму продаж артикулов у каждого дизайнера за предыдущий месяц"""
+    # Получаем текущую дату
+    current_date = datetime.today()
+    current_year = current_date.year
+    # Вычитаем один месяц из текущей даты
+    previous_month_date = current_date - timedelta(days=current_date.day)
+    previous_month_number = previous_month_date.month
+    # Получаем отсортированные данные о продажах за предыдущий месяц
+    sales_last_month = Selling.objects.filter(Q(month=previous_month_number), Q(lighter__designer_article=True), year=current_year) \
+        .values('lighter__designer') \
+        .annotate(total_sales=Sum('quantity')) \
+        .order_by('-total_sales')
+    print('sales_last_month', sales_last_month)
+
+    # Составляю словарь типа {Фамилия_Имя: Количество_проданных_артикулов}
+    designer_sales_info = []
+
+    for data in sales_last_month:
+        inner_dict = {}
+        if InnotreidUser.objects.filter(
+                id=data['lighter__designer']).exists():
+            designer_obj = InnotreidUser.objects.get(
+                id=data['lighter__designer'])
+            print(designer_obj)
+            inner_dict[f'{designer_obj.last_name} {designer_obj.first_name}'] = data['total_sales']
+            designer_sales_info.append(inner_dict)
+    return designer_sales_info
 
 
 @sender_error_to_tg
@@ -210,6 +241,44 @@ def article_last_month_sales_google_sheet():
             'google_sheet', article_last_month_sales_google_sheet, e)
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message_text, parse_mode='HTML')
+
+
+def common_designer_sales_last_month_google_sheet():
+    """
+    Заполняет таблицу по общим продажам каждого дизайнера
+    за прошлый месяц
+    """
+    # try:
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
+             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        'celery_tasks/innotreid-2c0a6335afd1.json', scope)
+    client = gspread.authorize(creds)
+    # Open the Google Sheet using its name
+    main_data = sale_amount_per_month_for_designer()
+    sheet = client.open("Ночники дизайнеров")
+    sheet_name = 'Статистика'
+    statistic_sheet = sheet.worksheet(sheet_name)
+
+    current_date = datetime.today()
+
+    cells_amount = len(main_data)
+    start_cell_number = 1
+    print('Перед циклом')
+    for data in range(len(main_data)):
+        for designer, amount in main_data[data].items():
+            time.sleep(5)
+            # Добавьте названия столбцов
+            statistic_sheet.update_cell(start_cell_number+1, 9, designer)
+            statistic_sheet.update_cell(start_cell_number+1, 10, amount)
+            start_cell_number += 1
+    set_column_width(statistic_sheet, 'I', 150)
+    # except Exception as e:
+    #     # обработка ошибки и отправка сообщения через бота
+    #     message_text = error_message(
+    #         'google_sheet', common_designer_sales_last_month_google_sheet, e)
+    #     bot.send_message(chat_id=CHAT_ID_ADMIN,
+    #                      text=message_text, parse_mode='HTML')
 
 
 @app.task
