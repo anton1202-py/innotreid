@@ -248,37 +248,37 @@ def common_designer_sales_last_month_google_sheet():
     Заполняет таблицу по общим продажам каждого дизайнера
     за прошлый месяц
     """
-    # try:
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
-             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        'celery_tasks/innotreid-2c0a6335afd1.json', scope)
-    client = gspread.authorize(creds)
-    # Open the Google Sheet using its name
-    main_data = sale_amount_per_month_for_designer()
-    sheet = client.open("Ночники дизайнеров")
-    sheet_name = 'Статистика'
-    statistic_sheet = sheet.worksheet(sheet_name)
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
+                 "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            'celery_tasks/innotreid-2c0a6335afd1.json', scope)
+        client = gspread.authorize(creds)
+        # Open the Google Sheet using its name
+        main_data = sale_amount_per_month_for_designer()
+        sheet = client.open("Ночники дизайнеров")
+        sheet_name = 'Статистика'
+        statistic_sheet = sheet.worksheet(sheet_name)
 
-    current_date = datetime.today()
+        current_date = datetime.today()
 
-    cells_amount = len(main_data)
-    start_cell_number = 1
-    print('Перед циклом')
-    for data in range(len(main_data)):
-        for designer, amount in main_data[data].items():
-            time.sleep(5)
+        cells_amount = len(main_data)
+        start_cell_number = 1
+        print('Перед циклом')
+        for data in range(len(main_data)):
+            for designer, amount in main_data[data].items():
+                time.sleep(5)
             # Добавьте названия столбцов
-            statistic_sheet.update_cell(start_cell_number+1, 9, designer)
-            statistic_sheet.update_cell(start_cell_number+1, 10, amount)
-            start_cell_number += 1
-    set_column_width(statistic_sheet, 'I', 150)
-    # except Exception as e:
-    #     # обработка ошибки и отправка сообщения через бота
-    #     message_text = error_message(
-    #         'google_sheet', common_designer_sales_last_month_google_sheet, e)
-    #     bot.send_message(chat_id=CHAT_ID_ADMIN,
-    #                      text=message_text, parse_mode='HTML')
+                statistic_sheet.update_cell(start_cell_number+1, 9, designer)
+                statistic_sheet.update_cell(start_cell_number+1, 10, amount)
+                start_cell_number += 1
+        set_column_width(statistic_sheet, 'I', 150)
+    except Exception as e:
+        # обработка ошибки и отправка сообщения через бота
+        message_text = error_message(
+            'google_sheet', common_designer_sales_last_month_google_sheet, e)
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message_text, parse_mode='HTML')
 
 
 @app.task
@@ -286,3 +286,4 @@ def get_data_designer_articles_to_google_sheet():
     """Записывает данные по светильникам дизайнеров и продажам в гугл таблицу"""
     designer_google_sheet()
     article_last_month_sales_google_sheet()
+    common_designer_sales_last_month_google_sheet()
