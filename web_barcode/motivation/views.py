@@ -319,7 +319,6 @@ def article_type(request):
     """
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    common_designer_sales_last_month_google_sheet()
     page_name = 'Тип светильника'
     ur_lico = 'ООО Иннотрейд'
     if 'filter_data' in request.session:
