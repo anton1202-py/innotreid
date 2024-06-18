@@ -15,6 +15,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import (DeleteView, DetailView, FormView, ListView,
                                   UpdateView)
+from feedbacks.supplyment import get_wb_nmid_list
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet

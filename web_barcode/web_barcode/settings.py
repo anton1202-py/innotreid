@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'analytika_reklama',
     'database',
     'database_yandex',
+    'feedbacks',
     'import_export',
     'ozon_system',
     'production',

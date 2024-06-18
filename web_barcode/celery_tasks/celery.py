@@ -15,6 +15,7 @@ app = Celery('celery_tasks',
                       'celery_tasks.yandex_tasks',
                       'analytika_reklama.periodic_tasks',
                       'database.periodic_tasks',
+                      'feedbacks.periodic_tasks',
                       'ozon_system.tasks',
                       'motivation.google_sheet_report',
                       'fbs_mode.tasks',
@@ -106,6 +107,12 @@ app.conf.beat_schedule = {
     },
     # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
 
+    # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #
+    "feedbacks_for_articles": {
+        "task": "feedbacks.periodic_tasks.get_feedback_for_nmid_from_wb",
+        "schedule": crontab(hour=2, minute=0)
+    },
+    # =========== КОНЕЦ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #
 
     "stop-adv-all-ozon-company": {
         "task": "ozon_system.tasks.stop_adv_company",

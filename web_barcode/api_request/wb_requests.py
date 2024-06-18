@@ -228,3 +228,21 @@ def average_rating_feedbacks_amount(header, wb_nmid):
     url = f'https://feedbacks-api.wb.ru/api/v1/feedbacks/products/rating/nmid?nmId={wb_nmid}'
     response = requests.request("GET", url, headers=header)
     return response
+
+
+@api_retry_decorator
+def average_rating_feedbacks_amount(header, wb_nmid):
+    """
+    Метод позволяет получить список отзывов с WB 
+    по заданным параметрам с пагинацией и сортировкой.
+    Допускается 1 запрос в секунду.
+
+    Входящие переменные:
+    wb_nmid - WB номенклатура артикула
+    header - хедер для запроса
+    """
+    time.sleep(1)
+    url = f'https://feedbacks-api.wildberries.ru/api/v1/feedbacks?nmId={wb_nmid}&isAnswered=true&take=5000&skip=0'
+    response = requests.request("GET", url, headers=header)
+    return response
+# =========== КОНЕЦ БЛОКА РЕЙТИНГ И ОТЗЫВЫ ========== #
