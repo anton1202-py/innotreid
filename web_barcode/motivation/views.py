@@ -17,7 +17,8 @@ from motivation.supplyment import (
     get_article_draw_authors_sales_data, get_draw_authors_year_monthly_reward,
     import_sales_2023, motivation_article_type_excel_file_export,
     motivation_article_type_excel_import,
-    motivation_designer_rewards_excel_file_export)
+    motivation_designer_rewards_excel_file_export,
+    motivation_designer_sales_excel_file_export)
 from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
@@ -565,6 +566,27 @@ def download_designer_rewards_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{user_data.last_name}_{user_data.first_name}_rewards.xlsx"'
     motivation_designer_rewards_excel_file_export(
+        article_list, year_sales_dict, main_sales_dict, f'{user_data.last_name} {user_data.first_name}', sales_year, month_list, response)
+
+    return response
+
+
+def download_designer_sales_excel(request):
+
+    year_sales_dict = ast.literal_eval(request.POST.get('year_sales_dict'))
+    article_list = request.POST.get('article_list')
+    cleaned_string = article_list.strip("<QuerySet").strip(">")
+
+    article_list = ast.literal_eval(cleaned_string)
+    main_sales_dict = ast.literal_eval(request.POST.get('main_sales_dict'))
+    designer_id = int(request.POST.get('designer_id'))
+    sales_year = int(request.POST.get('sales_year'))
+    month_list = ast.literal_eval(request.POST.get('month_list'))
+    user_data = InnotreidUser.objects.get(id=designer_id)
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{user_data.last_name}_{user_data.first_name}_rewards.xlsx"'
+    motivation_designer_sales_excel_file_export(
         article_list, year_sales_dict, main_sales_dict, f'{user_data.last_name} {user_data.first_name}', sales_year, month_list, response)
 
     return response

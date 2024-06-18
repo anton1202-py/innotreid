@@ -33,4 +33,6 @@ urlpatterns = [
          name='update_percent_reward'),
     path('designer_rewards_download_excel/', views.download_designer_rewards_excel,
          name='designer_rewards_download_excel'),
+    path('designer_sales_download_excel/', views.download_designer_sales_excel,
+         name='designer_sales_download_excel'),
 ]

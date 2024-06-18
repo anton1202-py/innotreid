@@ -194,7 +194,7 @@
         // ========== ОБРАБАТЫВАЕТ НАЖАТИЕ КНОПКИ СКАЧАТЬ EXCEL ФАЙЛ ========= //
        
         document.getElementById('downloadBtn').addEventListener('click', function() {
-            var url = '../designer_rewards_download_excel/';
+            var url = '../designer_sales_download_excel/';
             var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
             var formData = new FormData();
             formData.append('year_sales_dict', "{{ year_sales_dict|escapejs }}");

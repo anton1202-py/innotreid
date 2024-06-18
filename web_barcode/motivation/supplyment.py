@@ -352,6 +352,97 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
     ws.cell(row=2, column=2, value='Название')
     ws.merge_cells('C2:C4')
     ws.cell(row=2, column=3, value='Авторский')
+    ws.merge_cells('D2:D3')
+    ws.cell(row=2, column=4, value=f'Продажи за {year}')
+    ws.merge_cells('E2:E3')
+    ws.cell(row=2, column=5, value=f'Вознаграждеине за {year}')
+    ws.cell(row=4, column=4, value=f'шт')
+    ws.cell(row=4, column=5, value=f'руб')
+
+    start_cell = ws.cell(row=2, column=6)
+    end_cell = ws.cell(row=2, column=6+2*month_amount - 1)
+    # merge_range = f'F2:{chr(70 + 2*month_amount - 1)}2'
+
+    # print(f'F2:chr(70 + 2*month_amount - 1)2')
+    ws.merge_cells(start_cell.coordinate + ':' + end_cell.coordinate)
+    # print('merge_range', merge_range)
+
+    ws.cell(row=2, column=6, value=f'{year} год')
+    start_cell_numb = 70
+    start_name_numb = 6
+    for i in range(month_amount):
+        start_cell = ws.cell(row=3, column=start_name_numb)
+        end_cell = ws.cell(row=3, column=start_name_numb+2 - 1)
+
+        ws.merge_cells(start_cell.coordinate + ':' + end_cell.coordinate)
+        ws.cell(row=3, column=start_name_numb, value=f'{i+1}')
+        ws.cell(row=4, column=start_name_numb, value=f'шт')
+        start_cell_numb += 2
+        start_name_numb += 2
+        ws.cell(row=4, column=start_name_numb-1, value=f'руб')
+    row = 5
+    for item in article_list:
+        copy_right_file = ' '
+        if item['copy_right'] == True:
+            copy_right_file = 'Да'
+        ws.cell(row=row, column=1, value=item['common_article'])
+        ws.cell(row=row, column=2, value=item['name'])
+        ws.cell(row=row, column=3, value=copy_right_file)
+        if item['id'] in year_sales_dict:
+            ws.cell(row=row, column=4,
+                    value=year_sales_dict[item['id']]['quantity'])
+            ws.cell(row=row, column=5,
+                    value=round(year_sales_dict[item['id']]['summ']))
+            start_name_numb = 6
+            for month in month_list:
+                if month in main_sales_dict[item['id']]:
+                    ws.cell(row=row, column=start_name_numb,
+                            value=main_sales_dict[item['id']][month]['quantity'])
+                    start_name_numb += 2
+                    ws.cell(row=row, column=start_name_numb-1,
+                            value=round(main_sales_dict[item['id']][month]['summ']))
+        row += 1
+
+    al = Alignment(horizontal="center",
+                   vertical="center")
+    al_left = Alignment(horizontal="left",
+                        vertical="center")
+    thin = Side(border_style="thin", color="000000")
+
+    ws.column_dimensions['A'].width = 15
+    ws.column_dimensions['B'].width = 35
+    ws.column_dimensions['D'].width = 18
+    ws.column_dimensions['E'].width = 23
+
+    for i in range(1, len(article_list)+4):
+        for c in ws[f'A{i+1}:AZ{i+1}']:
+            for i in range(len(month_list)*2+5):
+                c[i].border = Border(top=thin, left=thin,
+                                     bottom=thin, right=thin)
+                c[i].alignment = al
+
+    # Сохраняем книгу Excel в память
+
+    wb.save(response)
+
+    return response
+
+
+def motivation_designer_sales_excel_file_export(article_list, year_sales_dict, main_sales_dict, designer, year, month_list, response):
+    """Создает и скачивает excel файл с вознаграждением дизайнера"""
+    # Создаем DataFrame из данных
+    wb = Workbook()
+    # Получаем активный лист
+    ws = wb.active
+    # Заполняем лист данными
+    month_amount = len(month_list)
+    ws.cell(row=1, column=1, value=f'Вознаграждение дизайнера {designer}')
+    ws.merge_cells('A2:A4')
+    ws.cell(row=2, column=1, value='Ночник')
+    ws.merge_cells('B2:B4')
+    ws.cell(row=2, column=2, value='Название')
+    ws.merge_cells('C2:C4')
+    ws.cell(row=2, column=3, value='Авторский')
     ws.merge_cells('D2:E3')
     ws.cell(row=2, column=4, value=f'Продажи за {year}')
     ws.cell(row=4, column=4, value=f'шт')
