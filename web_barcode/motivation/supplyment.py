@@ -355,7 +355,7 @@ def motivation_designer_rewards_excel_file_export(article_list, year_sales_dict,
     ws.merge_cells('D2:D3')
     ws.cell(row=2, column=4, value=f'Продажи за {year}')
     ws.merge_cells('E2:E3')
-    ws.cell(row=2, column=5, value=f'Вознаграждеине за {year}')
+    ws.cell(row=2, column=5, value=f'Вознаграждение за {year}')
     ws.cell(row=4, column=4, value=f'шт')
     ws.cell(row=4, column=5, value=f'руб')
 
