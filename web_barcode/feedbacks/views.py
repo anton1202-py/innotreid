@@ -10,6 +10,7 @@ from feedbacks.models import FeedbacksWildberries
 from feedbacks.supplyment import excel_import_previously_data
 from price_system.models import Articles
 from reklama.forms import FilterUrLicoForm
+from reklama.models import UrLico
 
 
 def articles_list_with_main_info(request):
@@ -21,7 +22,8 @@ def articles_list_with_main_info(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     page_name = 'Общая информация по отзывам артикулов'
-    # budget_working()
+    ur_lico_data = UrLico.objects.all()
+
     articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__company='ООО Иннотрейд'
                                                              ).values(
         'common_article',
@@ -31,12 +33,23 @@ def articles_list_with_main_info(request):
     ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
 
     if request.POST:
+        if 'ur_lico_select' in request.POST:
+            print(request.POST)
+            filter_ur_lico = request.POST['ur_lico_select']
+            articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__company=filter_ur_lico
+                                                                     ).values(
+                'common_article',
+                'common_article__common_article',
+                'common_article__company',
+                'common_article__name'
+            ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
         if 'import_file' in request.FILES:
             import_data_error_text = excel_import_previously_data(
                 request.FILES['import_file'])
     context = {
         'page_name': page_name,
         'articles_feedbacks': articles_feedbacks,
+        'ur_lico_data': ur_lico_data,
 
     }
     return render(request, 'feedbacks/articles_list_with_amount_feedbacks.html', context)

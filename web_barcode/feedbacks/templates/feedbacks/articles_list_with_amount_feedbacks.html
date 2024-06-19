@@ -8,18 +8,34 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-        <!-- <div class="add-data">
-            <div class="inner-form-data-button">
-                <br>
-                <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
-                    {% csrf_token %}
-                    <div class="two_button_label">
-                        <label for="import_data">Импорт из EXCEL</label>
-                        <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
-                    </div>
-                </form>
-            </div>
-        </div> -->
+        <div class='filter-data'>
+            <form id="left-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article_id" name="common_article" class="input-field" oninput="filterData()">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Найти"/>
+                </div>
+            </form>
+            
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select">
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.ur_lice_name }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+        
+        </div>
             <table id="table">
                 <tr>
                     <th>Артикул</th>
@@ -60,6 +76,14 @@
                     .forEach(tr => table.appendChild(tr) );
             })));
 
+            // ========== Обрабатывает выбор юр. лица из выпадающего списка ========= //
+            document.addEventListener('DOMContentLoaded', function() {
+                var mySelect = document.querySelector('.mySelect');
+            
+                mySelect.addEventListener('change', function() {
+                    document.getElementById('centr-form').submit();
+                });
+            });
         </script>
     </div>    
         
