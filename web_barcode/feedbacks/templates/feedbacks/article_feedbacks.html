@@ -15,7 +15,7 @@
                 </tr>
                 {% for el in articles_feedbacks %}
                 <tr>
-                    <td style="text-align: left; width: 300px; word-wrap: break-word;">{{ el.text }}</td>
+                    <td style="text-align: left; max-width: 300px; word-wrap: break-word;">{{ el.text }}</td>
                     <td>{{ el.product_valuation }}</td>
                 </tr>
                 {% endfor %}
