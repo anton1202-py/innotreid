@@ -21,7 +21,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
-                               write_group_spp_data, yandex_add_price_info)
+                               yandex_add_price_info)
 from .supplyment import (excel_article_costprice_export, excel_compare_table,
                          excel_creating_mod,
                          excel_import_article_costprice_data,

@@ -169,7 +169,7 @@ app.conf.beat_schedule = {
     },
     "price_system_compare_ip_articles": {
         "task": "price_system.periodical_tasks.write_group_spp_data",
-        "schedule": crontab(minute='*/16')
+        "schedule": crontab(minute='*/40')
     },
 
     # =========== ЗАДАЧИ РАЗДЕЛА REKLAMA ========== #
