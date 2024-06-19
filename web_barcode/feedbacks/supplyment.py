@@ -2,6 +2,7 @@ import json
 
 from api_request.wb_requests import average_rating_feedbacks_amount
 from price_system.models import Articles
+from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
@@ -18,6 +19,7 @@ from .models import (FeedbacksWildberries, PhotoLinks, ProductDetails,
                      WildberriesAnswerFeedback)
 
 
+@sender_error_to_tg
 def get_wb_nmid_list() -> dict:
     """Функция получаеn список номенклатурных номер WB
 
@@ -37,11 +39,19 @@ def get_wb_nmid_list() -> dict:
     return main_returned_data_dict
 
 
+@sender_error_to_tg
 def add_feedback_to_db(ur_lico_obj, nmid, nm_feedbacks):
     """Записывает отзывы артикула в базу данных."""
-    article_obj = Articles.objects.get(
+    article_obj = Articles.objects.filter(
         company=ur_lico_obj.ur_lice_name,
-        wb_nomenclature=nmid)
+        wb_nomenclature=nmid)[0]
+    if len(Articles.objects.filter(
+            company=ur_lico_obj.ur_lice_name,
+            wb_nomenclature=nmid)) > 1:
+        print(Articles.objects.filter(
+            company=ur_lico_obj.ur_lice_name,
+            wb_nomenclature=nmid))
+
     for feedback in nm_feedbacks:
         if not FeedbacksWildberries.objects.filter(feedbackid=feedback['id']).exists():
             feedback_obj = FeedbacksWildberries(
