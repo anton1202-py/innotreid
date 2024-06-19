@@ -1,5 +1,6 @@
 import json
 
+import pandas as pd
 from api_request.wb_requests import average_rating_feedbacks_amount
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
@@ -98,3 +99,53 @@ def add_feedback_to_db(ur_lico_obj, nmid, nm_feedbacks):
                         full_size=picture_data['fullSize'],
                         mini_size=picture_data['miniSize']
                     ).save()
+
+
+def excel_import_previously_data(xlsx_file):
+    """Импортирует данные о группе артикула из Excel"""
+
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    if 'ID отзыва' in column_list and 'Номенклатура' in column_list and 'Текст отзыва' in column_list:
+        excel_data = pd.DataFrame(excel_data_common, columns=[
+                                  'ID отзыва',
+                                  'Дата', 'Артикул',
+                                  'Номенклатура',
+                                  'Количество звезд',
+                                  'Бренд',
+                                  'Текст отзыва',
+                                  'Имя'])
+        id_feedback_list = excel_data['ID отзыва'].to_list()
+        date_list = excel_data['Дата'].to_list()
+        article_list = excel_data['Артикул'].to_list()
+        nom_list = excel_data['Номенклатура'].to_list()
+        stars_list = excel_data['Количество звезд'].to_list()
+        brand_list = excel_data['Бренд'].to_list()
+        text_list = excel_data['Текст отзыва'].to_list()
+        name_list = excel_data['Имя'].to_list()
+
+        # Словарь {артикул: название_группы}
+        article_value_dict = {}
+        # Список для обновления строк в БД
+        new_objects = []
+        error_group_name_list = []
+
+        for i in range(len(nom_list)):
+            if Articles.objects.filter(wb_nomenclature=nom_list[i]).exists():
+
+                article_obj = Articles.objects.filter(
+                    wb_nomenclature=nom_list[i])[0]
+                ur_lico_obj = UrLico.objects.get(
+                    ur_lice_name=article_obj.company)
+                FeedbacksWildberries(
+                    common_article=article_obj,
+                    ur_lico=ur_lico_obj,
+                    feedbackid=id_feedback_list[i],
+                    user_name=name_list[i],
+                    text=text_list[i],
+                    product_valuation=stars_list[i],
+                    created_date=date_list[i]
+                ).save()
+            else:
+                print(
+                    f'Артикул не нашел в базе {nom_list[i]}: {article_list[i]}')

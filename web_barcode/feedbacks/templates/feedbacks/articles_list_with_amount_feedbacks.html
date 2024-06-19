@@ -8,6 +8,18 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
+        <div class="add-data">
+            <div class="inner-form-data-button">
+                <br>
+                <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
+                    {% csrf_token %}
+                    <div class="two_button_label">
+                        <label for="import_data">Импорт из EXCEL</label>
+                        <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                    </div>
+                </form>
+            </div>
+        </div>
             <table id="table">
                 <tr>
                     <th>Артикул</th>
@@ -27,6 +39,28 @@
                 </tr>
                 {% endfor %}
             </table>
+    
+        <script>
+            // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+            function submitForm() {
+              document.getElementById('uploadForm').submit();
+            }
+
+            // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+            const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+            const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            // do the work...
+            document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+                const table = th.closest('table');
+                Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.appendChild(tr) );
+            })));
+
+        </script>
     </div>    
         
 {% endblock %}

@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from dotenv import load_dotenv
 from feedbacks.models import FeedbacksWildberries
+from feedbacks.supplyment import excel_import_previously_data
 from price_system.models import Articles
 from reklama.forms import FilterUrLicoForm
 
@@ -27,7 +28,12 @@ def articles_list_with_main_info(request):
         'common_article__common_article',
         'common_article__company',
         'common_article__name'
-    ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation'))
+    ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
+
+    if request.POST:
+        if 'import_file' in request.FILES:
+            import_data_error_text = excel_import_previously_data(
+                request.FILES['import_file'])
     context = {
         'page_name': page_name,
         'articles_feedbacks': articles_feedbacks,
@@ -45,7 +51,7 @@ class FeedbacksArticleDetailView(ListView):
                         self).get_context_data(**kwargs)
         page_name = f"Отзывы артикула: {self.kwargs['common_article']}"
         articles_feedbacks = FeedbacksWildberries.objects.filter(
-            common_article__common_article=self.kwargs['common_article']).exclude(text__exact='')
+            common_article__common_article=self.kwargs['common_article']).exclude(text__exact='').order_by('-created_date')
         context.update({
             'articles_feedbacks': articles_feedbacks,
             'page_name': page_name,
