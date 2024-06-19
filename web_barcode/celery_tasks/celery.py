@@ -52,14 +52,7 @@ app.conf.beat_schedule = {
         "task": "database.periodic_tasks.process_ozon_sales_data",
         "schedule": crontab(0, 0, day_of_month='10')
     },
-    "everyday-task": {
-        "task": "celery_tasks.tasks.add_stock_data_from_frontend",
-        "schedule": crontab(hour=7, minute=0)
-    },
-    "order_fbs_stat": {
-        "task": "celery_tasks.tasks.orders_fbs_statistic",
-        "schedule": crontab(hour=6, minute=30)
-    },
+
     "add_fby_amount": {
         "task": "celery_tasks.tasks_yandex_fby_fbs.add_fby_amount_to_database",
         "schedule": crontab(hour=6, minute=0)
@@ -68,18 +61,7 @@ app.conf.beat_schedule = {
         "task": "celery_tasks.tasks_yandex_fby_fbs.sender_zero_balance",
         "schedule": crontab(hour=7, minute=10)
     },
-    "add_article_price_info_to_database": {
-        "task": "celery_tasks.tasks.add_article_price_info_to_database",
-        "schedule": crontab(hour=9, minute=0)
-    },
-    "sender_change_price_info": {
-        "task": "celery_tasks.tasks.sender_change_price_info",
-        "schedule": crontab(hour=9, minute=5)
-    },
-    # "run-every-15-minutes": {
-    #     "task": "celery_tasks.tasks.get_current_ssp",
-    #     'schedule': crontab(minute='*/15'),
-    # },
+
     # =========== ЗАДАЧИ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
     "analytika_reklama_adv_common_info": {
         "task": "analytika_reklama.periodic_tasks.add_info_to_db_about_all_campaigns",
