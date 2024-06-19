@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('main.urls')),
     path('database/', include('database.urls')),
     path('database_ya/', include('database_yandex.urls')),
+    path('feedbacks/', include('feedbacks.urls')),
     path('production/', include('production.urls')),
     path('price_control/', include('price_control.urls')),
     path('ozon_system/', include('ozon_system.urls')),

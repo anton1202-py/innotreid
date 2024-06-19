@@ -310,6 +310,26 @@
                             
                         </ul>
                     </li>
+
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Отзывы</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'feedbacks_articles_list_info' as url_feedbacks %}
+                            <li>
+                                <a href="{{ url_feedbacks }}" {% if request.path == url_feedbacks %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Инфо по артикулам</h3>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <li class="parent"> 
                         <span class="expanded">
                             <span class="material-symbols-outlined">

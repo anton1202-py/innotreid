@@ -54,8 +54,8 @@ def save_wildberries_sale_data_for_motivation(data, ur_lico, month, year):
     wb_marketplace = CodingMarketplaces.objects.get(
         marketpalce='Wildberries')
     if Articles.objects.filter(company=ur_lico, wb_nomenclature=data['nmId']).exists():
-        article_obj = Articles.objects.get(
-            company=ur_lico, wb_nomenclature=data['nmId'])
+        article_obj = Articles.objects.filter(
+            company=ur_lico, wb_nomenclature=data['nmId'])[0]
 
         if Selling.objects.filter(lighter=article_obj,
                                   ur_lico=ur_lico,

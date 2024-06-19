@@ -17,16 +17,20 @@ bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 @sender_error_to_tg
-def wb_discounts_prices_single_article_info(header, article):
+def wb_discounts_prices_single_article_info(header, article, counter=0):
     """Получаем данные одного артикула ВБ"""
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&filterNmID={article}'
     response = requests.request("GET", url, headers=header)
+    counter += 1
     if response.status_code == 200:
         main_data = json.loads(response.text)['data']['listGoods']
         return main_data
     else:
         time.sleep(10)
-        return wb_discounts_prices_single_article_info(header, article)
+        if counter < 10:
+            return wb_discounts_prices_single_article_info(header, article, counter)
+        else:
+            return {}
 
 
 @sender_error_to_tg

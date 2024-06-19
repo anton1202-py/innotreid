@@ -98,7 +98,7 @@ class FeedbacksWildberries(models.Model):
     )
 
     def __str__(self):
-        return self.common_article
+        return self.common_article.common_article
 
     class Meta:
         verbose_name = 'Отзывы на товары с Wildberries'

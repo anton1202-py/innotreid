@@ -1,0 +1,25 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{page_name}}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+            <table id="table">
+                <tr>
+                    <th>Отзыв</th>
+                    <th>Оценка</th>
+                </tr>
+                {% for el in articles_feedbacks %}
+                <tr>
+                    <td>{{ el.text }}</td>
+                    <td>{{ el.product_valuation }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+    </div>    
+        
+{% endblock %}
