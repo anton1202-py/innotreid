@@ -11,6 +11,7 @@
             <table id="table">
                 <tr>
                     <th>Артикул</th>
+                    <th>Название</th>
                     <th>Юр. лицо</th>
                     <th>Количество отзывов</th>
                     <th>Средняя оценка</th>
@@ -18,6 +19,7 @@
                 {% for el in articles_feedbacks %}
                 <tr>
                     <td><a href="{% url 'feedbacks_article_feedbacks' el|get_item:'common_article__common_article' %}">{{ el|get_item:'common_article__common_article' }}</a></td>
+                    <td>{{ el|get_item:'common_article__name' }}</td>
                     <td>{{ el|get_item:'common_article__company' }}</td>
                     <td>{{ el|get_item:'total_feedbacks' }}</td>
                     <td>{{ el|get_item:'average_valuation'|round_number }}</td>

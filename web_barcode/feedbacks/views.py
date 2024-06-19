@@ -21,8 +21,13 @@ def articles_list_with_main_info(request):
         return redirect('login')
     page_name = 'Общая информация по отзывам артикулов'
     # budget_working()
-    articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__company='ООО Иннотрейд').values('common_article',
-                                                                                                             'common_article__common_article', 'common_article__company').annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation'))
+    articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__company='ООО Иннотрейд'
+                                                             ).values(
+        'common_article',
+        'common_article__common_article',
+        'common_article__company',
+        'common_article__name'
+    ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation'))
     context = {
         'page_name': page_name,
         'articles_feedbacks': articles_feedbacks,
