@@ -33,8 +33,8 @@ def articles_list_with_main_info(request):
     ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
 
     if request.POST:
+        print(request.POST)
         if 'ur_lico_select' in request.POST:
-            print(request.POST)
             filter_ur_lico = request.POST['ur_lico_select']
             articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__company=filter_ur_lico
                                                                      ).values(
@@ -43,7 +43,16 @@ def articles_list_with_main_info(request):
                 'common_article__company',
                 'common_article__name'
             ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
-        if 'import_file' in request.FILES:
+        elif 'common_article' in request.POST:
+            common_article = request.POST['common_article']
+            articles_feedbacks = FeedbacksWildberries.objects.filter(common_article__common_article__contains=common_article
+                                                                     ).values(
+                'common_article',
+                'common_article__common_article',
+                'common_article__company',
+                'common_article__name'
+            ).annotate(total_feedbacks=Count('id'), average_valuation=Avg('product_valuation')).order_by('-total_feedbacks')
+        elif 'import_file' in request.FILES:
             import_data_error_text = excel_import_previously_data(
                 request.FILES['import_file'])
     context = {
@@ -62,7 +71,10 @@ class FeedbacksArticleDetailView(ListView):
     def get_context_data(self, **kwargs):
         context = super(FeedbacksArticleDetailView,
                         self).get_context_data(**kwargs)
-        page_name = f"Отзывы артикула: {self.kwargs['common_article']}"
+        article_data = Articles.objects.filter(
+            common_article=self.kwargs['common_article'])[0]
+        page_name = f"Отзывы артикула: {self.kwargs['common_article']} ({article_data.name})"
+
         articles_feedbacks = FeedbacksWildberries.objects.filter(
             common_article__common_article=self.kwargs['common_article']).exclude(text__exact='').order_by('-created_date')
         context.update({
