@@ -34,19 +34,19 @@ def add_info_to_db_about_all_campaigns():
     main_adv_data - данные для рекламных кампаний какого-то юр. лица (макс 50 кампаний)
     """
     main_data = type_adv_campaigns()
-
-    for ur_lico, adv_list in main_data.items():
-        koef_product = math.ceil(len(adv_list)/50)
-        for i in range(koef_product):
-            start_point = i*50
-            finish_point = (i+1)*50
-            adv_current_list = adv_list[
-                start_point:finish_point]
-            header = header_wb_data_dict[ur_lico]
-            main_adv_data = advertisment_campaigns_list_info(
-                adv_current_list, header)
-            # Записываем/обновляем информацию о РК в базу данных
-            add_adv_data_to_db_about_all_campaigns(ur_lico, main_adv_data)
+    if main_data:
+        for ur_lico, adv_list in main_data.items():
+            koef_product = math.ceil(len(adv_list)/50)
+            for i in range(koef_product):
+                start_point = i*50
+                finish_point = (i+1)*50
+                adv_current_list = adv_list[
+                    start_point:finish_point]
+                header = header_wb_data_dict[ur_lico]
+                main_adv_data = advertisment_campaigns_list_info(
+                    adv_current_list, header)
+                # Записываем/обновляем информацию о РК в базу данных
+                add_adv_data_to_db_about_all_campaigns(ur_lico, main_adv_data)
 
 
 @app.task
@@ -148,10 +148,10 @@ def keyword_for_articles():
             company=cluster_obj.campaign.ur_lico.ur_lice_name,
             wb_nomenclature=articles_name
         ).exists():
-            article_obj = Articles.objects.get(
+            article_obj = Articles.objects.filter(
                 company=cluster_obj.campaign.ur_lico.ur_lice_name,
                 wb_nomenclature=articles_name
-            )
+            )[0]
             if not MainArticleKeyWords.objects.filter(
                     article=article_obj,
                     cluster=cluster_obj.cluster).exists():

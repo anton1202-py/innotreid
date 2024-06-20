@@ -163,8 +163,8 @@ def matching_wb_ooo_article_campaign():
         if article_list:
             for article in article_list:
                 if Articles.objects.filter(wb_nomenclature=article).exists():
-                    article_obj = Articles.objects.get(
-                        wb_nomenclature=article)
+                    article_obj = Articles.objects.filter(
+                        wb_nomenclature=article)[0]
                     if not DataOooWbArticle.objects.filter(
                             wb_article=article_obj).exists():
                         DataOooWbArticle(wb_article=article_obj).save()
@@ -234,12 +234,14 @@ def wb_ooo_fbo_stock_count():
     main_data = wb_ooo_fbo_stock_data()
     for all_data in main_data:
         for data in all_data:
-            article_obj = Articles.objects.filter(
-                wb_nomenclature=data['nmID'])[0]
-            matching_data = DataOooWbArticle.objects.get(
-                wb_article=article_obj)
-            matching_data.fbo_amount = data['stocks']['stocksWb']
-            matching_data.save()
+            if Articles.objects.filter(
+                    wb_nomenclature=data['nmID']).exists():
+                article_obj = Articles.objects.filter(
+                    wb_nomenclature=data['nmID'])[0]
+                matching_data = DataOooWbArticle.objects.get(
+                    wb_article=article_obj)
+                matching_data.fbo_amount = data['stocks']['stocksWb']
+                matching_data.save()
 
 
 # =========== БЛОК РАБОТЫ С КАМПАНИЯМИ OZON ========== #
