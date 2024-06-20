@@ -7,15 +7,13 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.views.generic import DetailView, ListView
-from motivation.google_sheet_report import (
-    article_data_for_sheet, article_last_month_sales_google_sheet,
-    common_designer_sales_last_month_google_sheet, designer_google_sheet,
-    sale_amount_per_month_for_designer, sale_article_per_month)
+from django.views.generic import DetailView
 from motivation.models import Selling
 from motivation.supplyment import (
-    get_article_draw_authors_sales_data, get_draw_authors_year_monthly_reward,
-    import_sales_2023, motivation_article_type_excel_file_export,
+    get_amount_summ_sales_data, get_article_draw_authors_sales_data,
+    get_article_sales_data, get_designers_amount_summ_sales_data,
+    get_designers_sales_data, get_draw_authors_year_monthly_reward,
+    get_main_sales_data, motivation_article_type_excel_file_export,
     motivation_article_type_excel_import,
     motivation_designer_rewards_excel_file_export,
     motivation_designer_sales_excel_file_export)
@@ -23,182 +21,50 @@ from price_system.models import Articles, DesignUser
 from users.models import InnotreidUser
 
 
-def get_main_sales_data(year):
-    """Отдает данные по продажам артикулов"""
+def article_type(request):
+    """
+    Отображает тип светильника:
+    дизайнерский или нет, с правами собственности или нет.
+    """
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    page_name = 'Тип светильника'
+    ur_lico = 'ООО Иннотрейд'
+    if 'filter_data' in request.session:
+        ur_lico = request.session['filter_data']
+    article_list = Articles.objects.filter(company=ur_lico).order_by('common_article').values(
+        'common_article', 'name', 'company', 'designer_article', 'copy_right')
+    import_data = ''
+    if request.GET:
+        return filter_get_request(request, ur_lico)
 
-    sale_data = Selling.objects.filter(year=year).values(
-        'lighter', 'month', 'quantity', 'summ')
-    # Словарь с данными артикула по продажам по месяцам
-    main_sales_dict = {}
-    # Словарь с продажами артикула за текущий год
-    year_sales_dict = {}
-    for data in sale_data:
-        if data['lighter'] in main_sales_dict:
-            if data['month'] in main_sales_dict[data['lighter']]:
-                main_sales_dict[data['lighter']
-                                ][data['month']] += int(data['quantity'])
-            else:
-                main_sales_dict[data['lighter']
-                                ][data['month']] = int(data['quantity'])
-        else:
-            main_sales_dict[data['lighter']] = {
-                data['month']: int(data['quantity'])}
-        if data['lighter'] in year_sales_dict:
-            year_sales_dict[data['lighter']] += int(data['quantity'])
-        else:
-            year_sales_dict[data['lighter']] = int(data['quantity'])
-    return year_sales_dict, main_sales_dict
+    if request.POST:
+        filter_company = request.POST.get('filter_data')
+        if filter_company:
+            article_list = Articles.objects.filter(
+                company=filter_company).order_by('common_article').values(
+                'common_article', 'name', 'company', 'designer_article', 'copy_right')
+            request.session['filter_data'] = request.POST.get('filter_data')
+        if 'export' in request.POST or 'import_file' in request.FILES:
+            if request.POST.get('export') == 'create_file':
+                return motivation_article_type_excel_file_export(article_list)
 
-
-def get_amount_summ_sales_data(year):
-    """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.filter(year=year).values(
-        'lighter', 'month', 'quantity', 'summ')
-    # Словарь с данными артикула по продажам по месяцам
-    main_sales_dict = {}
-    # Словарь с продажами артикула за текущий год
-    year_sales_dict = {}
-    for data in sale_data:
-        if data['lighter'] in main_sales_dict:
-            if data['month'] in main_sales_dict[data['lighter']]:
-                main_sales_dict[data['lighter']
-                                ][data['month']]['quantity'] += int(data['quantity'])
-                main_sales_dict[data['lighter']
-                                ][data['month']]['summ'] += int(data['summ'])
-            else:
-                main_sales_dict[data['lighter']
-                                ][data['month']] = {'quantity': int(data['quantity']),
-                                                    'summ': int(data['summ'])}
-        else:
-            main_sales_dict[data['lighter']] = {
-                data['month']: {
-                    'quantity': int(data['quantity']),
-                    'summ': int(data['summ'])}}
-        if data['lighter'] in year_sales_dict:
-            year_sales_dict[data['lighter']
-                            ]['quantity'] += int(data['quantity'])
-            year_sales_dict[data['lighter']]['summ'] += int(data['summ'])
-        else:
-            year_sales_dict[data['lighter']] = {'quantity': int(data['quantity']),
-                                                'summ': int(data['summ'])}
-    return year_sales_dict, main_sales_dict
-
-
-def get_designers_amount_summ_sales_data(innotreiduser, year):
-    """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.filter(year=year).values(
-        'lighter', 'month', 'quantity', 'summ', 'lighter__designer_article', 'lighter__copy_right', 'lighter__designer')
-    designer_obj = DesignUser.objects.filter(designer=innotreiduser)[0]
-    main_percent = designer_obj.main_reward_persent/100
-    copyright_percent = designer_obj.copyright_reward_persent/100
-
-    # Словарь с данными артикула по продажам по месяцам
-    main_sales_dict = {}
-    # Словарь с продажами артикула за текущий год
-    year_sales_dict = {}
-    for data in sale_data:
-        percent = 0
-        if data['lighter__copy_right'] == True:
-            percent = copyright_percent
-        else:
-            percent = main_percent
-        if data['lighter__designer'] == innotreiduser.id:
-            if data['lighter'] in main_sales_dict:
-                if data['month'] in main_sales_dict[data['lighter']]:
-                    main_sales_dict[data['lighter']
-                                    ][data['month']]['quantity'] += int(data['quantity'])
-                    main_sales_dict[data['lighter']
-                                    ][data['month']]['summ'] += int(data['summ'])*percent
-
-                else:
-                    main_sales_dict[data['lighter']
-                                    ][data['month']] = {'quantity': int(data['quantity']),
-                                                        'summ': int(data['summ'])*percent}
-            else:
-                main_sales_dict[data['lighter']] = {
-                    data['month']: {
-                        'quantity': int(data['quantity']),
-                        'summ': int(data['summ'])*percent}}
-
-            if data['lighter'] in year_sales_dict:
-                year_sales_dict[data['lighter']
-                                ]['quantity'] += int(data['quantity'])
-                year_sales_dict[data['lighter']
-                                ]['summ'] += int(data['summ'])*percent
-            else:
-                year_sales_dict[data['lighter']] = {'quantity': int(data['quantity']),
-                                                    'summ': int(data['summ'])*percent}
-    return year_sales_dict, main_sales_dict
-
-
-def get_designers_sales_data(year):
-    """Отдает данные по продажам дизайнеров"""
-    sale_data = Selling.objects.filter(year=year).values(
-        'lighter', 'month', 'summ', 'lighter__designer', 'lighter__designer_article', 'lighter__copy_right')
-    designer_rew_dict = {}
-    designer_persent = DesignUser.objects.all().values(
-        'designer', 'main_reward_persent', 'copyright_reward_persent')
-    for i in designer_persent:
-        if i['copyright_reward_persent']:
-            designer_rew_dict[i['designer']
-                              ] = i['copyright_reward_persent']/100
-        elif not i['copyright_reward_persent'] and i['main_reward_persent']:
-            designer_rew_dict[i['designer']] = i['main_reward_persent']/100
-        else:
-            designer_rew_dict[i['designer']] = 0
-    # Словарь с данными артикула по продажам по месяцам
-    monthly_sales_dict = {}
-    # Словарь с продажами артикула за текущий год
-    year_sales_dict = {}
-    for data in sale_data:
-
-        if data['lighter__designer']:
-            designer_obj = DesignUser.objects.filter(
-                designer__id=data['lighter__designer'])[0]
-            main_percent = designer_obj.main_reward_persent/100
-            if designer_obj.copyright_reward_persent:
-                copyright_percent = designer_obj.copyright_reward_persent/100
-            percent = 0
-            if data['lighter__copy_right'] == True:
-                percent = copyright_percent
-            else:
-                percent = main_percent
-
-            if data['lighter__designer'] in monthly_sales_dict:
-                if data['month'] in monthly_sales_dict[data['lighter__designer']]:
-                    monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] += int(data['summ'])*percent
-                else:
-                    monthly_sales_dict[data['lighter__designer']
-                                       ][data['month']] = int(data['summ'])*percent
-            else:
-                monthly_sales_dict[data['lighter__designer']] = {
-                    data['month']: int(data['summ'])*percent}
-            if data['lighter__designer'] in year_sales_dict:
-                year_sales_dict[data['lighter__designer']
-                                ] += int(data['summ'])*percent
-            else:
-                year_sales_dict[data['lighter__designer']] = int(
-                    data['summ'])*percent
-    return year_sales_dict, monthly_sales_dict
-
-
-def get_article_sales_data(year):
-    """Отдает данные по продажам артикулов"""
-    sale_data = Selling.objects.filter(year=year).values(
-        'lighter', 'month', 'summ', 'lighter__designer')
-    # Словарь с продажами артикула за текущий год
-    year_sales_dict = {}
-    for data in sale_data:
-        if data['lighter__designer']:
-
-            if data['lighter__designer'] in year_sales_dict:
-                year_sales_dict[data['lighter__designer']
-                                ] += int(data['summ'])
-            else:
-                year_sales_dict[data['lighter__designer']] = int(
-                    data['summ'])
-    return year_sales_dict
+            elif 'import_file' in request.FILES:
+                import_data = motivation_article_type_excel_import(
+                    request.FILES['import_file'], ur_lico)
+                if type(import_data) != str:
+                    return redirect('motivation_article_type')
+        if 'common_article' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
+                'common_article', 'name', 'company', 'designer_article', 'copy_right')
+    context = {
+        'page_name': page_name,
+        'article_list': article_list,
+        'import_data': import_data
+    }
+    return render(request, 'motivation/article_type.html', context)
 
 
 def article_designers(request):
@@ -262,6 +128,81 @@ def article_designers(request):
     return render(request, 'motivation/article_designers.html', context)
 
 
+def percent_designers_rewards(request):
+    """Отображает страницу с процентами награждения каждого дизайнера"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    page_name = 'Процент вознаграждения'
+    percent_data = DesignUser.objects.all().order_by('designer__last_name')
+    context = {
+        'page_name': page_name,
+        'percent_data': percent_data
+    }
+    return render(request, 'motivation/percent_reward.html', context)
+
+
+def designers_rewards(request):
+    """Отображает страницы с вознаграждением дизайнеров"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    page_name = 'Вознаграждение дизайнеров'
+    sales_year = datetime.now().strftime('%Y')
+    year_filter = Selling.objects.all().values('year').distinct()
+    year_list = [int(value['year']) for value in year_filter]
+    # Список месяцев в текущем году
+    months = Selling.objects.filter(
+        year=sales_year).values('month').distinct()
+    month_list = [int(value['month']) for value in months]
+
+    designer_main_percent = DesignUser.objects.values(
+        'designer__id', 'main_reward_persent', 'copyright_reward_persent')
+    designer_percent = {}
+    for data in designer_main_percent:
+        if data['main_reward_persent']:
+            if data['copyright_reward_persent']:
+                designer_percent[data['designer__id']
+                                 ] = data['copyright_reward_persent']/100
+            else:
+                designer_percent[data['designer__id']
+                                 ] = data['main_reward_persent']/100
+
+    year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
+        sales_year)
+    print(year_sales_dict)
+    # year_article_sales_dict = get_article_sales_data(sales_year)
+    year_article_sales_dict = get_article_draw_authors_sales_data(sales_year)
+    # Находим группу "Дизайнеры"
+    designer_group = Group.objects.get(name='Дизайнеры')
+
+    # Получаем список пользователей из группы "Дизайнер"
+    designer_users = designer_group.user_set.all()
+
+    if request.POST:
+        select_year = request.POST.get("year_select")
+        if select_year:
+            sales_year = select_year
+            year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
+                select_year)
+            year_article_sales_dict = get_article_draw_authors_sales_data(
+                sales_year)
+            months = Selling.objects.filter(
+                year=select_year).values('month').distinct()
+    month_list = [int(value['month']) for value in months]
+    context = {
+        'page_name': page_name,
+        'designer_users': designer_users,
+        'year_list': year_list,
+        'monthly_sales_dict': monthly_sales_dict,
+        'designer_percent': designer_percent,
+        'year_sales_dict': year_sales_dict,
+        'month_list': sorted(month_list),
+        'sales_year': sales_year,
+        'year_article_sales_dict': year_article_sales_dict
+
+    }
+    return render(request, 'motivation/designers_reward.html', context)
+
+
 def update_model_field(request):
     if request.method == 'POST':
         # Сохраняем значение в базу данных
@@ -313,52 +254,6 @@ def filter_get_delete_request(request):
         return JsonResponse(data, safe=False)
 
 
-def article_type(request):
-    """
-    Отображает тип светильника:
-    дизайнерский или нет, с правами собственности или нет.
-    """
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    page_name = 'Тип светильника'
-    ur_lico = 'ООО Иннотрейд'
-    if 'filter_data' in request.session:
-        ur_lico = request.session['filter_data']
-    article_list = Articles.objects.filter(company=ur_lico).order_by('common_article').values(
-        'common_article', 'name', 'company', 'designer_article', 'copy_right')
-    import_data = ''
-    if request.GET:
-        return filter_get_request(request, ur_lico)
-
-    if request.POST:
-        filter_company = request.POST.get('filter_data')
-        if filter_company:
-            article_list = Articles.objects.filter(
-                company=filter_company).order_by('common_article').values(
-                'common_article', 'name', 'company', 'designer_article', 'copy_right')
-            request.session['filter_data'] = request.POST.get('filter_data')
-        if 'export' in request.POST or 'import_file' in request.FILES:
-            if request.POST.get('export') == 'create_file':
-                return motivation_article_type_excel_file_export(article_list)
-
-            elif 'import_file' in request.FILES:
-                import_data = motivation_article_type_excel_import(
-                    request.FILES['import_file'], ur_lico)
-                if type(import_data) != str:
-                    return redirect('motivation_article_type')
-        if 'common_article' in request.POST:
-            filter_data = request.POST
-            article_filter = filter_data.get("common_article")
-            article_list = Articles.objects.filter(company=ur_lico, common_article__contains=article_filter).order_by('common_article').values(
-                'common_article', 'name', 'company', 'designer_article', 'copy_right')
-    context = {
-        'page_name': page_name,
-        'article_list': article_list,
-        'import_data': import_data
-    }
-    return render(request, 'motivation/article_type.html', context)
-
-
 def update_article_designer_boolean_field(request):
     if request.method == 'POST':
         # Сохраняем значение в базу данных
@@ -408,67 +303,6 @@ def update_article_copyright_boolean_field(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
 
-def designers_rewards(request):
-    """Отображает страницы с вознаграждением дизайнеров"""
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    page_name = 'Вознаграждение дизайнеров'
-    sales_year = datetime.now().strftime('%Y')
-    year_filter = Selling.objects.all().values('year').distinct()
-    year_list = [int(value['year']) for value in year_filter]
-    # Список месяцев в текущем году
-    months = Selling.objects.filter(
-        year=sales_year).values('month').distinct()
-    month_list = [int(value['month']) for value in months]
-
-    designer_main_percent = DesignUser.objects.values(
-        'designer__id', 'main_reward_persent', 'copyright_reward_persent')
-    designer_percent = {}
-    for data in designer_main_percent:
-        if data['main_reward_persent']:
-            if data['copyright_reward_persent']:
-                designer_percent[data['designer__id']
-                                 ] = data['copyright_reward_persent']/100
-            else:
-                designer_percent[data['designer__id']
-                                 ] = data['main_reward_persent']/100
-
-    year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
-        sales_year)
-    # year_article_sales_dict = get_article_sales_data(sales_year)
-    year_article_sales_dict = get_article_draw_authors_sales_data(sales_year)
-    # Находим группу "Дизайнеры"
-    designer_group = Group.objects.get(name='Дизайнеры')
-
-    # Получаем список пользователей из группы "Дизайнер"
-    designer_users = designer_group.user_set.all()
-
-    if request.POST:
-        select_year = request.POST.get("year_select")
-        if select_year:
-            sales_year = select_year
-            year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
-                select_year)
-            year_article_sales_dict = get_article_draw_authors_sales_data(
-                sales_year)
-            months = Selling.objects.filter(
-                year=select_year).values('month').distinct()
-    month_list = [int(value['month']) for value in months]
-    context = {
-        'page_name': page_name,
-        'designer_users': designer_users,
-        'year_list': year_list,
-        'monthly_sales_dict': monthly_sales_dict,
-        'designer_percent': designer_percent,
-        'year_sales_dict': year_sales_dict,
-        'month_list': sorted(month_list),
-        'sales_year': sales_year,
-        'year_article_sales_dict': year_article_sales_dict
-
-    }
-    return render(request, 'motivation/designers_reward.html', context)
-
-
 class MotivationDesignersRewardDetailView(DetailView):
     model = InnotreidUser
     template_name = 'motivation/designers_reward_detail.html'
@@ -482,6 +316,9 @@ class MotivationDesignersRewardDetailView(DetailView):
             year=sales_year).values('month').distinct()
         article_list = list(Articles.objects.filter(
             designer=self.kwargs['pk']).values())
+        if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+            article_list = list(Articles.objects.filter(
+                designer_article=True, designer__isnull=False).values())
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
             user_data, sales_year)
@@ -497,8 +334,8 @@ class MotivationDesignersRewardDetailView(DetailView):
             'month_list': sorted(month_list),
             'sales_year': sales_year,
             'year_list': year_list,
-            'year_sales_dict': year_sales_dict,
-            'main_sales_dict': main_sales_dict,
+            'year_sales_dict': year_sales_dict[self.kwargs['pk']],
+            'main_sales_dict': main_sales_dict[self.kwargs['pk']],
             'designer_id': designer_id,
             'year_reward': year_reward,
             'designer_name': f"{user_data.last_name} {user_data.first_name}",
@@ -511,6 +348,9 @@ class MotivationDesignersRewardDetailView(DetailView):
             year=sales_year).values('month').distinct()
         article_list = list(Articles.objects.filter(
             designer=self.kwargs['pk']).values())
+        if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+            article_list = list(Articles.objects.filter(
+                designer_article=True, designer__isnull=False).values())
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
@@ -541,8 +381,8 @@ class MotivationDesignersRewardDetailView(DetailView):
             'month_list': sorted(month_list),
             'sales_year': sales_year,
             'year_list': year_list,
-            'year_sales_dict': year_sales_dict,
-            'main_sales_dict': main_sales_dict,
+            'year_sales_dict': year_sales_dict[self.kwargs['pk']],
+            'main_sales_dict': main_sales_dict[self.kwargs['pk']],
             'designer_id': designer_id,
             'year_reward': year_reward,
             'designer_name': f"{user_data.last_name} {user_data.first_name}",
@@ -604,6 +444,10 @@ class MotivationDesignersSaleDetailView(DetailView):
         designer_id = int(self.kwargs['pk'])
         article_list = list(Articles.objects.filter(
             designer=self.kwargs['pk']).values())
+
+        if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+            article_list = list(Articles.objects.filter(
+                designer_article=True, designer__isnull=False).values())
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
@@ -637,6 +481,9 @@ class MotivationDesignersSaleDetailView(DetailView):
         year_list = [int(value['year']) for value in year_filter]
         article_list = list(Articles.objects.filter(
             designer=self.kwargs['pk']).values())
+        if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+            article_list = list(Articles.objects.filter(
+                designer_article=True, designer__isnull=False).values())
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
         year_article_sales_dict = get_article_sales_data(sales_year)
         designer_id = int(self.kwargs['pk'])
@@ -667,19 +514,6 @@ class MotivationDesignersSaleDetailView(DetailView):
             'designer_name': f"{user_data.last_name} {user_data.first_name}",
         }
         return self.render_to_response(context)
-
-
-def percent_designers_rewards(request):
-    """Отображает страницу с процентами награждения каждого дизайнера"""
-    if str(request.user) == 'AnonymousUser':
-        return redirect('login')
-    page_name = 'Процент вознаграждения'
-    percent_data = DesignUser.objects.all().order_by('designer__last_name')
-    context = {
-        'page_name': page_name,
-        'percent_data': percent_data
-    }
-    return render(request, 'motivation/percent_reward.html', context)
 
 
 def update_percent_reward(request):
