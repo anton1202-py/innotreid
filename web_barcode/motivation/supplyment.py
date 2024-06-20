@@ -104,27 +104,16 @@ def get_designers_amount_summ_sales_data(innotreiduser, year):
     main_percent = designer_obj.main_reward_persent/100
     copyright_percent = designer_obj.copyright_reward_persent/100
 
-    # ========== ОБЪЕКТ ДЛЯ ВСЕЙ КОМАНДЫ И ЕГО % ========== #
-    team_obj = InnotreidUser.objects.filter(
-        username='team')[0]
-    team_designer_obj = DesignUser.objects.get(designer=team_obj)
-    team_main_percent = team_designer_obj.main_reward_persent/100
-    team_copyright_percent = team_designer_obj.copyright_reward_persent/100
-    # ========== КОНЕЦ ОБЪЕКТ ДЛЯ ВСЕЙ КОМАНДЫ И ЕГО % ========== #
-
     # Словарь с данными артикула по продажам по месяцам
     main_sales_dict = {}
     # Словарь с продажами артикула за текущий год
     year_sales_dict = {}
     for data in sale_data:
         percent = 0
-        team_percent = 0
         if data['lighter__copy_right'] == True:
             percent = copyright_percent
-            team_percent = team_copyright_percent
         else:
             percent = main_percent
-            team_percent = team_main_percent
 
         if data['lighter__designer']:
             if data['lighter__designer'] in main_sales_dict:
@@ -147,28 +136,6 @@ def get_designers_amount_summ_sales_data(innotreiduser, year):
             else:
                 main_sales_dict[data['lighter__designer']] = {data['lighter']: {data['month']: {
                     'quantity': int(data['quantity']), 'summ': int(data['summ'])*percent}}}
-            # ========== % ДЛЯ ВСЕЙ КОМАНДЫ ЕЖЕМЕСЯЧНО ========== #
-            if team_obj.pk in main_sales_dict:
-                if data['lighter'] in main_sales_dict[team_obj.pk]:
-                    if data['month'] in main_sales_dict[team_obj.pk][data['lighter']]:
-                        main_sales_dict[team_obj.pk][data['lighter']
-                                                     ][data['month']]['quantity'] += int(data['quantity'])
-                        main_sales_dict[team_obj.pk][data['lighter']
-                                                     ][data['month']]['summ'] += int(data['summ'])*percent
-
-                    else:
-                        main_sales_dict[team_obj.pk][data['lighter']
-                                                     ][data['month']] = {'quantity': int(data['quantity']),
-                                                                         'summ': int(data['summ'])*percent}
-                else:
-                    main_sales_dict[team_obj.pk][data['lighter']] = {
-                        data['month']: {
-                            'quantity': int(data['quantity']),
-                            'summ': int(data['summ'])*percent}}
-            else:
-                main_sales_dict[team_obj.pk] = {data['lighter']: {data['month']: {
-                    'quantity': int(data['quantity']), 'summ': int(data['summ'])*percent}}}
-            # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ ЕЖЕМЕСЯЧНО ========== #
 
             if data['lighter__designer'] in year_sales_dict:
                 if data['lighter'] in year_sales_dict[data['lighter__designer']]:
@@ -182,21 +149,66 @@ def get_designers_amount_summ_sales_data(innotreiduser, year):
             else:
                 year_sales_dict[data['lighter__designer']] = {data['lighter']: {'quantity': int(data['quantity']),
                                                                                 'summ': int(data['summ'])*percent}}
-            # ========== % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
-            if team_obj.pk in year_sales_dict:
-                if data['lighter'] in year_sales_dict[team_obj.pk]:
-                    year_sales_dict[team_obj.pk][data['lighter']
-                                                 ]['quantity'] += int(data['quantity'])
-                    year_sales_dict[team_obj.pk][data['lighter']
-                                                 ]['summ'] += int(data['summ'])*team_percent
+    return year_sales_dict, main_sales_dict
+
+
+def get_team_amount_summ_sales(year):
+    """Отдает данные по продажам и количеству артикулов за все дизайнерские ночники"""
+    sale_data = Selling.objects.filter(year=year, lighter__designer_article=True).values(
+        'lighter', 'month', 'quantity', 'summ', 'lighter__designer_article', 'lighter__copy_right', 'lighter__designer')
+
+    team_obj = InnotreidUser.objects.filter(
+        username='team')[0]
+    team_designer_obj = DesignUser.objects.get(designer=team_obj)
+    team_main_percent = team_designer_obj.main_reward_persent/100
+    team_copyright_percent = team_designer_obj.copyright_reward_persent/100
+
+    # Словарь с данными артикула по продажам по месяцам
+    main_sales_dict = {}
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    for data in sale_data:
+        team_percent = 0
+        if data['lighter__copy_right'] == True:
+            team_percent = team_copyright_percent
+        else:
+            team_percent = team_main_percent
+        # ========== % ДЛЯ ВСЕЙ КОМАНДЫ ЕЖЕМЕСЯЧНО ========== #
+        if team_obj.pk in main_sales_dict:
+            if data['lighter'] in main_sales_dict[team_obj.pk]:
+                if data['month'] in main_sales_dict[team_obj.pk][data['lighter']]:
+                    main_sales_dict[team_obj.pk][data['lighter']
+                                                 ][data['month']]['quantity'] += int(data['quantity'])
+                    main_sales_dict[team_obj.pk][data['lighter']
+                                                 ][data['month']]['summ'] += int(data['summ'])*team_percent
                 else:
-                    year_sales_dict[team_obj.pk][data['lighter']] = {'quantity': int(data['quantity']),
+                    main_sales_dict[team_obj.pk][data['lighter']
+                                                 ][data['month']] = {'quantity': int(data['quantity']),
                                                                      'summ': int(data['summ'])*team_percent}
             else:
-                year_sales_dict[team_obj.pk] = {data['lighter']: {'quantity': int(data['quantity']),
-                                                                  'summ': int(data['summ'])*team_percent}}
-            # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
-    print(year_sales_dict)
+                main_sales_dict[team_obj.pk][data['lighter']] = {
+                    data['month']: {
+                        'quantity': int(data['quantity']),
+                        'summ': int(data['summ'])*team_percent}}
+        else:
+            main_sales_dict[team_obj.pk] = {data['lighter']: {data['month']: {
+                'quantity': int(data['quantity']), 'summ': int(data['summ'])*team_percent}}}
+        # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ ЕЖЕМЕСЯЧНО ========== #
+
+        # ========== % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
+        if team_obj.pk in year_sales_dict:
+            if data['lighter'] in year_sales_dict[team_obj.pk]:
+                year_sales_dict[team_obj.pk][data['lighter']
+                                             ]['quantity'] += int(data['quantity'])
+                year_sales_dict[team_obj.pk][data['lighter']
+                                             ]['summ'] += int(data['summ'])*team_percent
+            else:
+                year_sales_dict[team_obj.pk][data['lighter']] = {'quantity': int(data['quantity']),
+                                                                 'summ': int(data['summ'])*team_percent}
+        else:
+            year_sales_dict[team_obj.pk] = {data['lighter']: {'quantity': int(data['quantity']),
+                                                              'summ': int(data['summ'])*team_percent}}
+        # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
     return year_sales_dict, main_sales_dict
 
 
@@ -286,6 +298,52 @@ def get_designers_sales_data(year):
     return year_sales_dict, monthly_sales_dict
 
 
+def get_team_sales_data(year):
+    """Отдает данные по продажам дизайнеров"""
+    sale_data = Selling.objects.filter(year=year, lighter__designer_article=True).values(
+        'lighter', 'month', 'summ', 'lighter__designer', 'lighter__designer_article', 'lighter__copy_right')
+
+    # Словарь с данными артикула по продажам по месяцам
+    monthly_sales_dict = {}
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    team_obj = InnotreidUser.objects.filter(
+        username='team')[0]
+    team_designer_obj = DesignUser.objects.get(designer=team_obj)
+    team_main_percent = team_designer_obj.main_reward_persent/100
+    team_copyright_percent = team_designer_obj.copyright_reward_persent/100
+    for data in sale_data:
+        # ========== % ДЛЯ ВСЕЙ КОМАНДЫ ========== #
+        team_percent = 0
+        if data['lighter__copy_right'] == True:
+            team_percent = team_copyright_percent
+        else:
+            team_percent = team_main_percent
+        # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ ========== #
+
+        # ========== % ДЛЯ ВСЕЙ КОМАНДЫ В МЕСЯЦ ========== #
+        if team_obj.pk in monthly_sales_dict:
+            if data['month'] in monthly_sales_dict[team_obj.pk]:
+                monthly_sales_dict[team_obj.pk
+                                   ][data['month']] += int(data['summ'])*team_percent
+            else:
+                monthly_sales_dict[team_obj.pk
+                                   ][data['month']] = int(data['summ'])*team_percent
+        else:
+            monthly_sales_dict[team_obj.pk] = {
+                data['month']: int(data['summ'])*team_percent}
+        # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ В МЕСЯЦ ========== #
+        # ========== % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
+        if team_obj.pk in year_sales_dict:
+            year_sales_dict[team_obj.pk
+                            ] += int(data['summ'])*team_percent
+        else:
+            year_sales_dict[team_obj.pk] = int(
+                data['summ'])*team_percent
+        # ========== КОНЕЦ % ДЛЯ ВСЕЙ КОМАНДЫ В ГОД ========== #
+    return year_sales_dict, monthly_sales_dict
+
+
 def get_article_sales_data(year):
     """Отдает данные по продажам артикулов"""
     sale_data = Selling.objects.filter(year=year).values(
@@ -310,6 +368,24 @@ def get_article_sales_data(year):
             else:
                 year_sales_dict[team_obj.pk] = int(
                     data['summ'])
+    return year_sales_dict
+
+
+def get_team_article_sales_data(year):
+    """Отдает данные по продажам артикулов для всей команды дизайнеров"""
+    sale_data = Selling.objects.filter(year=year, lighter__designer_article=True).values(
+        'lighter', 'month', 'summ', 'lighter__designer')
+    # Словарь с продажами артикула за текущий год
+    year_sales_dict = {}
+    for data in sale_data:
+        team_obj = InnotreidUser.objects.filter(
+            username='team')[0]
+        if team_obj.pk in year_sales_dict:
+            year_sales_dict[team_obj.pk
+                            ] += int(data['summ'])
+        else:
+            year_sales_dict[team_obj.pk] = int(
+                data['summ'])
     return year_sales_dict
 
 

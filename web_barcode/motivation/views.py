@@ -13,7 +13,9 @@ from motivation.supplyment import (
     get_amount_summ_sales_data, get_article_draw_authors_sales_data,
     get_article_sales_data, get_designers_amount_summ_sales_data,
     get_designers_sales_data, get_draw_authors_year_monthly_reward,
-    get_main_sales_data, motivation_article_type_excel_file_export,
+    get_main_sales_data, get_team_amount_summ_sales,
+    get_team_article_sales_data, get_team_sales_data,
+    motivation_article_type_excel_file_export,
     motivation_article_type_excel_import,
     motivation_designer_rewards_excel_file_export,
     motivation_designer_sales_excel_file_export)
@@ -314,17 +316,25 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
-        article_list = list(Articles.objects.filter(
-            designer=self.kwargs['pk']).values())
+
         if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
             article_list = list(Articles.objects.filter(
                 designer_article=True, designer__isnull=False).values())
+            year_sales_dict, main_sales_dict = get_team_amount_summ_sales(
+                sales_year)
+            year_common_sales_dict, monthly_sales_dict = get_team_sales_data(
+                sales_year)
+        else:
+            article_list = list(Articles.objects.filter(
+                designer=self.kwargs['pk']).values())
+            year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+                user_data, sales_year)
+            year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+                sales_year)
+
         month_list = [int(value['month']) for value in months]
-        year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
-            user_data, sales_year)
         designer_id = int(self.kwargs['pk'])
-        year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
-            sales_year)
+
         year_reward = round(year_common_sales_dict[self.kwargs['pk']])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
@@ -346,18 +356,25 @@ class MotivationDesignersRewardDetailView(DetailView):
         sales_year = datetime.now().strftime('%Y')
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
-        article_list = list(Articles.objects.filter(
-            designer=self.kwargs['pk']).values())
+        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+
         if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
             article_list = list(Articles.objects.filter(
                 designer_article=True, designer__isnull=False).values())
-        user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
+            year_sales_dict, main_sales_dict = get_team_amount_summ_sales(
+                sales_year)
+            year_common_sales_dict, monthly_sales_dict = get_team_sales_data(
+                sales_year)
+        else:
+            article_list = list(Articles.objects.filter(
+                designer=self.kwargs['pk']).values())
+            year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+                user_data, sales_year)
+            year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+                sales_year)
+
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
-        year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
-            sales_year)
-        year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
-            user_data, sales_year)
 
         if request.POST:
             select_year = request.POST.get("year_select")
@@ -365,10 +382,19 @@ class MotivationDesignersRewardDetailView(DetailView):
                 months = Selling.objects.filter(
                     year=select_year).values('month').distinct()
                 sales_year = select_year
-                year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
-                    user_data, sales_year)
-                year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
-                    sales_year)
+
+                if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+                    article_list = list(Articles.objects.filter(
+                        designer_article=True, designer__isnull=False).values())
+                    year_sales_dict, main_sales_dict = get_team_amount_summ_sales(
+                        sales_year)
+                    year_common_sales_dict, monthly_sales_dict = get_team_sales_data(
+                        sales_year)
+                else:
+                    year_sales_dict, main_sales_dict = get_designers_amount_summ_sales_data(
+                        user_data, sales_year)
+                    year_common_sales_dict, monthly_sales_dict = get_designers_sales_data(
+                        sales_year)
         designer_id = int(self.kwargs['pk'])
 
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
@@ -448,13 +474,15 @@ class MotivationDesignersSaleDetailView(DetailView):
         if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
             article_list = list(Articles.objects.filter(
                 designer_article=True, designer__isnull=False).values())
+            year_article_sales_dict = get_team_article_sales_data(sales_year)
+        else:
+            year_article_sales_dict = get_article_sales_data(sales_year)
         months = Selling.objects.filter(
             year=sales_year).values('month').distinct()
         month_list = [int(value['month']) for value in months]
         year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
             sales_year)
 
-        year_article_sales_dict = get_article_sales_data(sales_year)
         year_sales = round(year_article_sales_dict[self.kwargs['pk']])
         year_filter = Selling.objects.all().values('year').distinct()
         year_list = [int(value['year']) for value in year_filter]
@@ -484,8 +512,11 @@ class MotivationDesignersSaleDetailView(DetailView):
         if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
             article_list = list(Articles.objects.filter(
                 designer_article=True, designer__isnull=False).values())
+            year_article_sales_dict = get_team_article_sales_data(sales_year)
+        else:
+            year_article_sales_dict = get_article_sales_data(sales_year)
         user_data = InnotreidUser.objects.get(id=self.kwargs['pk'])
-        year_article_sales_dict = get_article_sales_data(sales_year)
+
         designer_id = int(self.kwargs['pk'])
         if request.POST:
             select_year = request.POST.get("year_select")
@@ -496,7 +527,14 @@ class MotivationDesignersSaleDetailView(DetailView):
                 sales_year = select_year
                 year_sales_dict, main_sales_dict = get_amount_summ_sales_data(
                     sales_year)
-                year_article_sales_dict = get_article_sales_data(sales_year)
+                if self.kwargs['pk'] == InnotreidUser.objects.get(username='team').pk:
+                    article_list = list(Articles.objects.filter(
+                        designer_article=True, designer__isnull=False).values())
+                    year_article_sales_dict = get_team_article_sales_data(
+                        sales_year)
+                else:
+                    year_article_sales_dict = get_article_sales_data(
+                        sales_year)
 
         # context = self.get_context_data()
         month_list = [int(value['month']) for value in months]
