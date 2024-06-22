@@ -277,6 +277,27 @@
                             </li>
                         </ul>
                     </li>
+
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Создание РК WB</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'create_reklama_create_campaign' as url_create_campaign %}
+                            <li>
+                                <a href="{{ url_create_campaign }}" {% if request.path == url_create_campaign %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Создать кампанию WB</h3>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
+
                     <li class="parent">
                         <span class="expanded">
                             <span class="material-symbols-sharp">receipt_long</span>

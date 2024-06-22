@@ -1,0 +1,144 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+
+        
+        <!-- {% if errors_list %}
+            <script>
+                alert("{{ errors_list }}");
+            </script>
+        {% endif %} -->
+        {% if errors_list %}
+            <div class="alert alert-danger" role="alert">
+                {% for i in errors_list %}
+                    {{ i|safe }}<br>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+
+        {% if ok_answer %}
+            <div class="alert alert-success" role="alert">
+                {{ ok_answer }}
+            </div>
+        {% endif %}
+        
+        <div class='filter-data'>
+            <form class="create-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select" required>
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Тип кампании</span><br>
+                    <select class="selectType" name="select_type" required>
+                        <option value=""></option>
+                        <option value=8>Автоматическая</option>
+                    </select>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Название</span><br>
+                    <input type="text" name="name" required/>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Предмет</span><br>
+                    <select class="mySelect" name="select_subject" required>
+                        <option value=""></option>
+                        {% for subject, code in subject_id.items %}
+                            <option value="{{ code }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Список артикулов (через запятую c пробелом)</span><br>
+                    <input type="text" name="articles" required/>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Бюджет</span><br>
+                    <input type="number" name="budget" value="1000" min="1000" required/>
+                </div>
+
+                <div class="inner-form-data">
+                    <span>Ставка</span><br>
+                    <input type="number" name="cpm" required/>
+                </div>
+
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="action" value="Создать"/>
+                </div>
+            </form>
+            
+        
+        </div>
+
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // ========== Показывает отфильтрованную по артикулам таблицу ========= //
+        $(document).ready(function() {
+            $('#common_article_id').on('input', function() {
+                var search_term = $(this).val();
+                $.ajax({
+                    url: '',
+                    data: {'search_term': search_term},
+                    success: function(data) {
+                        $('#table tbody').empty();
+                        if (data.length > 0) {
+                            $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
+                            data.forEach(function(article) {
+                                var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
+                                if (article.designer_article) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
+                                if (article.copy_right) {
+                                    newRow += ' checked';
+                                }
+                                newRow += '></td></tr>';
+                                $('#table tbody').append(newRow);
+                            });
+                        } else {
+                            $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
+                        }
+                    }
+                });
+            });
+        });
+        
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+            
+        // do the work...
+        document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+            const table = th.closest('table');
+            Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                .forEach(tr => table.appendChild(tr) );
+        })));
+       
+    </script>
+        
+{% endblock %}

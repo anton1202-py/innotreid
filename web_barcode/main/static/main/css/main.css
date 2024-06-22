@@ -565,6 +565,33 @@ form{
 	background: var(--color-background);
 }
 
+.create-filter-form {
+    width: 100%;
+    margin: 0;
+    gap: 0.2rem;
+}
+.create-filter-form input, button,
+.create-filter-form select{
+	border-radius: var(--border-radius-1);
+	-webkit-border-radius: var(--border-radius-1);
+	-moz-border-radius: var(--border-radius-1);
+	border: 1px solid var(--color-table-separator);
+	outline: none;
+	color: var(--color-dark);
+	padding: 5px 8px 5px 8px;
+	background: var(--color-background);
+}
+.create-filter-form label {
+    border-radius: var(--border-radius-1);
+	-webkit-border-radius: var(--border-radius-1);
+	-moz-border-radius: var(--border-radius-1);
+	border: 0;
+	outline: none;
+	color: var(--color-dark);
+	padding: 0;
+	background: var(--color-background);
+}
+
 .action-button-form {
     display: flex;
     width: 100%;

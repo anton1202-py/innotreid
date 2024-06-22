@@ -88,6 +88,37 @@ def wb_sales_statistic(header, check_date, attempt=0):
 
 
 # =========== API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
+def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subject_id, budget, mns_list, cpm):
+    """
+    Создать автоматическую кампанию
+
+    type - Тип автоматической кампании: 8 (автоматическая).
+    name - Название кампании (max. 128 символов).
+    subjectId - ID предмета, для которого создается кампания.
+    sum - Сумма пополнения
+    btype - Tип списания (0 - Счёт, 1 - Баланс, 3 - Бонусы).
+    on_pause - После создания кампания: 
+        true - будет на паузе. Запуск кампании будет доступен через 3 минуты после создания кампании.
+        false - будет сразу запущена
+    nms - Массив артикулов WB. Максимум 100 артикулов.
+    cpm - Ставка. Если будет указана ставка меньше допустимого размера, 
+        то автоматически установится ставка минимально допустимого размера.
+    header - хедер для запроса
+    """
+    url = 'https://advert-api.wb.ru/adv/v1/save-ad'
+    payload = json.dumps({
+        "type": campaign_type,
+        "name": campaign_name,
+        "subjectId": subject_id,
+        "sum": budget,
+        "btype": 1,
+        "on_pause": False,
+        "nms": mns_list,
+        "cpm": cpm
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+
 
 @api_retry_decorator
 def advertisment_campaign_list(header):
@@ -211,9 +242,11 @@ def get_budget_adv_campaign(header, campaign_number):
     response = requests.request("GET", url, headers=header)
     print(campaign_number, response.status_code)
     return response
-
+# =========== КОНЕЦ API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
 
 # =========== РЕЙТИНГ И ОТЗЫВЫ ========== #
+
+
 @api_retry_decorator
 def average_rating_feedbacks_amount(header, wb_nmid):
     """

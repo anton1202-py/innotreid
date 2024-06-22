@@ -170,8 +170,6 @@ def designers_rewards(request):
 
     year_sales_dict, monthly_sales_dict = get_draw_authors_year_monthly_reward(
         sales_year)
-    print(year_sales_dict)
-    # year_article_sales_dict = get_article_sales_data(sales_year)
     year_article_sales_dict = get_article_draw_authors_sales_data(sales_year)
     # Находим группу "Дизайнеры"
     designer_group = Group.objects.get(name='Дизайнеры')

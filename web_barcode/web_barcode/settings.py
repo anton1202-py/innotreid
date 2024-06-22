@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'main',
     'analytika_reklama',
+    'create_reklama',
     'database',
     'database_yandex',
     'feedbacks',
