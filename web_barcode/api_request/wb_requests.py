@@ -90,7 +90,8 @@ def wb_sales_statistic(header, check_date, attempt=0):
 # =========== API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
 def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subject_id, budget, mns_list, cpm):
     """
-    Создать автоматическую кампанию
+    Создают автоматическую кампанию.
+    Максимум 1 запрос в 20 секунд.
 
     type - Тип автоматической кампании: 8 (автоматическая).
     name - Название кампании (max. 128 символов).
@@ -105,6 +106,7 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
         то автоматически установится ставка минимально допустимого размера.
     header - хедер для запроса
     """
+    time.sleep(21)
     url = 'https://advert-api.wb.ru/adv/v1/save-ad'
     payload = json.dumps({
         "type": campaign_type,

@@ -9,7 +9,7 @@
             <h1>{{ page_name }}</h1>
         </div>
 
-        
+        <p>{{ user_chat_id }}</p>
         <!-- {% if errors_list %}
             <script>
                 alert("{{ errors_list }}");
@@ -31,7 +31,7 @@
         {% endif %}
         
         <div class='filter-data'>
-            <form class="create-filter-form" method="POST">
+            <form id="campaigns_create" class="create-filter-form" method="POST">
                 {% csrf_token %}
                 <div class="inner-form-data">
                     <span>Юр. лицо</span><br>
@@ -49,11 +49,6 @@
                         <option value=""></option>
                         <option value=8>Автоматическая</option>
                     </select>
-                </div>
-
-                <div class="inner-form-data">
-                    <span>Название</span><br>
-                    <input type="text" name="name" required/>
                 </div>
 
                 <div class="inner-form-data">
@@ -83,7 +78,8 @@
 
                 <div class="inner-form-data">
                     <br>
-                    <input type="Submit" id="filter" name="action" value="Создать"/>
+                    <button type="Submit">Создать</button>
+                    <!-- <input id="reload-button" type="Submit" id="filter" name="action" value="Создать"/> -->
                 </div>
             </form>
             
@@ -94,51 +90,26 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // ========== Показывает отфильтрованную по артикулам таблицу ========= //
-        $(document).ready(function() {
-            $('#common_article_id').on('input', function() {
-                var search_term = $(this).val();
-                $.ajax({
-                    url: '',
-                    data: {'search_term': search_term},
-                    success: function(data) {
-                        $('#table tbody').empty();
-                        if (data.length > 0) {
-                            $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
-                            data.forEach(function(article) {
-                                var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
-                                if (article.designer_article) {
-                                    newRow += ' checked';
-                                }
-                                newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
-                                if (article.copy_right) {
-                                    newRow += ' checked';
-                                }
-                                newRow += '></td></tr>';
-                                $('#table tbody').append(newRow);
-                            });
-                        } else {
-                            $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
-                        }
-                    }
-                });
-            });
-        });
-        
-        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
-        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
-        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
-            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
-            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+        // ========== ЗАПУСКАЕТ СОЗДАНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========= //
+        document.getElementById("campaigns_create").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            formData.append("user_chat_id", "{{ user_chat_id }}");
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "create_reklama_create_many_campaigns", true);
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            xhr.send(formData);
+            console.log("Function is still running in the background.");
+            location.reload()
+            // xhr.onreadystatechange = function() {
+            //     if (xhr.readyState == 4 && xhr.status == 200) {
+            //         console.log("Function is still running in the background.");
+            //         location.reload(); // Перезагрузка страницы
+            //     }
+            // };
             
-        // do the work...
-        document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-            const table = th.closest('table');
-            Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
-                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
-                .forEach(tr => table.appendChild(tr) );
-        })));
-       
+        });
     </script>
         
 {% endblock %}
