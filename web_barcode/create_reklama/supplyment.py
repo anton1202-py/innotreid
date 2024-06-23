@@ -64,8 +64,8 @@ def check_data_for_create_adv_campaign(main_data):
         # response = create_auto_advertisment_campaign(
         #     header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
 
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=f'ответ на создание кампании {name_for_request} {response.text}')
+        # bot.send_message(chat_id=CHAT_ID_ADMIN,
+        #                  text=f'ответ на создание кампании {name_for_request} {response.text}')
 
         # if response.status_code != 200:
         #     error = f'Не создал кампанию для артикула {nm_id} ({article_name}). Ошибка: {response.text}'
