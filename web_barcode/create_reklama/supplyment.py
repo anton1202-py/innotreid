@@ -10,7 +10,7 @@ from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
 
-from web_barcode.constants_file import bot, header_wb_dict
+from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
 
 
 def check_data_for_create_adv_campaign(main_data):
@@ -50,6 +50,9 @@ def check_data_for_create_adv_campaign(main_data):
         article_name = Articles.objects.filter(
             company=ur_lico, wb_nomenclature=nm_id)[0].name
         name_for_request = f'{nm_id} {article_name}'
+        message1 = f'Создаю кампанию для {name_for_request}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message1[:4000])
         response = create_auto_advertisment_campaign(
             header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
 
@@ -71,9 +74,11 @@ def check_data_for_create_adv_campaign(main_data):
                 'budget': int(main_data['budget']),
                 'article': nm_id
             }
-            print('saved_data', saved_data)
+            message1 = 'Создал кампанию и нужно ее сохранить'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message1[:4000])
             # try:
-            add_created_campaign_data_to_database(saved_data)
+            # add_created_campaign_data_to_database(saved_data)
             # except:
             #     error = f'Ошибка в функции add_created_campaign_data_to_database'
             #     bot.send_message(chat_id=user_chat_id,

@@ -20,9 +20,11 @@ from price_system.models import Articles
 from reklama.models import UrLico
 from users.models import InnotreidUser
 
-from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+from web_barcode.constants_file import (CHAT_ID_ADMIN,
+                                        WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_data_dict)
+                                        bot, header_wb_data_dict,
+                                        header_wb_dict)
 
 
 @login_required
@@ -89,7 +91,6 @@ def create_many_campaigns(request):
     """Создает много кампаний"""
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' and request.method == 'POST':
-        print(request.POST)
         # Получение данных из формы
         ur_lico = request.POST.get('ur_lico_select')
         select_type = request.POST.get('select_type')
@@ -110,5 +111,11 @@ def create_many_campaigns(request):
             'budget': budget,
             'user_chat_id': user_chat_id
         }
-        answer = check_data_for_create_adv_campaign(main_data)
+        message = 'Собрал все данные. Передаю в создание кампаний'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message[:4000])
+        check_data_for_create_adv_campaign(main_data)
+        message1 = 'Создал кампании'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message1[:4000])
         return JsonResponse({"status": "Function is still running in the background."})
