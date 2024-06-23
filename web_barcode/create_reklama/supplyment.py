@@ -49,7 +49,7 @@ def check_data_for_create_adv_campaign(main_data):
         message1 = f'Я перед ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
-        time.sleep(20)
+        time.sleep(10)
         message1 = f'Я после ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
@@ -60,6 +60,7 @@ def check_data_for_create_adv_campaign(main_data):
         message1 = f'Создаю кампанию для {name_for_request}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
+        time.sleep(10)
         response = create_auto_advertisment_campaign(
             header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
 
