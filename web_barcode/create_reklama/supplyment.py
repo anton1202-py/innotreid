@@ -49,7 +49,7 @@ def check_data_for_create_adv_campaign(main_data):
         message1 = f'Я перед ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
-        time.sleep(10)
+        time.sleep(21)
         message1 = f'Я после ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
@@ -60,40 +60,40 @@ def check_data_for_create_adv_campaign(main_data):
         message1 = f'Создаю кампанию для {name_for_request}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
-        time.sleep(10)
-        response = create_auto_advertisment_campaign(
-            header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
+        # time.sleep(10)
+        # response = create_auto_advertisment_campaign(
+        #     header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
 
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=f'ответ на создание кампании {name_for_request} {response.text}')
 
-        if response.status_code != 200:
-            error = f'Не создал кампанию для артикула {nm_id} ({article_name}). Ошибка: {response.text}'
-            bot.send_message(chat_id=user_chat_id,
-                             text=error[:4000])
-        else:
-            error = f'Создал кампанию для артикула {nm_id} ({article_name}). Ее номер: {response.text}'
-            bot.send_message(chat_id=user_chat_id,
-                             text=error[:4000])
-            saved_data = {
-                'ur_lico': UrLico.objects.get(id=main_data['ur_lico']),
-                'campaign_name': name_for_request,
-                'campaign_number': int(response.text),
-                'campaign_type': int(main_data['select_type']),
-                'subject_id': int(main_data['select_subject']),
-                'cpm': int(main_data['cpm']),
-                'budget': int(main_data['budget']),
-                'article': nm_id
-            }
-            message1 = 'Создал кампанию и нужно ее сохранить'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message1[:4000])
-            # try:
-            # add_created_campaign_data_to_database(saved_data)
-            # except:
-            #     error = f'Ошибка в функции add_created_campaign_data_to_database'
-            #     bot.send_message(chat_id=user_chat_id,
-            #                      text=error[:4000])
+        # if response.status_code != 200:
+        #     error = f'Не создал кампанию для артикула {nm_id} ({article_name}). Ошибка: {response.text}'
+        #     bot.send_message(chat_id=user_chat_id,
+        #                      text=error[:4000])
+        # else:
+        #     error = f'Создал кампанию для артикула {nm_id} ({article_name}). Ее номер: {response.text}'
+        #     bot.send_message(chat_id=user_chat_id,
+        #                      text=error[:4000])
+        # saved_data = {
+        #     'ur_lico': UrLico.objects.get(id=main_data['ur_lico']),
+        #     'campaign_name': name_for_request,
+        #     'campaign_number': int(response.text),
+        #     'campaign_type': int(main_data['select_type']),
+        #     'subject_id': int(main_data['select_subject']),
+        #     'cpm': int(main_data['cpm']),
+        #     'budget': int(main_data['budget']),
+        #     'article': nm_id
+        # }
+        # message1 = 'Создал кампанию и нужно ее сохранить'
+        # bot.send_message(chat_id=CHAT_ID_ADMIN,
+        #                  text=message1[:4000])
+        # try:
+        # add_created_campaign_data_to_database(saved_data)
+        # except:
+        #     error = f'Ошибка в функции add_created_campaign_data_to_database'
+        #     bot.send_message(chat_id=user_chat_id,
+        #                      text=error[:4000])
 
 
 @sender_error_to_tg
