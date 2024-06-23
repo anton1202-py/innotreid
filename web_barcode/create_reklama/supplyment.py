@@ -45,7 +45,13 @@ def check_data_for_create_adv_campaign(main_data):
             mns_list.append(int(nmid))
 
     for nm_id in mns_list:
-
+        message1 = f'Я перед ожиданием слип 21'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message1[:4000])
+        time.sleep(21)
+        message1 = f'Я после ожиданием слип 21'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message1[:4000])
         nm_id_for_request = [nm_id]
         article_name = Articles.objects.filter(
             company=ur_lico, wb_nomenclature=nm_id)[0].name
