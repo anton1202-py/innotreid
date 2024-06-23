@@ -52,7 +52,8 @@ def wb_ip_article_compare():
     article_dict = {}
     for data in all_data:
         if data["subjectName"] == "Ночники":
-            article = data["vendorCode"].split('-')[0]
+            # article = data["vendorCode"].split('-')[0]
+            article = data["vendorCode"]
             article_dict[article.capitalize()] = [data["vendorCode"],
                                                   data["sizes"][0]["skus"][0], data["nmID"], data["title"], data['photos'][0]['c246x328']]
         else:
@@ -126,7 +127,8 @@ def ozon_cleaning_articles(ur_lico):
         if ur_lico == 'ИП Караваев':
             for dat in ozon_data:
                 if 'Ночник' in dat["name"]:
-                    article = dat["offer_id"].split('-')[0]
+                    # article = dat["offer_id"].split('-')[0]
+                    article = dat["offer_id"]
                     article_ozon_dict[article] = [
                         dat["offer_id"], dat["barcode"], dat["id"], dat["sku"], dat["fbo_sku"], dat["fbs_sku"]]
                 else:
@@ -178,7 +180,8 @@ def yandex_articles(ur_lico):
     article_yandex_dict = {}
     for article in raw_articles_list:
         if ur_lico == 'ИП Караваев' and article[-1] == 'Ночник':
-            common_article = article[0].split('-')[0]
+            # common_article = article[0].split('-')[0]
+            common_article = article[0]
             article_yandex_dict[common_article] = article[:3]
         else:
             article_yandex_dict[article[0].capitalize()] = article[:3]
@@ -202,6 +205,9 @@ def wb_matching_articles(ur_lico):
             if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or wb_article.wb_nomenclature != wb_data[2]:
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
+                wb_article.wb_seller_article = wb_data[0]
+                wb_article.wb_barcode = wb_data[1]
+                wb_article.wb_nomenclature = wb_data[2]
                 wb_article.name = wb_data[3]
                 wb_article.wb_photo_address = wb_data[4]
                 wb_article.save()
@@ -317,8 +323,8 @@ def yandex_matching_articles(ur_lico):
     for common_article, yandex_data in yandex_article_data.items():
         yandex_article = None
         if main_data.filter(wb_barcode=yandex_data[1]).exists():
-            yandex_article = Articles.objects.get(company=ur_lico,
-                                                  wb_barcode=yandex_data[1])
+            yandex_article = Articles.objects.filter(company=ur_lico,
+                                                     wb_barcode=yandex_data[1])[0]
 
         elif main_data.filter(common_article=common_article).exists():
             yandex_article = Articles.objects.get(company=ur_lico,

@@ -56,8 +56,10 @@
                 </div>
             </form>
         </div>
+        <button id="submitBtn">Отправить выбранные артикулы</button>
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
+                    <th>Чек</th>
                     <th>Артикул</th>
                     <th>Статус</th>
                     <th>Компания</th>
@@ -78,9 +80,13 @@
                     <th>YANDEX арт пост</th>
                     <th>YANDEX баркод</th>
                     <th>YANDEX SKU</th>
+                    <th>Удалить</th>
                 </tr>
                 {% for el in data %}   
                 <tr>
+                    <td>
+                        <input type="checkbox" name="common_article" class="input-field">
+                    </td>
                     <td><a href="{% url 'article_compare_detail' el.company el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
@@ -101,6 +107,7 @@
                     <td>{{ el.yandex_seller_article }}</td>
                     <td>{{ el.yandex_barcode }}</td>
                     <td>{{ el.yandex_sku }}</td>
+                    
                 </tr>
                 {% endfor %}
             </table>
@@ -135,6 +142,44 @@
         function openPopup(groupName) {
             document.getElementById('overlay-costprice').style.display = 'block';  
         }
+
+        //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
+        document.addEventListener('DOMContentLoaded', function() {
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.addEventListener('click', function() {
+                var selectedArticles = [];
+                var checkboxes = document.querySelectorAll('.input-field:checked');
+                
+                checkboxes.forEach(function(checkbox) {
+                    var articleElement = checkbox.closest('tr').querySelector('a');
+                    console.log('selectedArticles', checkbox.closest('tr'))
+                    var article = articleElement.innerText;
+                    
+                    selectedArticles.push(article);
+                    
+                });
+                
+                var formData = new FormData();
+                formData.append('articles', selectedArticles);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                // Отправка данных на сервер
+                fetch('delete_articles', {
+                    method: 'POST',
+                    body: formData,
+                })
+                
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Артикулы успешно отправлены на сервер');
+                        // Дополнительные действия при успешной отправке
+                    } else {
+                        console.error('Ошибка при отправке артикулов на сервер');
+                    }
+                })
+                .catch(error => console.error('Ошибка:', error));
+            });
+        });
+
     </script>
 
     </div>    

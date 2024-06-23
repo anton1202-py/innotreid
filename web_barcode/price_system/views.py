@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from analytika_reklama.wb_supplyment import type_adv_campaigns
 from asgiref.sync import sync_to_async
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.views.generic import ListView
@@ -40,7 +40,9 @@ def article_compare(request, ur_lico: str):
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
+
     if request.POST:
+        print(request.POST)
         if "compare" in request.POST:
             wb_matching_articles(ur_lico)
             ozon_matching_articles(ur_lico)
@@ -68,6 +70,20 @@ def article_compare(request, ur_lico: str):
         'page_name': page_name,
     }
     return render(request, 'price_system/article_compare.html', context)
+
+
+def delete_artices(request):
+    """Удаляет артикулы"""
+
+    if request.POST:
+        print(request.POST)
+        raw_articles_list = request.POST.get('articles')
+        article_list = raw_articles_list.split(',')
+        for article in article_list:
+            Articles.objects.get(company='ИП Караваев',
+                                 common_article=article).delete()
+        print(article_list)
+    return JsonResponse({'message': 'Value saved successfully.'})
 
 
 def ooo_article_compare(request):

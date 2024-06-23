@@ -9,6 +9,8 @@ urlpatterns = [
          name='price_system_article_compare_ooo'),
     path('article_compare_gramoty', views.gramoty_article_compare,
          name='price_system_article_compare_gramoty'),
+    path('delete_articles', views.delete_artices,
+         name='delete_articles'),
 
     path('article_compare/<ur_lico>/<str:common_article>',
          views.ArticleCompareDetailKaravaev.as_view(),
