@@ -29,7 +29,7 @@
         {% endif %}
         
         <div class='filter-data'>
-            <form id="campaigns_create" class="create-filter-form" method="POST">
+            <form id="campaigns_create" class="create-filter-form" method="GET">
                 {% csrf_token %}
                 <div class="inner-form-data">
                     <span>Юр. лицо</span><br>
@@ -76,7 +76,7 @@
 
                 <div class="inner-form-data">
                     <br>
-                    <button type="Submit">Создать</button>
+                    <button type="Submit" id="campaigns_create">Создать</button>
                     <!-- <input id="reload-button" type="Submit" id="filter" name="action" value="Создать"/> -->
                 </div>
             </form>
@@ -93,19 +93,19 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             var submitBtn = document.getElementById('campaigns_create');
-            submitBtn.addEventListener("submit", function() {
+            submitBtn.addEventListener("submit", function(event) {
+                event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
                 var formData = new FormData(this);
                 formData.append("user_chat_id", "{{ user_chat_id }}");
-                
+
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
                 // Отправка данных на сервер
                 fetch('create_reklama_create_many_campaigns', {
                     method: 'POST',
                     body: formData,
                 })
-                location.reload()
                 console.log('Отдал данные', formData)
-                
+
             });
         });
 
