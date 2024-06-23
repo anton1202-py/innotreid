@@ -119,6 +119,9 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
         "cpm": cpm
     })
     response = requests.request("POST", url, headers=header, data=payload)
+    message1 = f'Ответ на создание кампании для {campaign_name} {response.text}'
+    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                     text=message1[:4000])
     return response
 
 

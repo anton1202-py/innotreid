@@ -55,7 +55,7 @@ def check_data_for_create_adv_campaign(main_data):
                          text=message1[:4000])
         response = create_auto_advertisment_campaign(
             header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
-        message1 = f'Создаю кампанию для {name_for_request}'
+
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=f'ответ на создание кампании {name_for_request} {response.text}')
 
