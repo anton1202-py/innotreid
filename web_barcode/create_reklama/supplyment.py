@@ -24,7 +24,7 @@ def check_data_for_create_adv_campaign(main_data):
     subject_id = int(main_data['select_subject'])
     cpm = int(main_data['cpm'])
     budget = int(main_data['budget'])
-    user_chat_id = int(main_data['user_chat_id'])
+    # user_chat_id = int(main_data['user_chat_id'])
 
     header = header_wb_dict[ur_lico_name]
     result_articles = raw_articles.split(', ')
@@ -40,8 +40,8 @@ def check_data_for_create_adv_campaign(main_data):
     for nmid in result_articles:
         if nmid not in articles_list:
             error = f'Нет артикула {nmid} в на портале у {ur_lico}.'
-            bot.send_message(chat_id=user_chat_id,
-                             text=error[:4000])
+            # bot.send_message(chat_id=user_chat_id,
+            #                  text=error[:4000])
         else:
             mns_list.append(int(nmid))
 
