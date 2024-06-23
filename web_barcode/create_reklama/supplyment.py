@@ -64,21 +64,28 @@ def check_data_for_create_adv_campaign(main_data):
             saved_data = {
                 'ur_lico': UrLico.objects.get(id=main_data['ur_lico']),
                 'campaign_name': name_for_request,
-                'campaign_number': response.text,
+                'campaign_number': int(response.text),
                 'campaign_type': int(main_data['select_type']),
                 'subject_id': int(main_data['select_subject']),
                 'cpm': int(main_data['cpm']),
                 'budget': int(main_data['budget']),
                 'article': nm_id
             }
+            print('saved_data', saved_data)
+            # try:
             add_created_campaign_data_to_database(saved_data)
+            # except:
+            #     error = f'Ошибка в функции add_created_campaign_data_to_database'
+            #     bot.send_message(chat_id=user_chat_id,
+            #                      text=error[:4000])
 
 
+@sender_error_to_tg
 def add_created_campaign_data_to_database(main_data):
     """Обрабатывает и проверяет данные для создания рекламной кампании"""
 
     article = main_data['article']
-    ur_lico = UrLico.objects.get(id=main_data['ur_lico'])
+    ur_lico = main_data['ur_lico']
     campaign_number = main_data['campaign_number']
     campaign_type = main_data['campaign_type']
     campaign_name = main_data['campaign_name']
@@ -92,7 +99,7 @@ def add_created_campaign_data_to_database(main_data):
         ur_lico=ur_lico,
         campaign_name=campaign_name,
         campaign_number=campaign_number,
-        camnpaign_type=campaign_type,
+        campaign_type=campaign_type,
         campaign_status=9,
         create_date=today,
         articles_name=article,
