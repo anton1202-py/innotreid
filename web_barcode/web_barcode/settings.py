@@ -93,7 +93,7 @@ DATABASES = {
     }
 }
 AUTH_USER_MODEL = 'users.InnotreidUser'
-AUTHENTICATION_BACKENDS = ['users.models.CustomUserBackend']
+# AUTHENTICATION_BACKENDS = ['users.models.CustomUserBackend']
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
