@@ -90,16 +90,17 @@
     <script>
 
         // ========== ЗАПУСКАЕТ СОЗДАНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========= //
-        document.getElementById("campaigns_create").addEventListener("submit", function(event) {
-            event.preventDefault();
-            var formData = new FormData(this);
-            formData.append("user_chat_id", "{{ user_chat_id }}");
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "create_reklama_create_many_campaigns", true);
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            xhr.send(formData);
-            console.log("Function is still running in the background.");
-            location.reload()
+
+        // document.getElementById("campaigns_create").addEventListener("submit", function(event) {
+        //     event.preventDefault();
+        //     var formData = new FormData(this);
+        //     formData.append("user_chat_id", "{{ user_chat_id }}");
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open("POST", "create_reklama_create_many_campaigns", true);
+        //     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        //     xhr.send(formData);
+        //     console.log("Function is still running in the background.");
+        //     location.reload()
             // xhr.onreadystatechange = function() {
             //     if (xhr.readyState == 4 && xhr.status == 200) {
             //         console.log("Function is still running in the background.");
@@ -107,7 +108,7 @@
             //     }
             // };
             
-        });
+        // });
     </script>
         
 {% endblock %}

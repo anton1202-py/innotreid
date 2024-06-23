@@ -62,17 +62,18 @@ def create_campaign(request):
             'cpm': cpm,
             'budget': budget
         }
-        answer = check_data_for_create_adv_campaign(main_data)
-        if type(answer) == list:
-            errors_list = answer
-        else:
-            if answer.status_code != 200:
-                errors_list = [answer.text]
-            else:
-                ok_answer = f'Кампания {campaign_name} создана. Её номер: {answer.text}'
-                campaign_number = answer.text
-                main_data['campaign_number'] = campaign_number
-                add_created_campaign_data_to_database(main_data)
+        check_data_for_create_adv_campaign(main_data)
+        # answer = check_data_for_create_adv_campaign(main_data)
+        # if type(answer) == list:
+        #     errors_list = answer
+        # else:
+        #     if answer.status_code != 200:
+        #         errors_list = [answer.text]
+        #     else:
+        #         ok_answer = f'Кампания {campaign_name} создана. Её номер: {answer.text}'
+        #         campaign_number = answer.text
+        #         main_data['campaign_number'] = campaign_number
+        #         add_created_campaign_data_to_database(main_data)
 
     context = {
         'user_chat_id': user_chat_id,
