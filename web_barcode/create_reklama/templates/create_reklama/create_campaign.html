@@ -103,16 +103,6 @@
                     method: 'POST',
                     body: formData,
                 })
-                
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Артикулы успешно отправлены на сервер');
-                        // Дополнительные действия при успешной отправке
-                    } else {
-                        console.error('Ошибка при отправке артикулов на сервер');
-                    }
-                })
-                .catch(error => console.error('Ошибка:', error));
             });
         });
 
