@@ -103,8 +103,11 @@
                     method: 'POST',
                     body: formData,
                 })
+                console.log('Отдал данные', formData)
+                location.reload()
             });
         });
+        location.reload()
 
         // document.getElementById("campaigns_create").addEventListener("submit", function(event) {
         //     event.preventDefault();
