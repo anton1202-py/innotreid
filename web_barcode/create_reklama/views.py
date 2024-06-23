@@ -62,7 +62,7 @@ def create_campaign(request):
             'cpm': cpm,
             'budget': budget
         }
-        check_data_for_create_adv_campaign(main_data)
+        # check_data_for_create_adv_campaign(main_data)
         # answer = check_data_for_create_adv_campaign(main_data)
         # if type(answer) == list:
         #     errors_list = answer
@@ -90,8 +90,8 @@ def create_campaign(request):
 
 def create_many_campaigns(request):
     """Создает много кампаний"""
-
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' and request.method == 'POST':
+    print(request.POST)
+    if request.method == 'POST':
         # Получение данных из формы
         ur_lico = request.POST.get('ur_lico_select')
         select_type = request.POST.get('select_type')

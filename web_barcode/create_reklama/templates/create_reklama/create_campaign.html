@@ -91,6 +91,31 @@
 
         // ========== ЗАПУСКАЕТ СОЗДАНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========= //
 
+        document.addEventListener('DOMContentLoaded', function() {
+            var submitBtn = document.getElementById('campaigns_create');
+            submitBtn.addEventListener("submit", function() {
+                var formData = new FormData(this);
+                formData.append("user_chat_id", "{{ user_chat_id }}");
+                
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                // Отправка данных на сервер
+                fetch('create_reklama_create_many_campaigns', {
+                    method: 'POST',
+                    body: formData,
+                })
+                
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Артикулы успешно отправлены на сервер');
+                        // Дополнительные действия при успешной отправке
+                    } else {
+                        console.error('Ошибка при отправке артикулов на сервер');
+                    }
+                })
+                .catch(error => console.error('Ошибка:', error));
+            });
+        });
+
         // document.getElementById("campaigns_create").addEventListener("submit", function(event) {
         //     event.preventDefault();
         //     var formData = new FormData(this);
