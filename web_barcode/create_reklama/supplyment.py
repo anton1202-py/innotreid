@@ -1,3 +1,4 @@
+import asyncio
 import math
 import time
 from datetime import datetime, timedelta
@@ -48,7 +49,7 @@ def check_data_for_create_adv_campaign(main_data):
         message1 = f'Я перед ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
-        time.sleep(21)
+        asyncio.sleep(10)
         message1 = f'Я после ожиданием слип 21'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message1[:4000])
