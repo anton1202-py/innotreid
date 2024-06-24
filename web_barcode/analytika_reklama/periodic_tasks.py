@@ -21,7 +21,7 @@ from reklama.models import UrLico
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_data_dict)
+                                        bot, header_wb_dict)
 
 
 @app.task
@@ -42,7 +42,7 @@ def add_info_to_db_about_all_campaigns():
                 finish_point = (i+1)*50
                 adv_current_list = adv_list[
                     start_point:finish_point]
-                header = header_wb_data_dict[ur_lico]
+                header = header_wb_dict[ur_lico]
                 main_adv_data = advertisment_campaigns_list_info(
                     adv_current_list, header)
                 # Записываем/обновляем информацию о РК в базу данных
@@ -80,7 +80,7 @@ def add_campaigns_statistic_to_db():
                     }
                 }
                 data_campaign_list.append(inner_dict)
-            header = header_wb_data_dict[ur_lico_obj.ur_lice_name]
+            header = header_wb_dict[ur_lico_obj.ur_lice_name]
             main_adv_data = advertisment_statistic_info(
                 data_campaign_list, header)
             if main_adv_data:
@@ -100,7 +100,7 @@ def get_clusters_statistic_for_autocampaign():
     for ur_lico_obj in ur_lico_data:
         main_data = CommonCampaignDescription.objects.filter(
             ur_lico=ur_lico_obj, camnpaign_status__in=[9], camnpaign_type__in=[8])
-        header = header_wb_data_dict[ur_lico_obj.ur_lice_name]
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
         for campaign_data in main_data:
             campaign_number = campaign_data.campaign_number
             clusters = advertisment_campaign_clusters_statistic(
@@ -120,7 +120,7 @@ def get_searchcampaign_keywords_statistic():
         main_data = CommonCampaignDescription.objects.filter(
             ur_lico=ur_lico_obj, camnpaign_type__in=[6, 9])
 
-        header = header_wb_data_dict[ur_lico_obj.ur_lice_name]
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
         for campaign_data in main_data:
             campaign_number = campaign_data.campaign_number
             keywords_data = statistic_search_campaign_keywords(
