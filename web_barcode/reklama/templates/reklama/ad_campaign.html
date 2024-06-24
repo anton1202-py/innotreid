@@ -28,7 +28,7 @@
                     <form method="post" name="name" enctype="multipart/form-data" action="{% url 'ad_campaigns' %}">
                         {% csrf_token %}
                         <td><input value="{{ koef_dict|get_item:el.id }}" type="number" name="ad_koefficient" style="width: 100px" required/></td>
-                        <button type="Submit" value="{{koef_dict|get_item:el.id|list_position:2}}" class="custom-button" name="change-button" method="POST" style="display: none;">Добавить</button>
+                        <button type="Submit" value="{{koef_dict|get_item:el.id}}" class="custom-button" name="change-button" method="POST" style="display: none;">Добавить</button>
                     </form>
                     <td>{{ koef_dict|get_item:el.id|list_position:3 }}</td>
                     {% if koef_dict|get_item:el.id|list_position:4 == None %}
