@@ -122,12 +122,13 @@ def save_campaign_for_replenish_budget(main_data):
     budget = main_data['budget']
     today = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    adv_obj = AdvertisingCampaign(
+    AdvertisingCampaign(
         campaign_number=campaign_number,
         ur_lico=ur_lico,
         create_date=today
     ).save()
-
+    adv_obj = AdvertisingCampaign.objects.filter(
+        ur_lico=ur_lico, campaign_number=campaign_number)[0]
     ProcentForAd(
         campaign_number=adv_obj,
         koefficient=4,
