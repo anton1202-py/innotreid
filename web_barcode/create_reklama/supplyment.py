@@ -77,7 +77,7 @@ def check_data_for_create_adv_campaign(main_data):
         }
 
         add_created_campaign_data_to_database(saved_data)
-        save_campaign_for_replenish_budget(main_data)
+        save_campaign_for_replenish_budget(saved_data)
 
 
 @sender_error_to_tg
@@ -112,7 +112,6 @@ def add_created_campaign_data_to_database(main_data):
 def save_campaign_for_replenish_budget(main_data):
     """Сохраняет кампанию в таблицу для пополнения бюджета"""
 
-    article = main_data['article']
     ur_lico = main_data['ur_lico']
     campaign_number = main_data['campaign_number']
     campaign_type = main_data['campaign_type']
