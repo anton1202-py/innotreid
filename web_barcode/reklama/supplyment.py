@@ -41,7 +41,7 @@ def create_articles_company(campaign_number, header):
         campaign_number
     ])
     response = requests.request("POST", url, headers=header, data=payload)
-    articles_list = json.loads(response.text)[0]['params']['nms']
+    articles_list = json.loads(response.text)[0]['autoParams']['nms']
     for article in articles_list:
         if not WbArticleCommon.objects.filter(wb_article=article).exists():
             WbArticleCommon(wb_article=article).save()
