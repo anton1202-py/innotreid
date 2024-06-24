@@ -51,10 +51,14 @@ class ProcentForAd(models.Model):
     )
     koefficient = models.IntegerField(
         verbose_name='Процент для рекламы',
+        blank=True,
+        null=True
     )
     koef_date = models.DateTimeField(
         verbose_name='Дата коэффициента',
-        auto_now_add=True
+        auto_now_add=True,
+        blank=True,
+        null=True
     )
     virtual_budget = models.IntegerField(
         verbose_name='Виртуальный бюджет',
