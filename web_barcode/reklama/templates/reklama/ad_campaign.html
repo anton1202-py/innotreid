@@ -34,12 +34,12 @@
                     {% if koef_dict|get_item:el.id|list_position:4 == None %}
                         <td></td>
                     {% else %}
-                        <td>{{ koef_dict|get_item:el.id|list_position:4 }}</td>
+                        <td>{{ koef_dict|get_item:el.id }}</td>
                     {% endif %}
                     {% if koef_dict|get_item:el.id|list_position:5 == None %}
                         <td></td>
                     {% else %}
-                        <td>{{ koef_dict|get_item:el.id|list_position:5 }}</td>
+                        <td>{{ koef_dict|get_item:el.id}}</td>
                     {% endif %}
 
                     <td>{{ el.create_date }}</td>
