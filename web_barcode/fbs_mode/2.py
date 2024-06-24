@@ -327,7 +327,6 @@ class WildberriesFbsMode():
             # Из этой переменной достать ID поставки
             response_data = requests.request(
                 "POST", url_data, headers=self.headers, data=payload)
-            # print(response_data)
             self.supply_id = json.loads(response_data.text)['id']
         else:
             text = f'Нет артикулов на WB для сборки {self.file_add_name}'

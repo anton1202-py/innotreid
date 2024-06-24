@@ -139,7 +139,6 @@ def add_database_data():
             if connection:
                 cursor.close()
                 connection.close()
-                print("Соединение с PostgreSQL закрыто")
     else:
         sleep(10)
 
@@ -286,7 +285,6 @@ def add_article_price_info_to_database():
         if connection:
             cursor.close()
             connection.close()
-            print("Соединение с PostgreSQL закрыто")
     # Если функция даст какой-то сбой, то данные об ошибке полетят в телегу.
     except Exception as er:
         message = (f'Ошибка выполнения функции add_article_price_info_to_database: <b>{er}</b>\n\n'
@@ -365,7 +363,6 @@ def add_one_article_info_to_db(seller_article, wb_article):
         if connection:
             cursor.close()
             connection.close()
-            print("Соединение с PostgreSQL закрыто")
     except Exception as er:
         message = (f'Ошибка выполнения функции add_one_article_info_to_db: <b>{er}</b>\n\n'
                    f'Что делает функция: {add_one_article_info_to_db.__doc__}')

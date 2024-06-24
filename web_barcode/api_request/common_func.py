@@ -35,7 +35,7 @@ def api_retry_decorator(func):
                     json_response = json.loads(response.text)
                     return json_response
                 elif response.status_code == 204:
-                    message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Нет контента'
+                    message = ''
                 elif response.status_code == 403:
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Доступ запрещен'
                 elif response.status_code == 429:
@@ -46,7 +46,6 @@ def api_retry_decorator(func):
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Страница не существует'
                 else:
                     time.sleep(10)  # Ждем 1 секунду перед повторным запросом
-                print(f'{attempt} круг в декораторе')
                 if message:
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4000])

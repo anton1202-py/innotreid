@@ -38,7 +38,6 @@ for i in range(iter_amount+1):
     response = requests.request("POST", URL_FBY, headers=headers, data=payload)
 
     data = json.loads(response.text)
-    print(data)
     result = data['result']
     dict_res = result['shopSkus']
     for res in dict_res:

@@ -209,7 +209,6 @@ def database_stock_wb(request):
         if len(MUST_BE_EMPTY) == 0:
             dbframe = empexceldata
             for dbframe in dbframe.itertuples():
-                print(dbframe)
                 for i in range(len(empexceldata.columns.ravel())):
 
                     for j in DICT_FOR_STOCKS_WB.keys():
@@ -798,13 +797,10 @@ class LoginUser(LoginView):
     template_name = 'database/login.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        print(kwargs)
         context = super().get_context_data(**kwargs)
-        print(context)
         return dict(list(context.items()))
 
     def get_success_url(self):
-        print('Должна быть удача')
         return reverse_lazy('database_home')
 
 

@@ -50,7 +50,6 @@ def create_articles_company(campaign_number, header):
         article_obj = WbArticleCommon.objects.get(wb_article=article)
         WbArticleCompany(
             campaign_number=campaign_obj,
-            wb_article=article_obj
         ).save()
 
 

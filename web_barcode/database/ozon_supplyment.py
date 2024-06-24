@@ -15,7 +15,7 @@ from .models import (CodingMarketplaces, OzonDailyOrders, OzonMonthlySalesData,
 def ozon_main_process_sale_data(main_data, ur_lico, month_report, year_report):
     """Обрабатывает главные данные отчета по продажам с Ozon"""
     main_date_info = main_data['result']['header']
-    # print('main_date_info', main_date_info)
+
     start_date_period = main_date_info['start_date']
     finish_date_period = main_date_info['stop_date']
     number_report = main_date_info['number']
@@ -48,7 +48,7 @@ def ozon_article_sale_data(sale_article_info, ur_lico, start_date_period, finish
         func_data_dict = {}
         row_number = data['rowNumber']
         if row_number != 0:
-            # print("row_number", row_number)
+
             offer_id = data['item']['offer_id']
             sku = data['item']['sku']
             barcode = data['item']['barcode']

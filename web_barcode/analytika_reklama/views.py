@@ -98,7 +98,6 @@ class CampaignClustersView(ListView):
 
         context = super(CampaignClustersView,
                         self).get_context_data(**kwargs)
-        # print(self.kwargs['ur_lico'])
         campaign_object = CommonCampaignDescription.objects.get(
             id=self.kwargs['id'])
         cluster_data = MainCampaignClusters.objects.filter(
@@ -127,12 +126,10 @@ class CampaignDailyStatisticView(ListView):
 
         context = super(CampaignDailyStatisticView,
                         self).get_context_data(**kwargs)
-        # print(self.kwargs['ur_lico'])
         campaign_object = CommonCampaignDescription.objects.get(
             id=self.kwargs['id'])
         statistic_data = DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id'])
-        print(self.kwargs['id'])
         context.update({
             'statistic_data': statistic_data,
             'page_name': f"Статистика кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",

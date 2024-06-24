@@ -168,7 +168,6 @@ def add_fby_amount_to_database():
         if connection:
             cursor.close()
             connection.close()
-            print("Соединение с PostgreSQL закрыто")
 
 
 @sender_error_to_tg
@@ -192,10 +191,6 @@ def sender_message():
     cursor.execute(postgreSQL_select_Query)
 
     sender_data = cursor.fetchall()
-
-    for article, current_amount, yesterday_amount in sender_data:
-        print(
-            f'Остаток на складе FBY артикула {article} сегодня {current_amount}, вчера было {yesterday_amount}')
 
     return sender_data
 

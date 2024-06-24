@@ -139,4 +139,3 @@ def get_current_ssp():
     if connection:
         cursor.close()
         connection.close()
-        print("Соединение с PostgreSQL закрыто")

@@ -96,5 +96,4 @@ def ozon_orsers_daily_report(header, check_date, attempt=0):
         message = f'статус код {response.status_code} у получения инфы заказов артикулов ОЗОН'
     if message:
         message = f'api_request.ozon_orsers_daily_report {message}'
-        print(message)
         # bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

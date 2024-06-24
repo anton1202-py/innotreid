@@ -109,7 +109,6 @@ def google_sheet():
         data = wb_data()
 
         set_row_height(sheet, f'2:{len(data)+1}', 175)
-        print(len(data))
         set_column_width(sheet, 'A', 100)
         set_column_width(sheet, 'B', 130)
         set_column_width(sheet, 'C', 400)

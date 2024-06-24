@@ -179,18 +179,10 @@ def fbs_balance_maker(ur_lico, header, fbs_campaign_id, fby_campaign_id):
                 article, warehouse_id, 100, header, fbs_campaign_id)
         if len(article_for_null_list) != 0:
             message_text = f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}'
-            print(
-                f'Артикулы для обнуления остатков YANDEX FBS: {article_for_null_list}')
-            # for chat_id in tg_accounts:
-            # bot.send_message(chat_id=chat_id,
-            #                  text=message_text, parse_mode='HTML')
+
         if len(article_for_greate_list) != 0:
             message_text = f'Артикулы для увеличения остатков YANDEX FBS: {article_for_greate_list}'
-            print(
-                f'Артикулы для увеличения остатков YANDEX FBS: {article_for_greate_list}')
-            # for chat_id in tg_accounts:
-            #     bot.send_message(chat_id=chat_id,
-            #                      text=message_text, parse_mode='HTML')
+
     except Exception as e:
         # обработка ошибки и отправка сообщения через бота
         message_text = error_message('fbs_balance_maker', fbs_balance_maker, e)
