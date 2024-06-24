@@ -91,9 +91,6 @@ def create_campaign(request):
 def create_many_campaigns(request):
     """Создает много кампаний"""
 
-    print(request.POST)
-    print('Я в гет запросе')
-
     if request.method == 'POST':
         # Получение данных из формы
         ur_lico = request.POST.get('ur_lico_select')
@@ -115,11 +112,5 @@ def create_many_campaigns(request):
             'budget': budget,
             'user_chat_id': user_chat_id
         }
-        message = 'Собрал все данные. Передаю в создание кампаний'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message[:4000])
         check_data_for_create_adv_campaign(main_data)
-        message1 = 'Создал кампании'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message1[:4000])
     return JsonResponse({"status": "Function is still running in the background."})

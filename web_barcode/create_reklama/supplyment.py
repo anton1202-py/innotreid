@@ -9,7 +9,7 @@ from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import UrLico
+from reklama.models import AdvertisingCampaign, ProcentForAd, UrLico
 
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
 
@@ -24,7 +24,7 @@ def check_data_for_create_adv_campaign(main_data):
     subject_id = int(main_data['select_subject'])
     cpm = int(main_data['cpm'])
     budget = int(main_data['budget'])
-    # user_chat_id = int(main_data['user_chat_id'])
+    user_chat_id = int(main_data['user_chat_id'])
 
     header = header_wb_dict[ur_lico_name]
     result_articles = raw_articles.split(', ')
@@ -40,60 +40,44 @@ def check_data_for_create_adv_campaign(main_data):
     for nmid in result_articles:
         if nmid not in articles_list:
             error = f'Нет артикула {nmid} в на портале у {ur_lico}.'
-            # bot.send_message(chat_id=user_chat_id,
-            #                  text=error[:4000])
+            bot.send_message(chat_id=user_chat_id,
+                             text=error[:4000])
         else:
             mns_list.append(int(nmid))
 
     for nm_id in mns_list:
-        message1 = f'Я перед ожиданием слип 21'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message1[:4000])
-        time.sleep(10)
-        message1 = f'Я после ожиданием слип 21'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message1[:4000])
         nm_id_for_request = [nm_id]
         article_name = Articles.objects.filter(
             company=ur_lico, wb_nomenclature=nm_id)[0].name
         name_for_request = f'{nm_id} {article_name}'
-        message1 = f'Создаю кампанию для {name_for_request}'
+
+        response = create_auto_advertisment_campaign(
+            header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
+
         bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message1[:4000])
-        # time.sleep(10)
-        # response = create_auto_advertisment_campaign(
-        #     header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
+                         text=f'ответ на создание кампании {name_for_request} {response.text}')
 
-        # bot.send_message(chat_id=CHAT_ID_ADMIN,
-        #                  text=f'ответ на создание кампании {name_for_request} {response.text}')
+        if response.status_code != 200:
+            error = f'Не создал кампанию для артикула {nm_id} ({article_name}). Ошибка: {response.text}'
+            bot.send_message(chat_id=user_chat_id,
+                             text=error[:4000])
+        else:
+            error = f'Создал кампанию для артикула {nm_id} ({article_name}). Ее номер: {response.text}'
+            bot.send_message(chat_id=user_chat_id,
+                             text=error[:4000])
+        saved_data = {
+            'ur_lico': UrLico.objects.get(id=main_data['ur_lico']),
+            'campaign_name': name_for_request,
+            'campaign_number': int(response.text),
+            'campaign_type': int(main_data['select_type']),
+            'subject_id': int(main_data['select_subject']),
+            'cpm': int(main_data['cpm']),
+            'budget': int(main_data['budget']),
+            'article': nm_id
+        }
 
-        # if response.status_code != 200:
-        #     error = f'Не создал кампанию для артикула {nm_id} ({article_name}). Ошибка: {response.text}'
-        #     bot.send_message(chat_id=user_chat_id,
-        #                      text=error[:4000])
-        # else:
-        #     error = f'Создал кампанию для артикула {nm_id} ({article_name}). Ее номер: {response.text}'
-        #     bot.send_message(chat_id=user_chat_id,
-        #                      text=error[:4000])
-        # saved_data = {
-        #     'ur_lico': UrLico.objects.get(id=main_data['ur_lico']),
-        #     'campaign_name': name_for_request,
-        #     'campaign_number': int(response.text),
-        #     'campaign_type': int(main_data['select_type']),
-        #     'subject_id': int(main_data['select_subject']),
-        #     'cpm': int(main_data['cpm']),
-        #     'budget': int(main_data['budget']),
-        #     'article': nm_id
-        # }
-        # message1 = 'Создал кампанию и нужно ее сохранить'
-        # bot.send_message(chat_id=CHAT_ID_ADMIN,
-        #                  text=message1[:4000])
-        # try:
-        # add_created_campaign_data_to_database(saved_data)
-        # except:
-        #     error = f'Ошибка в функции add_created_campaign_data_to_database'
-        #     bot.send_message(chat_id=user_chat_id,
-        #                      text=error[:4000])
+        add_created_campaign_data_to_database(saved_data)
+        save_campaign_for_replenish_budget(main_data)
 
 
 @sender_error_to_tg
@@ -121,4 +105,35 @@ def add_created_campaign_data_to_database(main_data):
         articles_name=article,
         subject_id=subject_id,
         current_cpm=cpm
+    ).save()
+
+
+@sender_error_to_tg
+def save_campaign_for_replenish_budget(main_data):
+    """Сохраняет кампанию в таблицу для пополнения бюджета"""
+
+    article = main_data['article']
+    ur_lico = main_data['ur_lico']
+    campaign_number = main_data['campaign_number']
+    campaign_type = main_data['campaign_type']
+    campaign_name = main_data['campaign_name']
+    subject_id = int(main_data['subject_id'])
+
+    cpm = main_data['cpm']
+    budget = main_data['budget']
+    today = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    adv_obj = AdvertisingCampaign(
+        campaign_number=campaign_number,
+        ur_lico=ur_lico,
+        create_date=today
+    ).save()
+
+    ProcentForAd(
+        campaign_number=adv_obj,
+        koefficient=4,
+        koef_date=today,
+        virtual_budget=0,
+        virtual_budget_date=today,
+        campaign_budget_date=today
     ).save()

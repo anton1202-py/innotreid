@@ -24,10 +24,10 @@ def wb_add_price_info(ur_lico):
     wb_article_price_data = wb_articles_list(ur_lico)
     for data in wb_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
-        if Articles.objects.filter(wb_nomenclature=data['nmId']).exists():
+        if Articles.objects.filter(company=ur_lico, wb_nomenclature=data['nmId']).exists():
             if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.get(
-                    wb_nomenclature=data['nmId']),
+                common_article=Articles.objects.filter(company=ur_lico,
+                                                       wb_nomenclature=data['nmId'])[0],
                 marketplace='Wildberries'
             ).exists():
                 latest_record = ArticlesPrice.objects.filter(
@@ -74,10 +74,10 @@ def ozon_add_price_info(ur_lico):
     ozon_article_price_data = ozon_articles_list(ur_lico)
     for data in ozon_article_price_data:
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
-        if Articles.objects.filter(ozon_product_id=data['product_id']).exists():
+        if Articles.objects.filter(company=ur_lico, ozon_product_id=data['product_id']).exists():
             if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.get(
-                    ozon_product_id=data['product_id']),
+                common_article=Articles.objects.filter(company=ur_lico,
+                                                       ozon_product_id=data['product_id'])[0],
                 marketplace='Ozon'
             ).exists():
                 latest_record = ArticlesPrice.objects.filter(

@@ -106,7 +106,7 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
         то автоматически установится ставка минимально допустимого размера.
     header - хедер для запроса
     """
-
+    time.sleep(21)
     url = 'https://advert-api.wb.ru/adv/v1/save-ad'
     message1 = f'прошел урл'
     bot.send_message(chat_id=CHAT_ID_ADMIN,
