@@ -141,7 +141,7 @@ def pausa_advertisment_campaigns(header, campaign_number):
     Допускается 5 запросов в секунду
     """
     time.sleep(0.3)
-    url = f'https://masterchudes.ru/analytika_reklama/adv_article_words_info?id={campaign_number}'
+    url = f'https://advert-api.wb.ru/adv/v0/pause?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     print(response.status_code)
     return response
