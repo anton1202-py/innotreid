@@ -305,6 +305,15 @@
                                 </a>
                             </li>
                         </ul>
+                        <ul class="submenu">
+                            {% url 'common_minus_words' as url_common_minus_words %}
+                            <li>
+                                <a href="{{ url_common_minus_words }}" {% if request.path == url_common_minus_words %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Общие минус слова</h3>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     <li class="parent">

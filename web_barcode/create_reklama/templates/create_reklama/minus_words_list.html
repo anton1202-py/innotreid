@@ -8,34 +8,16 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-        <form action="" class="small-filter-form" method="POST">
-            {% csrf_token %}
-            <button name="campaign_stop">Остановочка</button>
-        </form>
         
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
-                <th>ID кампании ВБ</th>
-                <th>Юр. лицо</th>
-                <th>Название кампании</th>
-                <th>Тип</th>
-                <th>Статус</th>
-                <th>Дата создания</th>
-                <th>Список артикулов nmID</th>
-                <th>ID предмета</th>
-                <th>Текущая ставка</th>
+                <th>Минус слово</th>
+                <th>Дата добавления</th>
             </tr>
-            {% for el in campaigns_list %}
+            {% for el in minus_words_list %}
             <tr>
-                <td>{{ el.campaign_number }}</td>
-                <td>{{ el.ur_lico.ur_lice_name }}</td>
-                <td>{{ el.campaign_name }}</td>
-                <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
-                <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
+                <td><input class="minus_word" placeholder="{{ el.word }}" type="text" name="minus_word"/></td>
                 <td>{{ el.create_date }}</td>
-                <td>{{ el.articles_name }}</td>
-                <td>{{ el.subject_id }}</td>
-                <td>{{ el.current_cpm }}</td>  
             </tr>
             {% endfor %}
         </table>
@@ -44,6 +26,34 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        // =========== ОБНОВЛЯЕТ ТАБЛИЦУ С МИНУССЛОВАМИ ========== //
+        document.querySelectorAll('.minus_word').forEach(select => {
+            select.addEventListener('input', function() {
+                var mainWord = this.value;
+                console.log(mainPercent)
+
+                var formData = new FormData();
+                formData.append('main_word', mainWord);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_common_minus_words/', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
 
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 

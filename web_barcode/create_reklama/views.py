@@ -9,7 +9,8 @@ from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
-from create_reklama.models import CreatedCampaign
+from api_request.wb_requests import pausa_advertisment_campaigns
+from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.supplyment import (add_created_campaign_data_to_database,
                                        check_data_for_create_adv_campaign)
 from django.contrib.auth.decorators import login_required
@@ -109,15 +110,18 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
     ur_lico_data = UrLico.objects.all()
+    for_pausa_data = []
+    for campaign_obj in campaigns_list:
+        for_pausa_data.append({'campaign_numaber': campaign_obj.campaign_number,
+                              'ur_lico': campaign_obj.ur_lico.ur_lice_name})
 
     if request.POST:
-        ur_lico = request.POST.get('ur_lico_select')
-        select_type = request.POST.get('select_type')
-        campaign_name = request.POST.get('name')
-        select_subject = request.POST.get('select_subject')
-        articles = request.POST.get('articles')
-        budget = request.POST.get('budget')
-        cpm = request.POST.get('cpm')
+        if 'campaign_stop' in request.POST:
+            for data in for_pausa_data:
+
+                header = header_wb_dict[data['ur_lico']]
+                pausa_advertisment_campaigns(header, data['campaign_numaber'])
+                print(data)
 
     context = {
         'page_name': page_name,
@@ -127,3 +131,35 @@ def campaigns_were_created_with_system(request):
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
     return render(request, 'create_reklama/campaigns_list.html', context)
+
+
+@login_required
+def common_minus_words(request):
+    """Общие минус слова для всех кампаний"""
+    page_name = 'Общие минус слова для всех кампаний'
+    minus_words_list = AllMinusWords.objects.all().order_by('ur_lico')
+    ur_lico_data = UrLico.objects.all()
+
+    if request.POST:
+        ur_lico = request.POST.get('ur_lico_select')
+
+    context = {
+        'page_name': page_name,
+        'campaigns_list': minus_words_list,
+        'ur_lico_data': ur_lico_data,
+        'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+        'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
+    }
+    return render(request, 'create_reklama/campaigns_list.html', context)
+
+
+def update_common_minus_words(request):
+    if request.POST:
+        print(request.POST)
+        # if 'copyright_percent' in request.POST:
+        #     copyright_persent = request.POST.get('copyright_percent')
+        #     DesignUser.objects.filter(designer__username=designer).update(
+        #         copyright_reward_persent=copyright_persent
+        #     )
+        return JsonResponse({'message': 'Value saved successfully.'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)

@@ -135,6 +135,18 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
 
 
 @api_retry_decorator
+def pausa_advertisment_campaigns(header, campaign_number):
+    """
+    Ставит на паузу рекламные кампании
+    Допускается 5 запросов в секунду
+    """
+    time.sleep(0.3)
+    url = f'https://masterchudes.ru/analytika_reklama/adv_article_words_info?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
 def advertisment_campaign_list(header):
     """
     Получаем списки рекламных кампаний

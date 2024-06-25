@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.urls import reverse
 from price_system.models import Articles
@@ -143,11 +145,16 @@ class MinusWordsWbCampaign(models.Model):
 
 class AllMinusWords(models.Model):
     """Минус слова я всех рекламных кампаний"""
+    now_date = f"{datetime.now().strftime('%Y-%m-%d %H:%M')}"
     word = models.CharField(
         verbose_name='Минус слово',
         max_length=300,
         blank=True,
         null=True
+    )
+    create_date = models.DateTimeField(
+        verbose_name='Дата добавления',
+        default=now_date
     )
 
     def __str__(self):
