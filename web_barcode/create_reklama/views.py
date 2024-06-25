@@ -9,6 +9,7 @@ from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
+from create_reklama.models import CreatedCampaign
 from create_reklama.supplyment import (add_created_campaign_data_to_database,
                                        check_data_for_create_adv_campaign)
 from django.contrib.auth.decorators import login_required
@@ -40,8 +41,6 @@ def create_campaign(request):
     }
     user_chat_id = request.user.tg_chat_id
 
-    # user_obj = InnotreidUser.objects.get(username=)
-
     errors_list = []
     ok_answer = []
     if request.POST:
@@ -62,18 +61,6 @@ def create_campaign(request):
             'cpm': cpm,
             'budget': budget
         }
-        # check_data_for_create_adv_campaign(main_data)
-        # answer = check_data_for_create_adv_campaign(main_data)
-        # if type(answer) == list:
-        #     errors_list = answer
-        # else:
-        #     if answer.status_code != 200:
-        #         errors_list = [answer.text]
-        #     else:
-        #         ok_answer = f'Кампания {campaign_name} создана. Её номер: {answer.text}'
-        #         campaign_number = answer.text
-        #         main_data['campaign_number'] = campaign_number
-        #         add_created_campaign_data_to_database(main_data)
 
     context = {
         'user_chat_id': user_chat_id,
@@ -114,3 +101,29 @@ def create_many_campaigns(request):
         }
         check_data_for_create_adv_campaign(main_data)
     return JsonResponse({"status": "Function is still running in the background."})
+
+
+@login_required
+def campaigns_were_created_with_system(request):
+    """Отображает созданные кампании через эту систему"""
+    page_name = 'Созданные рекламные кампании'
+    campaigns_list = CreatedCampaign.objects.all()
+    ur_lico_data = UrLico.objects.all()
+
+    if request.POST:
+        ur_lico = request.POST.get('ur_lico_select')
+        select_type = request.POST.get('select_type')
+        campaign_name = request.POST.get('name')
+        select_subject = request.POST.get('select_subject')
+        articles = request.POST.get('articles')
+        budget = request.POST.get('budget')
+        cpm = request.POST.get('cpm')
+
+    context = {
+        'page_name': page_name,
+        'campaigns_list': campaigns_list,
+        'ur_lico_data': ur_lico_data,
+        'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+        'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
+    }
+    return render(request, 'create_reklama/campaigns_list.html', context)

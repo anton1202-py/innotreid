@@ -245,14 +245,14 @@ def save_ozon_daily_orders_data_for_motivation(data, order_date, month, year, ur
         ozon_marketplace = CodingMarketplaces.objects.get(marketpalce='Ozon')
         article_obj = ''
         if Articles.objects.filter(ozon_sku=data['dimensions'][0]['id']).exists():
-            article_obj = Articles.objects.get(
-                ozon_sku=data['dimensions'][0]['id'])
+            article_obj = Articles.objects.filter(
+                ozon_sku=data['dimensions'][0]['id'])[0]
         elif Articles.objects.filter(ozon_fbo_sku_id=data['dimensions'][0]['id']).exists():
-            article_obj = Articles.objects.get(
-                ozon_fbo_sku_id=data['dimensions'][0]['id'])
+            article_obj = Articles.objects.filter(
+                ozon_fbo_sku_id=data['dimensions'][0]['id'])[0]
         elif Articles.objects.filter(ozon_fbs_sku_id=data['dimensions'][0]['id']).exists():
-            article_obj = Articles.objects.get(
-                ozon_fbs_sku_id=data['dimensions'][0]['id'])
+            article_obj = Articles.objects.filter(
+                ozon_fbs_sku_id=data['dimensions'][0]['id'])[0]
         if article_obj:
             if Selling.objects.filter(lighter=article_obj,
                                       ur_lico=ur_lico,

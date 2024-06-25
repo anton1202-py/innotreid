@@ -1,0 +1,59 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+        
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr>
+                <th>ID кампании ВБ</th>
+                <th>Юр. лицо</th>
+                <th>Название кампании</th>
+                <th>Тип</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Список артикулов nmID</th>
+                <th>ID предмета</th>
+                <th>Текущая ставка</th>
+            </tr>
+            {% for el in campaigns_list %}
+            <tr>
+                <td>{{ el.campaign_number }}</td>
+                <td>{{ el.ur_lico.ur_lice_name }}</td>
+                <td>{{ el.campaign_name }}</td>
+                <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
+                <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
+                <td>{{ el.create_date }}</td>
+                <td>{{ el.articles_name }}</td>
+                <td>{{ el.subject_id }}</td>
+                <td>{{ el.current_cpm }}</td>  
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+            const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            // do the work...
+            document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+                const table = th.closest('table');
+                Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.appendChild(tr) );
+            })));
+    </script>
+        
+{% endblock %}
