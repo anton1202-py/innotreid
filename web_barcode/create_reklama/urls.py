@@ -9,7 +9,7 @@ urlpatterns = [
          name='create_reklama_create_many_campaigns'),
     path('campaigns_list', views.campaigns_were_created_with_system,
          name='campaigns_list'),
-    path('common_minus_words', views.campaigns_were_created_with_system,
+    path('common_minus_words', views.common_minus_words,
          name='common_minus_words'),
 
 

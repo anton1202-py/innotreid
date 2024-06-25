@@ -143,7 +143,6 @@ def pausa_advertisment_campaigns(header, campaign_number):
     time.sleep(0.3)
     url = f'https://advert-api.wb.ru/adv/v0/pause?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
-    print(response.status_code)
     return response
 
 

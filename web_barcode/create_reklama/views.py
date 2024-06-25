@@ -112,17 +112,11 @@ def campaigns_were_created_with_system(request):
     ur_lico_data = UrLico.objects.all()
     for_pausa_data = []
     for campaign_obj in campaigns_list:
-        for_pausa_data.append({'campaign_numaber': campaign_obj.campaign_number,
+        for_pausa_data.append({'campaign_number': campaign_obj.campaign_number,
                               'ur_lico': campaign_obj.ur_lico.ur_lice_name})
 
     if request.POST:
-        if 'campaign_stop' in request.POST:
-            for data in for_pausa_data:
-
-                header = header_wb_dict[data['ur_lico']]
-                answer = pausa_advertisment_campaigns(
-                    header, data['campaign_numaber'])
-                print(answer)
+        print(request.POST)
 
     context = {
         'page_name': page_name,
@@ -138,29 +132,37 @@ def campaigns_were_created_with_system(request):
 def common_minus_words(request):
     """Общие минус слова для всех кампаний"""
     page_name = 'Общие минус слова для всех кампаний'
-    minus_words_list = AllMinusWords.objects.all().order_by('ur_lico')
+    minus_words_list = AllMinusWords.objects.all().order_by('word')
     ur_lico_data = UrLico.objects.all()
 
     if request.POST:
-        ur_lico = request.POST.get('ur_lico_select')
+        print(request.POST)
+        if 'add_word' in request.POST:
+            main_word = request.POST.get('add_minus_word')
+            if not AllMinusWords.objects.filter(word=main_word).exists():
+                AllMinusWords(word=main_word).save()
+        elif "del-button" in request.POST:
+            word_id = request.POST.get('del-button')
+            AllMinusWords.objects.filter(id=word_id).delete()
 
     context = {
         'page_name': page_name,
-        'campaigns_list': minus_words_list,
+        'minus_words_list': minus_words_list,
         'ur_lico_data': ur_lico_data,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
-    return render(request, 'create_reklama/campaigns_list.html', context)
+    return render(request, 'create_reklama/minus_words_list.html', context)
 
 
 def update_common_minus_words(request):
     if request.POST:
         print(request.POST)
-        # if 'copyright_percent' in request.POST:
-        #     copyright_persent = request.POST.get('copyright_percent')
-        #     DesignUser.objects.filter(designer__username=designer).update(
-        #         copyright_reward_persent=copyright_persent
-        #     )
+        if 'main_word' in request.POST:
+            main_word = request.POST.get('main_word')
+            word_id = request.POST.get('word_id')
+            word_object = AllMinusWords.objects.get(id=word_id)
+            word_object.word = main_word
+            word_object.save()
         return JsonResponse({'message': 'Value saved successfully.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
