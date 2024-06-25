@@ -107,7 +107,7 @@ def create_many_campaigns(request):
 def campaigns_were_created_with_system(request):
     """Отображает созданные кампании через эту систему"""
     page_name = 'Созданные рекламные кампании'
-    campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico').order_by('id')
+    campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
     ur_lico_data = UrLico.objects.all()
 
     if request.POST:
