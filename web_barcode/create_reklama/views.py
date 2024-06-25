@@ -120,8 +120,9 @@ def campaigns_were_created_with_system(request):
             for data in for_pausa_data:
 
                 header = header_wb_dict[data['ur_lico']]
-                pausa_advertisment_campaigns(header, data['campaign_numaber'])
-                print(data)
+                answer = pausa_advertisment_campaigns(
+                    header, data['campaign_numaber'])
+                print(answer)
 
     context = {
         'page_name': page_name,
