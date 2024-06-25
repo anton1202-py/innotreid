@@ -44,6 +44,8 @@ def api_retry_decorator(func):
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Не авторизован'
                 elif response.status_code == 404:
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Страница не существует'
+                elif response.status_code == 422:
+                    message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Статус не изменился.'
                 else:
                     time.sleep(10)  # Ждем 1 секунду перед повторным запросом
                 if message:
