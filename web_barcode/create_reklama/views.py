@@ -136,7 +136,6 @@ def common_minus_words(request):
     ur_lico_data = UrLico.objects.all()
 
     if request.POST:
-        print(request.POST)
         if 'add_word' in request.POST:
             main_word = request.POST.get('add_minus_word')
             if not AllMinusWords.objects.filter(word=main_word).exists():
@@ -157,7 +156,6 @@ def common_minus_words(request):
 
 def update_common_minus_words(request):
     if request.POST:
-        print(request.POST)
         if 'main_word' in request.POST:
             main_word = request.POST.get('main_word')
             word_id = request.POST.get('word_id')

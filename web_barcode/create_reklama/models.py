@@ -154,7 +154,7 @@ class AllMinusWords(models.Model):
     )
     create_date = models.DateTimeField(
         verbose_name='Дата добавления',
-        default=now_date
+        auto_now_add=True
     )
 
     def __str__(self):
