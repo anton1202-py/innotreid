@@ -99,6 +99,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_auto_campaigns",
         "schedule": crontab(hour=1, minute=1)
     },
+    "create_reklama_update_price": {
+        "task": "create_reklama.periodic_tasks.update_articles_price_info_in_campaigns",
+        "schedule": crontab(hour=1, minute=2)
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #

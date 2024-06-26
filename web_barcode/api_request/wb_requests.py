@@ -150,6 +150,23 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
 
 
 @api_retry_decorator
+def start_advertisment_campaigns(header, campaign_number):
+    """
+    Метод позволяет запускать кампании находящиеся в статусах 4 - готова к запуску или 11 - кампания на паузе.
+    Допускается 5 запросов в секунду.
+    Для запуска кампании со статусом 11 необходимо наличие у неё пополненного бюджета.
+
+    Чтобы запустить кампанию со статусом 4 необходимо выполнить два условия (поочередность действий значения не имеет):
+    1. После создания кампании в кабинете ВБ. Продвижение необходимо нажать кнопку "Применить изменения".
+    2. Установить бюджет.
+    """
+    time.sleep(0.3)
+    url = f'https://advert-api.wb.ru/adv/v0/start?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
 def pausa_advertisment_campaigns(header, campaign_number):
     """
     Ставит на паузу рекламные кампании

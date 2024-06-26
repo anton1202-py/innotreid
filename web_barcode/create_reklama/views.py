@@ -1,28 +1,11 @@
-import time
 
-from analytika_reklama.models import (CommonCampaignDescription,
-                                      DailyCampaignParameters,
-                                      MainArticleExcluded, MainArticleKeyWords,
-                                      MainCampaignClusters,
-                                      MainCampaignParameters)
-from analytika_reklama.periodic_tasks import (
-    add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
-    get_clusters_statistic_for_autocampaign,
-    get_searchcampaign_keywords_statistic)
-from api_request.wb_requests import pausa_advertisment_campaigns
-from create_reklama.minus_words_working import get_campaigns_list_from_api_wb
+from api_request.wb_requests import start_advertisment_campaigns
 from create_reklama.models import AllMinusWords, CreatedCampaign
-from create_reklama.supplyment import (add_created_campaign_data_to_database,
-                                       check_data_for_create_adv_campaign,
-                                       update_articles_price_info_in_campaigns)
+from create_reklama.supplyment import check_data_for_create_adv_campaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.generic import ListView
-from price_system.models import Articles
 from reklama.models import UrLico
-from users.models import InnotreidUser
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
@@ -111,7 +94,6 @@ def campaigns_were_created_with_system(request):
     """Отображает созданные кампании через эту систему"""
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
-    # update_articles_price_info_in_campaigns()
     ur_lico_data = UrLico.objects.all()
     for_pausa_data = []
     for campaign_obj in campaigns_list:
@@ -120,6 +102,10 @@ def campaigns_were_created_with_system(request):
 
     if request.POST:
         print(request.POST)
+        if 'article_price' in request.POST:
+            price = int(request.POST.get('article_price'))
+            campaigns_list = CreatedCampaign.objects.filter(
+                article_price_on_page__gte=price)
 
     context = {
         'page_name': page_name,
@@ -129,6 +115,15 @@ def campaigns_were_created_with_system(request):
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
     return render(request, 'create_reklama/campaigns_list.html', context)
+
+
+def start_checked_campaigns(request):
+    if request.POST:
+        for campaign_number, ur_lico in request.POST.items():
+            if campaign_number != 'csrfmiddlewaretoken':
+                header = header_wb_dict[ur_lico]
+                start_advertisment_campaigns(header, campaign_number)
+    return JsonResponse({'error': 'Invalid request method.'})
 
 
 @login_required

@@ -81,22 +81,22 @@ def ozon_add_price_info(ur_lico):
                 marketplace='Ozon'
             ).exists():
                 latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(
-                        ozon_product_id=data['product_id']),
+                    common_article=Articles.objects.filter(
+                        ozon_product_id=data['product_id'])[0],
                     marketplace='Ozon'
                 ).latest('id')
                 if latest_record.price != int(float(data['price']['price'])):
                     ArticlesPrice(
-                        common_article=Articles.objects.get(
-                            ozon_product_id=data['product_id']),
+                        common_article=Articles.objects.filter(
+                            ozon_product_id=data['product_id'])[0],
                         marketplace='Ozon',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=int(float(data['price']['price'])),
                     ).save()
             else:
                 ArticlesPrice(
-                    common_article=Articles.objects.get(
-                        ozon_product_id=data['product_id']),
+                    common_article=Articles.objects.filter(
+                        ozon_product_id=data['product_id'])[0],
                     marketplace='Ozon',
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=int(float(data['price']['price'])),

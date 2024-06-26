@@ -7,31 +7,50 @@
     <div class="features">
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
-        </div>        
+        </div>
+        
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Цена больше чем</span><br>
+                    <input type="number" id="common_article_id" name="article_price" class="input-field">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+            </form>
+            <div class="inner-form-data">
+                <br>
+                <button id="startCampaignsBtn" style="white-space: nowrap;" >Старт Кампаний</button>
+            </div>
+        </div>
+
         <table style="overflow-x: scroll; display: block; width: 100%;">
-            <tr>
+            <tr >
+                <th>#</th>
                 <th>ID кампании ВБ</th>
                 <th>Юр. лицо</th>
                 <th>Название кампании</th>
                 <th>Тип</th>
                 <th>Статус</th>
-                <th>Дата создания</th>
                 <th>Список артикулов nmID</th>
                 <th>Цена артикула</th>
-                <th>ID предмета</th>
                 <th>Текущая ставка</th>
             </tr>
             {% for el in campaigns_list %}
-            <tr>
+            <tr data-campaign-number="{{ el.campaign_number }}" data-ur-lico="{{ el.ur_lico.ur_lice_name }}">
+                <td>
+                    <input type="checkbox" name="campaign_start" class="input-field">
+                </td>
                 <td>{{ el.campaign_number }}</td>
                 <td>{{ el.ur_lico.ur_lice_name }}</td>
                 <td>{{ el.campaign_name }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
-                <td>{{ el.create_date }}</td>
                 <td>{{ el.articles_name }}</td>
                 <td>{{ el.article_price_on_page }}</td>
-                <td>{{ el.subject_id }}</td>
                 <td>{{ el.current_cpm }}</td>  
             </tr>
             {% endfor %}
@@ -41,7 +60,40 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
+        document.getElementById('startCampaignsBtn').addEventListener('click', function() {
+    var selectedArticles = [];
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    var formData = new FormData();
+    
+    checkboxes.forEach(function(checkbox) {
+        var row = checkbox.closest('tr');
+        
+        var campaignNumber = row.getAttribute('data-campaign-number');
+        var urLico = row.getAttribute('data-ur-lico');
 
+        selectedArticles.push({
+            campaignNumber: urLico
+        });
+
+        formData.append(campaignNumber, urLico);
+    });
+    
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    console.log('formData', formData);
+
+    fetch('start_checked_campaigns', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        // Обработка ответа от сервера
+    })
+    .catch(error => {
+        // Обработка ошибок
+    });
+});
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
             const comparer = (idx, asc) => (a, b) => ((v1, v2) => 

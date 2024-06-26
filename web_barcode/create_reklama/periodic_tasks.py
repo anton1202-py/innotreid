@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from api_request.wb_requests import (
     advertisment_campaign_clusters_statistic, advertisment_campaign_list,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
-    get_del_minus_phrase_to_catalog_search_campaigns,
+    get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info,
     statistic_search_campaign_keywords)
 from celery_tasks.celery import app
 from create_reklama.minus_words_working import (
@@ -58,3 +58,22 @@ def set_up_minus_phrase_to_auto_campaigns():
                         campaign_minus_phrase_list.append(minus_word)
                 get_del_minus_phrase_to_auto_campaigns(
                     header, campaign_number, campaign_minus_phrase_list)
+
+
+@app.task
+def update_articles_price_info_in_campaigns():
+    """Обновляет информацию по цене артикулов в кампаниях"""
+    ur_lico_data = UrLico.objects.all()
+
+    for ur_lico_obj in ur_lico_data:
+        campaigns_data = CreatedCampaign.objects.filter(ur_lico=ur_lico_obj)
+        for article in campaigns_data:
+            common_info = get_front_api_wb_info(article.articles_name)
+            if common_info:
+                price = ''
+                if common_info['data']['products']:
+                    price = int(common_info['data']['products'][0]
+                                ['salePriceU'])//100
+
+                article.article_price_on_page = price
+                article.save()
