@@ -17,6 +17,7 @@
                 <th>Статус</th>
                 <th>Дата создания</th>
                 <th>Список артикулов nmID</th>
+                <th>Цена артикула</th>
                 <th>ID предмета</th>
                 <th>Текущая ставка</th>
             </tr>
@@ -29,6 +30,7 @@
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
                 <td>{{ el.create_date }}</td>
                 <td>{{ el.articles_name }}</td>
+                <td>{{ el.article_price_on_page }}</td>
                 <td>{{ el.subject_id }}</td>
                 <td>{{ el.current_cpm }}</td>  
             </tr>

@@ -13,7 +13,8 @@ from api_request.wb_requests import pausa_advertisment_campaigns
 from create_reklama.minus_words_working import get_campaigns_list_from_api_wb
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.supplyment import (add_created_campaign_data_to_database,
-                                       check_data_for_create_adv_campaign)
+                                       check_data_for_create_adv_campaign,
+                                       update_articles_price_info_in_campaigns)
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import JsonResponse
@@ -110,6 +111,7 @@ def campaigns_were_created_with_system(request):
     """Отображает созданные кампании через эту систему"""
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
+    update_articles_price_info_in_campaigns()
     ur_lico_data = UrLico.objects.all()
     for_pausa_data = []
     for campaign_obj in campaigns_list:

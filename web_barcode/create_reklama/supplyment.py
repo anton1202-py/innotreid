@@ -3,7 +3,8 @@ import math
 import time
 from datetime import datetime, timedelta
 
-from api_request.wb_requests import create_auto_advertisment_campaign
+from api_request.wb_requests import (create_auto_advertisment_campaign,
+                                     get_front_api_wb_info)
 from create_reklama.models import CreatedCampaign
 from django.db.models import Q
 from motivation.models import Selling
@@ -137,3 +138,21 @@ def save_campaign_for_replenish_budget(main_data):
         virtual_budget_date=today,
         campaign_budget_date=today
     ).save()
+
+
+def update_articles_price_info_in_campaigns():
+    """Обновляет информацию по цене артикулов в кампаниях"""
+    ur_lico_data = UrLico.objects.all()
+
+    for ur_lico_obj in ur_lico_data:
+        campaigns_data = CreatedCampaign.objects.filter(ur_lico=ur_lico_obj)
+        for article in campaigns_data:
+            common_info = get_front_api_wb_info(article.articles_name)
+            if common_info:
+                price = ''
+                if common_info['data']['products']:
+                    price = int(common_info['data']['products'][0]
+                                ['salePriceU'])//100
+
+                article.article_price_on_page = price
+                article.save()

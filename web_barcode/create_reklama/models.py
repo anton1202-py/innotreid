@@ -38,6 +38,11 @@ class CreatedCampaign(models.Model):
         blank=True,
         null=True
     )
+    article_price_on_page = models.IntegerField(
+        verbose_name='Цена артикула на странице',
+        blank=True,
+        null=True
+    )
     subject_id = models.IntegerField(
         verbose_name='ID предмета, для которого создается кампания.',
         blank=True,

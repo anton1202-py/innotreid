@@ -87,7 +87,22 @@ def wb_sales_statistic(header, check_date, attempt=0):
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
 
 
+@api_retry_decorator
+def get_front_api_wb_info(nm_id):
+    """
+    Получаем информацию артикула на странице ВБ от api фронта ВБ
+    nm_id - номенклатурный номер артикула на WB
+    """
+    time.sleep(0.3)
+    url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
+    response = requests.request(
+        "GET", url)
+    return response
+
 # =========== API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
+
+
+@api_retry_decorator
 def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subject_id, budget, mns_list, cpm):
     """
     Создают автоматическую кампанию.
