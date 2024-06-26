@@ -16,20 +16,40 @@
                     <span>Цена больше чем</span><br>
                     <input type="number" id="common_article_id" name="article_price" class="input-field">
                 </label>
+                <label for="common_article_id" class="rand">
+                    <span>Цена меньше чем</span><br>
+                    <input type="number" id="common_article_id" name="less_article_price" class="input-field">
+                </label>
                 <div class="inner-form-data">
                     <br>
                     <input type="Submit" id="filter" name="filter" value="Фильтровать" />
                 </div>
             </form>
+
+            
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="update_data" name="update_data" value="Обновить данные" />
+                </div>
+            </form>
+
             <div class="inner-form-data">
                 <br>
                 <button id="startCampaignsBtn" style="white-space: nowrap;" >Старт Кампаний</button>
+            </div>
+            <div class="inner-form-data">
+                <br>
+                <button id="pausaCampaignsBtn" style="white-space: nowrap;" >Пауза Кампаний</button>
             </div>
         </div>
 
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr >
-                <th>#</th>
+                <th>
+                    <input type="checkbox" name="main_check_box" class="input-field" onchange="checkAllCheckboxes(this)"> 
+                </th>
                 <th>ID кампании ВБ</th>
                 <th>Юр. лицо</th>
                 <th>Название кампании</th>
@@ -60,15 +80,33 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
+        function checkAllCheckboxes(mainCheckbox) {
+            var checkboxes = document.getElementsByClassName('input-field');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] !== mainCheckbox) {
+                    checkboxes[i].checked = mainCheckbox.checked;
+                }
+            }
+        }
         //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
         document.getElementById('startCampaignsBtn').addEventListener('click', function() {
+    sendCampaignData(this);
+});
+
+document.getElementById('pausaCampaignsBtn').addEventListener('click', function() {
+    sendCampaignData(this);
+});
+
+function sendCampaignData(button) {
     var selectedArticles = [];
     var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
     var formData = new FormData();
-    
+
+    var campaignData = {};
+
     checkboxes.forEach(function(checkbox) {
         var row = checkbox.closest('tr');
-        
         var campaignNumber = row.getAttribute('data-campaign-number');
         var urLico = row.getAttribute('data-ur-lico');
 
@@ -76,24 +114,24 @@
             campaignNumber: urLico
         });
 
-        formData.append(campaignNumber, urLico);
+        // Добавляем название кнопки к данным
+        campaignData[campaignNumber] = urLico
+        
     });
-    
+    formData.append('campaignData', JSON.stringify(campaignData));
+    formData.append('button_name', button.id);
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
-    console.log('formData', formData);
 
     fetch('start_checked_campaigns', {
         method: 'POST',
         body: formData
     })
-    .then(response => {
-        // Обработка ответа от сервера
-    })
+    .then(response => response.json())
+
     .catch(error => {
-        // Обработка ошибок
+        console.error('Error:', error);
     });
-});
+}
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
             const comparer = (idx, asc) => (a, b) => ((v1, v2) => 

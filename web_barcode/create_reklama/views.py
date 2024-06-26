@@ -1,5 +1,8 @@
 
-from api_request.wb_requests import start_advertisment_campaigns
+import json
+
+from api_request.wb_requests import (pausa_advertisment_campaigns,
+                                     start_advertisment_campaigns)
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.supplyment import check_data_for_create_adv_campaign
 from django.contrib.auth.decorators import login_required
@@ -101,11 +104,17 @@ def campaigns_were_created_with_system(request):
                               'ur_lico': campaign_obj.ur_lico.ur_lice_name})
 
     if request.POST:
-        print(request.POST)
-        if 'article_price' in request.POST:
-            price = int(request.POST.get('article_price'))
-            campaigns_list = CreatedCampaign.objects.filter(
-                article_price_on_page__gte=price)
+        if 'article_price' in request.POST or 'less_article_price' in request.POST:
+            if request.POST['article_price']:
+                price = int(request.POST.get('article_price'))
+                campaigns_list = CreatedCampaign.objects.filter(
+                    article_price_on_page__gte=price)
+            elif request.POST['less_article_price']:
+                price = int(request.POST.get('less_article_price'))
+                campaigns_list = CreatedCampaign.objects.filter(
+                    article_price_on_page__lt=price)
+        elif 'update_data' in request.POST:
+            print(request.POST)
 
     context = {
         'page_name': page_name,
@@ -118,11 +127,28 @@ def campaigns_were_created_with_system(request):
 
 
 def start_checked_campaigns(request):
+    """Запускает чекнутые кампании"""
+    if request.POST:
+        if request.POST['button_name'] == 'startCampaignsBtn':
+            for campaign_number, ur_lico in json.loads(request.POST['campaignData']).items():
+                if campaign_number != 'null':
+                    header = header_wb_dict[ur_lico]
+                    start_advertisment_campaigns(header, campaign_number)
+        elif request.POST['button_name'] == 'pausaCampaignsBtn':
+            for campaign_number, ur_lico in json.loads(request.POST['campaignData']).items():
+                if campaign_number != 'null':
+                    header = header_wb_dict[ur_lico]
+                    pausa_advertisment_campaigns(header, campaign_number)
+    return JsonResponse({'error': 'Invalid request method.'})
+
+
+def pausa_checked_campaigns(request):
+    """Ставит на паузу чекнутые кампании"""
     if request.POST:
         for campaign_number, ur_lico in request.POST.items():
-            if campaign_number != 'csrfmiddlewaretoken':
+            if campaign_number != 'csrfmiddlewaretoken' and campaign_number != 'null':
                 header = header_wb_dict[ur_lico]
-                start_advertisment_campaigns(header, campaign_number)
+                # start_advertisment_campaigns(header, campaign_number)
     return JsonResponse({'error': 'Invalid request method.'})
 
 
