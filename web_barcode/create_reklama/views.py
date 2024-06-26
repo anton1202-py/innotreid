@@ -111,7 +111,7 @@ def campaigns_were_created_with_system(request):
     """Отображает созданные кампании через эту систему"""
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
-    update_articles_price_info_in_campaigns()
+    # update_articles_price_info_in_campaigns()
     ur_lico_data = UrLico.objects.all()
     for_pausa_data = []
     for campaign_obj in campaigns_list:
