@@ -32,8 +32,11 @@ def api_retry_decorator(func):
             for attempt in range(30):  # Попробуем выполнить запрос не более 50 раз
                 response = func(*args, **kwargs)
                 if response.status_code == 200:
-                    json_response = json.loads(response.text)
-                    return json_response
+                    if response.text:
+                        json_response = json.loads(response.text)
+                        return json_response
+                    else:
+                        return
                 elif response.status_code == 204:
                     message = ''
                 elif response.status_code == 403:

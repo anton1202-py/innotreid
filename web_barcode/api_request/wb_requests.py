@@ -159,6 +159,48 @@ def advertisment_campaign_list(header):
 
 
 @api_retry_decorator
+def get_del_minus_phrase_to_catalog_search_campaigns(header, campaign_number, phrase_list):
+    """
+    Установка/удаление минус-фраз фразового соответствия.
+
+    Устанавливает и удаляет минус-фразы фразового соответствия.
+    Только для кампаний в поиске и поиск + каталог.
+    Максимально допустимое количество минус-фраз в кампании - 1000 шт.
+    Отправка пустого массива удаляет все минус-фразы фразового соответствия из кампании.
+
+    Максимум 2 запроса в секунду.
+    """
+    time.sleep(0.6)
+    url = f'https://advert-api.wb.ru/adv/v1/search/set-phrase?id={campaign_number}'
+
+    payload = json.dumps({
+        "phrase": phrase_list
+    })
+
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+
+
+@api_retry_decorator
+def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list):
+    """
+    Метод позволяет устанавливать или удалять минус фразы.
+
+    Допускается 1 запрос в 6 секунд.
+    Отправка пустого массива удаляет все минус-фразы из кампании.
+    """
+    time.sleep(7)
+    url = f'https://advert-api.wb.ru/adv/v1/auto/set-excluded?id={campaign_number}'
+
+    payload = json.dumps({
+        "phrase": phrase_list
+    })
+
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+
+
+@api_retry_decorator
 def advertisment_campaigns_list_info(adv_list: list, header: str):
     """
     Получаем информацию о каждой рекламной кампании, которая находится

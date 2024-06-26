@@ -14,6 +14,7 @@ app = Celery('celery_tasks',
                       'celery_tasks.tasks_yandex_fby_fbs',
                       'celery_tasks.yandex_tasks',
                       'analytika_reklama.periodic_tasks',
+                      'create_reklama.periodic_tasks',
                       'database.periodic_tasks',
                       'feedbacks.periodic_tasks',
                       'ozon_system.tasks',
@@ -88,6 +89,17 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=18, minute=31)
     },
     # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
+
+    # =========== ЗАДАЧИ РАЗДЕЛА CREATE_REKLAMA ========== #
+    "create_reklama_search_catalog_excluded": {
+        "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_search_catalog_campaigns",
+        "schedule": crontab(hour=1, minute=0)
+    },
+    "create_reklama_auto_excluded": {
+        "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_auto_campaigns",
+        "schedule": crontab(hour=1, minute=1)
+    },
+    # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #
     "feedbacks_for_articles": {

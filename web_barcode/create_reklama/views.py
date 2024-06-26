@@ -10,6 +10,7 @@ from analytika_reklama.periodic_tasks import (
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
 from api_request.wb_requests import pausa_advertisment_campaigns
+from create_reklama.minus_words_working import get_campaigns_list_from_api_wb
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.supplyment import (add_created_campaign_data_to_database,
                                        check_data_for_create_adv_campaign)
