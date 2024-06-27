@@ -97,3 +97,5 @@ def update_campaign_status():
                         if int(campaign_obj.campaign_number) in campaign_list:
                             campaign_obj.campaign_status = campaign_status
                             campaign_obj.save()
+                        elif int(campaign_obj.campaign_number) in campaign_list and campaign_status == 7:
+                            campaign_obj.delete()
