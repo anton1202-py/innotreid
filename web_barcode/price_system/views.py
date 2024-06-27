@@ -30,17 +30,20 @@ from .supplyment import (excel_article_costprice_export, excel_compare_table,
                          ozon_articles_list, ozon_matching_articles,
                          ozon_price_change, wb_articles_list,
                          wb_matching_articles, wilberries_price_change,
-                         yandex_matching_articles, yandex_price_change)
+                         yandex_articles_list, yandex_matching_articles,
+                         yandex_price_change)
 
 
 def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    common_article = Articles.objects.filter(company=ur_lico,
-                                             yandex_seller_article=data['offer']['offerId'])
-    if len(common_article) > 1:
-        print(common_article)
+    yandex_article_price_data = yandex_articles_list(ur_lico)
+    for data in yandex_article_price_data:
+        common_article = Articles.objects.filter(company=ur_lico,
+                                                 yandex_seller_article=data['offer']['offerId'])
+        if len(common_article) > 1:
+            print(common_article)
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
