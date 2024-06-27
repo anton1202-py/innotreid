@@ -38,12 +38,12 @@ def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    yandex_article_price_data = yandex_articles_list(ur_lico)
-    for data in yandex_article_price_data:
-        common_article = Articles.objects.filter(company=ur_lico,
-                                                 yandex_seller_article=data['offer']['offerId'])
-        if len(common_article) > 1:
-            print(common_article)
+    # yandex_article_price_data = yandex_articles_list(ur_lico)
+    # for data in yandex_article_price_data:
+    #     common_article = Articles.objects.filter(company=ur_lico,
+    #                                              yandex_seller_article=data['offer']['offerId'])
+    #     if len(common_article) > 1:
+    #         print(common_article)
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
