@@ -110,7 +110,7 @@ def campaigns_were_created_with_system(request):
                     article_price_on_page__lt=price)
         elif 'update_data' in request.POST:
             update_campaign_status()
-            update_campaign_budget_and_cpm()
+            # update_campaign_budget_and_cpm()
 
     context = {
         'page_name': page_name,
