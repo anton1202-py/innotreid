@@ -107,6 +107,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.update_campaign_status",
         "schedule": crontab(hour=2, minute=2)
     },
+    "create_reklama_update_balance_and_cpm": {
+        "task": "create_reklama.periodic_tasks.update_campaign_budget_and_cpm",
+        "schedule": crontab(minute='*/180')
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #

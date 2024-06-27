@@ -14,7 +14,9 @@ from create_reklama.minus_words_working import (
     get_minus_phrase_from_wb_auto_campaigns,
     get_minus_phrase_from_wb_search_catalog_campaigns)
 from create_reklama.models import AllMinusWords, CreatedCampaign
-from create_reklama.supplyment import filter_campaigns_status_type
+from create_reklama.supplyment import (filter_campaigns_status_type,
+                                       update_campaign_budget,
+                                       update_campaign_cpm)
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
@@ -98,6 +100,29 @@ def update_campaign_status():
                             campaign_obj.campaign_status = campaign_status
                             campaign_obj.save()
                         elif int(campaign_obj.campaign_number) in campaign_list and campaign_status == 7:
-                            print('кампании для удаления',
-                                  campaign_obj.campaign_number)
                             campaign_obj.delete()
+
+
+@app.task
+def update_campaign_budget_and_cpm():
+    """
+    Обновляет данные кампании (баланс и cpm)
+    """
+    ur_lico_data = UrLico.objects.all()
+
+    for ur_lico_obj in ur_lico_data:
+        campaigns_list = []
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
+        campaign_queryset = CreatedCampaign.objects.filter(ur_lico=ur_lico_obj)
+        for campaign_obj in campaign_queryset:
+            update_campaign_budget(campaign_obj, header)
+            campaigns_list.append(int(campaign_obj.campaign_number))
+
+        check_number = math.ceil(len(campaigns_list)/50)
+
+        for i in range(check_number):
+            start_point = i*50
+            finish_point = (i+1)*50
+            data_adv_list = campaigns_list[
+                start_point:finish_point]
+            update_campaign_cpm(data_adv_list, ur_lico_obj, header)

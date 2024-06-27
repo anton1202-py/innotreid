@@ -5,14 +5,10 @@ from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.periodic_tasks import update_campaign_status
-from create_reklama.supplyment import (check_data_for_create_adv_campaign,
-                                       filter_campaigns_status_type,
-                                       update_campaign_budget,
-                                       update_campaign_budget_and_cpm,
-                                       update_campaign_cpm)
+from create_reklama.supplyment import check_data_for_create_adv_campaign
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from reklama.models import UrLico
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
@@ -37,13 +33,7 @@ def create_campaign(request):
     errors_list = []
     ok_answer = []
     if request.POST:
-        ur_lico = request.POST.get('ur_lico_select')
-        select_type = request.POST.get('select_type')
-        campaign_name = request.POST.get('name')
-        select_subject = request.POST.get('select_subject')
-        articles = request.POST.get('articles')
-        budget = request.POST.get('budget')
-        cpm = request.POST.get('cpm')
+        pass
 
     context = {
         'user_chat_id': user_chat_id,
@@ -109,9 +99,8 @@ def campaigns_were_created_with_system(request):
                 campaigns_list = CreatedCampaign.objects.filter(
                     article_price_on_page__lt=price)
         elif 'update_data' in request.POST:
-            print('Обновление статуса')
             update_campaign_status()
-            # update_campaign_budget_and_cpm()
+            return redirect('campaigns_list')
 
     context = {
         'page_name': page_name,
