@@ -49,7 +49,6 @@ def article_compare(request, ur_lico: str):
         company=ur_lico).order_by("common_article")
 
     if request.POST:
-        print(request.POST)
         if "compare" in request.POST:
             wb_matching_articles(ur_lico)
             ozon_matching_articles(ur_lico)
@@ -83,13 +82,11 @@ def delete_artices(request):
     """Удаляет артикулы"""
 
     if request.POST:
-        print(request.POST)
         raw_articles_list = request.POST.get('articles')
         article_list = raw_articles_list.split(',')
         for article in article_list:
             Articles.objects.get(company='ИП Караваев',
                                  common_article=article).delete()
-        print(article_list)
     return JsonResponse({'message': 'Value saved successfully.'})
 
 
