@@ -5,7 +5,9 @@ import time
 from datetime import datetime, timedelta
 
 from api_request.wb_requests import (advertisment_campaign_list,
+                                     advertisment_campaigns_list_info,
                                      create_auto_advertisment_campaign,
+                                     get_budget_adv_campaign,
                                      get_front_api_wb_info)
 from create_reklama.models import CreatedCampaign
 from django.db.models import Q
@@ -177,23 +179,55 @@ def filter_campaigns_status_type() -> dict:
                     inner_campaigns_data[data['type']] = {
                         data['status']: inner_campaign_list}
         returned_dict[ur_lico_obj.ur_lice_name] = inner_campaigns_data
-    print(returned_dict)
     return returned_dict
 
 
-def update_campaign_status():
-    """Обновляет статус кампаний"""
+def update_campaign_budget_and_cpm():
+    """
+    Обновляет данные кампании (бюджет и cpm)
+    """
     ur_lico_data = UrLico.objects.all()
-    answer_data = filter_campaigns_status_type()
+
     for ur_lico_obj in ur_lico_data:
-        answer_campaigns_info = answer_data[ur_lico_obj.ur_lice_name]
-        for campaign_type, data in answer_campaigns_info.items():
-            campaigns_data = CreatedCampaign.objects.filter(
-                ur_lico=ur_lico_obj, campaign_type=campaign_type
-            )
-            if campaigns_data.exists():
-                for campaign_status, campaign_list in data.items():
-                    for campaign_obj in campaigns_data:
-                        if int(campaign_obj.campaign_number) in campaign_list:
-                            campaign_obj.campaign_status = campaign_status
-                            campaign_obj.save()
+        campaigns_list = []
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
+        campaign_queryset = CreatedCampaign.objects.filter(ur_lico=ur_lico_obj)
+        for campaign_obj in campaign_queryset:
+            update_campaign_budget(campaign_obj, header)
+            campaigns_list.append(int(campaign_obj.campaign_number))
+
+        check_number = math.ceil(len(campaigns_list)/50)
+
+        for i in range(check_number):
+            start_point = i*50
+            finish_point = (i+1)*50
+            data_adv_list = campaigns_list[
+                start_point:finish_point]
+            update_campaign_cpm(data_adv_list, ur_lico_obj, header)
+
+
+def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
+    """
+    Обновляет cpm кампании
+    """
+    main_data = advertisment_campaigns_list_info(data_adv_list, header)
+    for campaign_data in main_data:
+        if "autoParams" in campaign_data:
+            cpm = campaign_data["autoParams"]['cpm']
+        else:
+            cpm = None
+        campaign_obj = CreatedCampaign.objects.get(
+            ur_lico=ur_lico_obj, campaign_number=str(campaign_data["advertId"]))
+        campaign_obj.current_cpm = cpm
+        campaign_obj.save()
+
+
+def update_campaign_budget(campaign_obj, header):
+    """
+    Обновляет бюджет кампании
+    """
+    budget_data = get_budget_adv_campaign(
+        header, int(campaign_obj.campaign_number))
+    balance = budget_data['total']
+    campaign_obj.balance = balance
+    campaign_obj.save()

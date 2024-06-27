@@ -6,7 +6,10 @@ from api_request.wb_requests import (pausa_advertisment_campaigns,
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.periodic_tasks import update_campaign_status
 from create_reklama.supplyment import (check_data_for_create_adv_campaign,
-                                       filter_campaigns_status_type)
+                                       filter_campaigns_status_type,
+                                       update_campaign_budget,
+                                       update_campaign_budget_and_cpm,
+                                       update_campaign_cpm)
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -89,6 +92,7 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
     ur_lico_data = UrLico.objects.all()
+
     for_pausa_data = []
     for campaign_obj in campaigns_list:
         for_pausa_data.append({'campaign_number': campaign_obj.campaign_number,
@@ -105,8 +109,8 @@ def campaigns_were_created_with_system(request):
                 campaigns_list = CreatedCampaign.objects.filter(
                     article_price_on_page__lt=price)
         elif 'update_data' in request.POST:
-            print(request.POST)
             update_campaign_status()
+            update_campaign_budget_and_cpm()
 
     context = {
         'page_name': page_name,

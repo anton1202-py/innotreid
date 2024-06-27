@@ -56,6 +56,7 @@
                 <th>Тип</th>
                 <th>Статус</th>
                 <th>Список артикулов nmID</th>
+                <th>Баланс</th>
                 <th>Цена артикула</th>
                 <th>Текущая ставка</th>
             </tr>
@@ -70,6 +71,7 @@
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
                 <td>{{ el.articles_name }}</td>
+                <td>{{ el.balance }}</td>
                 <td>{{ el.article_price_on_page }}</td>
                 <td>{{ el.current_cpm }}</td>  
             </tr>

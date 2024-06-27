@@ -53,6 +53,11 @@ class CreatedCampaign(models.Model):
         blank=True,
         null=True
     )
+    balance = models.IntegerField(
+        verbose_name='Баланс кампании',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'{self.campaign_number} {self.campaign_name}'
