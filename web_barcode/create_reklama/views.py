@@ -109,6 +109,7 @@ def campaigns_were_created_with_system(request):
                 campaigns_list = CreatedCampaign.objects.filter(
                     article_price_on_page__lt=price)
         elif 'update_data' in request.POST:
+            print('Обновление статуса')
             update_campaign_status()
             # update_campaign_budget_and_cpm()
 

@@ -94,9 +94,10 @@ def update_campaign_status():
             if campaigns_data.exists():
                 for campaign_status, campaign_list in data.items():
                     for campaign_obj in campaigns_data:
-                        if int(campaign_obj.campaign_number) in campaign_list:
+                        if int(campaign_obj.campaign_number) in campaign_list and campaign_status != 7:
                             campaign_obj.campaign_status = campaign_status
                             campaign_obj.save()
                         elif int(campaign_obj.campaign_number) in campaign_list and campaign_status == 7:
-                            print(campaign_obj.campaign_number)
+                            print('кампании для удаления',
+                                  campaign_obj.campaign_number)
                             campaign_obj.delete()
