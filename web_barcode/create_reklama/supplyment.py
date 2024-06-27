@@ -1,9 +1,11 @@
 import asyncio
 import math
+import pprint
 import time
 from datetime import datetime, timedelta
 
-from api_request.wb_requests import (create_auto_advertisment_campaign,
+from api_request.wb_requests import (advertisment_campaign_list,
+                                     create_auto_advertisment_campaign,
                                      get_front_api_wb_info)
 from create_reklama.models import CreatedCampaign
 from django.db.models import Q
@@ -138,3 +140,60 @@ def save_campaign_for_replenish_budget(main_data):
         virtual_budget_date=today,
         campaign_budget_date=today
     ).save()
+
+
+def filter_campaigns_status_type() -> dict:
+    """
+    Фильтрует рекламные кампании по статусу и типу.
+    Возвращает словарь типа:
+    {ur_lico:
+        {campaign_type:
+            {campaign_status: [campaign_number]}
+        }
+    }
+    """
+    ur_lico_data = UrLico.objects.all()
+    returned_dict = {}
+    type_list = [8, 9]
+    for ur_lico_obj in ur_lico_data:
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
+        campaigns_wb_answer_list = advertisment_campaign_list(header)
+        inner_campaigns_data = {}
+        for data in campaigns_wb_answer_list['adverts']:
+
+            # Автоматические кампании
+            if data['type'] in type_list:
+
+                if data['type'] in inner_campaigns_data:
+                    inner_campaign_list = []
+                    for campaign in data['advert_list']:
+                        inner_campaign_list.append(campaign['advertId'])
+                    inner_campaigns_data[data['type']
+                                         ][data['status']] = inner_campaign_list
+                else:
+                    inner_campaign_list = []
+                    for campaign in data['advert_list']:
+                        inner_campaign_list.append(campaign['advertId'])
+                    inner_campaigns_data[data['type']] = {
+                        data['status']: inner_campaign_list}
+        returned_dict[ur_lico_obj.ur_lice_name] = inner_campaigns_data
+    print(returned_dict)
+    return returned_dict
+
+
+def update_campaign_status():
+    """Обновляет статус кампаний"""
+    ur_lico_data = UrLico.objects.all()
+    answer_data = filter_campaigns_status_type()
+    for ur_lico_obj in ur_lico_data:
+        answer_campaigns_info = answer_data[ur_lico_obj.ur_lice_name]
+        for campaign_type, data in answer_campaigns_info.items():
+            campaigns_data = CreatedCampaign.objects.filter(
+                ur_lico=ur_lico_obj, campaign_type=campaign_type
+            )
+            if campaigns_data.exists():
+                for campaign_status, campaign_list in data.items():
+                    for campaign_obj in campaigns_data:
+                        if int(campaign_obj.campaign_number) in campaign_list:
+                            campaign_obj.campaign_status = campaign_status
+                            campaign_obj.save()

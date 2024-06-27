@@ -124,27 +124,27 @@ def yandex_add_price_info(ur_lico):
         # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
         if Articles.objects.filter(company=ur_lico, yandex_seller_article=data['offer']['offerId']).exists():
             if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.get(company=ur_lico,
-                                                    yandex_seller_article=data['offer']['offerId']),
+                common_article=Articles.objects.filter(company=ur_lico,
+                                                       yandex_seller_article=data['offer']['offerId'])[0],
                 marketplace='Yandex'
             ).exists():
                 latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(company=ur_lico,
-                                                        yandex_seller_article=data['offer']['offerId']),
+                    common_article=Articles.objects.filter(company=ur_lico,
+                                                           yandex_seller_article=data['offer']['offerId'])[0],
                     marketplace='Yandex'
                 ).latest('id')
                 if latest_record.price != data['offer']['basicPrice']['value']:
                     ArticlesPrice(
-                        common_article=Articles.objects.get(company=ur_lico,
-                                                            yandex_seller_article=data['offer']['offerId']),
+                        common_article=Articles.objects.filter(company=ur_lico,
+                                                               yandex_seller_article=data['offer']['offerId'])[0],
                         marketplace='Yandex',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=data['offer']['basicPrice']['value'],
                     ).save()
             else:
                 ArticlesPrice(
-                    common_article=Articles.objects.get(company=ur_lico,
-                                                        yandex_seller_article=data['offer']['offerId']),
+                    common_article=Articles.objects.filter(company=ur_lico,
+                                                           yandex_seller_article=data['offer']['offerId'])[0],
                     marketplace='Yandex',
                     price_date=datetime.now().strftime('%Y-%m-%d'),
                     price=data['offer']['basicPrice']['value'],

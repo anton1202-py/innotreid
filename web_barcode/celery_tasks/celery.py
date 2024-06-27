@@ -103,6 +103,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.update_articles_price_info_in_campaigns",
         "schedule": crontab(hour=1, minute=2)
     },
+    "create_reklama_update_status": {
+        "task": "create_reklama.periodic_tasks.update_campaign_status",
+        "schedule": crontab(hour=2, minute=2)
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #

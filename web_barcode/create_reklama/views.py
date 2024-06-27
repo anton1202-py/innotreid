@@ -4,7 +4,9 @@ import json
 from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.models import AllMinusWords, CreatedCampaign
-from create_reklama.supplyment import check_data_for_create_adv_campaign
+from create_reklama.periodic_tasks import update_campaign_status
+from create_reklama.supplyment import (check_data_for_create_adv_campaign,
+                                       filter_campaigns_status_type)
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -21,7 +23,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN,
 def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
-
     ur_lico_data = UrLico.objects.all()
     subject_id = {
         'Ночник': 1673,
@@ -40,16 +41,6 @@ def create_campaign(request):
         articles = request.POST.get('articles')
         budget = request.POST.get('budget')
         cpm = request.POST.get('cpm')
-
-        main_data = {
-            'ur_lico': ur_lico,
-            'select_type': select_type,
-            'campaign_name': campaign_name,
-            'select_subject': select_subject,
-            'articles': articles,
-            'cpm': cpm,
-            'budget': budget
-        }
 
     context = {
         'user_chat_id': user_chat_id,
@@ -115,6 +106,7 @@ def campaigns_were_created_with_system(request):
                     article_price_on_page__lt=price)
         elif 'update_data' in request.POST:
             print(request.POST)
+            update_campaign_status()
 
     context = {
         'page_name': page_name,

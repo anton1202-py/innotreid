@@ -14,6 +14,7 @@ from create_reklama.minus_words_working import (
     get_minus_phrase_from_wb_auto_campaigns,
     get_minus_phrase_from_wb_search_catalog_campaigns)
 from create_reklama.models import AllMinusWords, CreatedCampaign
+from create_reklama.supplyment import filter_campaigns_status_type
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
@@ -77,3 +78,22 @@ def update_articles_price_info_in_campaigns():
 
                 article.article_price_on_page = price
                 article.save()
+
+
+@app.task
+def update_campaign_status():
+    """Обновляет статус кампаний"""
+    ur_lico_data = UrLico.objects.all()
+    answer_data = filter_campaigns_status_type()
+    for ur_lico_obj in ur_lico_data:
+        answer_campaigns_info = answer_data[ur_lico_obj.ur_lice_name]
+        for campaign_type, data in answer_campaigns_info.items():
+            campaigns_data = CreatedCampaign.objects.filter(
+                ur_lico=ur_lico_obj, campaign_type=campaign_type
+            )
+            if campaigns_data.exists():
+                for campaign_status, campaign_list in data.items():
+                    for campaign_obj in campaigns_data:
+                        if int(campaign_obj.campaign_number) in campaign_list:
+                            campaign_obj.campaign_status = campaign_status
+                            campaign_obj.save()
