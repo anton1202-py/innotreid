@@ -56,10 +56,10 @@
                 </div>
             </form>
         </div>
-        <!-- <button id="submitBtn">Отправить выбранные артикулы</button> -->
+        <button id="submitBtn">Отправить выбранные артикулы</button>
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
-                    <!-- <th>Чек</th> -->
+                    <th>Чек</th>
                     <th>Артикул</th>
                     <th>Статус</th>
                     <th>Компания</th>
@@ -84,9 +84,9 @@
                 </tr>
                 {% for el in data %}   
                 <tr>
-                    <!-- <td>
+                    <td>
                         <input type="checkbox" name="common_article" class="input-field">
-                    </td> -->
+                    </td>
                     <td><a href="{% url 'article_compare_detail' el.company el.common_article %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
