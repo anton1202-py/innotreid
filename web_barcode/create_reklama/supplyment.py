@@ -213,7 +213,10 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
     main_data = advertisment_campaigns_list_info(data_adv_list, header)
     for campaign_data in main_data:
         if "autoParams" in campaign_data:
-            cpm = campaign_data["autoParams"]['cpm']
+            if 'cpm' in campaign_data["autoParams"]:
+                cpm = campaign_data["autoParams"]['cpm']
+            else:
+                cpm = None
         else:
             cpm = None
         campaign_obj = CreatedCampaign.objects.get(
