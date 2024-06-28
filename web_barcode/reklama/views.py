@@ -40,10 +40,10 @@ def ad_campaign_add(request):
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
     # Словарь вида: {номер_компании: заказов_за_позавчера}
     for campaign in campaign_list:
-
+        print(campaign)
         header = header_determinant(campaign)
         article_list = wb_articles_in_campaign(campaign, header)
-        print('campaign', campaign, header)
+        print('header', header)
 
         # data_list = count_sum_orders_action(
         #     article_list, begin_date, end_date, header)
