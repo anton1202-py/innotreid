@@ -16,10 +16,11 @@ from reklama.periodic_tasks import (budget_working,
                                     ozon_status_one_campaign,
                                     wb_ooo_fbo_stock_count)
 from reklama.supplyment import (ad_list, count_sum_orders,
+                                count_sum_orders_action,
                                 create_articles_company, header_determinant,
                                 ooo_wb_articles_data, ooo_wb_articles_info,
                                 ooo_wb_articles_to_dataooowbarticles,
-                                wb_ooo_fbo_stock_data)
+                                wb_articles_in_campaign, wb_ooo_fbo_stock_data)
 from reklama.test_file import ozon_add_campaign_data_to_database
 
 dotenv_path = os.path.join(os.path.dirname(
@@ -32,7 +33,21 @@ def ad_campaign_add(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
     # budget_working()
+    campaign_list = ad_list()
+    print(campaign_list)
+    calculate_data = datetime.now() - timedelta(days=2)
+    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
+    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+    # Словарь вида: {номер_компании: заказов_за_позавчера}
+    for campaign in campaign_list:
 
+        header = header_determinant(campaign)
+        article_list = wb_articles_in_campaign(campaign, header)
+        print('campaign', campaign, header)
+
+        data_list = count_sum_orders_action(
+            article_list, begin_date, end_date, header)
+        print(data_list)
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')

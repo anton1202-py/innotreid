@@ -252,6 +252,7 @@ def count_sum_adv_campaign(data_list: list):
 @sender_error_to_tg
 def count_sum_orders_action(article_list, begin_date, end_date, header):
     """Получает данные о заказах рекламной кампании за позавчера"""
+    time.sleep(23)
     url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
     payload = json.dumps({
         "brandNames": [],
