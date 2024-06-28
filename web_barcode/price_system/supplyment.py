@@ -202,7 +202,7 @@ def wb_matching_articles(ur_lico):
         if Articles.objects.filter(company=ur_lico, common_article=common_article).exists() == True:
             wb_article = Articles.objects.get(company=ur_lico,
                                               common_article=common_article)
-            if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or wb_article.wb_nomenclature != wb_data[2]:
+            if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or str(wb_article.wb_nomenclature) != str(wb_data[2]):
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
                 wb_article.wb_seller_article = wb_data[0]
