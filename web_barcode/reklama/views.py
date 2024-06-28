@@ -32,7 +32,16 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    campaign_data = AdvertisingCampaign.objects.all().values()
+    campaign_list = []
+    for i in campaign_data:
+        print(i)
+        campaign_list.append(int(i['campaign_number']))
+    for campaign in campaign_list:
+        print(campaign, AdvertisingCampaign.objects.filter(
+            campaign_number=campaign))
     company_list = AdvertisingCampaign.objects.all()
+
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
     koef_dict = {}
