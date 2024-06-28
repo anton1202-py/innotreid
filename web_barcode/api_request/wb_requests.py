@@ -102,7 +102,7 @@ def get_front_api_wb_info(nm_id):
 # =========== API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
 
 
-@api_retry_decorator
+# @api_retry_decorator Не включать этот декоратор. На ответе response завязан вызывающий функцию код
 def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subject_id, budget, mns_list, cpm):
     """
     Создают автоматическую кампанию.
@@ -123,9 +123,6 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
     """
     time.sleep(21)
     url = 'https://advert-api.wb.ru/adv/v1/save-ad'
-    message1 = f'прошел урл'
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message1[:4000])
     payload = json.dumps({
         "type": campaign_type,
         "name": campaign_name,
@@ -136,9 +133,6 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
         "nms": mns_list,
         "cpm": cpm
     })
-    message1 = f'прошел пэйлоад'
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message1[:4000])
     response = requests.request("POST", url, headers=header, data=payload)
     message1 = f'{response.status_code}'
     bot.send_message(chat_id=CHAT_ID_ADMIN,

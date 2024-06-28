@@ -44,6 +44,7 @@ def check_data_for_create_adv_campaign(main_data):
             mns_list.append(int(nmid))
 
     for nm_id in mns_list:
+        print('Создаю кампанию для', nm_id)
         if CreatedCampaign.objects.filter(ur_lico=ur_lico, articles_name=nm_id).exists():
             exist_campaign_obj = CreatedCampaign.objects.filter(
                 ur_lico=ur_lico, articles_name=nm_id)[0]
