@@ -61,7 +61,6 @@ def ad_list():
     campaign_data = AdvertisingCampaign.objects.all().values()
     campaign_list = []
     for i in campaign_data:
-        print(i)
         campaign_list.append(int(i['campaign_number']))
     return campaign_list
 
@@ -151,11 +150,9 @@ def wb_articles_in_campaign(campaign_number, header, counter=0):
                 0]['params'][0]
             for article in articles_data:
                 articles_list.append(article['nm'])
-        print('articles_list ', articles_list)
         if articles_list == None:
             articles_list = get_campaign_article_from_statistic(
                 campaign_number, header)
-        print('articles_list ', articles_list)
         return articles_list
     else:
         return []
@@ -253,7 +250,6 @@ def count_sum_adv_campaign(data_list: list):
 @sender_error_to_tg
 def count_sum_orders_action(article_list, begin_date, end_date, header):
     """Получает данные о заказах рекламной кампании за позавчера"""
-    time.sleep(23)
     url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
     payload = json.dumps({
         "brandNames": [],
@@ -277,8 +273,6 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         data_list = json.loads(response.text)['data']['cards']
         return data_list
     else:
-        print(
-            f'count_sum_orders_action. response.status_code = {response.status_code}')
         text = f'count_sum_orders_action. response.status_code = {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
@@ -290,8 +284,6 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_list = ad_list()
-    print('count_sum_orders campaign_list', campaign_list)
-
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
