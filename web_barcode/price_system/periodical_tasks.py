@@ -22,20 +22,30 @@ def wb_add_price_info(ur_lico):
     Если изменилась, то записывает новую цену.
     """
     wb_article_price_data = wb_articles_list(ur_lico)
-    for data in wb_article_price_data:
-        # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
-        if Articles.objects.filter(company=ur_lico, wb_nomenclature=data['nmId']).exists():
-            if ArticlesPrice.objects.filter(
-                common_article=Articles.objects.filter(company=ur_lico,
-                                                       wb_nomenclature=data['nmId'])[0],
-                marketplace='Wildberries'
-            ).exists():
-                latest_record = ArticlesPrice.objects.filter(
-                    common_article=Articles.objects.get(
-                        wb_nomenclature=data['nmId']),
+    if wb_article_price_data:
+        for data in wb_article_price_data:
+            # Проверяем, существует ли запись в БД с таким ном номером (отсекаем грамоты)
+            if Articles.objects.filter(company=ur_lico, wb_nomenclature=data['nmId']).exists():
+                if ArticlesPrice.objects.filter(
+                    common_article=Articles.objects.filter(company=ur_lico,
+                                                           wb_nomenclature=data['nmId'])[0],
                     marketplace='Wildberries'
-                ).latest('id')
-                if latest_record.price != data['price']:
+                ).exists():
+                    latest_record = ArticlesPrice.objects.filter(
+                        common_article=Articles.objects.get(
+                            wb_nomenclature=data['nmId']),
+                        marketplace='Wildberries'
+                    ).latest('id')
+                    if latest_record.price != data['price']:
+                        ArticlesPrice(
+                            common_article=Articles.objects.get(
+                                wb_nomenclature=data['nmId']),
+                            marketplace='Wildberries',
+                            price_date=datetime.now().strftime('%Y-%m-%d'),
+                            price=data['price'],
+                            basic_discount=data['discount']
+                        ).save()
+                else:
                     ArticlesPrice(
                         common_article=Articles.objects.get(
                             wb_nomenclature=data['nmId']),
@@ -44,15 +54,6 @@ def wb_add_price_info(ur_lico):
                         price=data['price'],
                         basic_discount=data['discount']
                     ).save()
-            else:
-                ArticlesPrice(
-                    common_article=Articles.objects.get(
-                        wb_nomenclature=data['nmId']),
-                    marketplace='Wildberries',
-                    price_date=datetime.now().strftime('%Y-%m-%d'),
-                    price=data['price'],
-                    basic_discount=data['discount']
-                ).save()
 
 
 @app.task
