@@ -306,21 +306,17 @@ def count_sum_orders():
             start_point:finish_point]
 
         for campaign in small_info_list:
-            print('campaign', campaign)
             header = header_determinant(campaign)
             article_list = wb_articles_in_campaign(campaign, header)
-            print('article_list в count_sum_orders', article_list)
 
             # if article_list:
-            data_list = count_sum_orders_action(
-                article_list, begin_date, end_date, header)
-            sum = count_sum_adv_campaign(data_list)
-            print('sum', sum)
-            campaign_orders_money_dict[campaign] = sum
+            if AdvertisingCampaign.objects.filter(campaign_number=campaign).exists():
+                data_list = count_sum_orders_action(
+                    article_list, begin_date, end_date, header)
+                sum = count_sum_adv_campaign(data_list)
+                campaign_orders_money_dict[campaign] = sum
 
-            time.sleep(22)
-    for i, j in campaign_orders_money_dict.items():
-        print(i, j)
+                time.sleep(22)
     return campaign_orders_money_dict
 
 

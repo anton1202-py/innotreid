@@ -32,27 +32,6 @@ def ad_campaign_add(request):
     """Отображает список рекламных компаний WB и добавляет их"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    # budget_working()
-    campaign_list = ad_list()
-    print(campaign_list)
-    calculate_data = datetime.now() - timedelta(days=2)
-    begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
-    end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
-
-    data = AdvertisingCampaign.objects.filter(campaign_number=180305601)
-    data2 = AdvertisingCampaign.objects.filter(campaign_number='180305601')
-    print(data)
-    print('data2', data2)
-    # Словарь вида: {номер_компании: заказов_за_позавчера}
-    # for campaign in campaign_list:
-    #     print(campaign)
-    # header = header_determinant(campaign)
-    # article_list = wb_articles_in_campaign(campaign, header)
-    # print('header', header)
-
-    # data_list = count_sum_orders_action(
-    #     article_list, begin_date, end_date, header)
-    # print(data_list)
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
