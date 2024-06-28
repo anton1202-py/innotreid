@@ -185,7 +185,7 @@ def wb_articles_in_campaign_and_name(campaign_number, header, counter=0):
         return [], ''
 
 
-@sender_error_to_tg
+# @sender_error_to_tg
 def header_determinant(campaign_number):
     """Определяет какой header использовать"""
     header_common = AdvertisingCampaign.objects.get(

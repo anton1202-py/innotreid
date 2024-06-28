@@ -45,9 +45,9 @@ def ad_campaign_add(request):
         article_list = wb_articles_in_campaign(campaign, header)
         print('campaign', campaign, header)
 
-        data_list = count_sum_orders_action(
-            article_list, begin_date, end_date, header)
-        print(data_list)
+        # data_list = count_sum_orders_action(
+        #     article_list, begin_date, end_date, header)
+        # print(data_list)
     company_list = AdvertisingCampaign.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
