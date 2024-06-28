@@ -458,11 +458,13 @@ def replenish_campaign_budget(campaign, budget, header):
     message = ''
     view_count = ''
     campaign_name = ''
+    statistic_date = ''
     view_statistic = view_statistic_adv_campaign(header, campaign)
 
     if view_statistic:
         view_count = view_statistic.views
         campaign_name = view_statistic.campaign.campaign_name
+        statistic_date = view_statistic.statistic_date
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
             campaign, campaign_budget, budget, koef, header)
@@ -476,10 +478,10 @@ def replenish_campaign_budget(campaign, budget, header):
 
     elif campaign_budget < 1000:
         message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
-                   f'Дата статистики: {view_statistic.statistic_date}')
+                   f'Дата статистики: {statistic_date}')
     else:
         message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
-                   f'Дата статистики: {view_statistic.statistic_date}')
+                   f'Дата статистики: {statistic_date}')
     return message
 
 
