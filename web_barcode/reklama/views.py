@@ -38,6 +38,10 @@ def ad_campaign_add(request):
     calculate_data = datetime.now() - timedelta(days=2)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
+
+    data = AdvertisingCampaign.objects.filter(campaign_number=180305601)
+
+    print(data)
     # Словарь вида: {номер_компании: заказов_за_позавчера}
     # for campaign in campaign_list:
     #     print(campaign)
