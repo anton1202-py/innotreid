@@ -136,7 +136,7 @@ class Articles(models.Model):
     def save(self, *args, **kwargs):
         if self.copy_right and self.designer_article == False:
             raise ValidationError(
-                "Поле 'С авторскими правами' не может быть True, если 'Дизайнерский ночник' равен False.")
+                f" {self.common_article} Поле 'С авторскими правами' не может быть True, если 'Дизайнерский ночник' равен False.")
 
         super().save(*args, **kwargs)
 
