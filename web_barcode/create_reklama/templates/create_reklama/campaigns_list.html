@@ -55,13 +55,19 @@
                 <th>Название кампании</th>
                 <th>Тип</th>
                 <th>Статус</th>
+
+                <th>Процент на рекламу</th>
+                <th>Виртуальный счет</th>
+                <th>Дата пополнения РК</th>
+                <th>Дата изменения ВС</th>
+
                 <th>Список артикулов nmID</th>
                 <th>Баланс</th>
                 <th>Цена артикула</th>
                 <th>Текущая ставка</th>
             </tr>
             {% for el in campaigns_list %}
-            <tr data-campaign-number="{{ el.campaign_number }}" data-ur-lico="{{ el.ur_lico.ur_lice_name }}">
+            <tr data-campaign-id="{{ el.id }}" data-ur-lico="{{ el.ur_lico.ur_lice_name }}">
                 <td>
                     <input type="checkbox" name="campaign_start" class="input-field">
                 </td>
@@ -70,6 +76,22 @@
                 <td>{{ el.campaign_name }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
+
+
+                <td><input class="procent_for_advert" value="{{ koef_dict|get_item:el.id|list_position:0 }}" type="number" name="ad_koefficient" style="width: 100px" required/></td>
+                    
+                <td>{{ koef_dict|get_item:el.id|list_position:3 }}</td>
+                {% if koef_dict|get_item:el.id|list_position:4 == None %}
+                    <td></td>
+                {% else %}
+                    <td>{{ koef_dict|get_item:el.id|list_position:4 }}</td>
+                {% endif %}
+                {% if koef_dict|get_item:el.id|list_position:5 == None %}
+                    <td></td>
+                {% else %}
+                    <td>{{ koef_dict|get_item:el.id|list_position:5 }}</td>
+                {% endif %}
+
                 <td>{{ el.articles_name }}</td>
                 <td>{{ el.balance }}</td>
                 <td>{{ el.article_price_on_page }}</td>
@@ -93,47 +115,47 @@
         }
         //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
         document.getElementById('startCampaignsBtn').addEventListener('click', function() {
-    sendCampaignData(this);
-});
-
-document.getElementById('pausaCampaignsBtn').addEventListener('click', function() {
-    sendCampaignData(this);
-});
-
-function sendCampaignData(button) {
-    var selectedArticles = [];
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-    var formData = new FormData();
-
-    var campaignData = {};
-
-    checkboxes.forEach(function(checkbox) {
-        var row = checkbox.closest('tr');
-        var campaignNumber = row.getAttribute('data-campaign-number');
-        var urLico = row.getAttribute('data-ur-lico');
-
-        selectedArticles.push({
-            campaignNumber: urLico
+            sendCampaignData(this);
         });
 
-        // Добавляем название кнопки к данным
-        campaignData[campaignNumber] = urLico
+        document.getElementById('pausaCampaignsBtn').addEventListener('click', function() {
+            sendCampaignData(this);
+        });
+
+        function sendCampaignData(button) {
+            var selectedArticles = [];
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            var formData = new FormData();
         
-    });
-    formData.append('campaignData', JSON.stringify(campaignData));
-    formData.append('button_name', button.id);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            var campaignData = {};
+        
+            checkboxes.forEach(function(checkbox) {
+                var row = checkbox.closest('tr');
+                var campaignNumber = row.getAttribute('data-campaign-number');
+                var urLico = row.getAttribute('data-ur-lico');
+            
+                selectedArticles.push({
+                    campaignNumber: urLico
+                });
+            
+                // Добавляем название кнопки к данным
+                campaignData[campaignNumber] = urLico
 
-    fetch('start_checked_campaigns', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
+            });
+            formData.append('campaignData', JSON.stringify(campaignData));
+            formData.append('button_name', button.id);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+            fetch('start_checked_campaigns', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+        
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
             const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
@@ -147,6 +169,40 @@ function sendCampaignData(button) {
                     .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                     .forEach(tr => table.appendChild(tr) );
             })));
+
+        // ========== ИЗМЕНЯЕТ % НАЧИСЛЕНИЯ НА РЕКЛАМУ В БАЗЕ ДАННЫХ ========= //
+        document.querySelectorAll('.procent_for_advert').forEach(select => {
+            select.addEventListener('input', function() {
+                var mainPercent = this.value;
+
+                var row = this.closest('tr');
+                var campaignNumber = row.getAttribute('data-campaign-id');
+                var urLico = row.getAttribute('data-ur-lico');
+                
+
+                var formData = new FormData();
+                formData.append('main_percent', mainPercent);
+                formData.append('campaign_number', campaignNumber);
+                formData.append('ur_lico', urLico);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                console.log('formData', formData)
+                fetch('change_percent_for_advert', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
     </script>
         
 {% endblock %}

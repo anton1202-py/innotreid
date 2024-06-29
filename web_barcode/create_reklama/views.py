@@ -1,12 +1,16 @@
 
 import json
+from datetime import datetime
 
 from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
-from create_reklama.models import AllMinusWords, CreatedCampaign
-from create_reklama.periodic_tasks import update_campaign_status
+from create_reklama.add_balance import ad_list, count_sum_orders
+from create_reklama.models import AllMinusWords, CreatedCampaign, ProcentForAd
+from create_reklama.periodic_tasks import (budget_working,
+                                           update_campaign_status)
 from create_reklama.supplyment import check_data_for_create_adv_campaign
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from reklama.models import UrLico
@@ -22,6 +26,18 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN,
 def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
+    camps = CreatedCampaign.objects.all()
+    today = datetime.now().strftime("%Y-%m-%d %H:%M")
+    for camp_obj in camps:
+        if not ProcentForAd.objects.filter(campaign_number=camp_obj):
+            ProcentForAd(
+                campaign_number=camp_obj,
+                koefficient=4,
+                koef_date=today,
+                virtual_budget=0,
+                virtual_budget_date=today,
+                campaign_budget_date=today
+            ).save()
     ur_lico_data = UrLico.objects.all()
     subject_id = {
         'Ночник': 1673,
@@ -83,12 +99,20 @@ def campaigns_were_created_with_system(request):
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
     ur_lico_data = UrLico.objects.all()
 
+    koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
+        latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
+    koef_dict = {}
+    for koef in koef_campaign_data:
+        koef_dict[koef['campaign_number']] = [
+            koef['koefficient'], koef['koef_date'], koef['latest_add'], koef['virtual_budget'], koef['campaign_budget_date'], koef['virtual_budget_date']]
+
     for_pausa_data = []
     for campaign_obj in campaigns_list:
         for_pausa_data.append({'campaign_number': campaign_obj.campaign_number,
                               'ur_lico': campaign_obj.ur_lico.ur_lice_name})
 
     if request.POST:
+        request_data = request.POST
         if 'article_price' in request.POST or 'less_article_price' in request.POST:
             if request.POST['article_price']:
                 price = int(request.POST.get('article_price'))
@@ -102,14 +126,33 @@ def campaigns_were_created_with_system(request):
             update_campaign_status()
             return redirect('campaigns_list')
 
+        elif 'change-button' in request.POST:
+            print(request.POST)
+
     context = {
         'page_name': page_name,
         'campaigns_list': campaigns_list,
         'ur_lico_data': ur_lico_data,
+        'koef_dict': koef_dict,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
     return render(request, 'create_reklama/campaigns_list.html', context)
+
+
+def change_percent_for_advert(request):
+    """Изменяет процент пополнения для рекламной кампании"""
+    if request.POST:
+        percent = int(request.POST.get('main_percent'))
+        campaign_id = request.POST.get('campaign_number')
+        ur_lico = request.POST.get('ur_lico')
+        change_data = ProcentForAd.objects.get(
+            campaign_number=campaign_id
+        )
+        change_data.koefficient = percent
+        change_data.koef_date = datetime.now()
+        change_data.save()
+    return JsonResponse({'ok': 'Удача.'})
 
 
 def start_checked_campaigns(request):

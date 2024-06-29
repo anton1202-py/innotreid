@@ -17,4 +17,6 @@ urlpatterns = [
          name='update_common_minus_words'),
     path('start_checked_campaigns', views.start_checked_campaigns,
          name='start_checked_campaigns'),
+    path('change_percent_for_advert', views.change_percent_for_advert,
+         name='change_percent_for_advert'),
 ]

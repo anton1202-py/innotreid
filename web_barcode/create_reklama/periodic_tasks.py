@@ -9,6 +9,10 @@ from api_request.wb_requests import (
     get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info,
     statistic_search_campaign_keywords)
 from celery_tasks.celery import app
+from create_reklama.add_balance import (count_sum_orders, header_determinant,
+                                        replenish_campaign_budget,
+                                        send_common_message,
+                                        start_add_campaign)
 from create_reklama.minus_words_working import (
     get_campaigns_list_from_api_wb, get_common_minus_phrase,
     get_minus_phrase_from_wb_auto_campaigns,
@@ -126,3 +130,19 @@ def update_campaign_budget_and_cpm():
             data_adv_list = campaigns_list[
                 start_point:finish_point]
             update_campaign_cpm(data_adv_list, ur_lico_obj, header)
+
+
+@app.task
+def budget_working():
+    """Пополняет бюджет рекламных кампаний WB"""
+    messages_list = []
+    campaign_data_dict = count_sum_orders()
+    if campaign_data_dict:
+        for ur_lico, campaign_data in campaign_data_dict.items():
+            for campaign, budget in campaign_data.items():
+                header = header_wb_dict[ur_lico]
+                message = replenish_campaign_budget(campaign, budget, header)
+                messages_list.append(message)
+                time.sleep(3)
+                start_add_campaign(campaign, header)
+    send_common_message(messages_list)

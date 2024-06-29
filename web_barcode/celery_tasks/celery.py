@@ -111,6 +111,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.update_campaign_budget_and_cpm",
         "schedule": crontab(minute='*/180')
     },
+    "create_reklama_add_balance": {
+        "task": "create_reklama.periodic_tasks.budget_working",
+        "schedule": crontab(hour=21, minute=1)
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #
@@ -197,10 +201,6 @@ app.conf.beat_schedule = {
     },
 
     # =========== ЗАДАЧИ РАЗДЕЛА REKLAMA ========== #
-    "wb_reklama_campaign_budget_add": {
-        "task": "reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=21, minute=1)
-    },
     "wb_ooo_article_add_to_db": {
         "task": "reklama.periodic_tasks.ooo_wb_articles_data",
         "schedule": crontab(hour=22, minute=0)

@@ -127,6 +127,50 @@ class CpmWbCampaign(models.Model):
         verbose_name_plural = 'Изменение ставок рекламной кампании ВБ'
 
 
+# ========= ПОПОЛНЕНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========== #
+class ProcentForAd(models.Model):
+    """Процент от продаж для пополнения рекламной кампании"""
+    campaign_number = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.CASCADE,
+        verbose_name='Рекламная кампания',
+        related_name='procentforad'
+    )
+    koefficient = models.IntegerField(
+        verbose_name='Процент для пополнения',
+        default=4
+    )
+    koef_date = models.DateTimeField(
+        verbose_name='Дата изменения процента',
+        auto_now_add=True,
+        blank=True,
+        null=True
+    )
+    virtual_budget = models.IntegerField(
+        verbose_name='Виртуальный счет',
+        default=0
+    )
+    virtual_budget_date = models.DateTimeField(
+        verbose_name='Дата изменения виртуального счета',
+        blank=True,
+        null=True
+    )
+    campaign_budget_date = models.DateTimeField(
+        verbose_name='Дата пополнения счета РК',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.campaign_number.campaign_number, self.koefficient
+
+    class Meta:
+        verbose_name = 'Процент для поплнения кампании'
+        verbose_name_plural = 'Процент для поплнения кампании'
+
+# ========= КОНЕЦ ПОПОЛНЕНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========== #
+
+
 class MinusWordsWbCampaign(models.Model):
     """Минус слова рекламной кампании ВБ"""
     campaign_number = models.ForeignKey(

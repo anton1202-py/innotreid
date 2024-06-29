@@ -80,7 +80,6 @@ def check_data_for_create_adv_campaign(main_data):
             }
 
             add_created_campaign_data_to_database(saved_data)
-            save_campaign_for_replenish_budget(saved_data)
 
 
 @sender_error_to_tg
@@ -110,28 +109,8 @@ def add_created_campaign_data_to_database(main_data):
         current_cpm=cpm
     ).save()
 
-
-@sender_error_to_tg
-def save_campaign_for_replenish_budget(main_data):
-    """Сохраняет кампанию в таблицу для пополнения бюджета"""
-
-    ur_lico = main_data['ur_lico']
-    campaign_number = main_data['campaign_number']
-    campaign_type = main_data['campaign_type']
-    campaign_name = main_data['campaign_name']
-    subject_id = int(main_data['subject_id'])
-
-    cpm = main_data['cpm']
-    budget = main_data['budget']
-    today = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    AdvertisingCampaign(
-        campaign_number=campaign_number,
-        ur_lico=ur_lico,
-        create_date=today
-    ).save()
-    adv_obj = AdvertisingCampaign.objects.filter(
-        ur_lico=ur_lico, campaign_number=campaign_number)[0]
+    adv_obj = CreatedCampaign.objects.get(
+        ur_lico=ur_lico, campaign_number=campaign_number, campaign_name=campaign_name)
     ProcentForAd(
         campaign_number=adv_obj,
         koefficient=4,
