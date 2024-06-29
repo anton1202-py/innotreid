@@ -126,9 +126,6 @@ def campaigns_were_created_with_system(request):
             update_campaign_status()
             return redirect('campaigns_list')
 
-        elif 'change-button' in request.POST:
-            print(request.POST)
-    print(koef_dict)
     context = {
         'page_name': page_name,
         'campaigns_list': campaigns_list,
