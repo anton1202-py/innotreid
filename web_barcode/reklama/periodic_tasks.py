@@ -198,20 +198,20 @@ def matching_ozon_ooo_article_campaign():
             for article in campaigns_data['Артикулы']:
                 article_obj = ''
                 if Articles.objects.filter(ozon_product_id=int(article)).exists():
-                    article_obj = Articles.objects.get(
-                        ozon_product_id=article)
+                    article_obj = Articles.objects.filter(
+                        ozon_product_id=article)[0]
                 elif Articles.objects.filter(ozon_sku=int(article)).exists():
-                    article_obj = Articles.objects.get(
-                        ozon_sku=article)
+                    article_obj = Articles.objects.filter(
+                        ozon_sku=article)[0]
                 elif Articles.objects.filter(ozon_fbo_sku_id=int(article)).exists():
-                    article_obj = Articles.objects.get(
-                        ozon_fbo_sku_id=article)
+                    article_obj = Articles.objects.filter(
+                        ozon_fbo_sku_id=article)[0]
                 elif Articles.objects.filter(ozon_fbs_sku_id=int(article)).exists():
-                    article_obj = Articles.objects.get(
-                        ozon_fbs_sku_id=article)
+                    article_obj = Articles.objects.filter(
+                        ozon_fbs_sku_id=article)[0]
                 if article_obj:
-                    matching_data = DataOooWbArticle.objects.get(
-                        wb_article=article_obj)
+                    matching_data = DataOooWbArticle.objects.filter(
+                        wb_article=article_obj)[0]
                     if matching_data.ozon_ad_campaign:
                         if str(campaign) not in str(matching_data.ozon_ad_campaign):
                             matching_data.ozon_ad_campaign = str(

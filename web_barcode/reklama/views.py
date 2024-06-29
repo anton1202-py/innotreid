@@ -12,6 +12,7 @@ from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             ProcentForAd, SalesArticleStatistic, UrLico,
                             WbArticleCommon, WbArticleCompany)
 from reklama.periodic_tasks import (budget_working,
+                                    matching_ozon_ooo_article_campaign,
                                     matching_wb_ooo_article_campaign,
                                     ozon_status_one_campaign,
                                     wb_ooo_fbo_stock_count)
