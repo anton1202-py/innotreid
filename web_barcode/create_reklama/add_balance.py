@@ -288,7 +288,7 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
 
 
 @sender_error_to_tg
-def replenish_campaign_budget(campaign, budget, header):
+def replenish_campaign_budget(campaign, budget, header, campaign_obj):
     """
     Определяем кампании для пополнения бюджета
     campaign - id рекламной кампании
@@ -296,7 +296,7 @@ def replenish_campaign_budget(campaign, budget, header):
     header - header текущего юр лица для связи с АПИ ВБ
     """
     now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    campaign_obj = CreatedCampaign.objects.get(campaign_number=campaign)
+
     info_campaign_obj = ProcentForAd.objects.get(
         campaign_number=campaign_obj
     )
@@ -324,13 +324,11 @@ def replenish_campaign_budget(campaign, budget, header):
 
     message = ''
     view_count = ''
-    campaign_name = ''
     statistic_date = ''
     view_statistic = view_statistic_adv_campaign(header, campaign)
 
     if view_statistic:
         view_count = view_statistic.views
-        campaign_name = view_statistic.campaign.campaign_name
         statistic_date = view_statistic.statistic_date
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
@@ -344,10 +342,10 @@ def replenish_campaign_budget(campaign, budget, header):
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
-        message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
+        message = (f'{campaign}: {campaign_obj.campaign_name} - продаж {budget} руб. Показов: {view_count}. Начислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%). Баланс: {info_campaign_obj.virtual_budget}р.'
                    f'Дата статистики: {statistic_date}')
     else:
-        message = (f'{campaign}: {campaign_name} - продаж {budget} руб. Показов: {view_count}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+        message = (f'{campaign}: {campaign_obj.campaign_name} - продаж {budget} руб. Показов: {view_count}. Не пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
                    f'Дата статистики: {statistic_date}')
     return message
 
@@ -454,9 +452,15 @@ def send_common_message(messages_list: list):
     """
     messages = sort_message_list(messages_list)
     for message in messages:
-        for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
-                             text=message[:4094], parse_mode='HTML')
+        message_count = math.ceil(message/4000)
+        for i in range(message_count):
+            start_point = i*4000
+            finish_point = (i+1)*4000
+            message_for_send = message[
+                start_point:finish_point]
+            for user in campaign_budget_users_list:
+                bot.send_message(chat_id=user,
+                                 text=message_for_send)
 
 
 @sender_error_to_tg

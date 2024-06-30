@@ -141,6 +141,8 @@ def budget_working():
         for ur_lico, campaign_data in campaign_data_dict.items():
             for campaign, budget in campaign_data.items():
                 header = header_wb_dict[ur_lico]
+                campaign_obj = CreatedCampaign.objects.get(
+                    ur_lico__ur_lice_name=ur_lico, campaign_number=campaign)
                 message = replenish_campaign_budget(campaign, budget, header)
                 messages_list.append(message)
                 time.sleep(3)
