@@ -23,7 +23,7 @@ from reklama.models import UrLico
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_data_dict)
+                                        bot, header_wb_dict)
 
 
 @sender_error_to_tg
@@ -66,7 +66,7 @@ def type_adv_campaigns():
 
     """
     adv_campaigns_ur_lico_dict = {}
-    for ur_lico, header in header_wb_data_dict.items():
+    for ur_lico, header in header_wb_dict.items():
         # Достаю список кампаний из каждого юр лица
         main_data = advertisment_campaign_list(header)
         # Прохожу по каждой и собираю их в список для каждого юр. лица

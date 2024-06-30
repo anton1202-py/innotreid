@@ -452,7 +452,7 @@ def send_common_message(messages_list: list):
     """
     messages = sort_message_list(messages_list)
     for message in messages:
-        message_count = math.ceil(message/4000)
+        message_count = math.ceil(len(message)/4000)
         for i in range(message_count):
             start_point = i*4000
             finish_point = (i+1)*4000

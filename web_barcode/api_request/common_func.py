@@ -39,6 +39,7 @@ def api_retry_decorator(func):
                         return
                 elif response.status_code == 204:
                     message = ''
+                    return
                 elif response.status_code == 403:
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Доступ запрещен'
                 elif response.status_code == 429:
@@ -54,7 +55,7 @@ def api_retry_decorator(func):
                 if message:
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4000])
-                    return []
+                    return
 
             message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}.'
             if message:
