@@ -906,7 +906,7 @@ def wb_articles_list(ur_lico, offset=0, article_price_data=None, iter_numb=0):
     if article_price_data == None:
         article_price_data = []
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&offset={offset}'
-    header = header_wb_data_dict[ur_lico]
+    header = header_wb_dict[ur_lico]
     response = requests.request("GET", url, headers=header)
     iter_numb += 1
     if response.status_code == 200:

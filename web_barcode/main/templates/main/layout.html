@@ -254,13 +254,13 @@
                             </span>
                         </span>
                         <ul class="submenu">
-                            {% url 'ad_campaigns' as url_ad_campaigns %}
+                            <!-- {% url 'ad_campaigns' as url_ad_campaigns %}
                             <li>
                                 <a href="{{ url_ad_campaigns }}" {% if request.path == url_ad_campaigns %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
                                     <h3>Список кампаний WB</h3>
                                 </a>
-                            </li>
+                            </li> -->
                             {% url 'wb_article_campaign' as url_wb_article_campaigns %}
                             <li>
                                 <a href="{{ url_wb_article_campaigns }}" {% if request.path == url_wb_article_campaigns %}class="active"{% endif %}>

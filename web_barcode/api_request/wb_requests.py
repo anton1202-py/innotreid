@@ -327,7 +327,7 @@ def get_budget_adv_campaign(header, campaign_number):
     Метод позволяет получать информацию о бюджете кампании.
     Допускается 4 запроса в секунду.
     """
-    time.sleep(0.5)
+    time.sleep(0.6)
     url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     return response
