@@ -143,7 +143,8 @@ def budget_working():
                 header = header_wb_dict[ur_lico]
                 campaign_obj = CreatedCampaign.objects.get(
                     ur_lico__ur_lice_name=ur_lico, campaign_number=campaign)
-                message = replenish_campaign_budget(campaign, budget, header)
+                message = replenish_campaign_budget(
+                    campaign, budget, header, campaign_obj)
                 messages_list.append(message)
                 time.sleep(3)
                 start_add_campaign(campaign, header)
