@@ -87,7 +87,7 @@ def adv_clusters(request):
 
 
 class CampaignClustersView(ListView):
-    model = CommonCampaignDescription
+    model = CreatedCampaign
     template_name = 'analytika_reklama/adv_clusters.html'
     context_object_name = 'data'
 
@@ -99,7 +99,7 @@ class CampaignClustersView(ListView):
 
         context = super(CampaignClustersView,
                         self).get_context_data(**kwargs)
-        campaign_object = CommonCampaignDescription.objects.get(
+        campaign_object = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
         cluster_data = MainCampaignClusters.objects.filter(
             campaign=self.kwargs['id'])
@@ -115,7 +115,7 @@ class CampaignClustersView(ListView):
 
 
 class CampaignDailyStatisticView(ListView):
-    model = CommonCampaignDescription
+    model = CreatedCampaign
     template_name = 'analytika_reklama/adv_campaign_daily_statistic.html'
     context_object_name = 'data'
 
@@ -127,7 +127,7 @@ class CampaignDailyStatisticView(ListView):
 
         context = super(CampaignDailyStatisticView,
                         self).get_context_data(**kwargs)
-        campaign_object = CommonCampaignDescription.objects.get(
+        campaign_object = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
         statistic_data = DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id'])

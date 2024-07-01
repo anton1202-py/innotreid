@@ -13,6 +13,7 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
                                      advertisment_statistic_info)
+from create_reklama.models import CreatedCampaign
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
@@ -89,8 +90,8 @@ def add_adv_data_to_db_about_all_campaigns(ur_lico: str, campaign_data_list: lis
     for data in campaign_data_list:
         campaign_number = data['advertId']
         campaign_name = str(data['name'])
-        camnpaign_type = data['type']
-        camnpaign_status = data['status']
+        campaign_type = data['type']
+        campaign_status = data['status']
         if 'autoParams' in data.keys() and data['autoParams']['nms']:
             articles_amount = len(data['autoParams']['nms'])
             articles_name = data['autoParams']['nms']
@@ -108,32 +109,29 @@ def add_adv_data_to_db_about_all_campaigns(ur_lico: str, campaign_data_list: lis
         start_date = data['startTime']
         finish_date = data['endTime']
         ur_lico = UrLico.objects.get(ur_lice_name=ur_lico)
-        if CommonCampaignDescription.objects.filter(ur_lico=ur_lico, campaign_number=campaign_number).exists():
-            campaign_obj = CommonCampaignDescription.objects.get(
+        if CreatedCampaign.objects.filter(ur_lico=ur_lico, campaign_number=campaign_number).exists():
+            campaign_obj = CreatedCampaign.objects.get(
                 ur_lico=ur_lico, campaign_number=campaign_number)
             campaign_obj.campaign_name = campaign_name
-            campaign_obj.camnpaign_type = camnpaign_type
-            campaign_obj.camnpaign_status = camnpaign_status
-            campaign_obj.articles_amount = articles_amount
+            campaign_obj.campaign_type = campaign_type
+            campaign_obj.campaign_status = campaign_status
             campaign_obj.articles_name = articles_name
             campaign_obj.create_date = create_date
-            campaign_obj.change_date = change_date
-            campaign_obj.start_date = start_date
-            campaign_obj.finish_date = finish_date
+            # campaign_obj.change_date = change_date
+            # campaign_obj.start_date = start_date
+            # campaign_obj.finish_date = finish_date
             campaign_obj.save()
         else:
-            CommonCampaignDescription(
+            CreatedCampaign(
                 ur_lico=ur_lico,
                 campaign_number=campaign_number,
                 campaign_name=campaign_name,
-                camnpaign_type=camnpaign_type,
-                camnpaign_status=camnpaign_status,
-                articles_amount=articles_amount,
+                campaign_type=campaign_type,
+                campaign_status=campaign_status,
                 articles_name=articles_name,
-                create_date=create_date,
-                change_date=change_date,
-                start_date=start_date,
-                finish_date=finish_date).save()
+                create_date=create_date
+
+            ).save()
 
 
 @sender_error_to_tg
@@ -146,7 +144,7 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     """
     for data in campaign_data_list:
         campaign_data = data['advertId']
-        campaign = CommonCampaignDescription.objects.get(
+        campaign = CreatedCampaign.objects.get(
             ur_lico=ur_lico, campaign_number=campaign_data)
         views = data['views']
         clicks = data['clicks']
