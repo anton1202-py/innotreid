@@ -63,6 +63,10 @@ def set_up_minus_phrase_to_auto_campaigns():
                          text=message)
 
         common_minus_phrase_list = get_common_minus_phrase(ur_lico_obj)
+        message = str('common_minus_phrase_list',
+                      common_minus_phrase_list)[:4000]
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message)
         if campaign_data:
             for data in campaign_data:
                 header = header_wb_dict[ur_lico_obj.ur_lice_name]
