@@ -7,6 +7,7 @@ from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
+from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.shortcuts import render
@@ -24,17 +25,17 @@ def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
     # articles_for_keywords()
-    campaign_list = CommonCampaignDescription.objects.filter(
+    campaign_list = CreatedCampaign.objects.filter(
         ur_lico=1).order_by('id')
     ur_lico_data = UrLico.objects.all()
     if request.POST:
         if 'campaign_number' in request.POST:
             campaign_number = request.POST['campaign_number']
-            campaign_list = CommonCampaignDescription.objects.filter(
+            campaign_list = CreatedCampaign.objects.filter(
                 campaign_number=campaign_number).order_by('id')
         if 'ur_lico_select' in request.POST:
             filter_ur_lico = request.POST['ur_lico_select']
-            campaign_list = CommonCampaignDescription.objects.filter(
+            campaign_list = CreatedCampaign.objects.filter(
                 ur_lico=int(filter_ur_lico)).order_by('id')
     context = {
         'page_name': page_name,

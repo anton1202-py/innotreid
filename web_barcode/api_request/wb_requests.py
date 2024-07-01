@@ -273,7 +273,7 @@ def advertisment_statistic_info(adv_list: list, header: str):
     Данные вернутся для кампаний в статусе 7, 9 и 11.
     В списке максимум 100 элементов
     """
-    time.sleep(60)
+    time.sleep(65)
     url = 'https://advert-api.wb.ru/adv/v2/fullstats'
     payload = json.dumps(adv_list)
     response = requests.request("POST", url, headers=header, data=payload)

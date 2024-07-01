@@ -14,6 +14,7 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_statistic_info,
                                      statistic_search_campaign_keywords)
 from celery_tasks.celery import app
+from create_reklama.models import CreatedCampaign
 from django.db.models import Q
 from price_system.models import Articles
 from reklama.models import UrLico
@@ -62,7 +63,7 @@ def add_campaigns_statistic_to_db():
     statistic_date_raw = datetime.now() - timedelta(days=1)
     statistic_date = statistic_date_raw.strftime('%Y-%m-%d')
     for ur_lico_obj in ur_lico_data:
-        main_data = CommonCampaignDescription.objects.filter(
+        main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, camnpaign_status__in=[9, 11])
         koef_product = math.ceil(len(main_data)/100)
         for i in range(koef_product):

@@ -1,3 +1,4 @@
+from create_reklama.models import CreatedCampaign
 from django.db import models
 from django.urls import reverse
 from price_system.models import Articles
@@ -96,7 +97,7 @@ class MainCampaignParameters(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1fullstats/post
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='main_par_campaign'
@@ -167,7 +168,7 @@ class MainCampaignClusters(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1auto~1stat-words/get
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='main_clust_campaign'
@@ -211,7 +212,7 @@ class MainCampaignExcluded(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1auto~1stat-words/get
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='exclude_main_campaign'
@@ -230,7 +231,7 @@ class MainArticleCampaignParameters(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1fullstats/post
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='main_art_par_campaign'
@@ -319,7 +320,7 @@ class DailyCampaignParameters(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1fullstats/post
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='daily_params_campaign'
@@ -395,7 +396,7 @@ class DailyArticleCampaignParameters(models.Model):
     https://openapi.wb.ru/promotion/api/ru/#tag/Statistika/paths/~1adv~1v2~1fullstats/post
     """
     campaign = models.ForeignKey(
-        CommonCampaignDescription,
+        CreatedCampaign,
         on_delete=models.CASCADE,
         verbose_name='Рекламная кампания',
         related_name='daily_article_par_campaign'
