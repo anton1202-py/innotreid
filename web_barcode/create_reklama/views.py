@@ -14,7 +14,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from reklama.models import UrLico
+from price_system.models import Articles
+from reklama.models import DataOooWbArticle, UrLico
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
@@ -224,3 +225,33 @@ def apply_all_minus_words(request):
                          text=message)
         return JsonResponse({'message': 'Value saved successfully.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def wb_article_campaign(request):
+    """Отображает ООО артикулы ВБ и к каким кампаниям они относятся"""
+    if str(request.user) == 'AnonymousUser':
+        return redirect('login')
+    data = DataOooWbArticle.objects.all()
+    if request.method == 'POST':
+        if 'filter' in request.POST:
+            filter_data = request.POST
+            article_filter = filter_data.get("common_article")
+            stock_filter = filter_data.get("stock_amount")
+            campaign_filter = filter_data.get("campaign")
+
+            if article_filter:
+                article_obj = Articles.objects.get(
+                    wb_article=article_filter)
+                data = data.filter(
+                    Q(wb_article=article_obj)).order_by('wb_article')
+            if stock_filter:
+                data = data.filter(
+                    Q(fbo_amount=int(stock_filter))).order_by('wb_article')
+            if campaign_filter:
+                data = data.filter(
+                    Q(ad_campaign__icontains=campaign_filter)).order_by('wb_article')
+
+    context = {
+        'data': data,
+    }
+    return render(request, 'create_reklama/wb_article_campaign.html', context)

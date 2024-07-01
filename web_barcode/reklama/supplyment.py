@@ -10,6 +10,7 @@ from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_statistic_info,
                                      get_budget_adv_campaign)
+from create_reklama.models import CreatedCampaign
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles
@@ -58,7 +59,7 @@ def ad_list():
     """
     Достает список номеров всех компании из базы данных.
     """
-    campaign_data = AdvertisingCampaign.objects.all().values()
+    campaign_data = CreatedCampaign.objects.all().values()
     campaign_list = []
     for i in campaign_data:
         campaign_list.append(int(i['campaign_number']))
@@ -166,6 +167,7 @@ def wb_articles_in_campaign_and_name(campaign_number, header, counter=0):
         articles_list = []
         if 'autoParams' in campaign_data[0]:
             articles_list = campaign_data[0]['autoParams']['nms']
+
         elif 'unitedParams' in campaign_data[0]:
             articles_list = campaign_data[
                 0]['unitedParams'][0]['nms']
@@ -174,19 +176,19 @@ def wb_articles_in_campaign_and_name(campaign_number, header, counter=0):
                 0]['params'][0]
             for article in articles_data:
                 articles_list.append(article['nm'])
-
+        campaign_name = campaign_data[0]['name']
         if articles_list == None:
             articles_list = get_campaign_article_from_statistic(
                 campaign_number, header)
-        return articles_list, campaign_number
+        return articles_list, campaign_name
     else:
         return [], ''
 
 
-# @sender_error_to_tg
+@sender_error_to_tg
 def header_determinant(campaign_number):
     """Определяет какой header использовать"""
-    header_common = AdvertisingCampaign.objects.get(
+    header_common = CreatedCampaign.objects.get(
         campaign_number=campaign_number).ur_lico.ur_lice_name
     header = header_wb_dict[header_common]
 

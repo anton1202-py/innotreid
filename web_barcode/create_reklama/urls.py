@@ -11,6 +11,8 @@ urlpatterns = [
          name='campaigns_list'),
     path('common_minus_words', views.common_minus_words,
          name='common_minus_words'),
+    path('wb_article_campaign', views.wb_article_campaign,
+         name='wb_article_campaign'),
 
 
     path('update_common_minus_words', views.update_common_minus_words,

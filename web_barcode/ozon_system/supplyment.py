@@ -1,20 +1,9 @@
-import asyncio
 import json
-import math
-import os
 import time
-from datetime import datetime, timedelta
 
 import requests
-import telegram
-# from celery_tasks.celery import app
-from dotenv import load_dotenv
 from price_system.models import ArticleGroup
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
-                            WbArticleCommon, WbArticleCompany)
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
                                         TELEGRAM_TOKEN, admins_chat_id_list,

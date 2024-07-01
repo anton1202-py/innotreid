@@ -111,6 +111,19 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.budget_working",
         "schedule": crontab(hour=21, minute=1)
     },
+
+    "create_reklama_wb_ooo_matching_article_campaign": {
+        "task": "create_reklama.periodic_tasks.matching_wb_ooo_article_campaign",
+        "schedule": crontab(hour=22, minute=10)
+    },
+    "create_reklama_ozon_ooo_matching_article_campaign": {
+        "task": "create_reklama.periodic_tasks.matching_ozon_ooo_article_campaign",
+        "schedule": crontab(hour=22, minute=15)
+    },
+    "create_reklama_wb_ooo_stock_fbo": {
+        "task": "create_reklama.periodic_tasks.wb_ooo_fbo_stock_count",
+        "schedule": crontab(hour=22, minute=20)
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #
@@ -196,22 +209,4 @@ app.conf.beat_schedule = {
         "schedule": crontab(minute='*/40')
     },
 
-    # =========== ЗАДАЧИ РАЗДЕЛА REKLAMA ========== #
-    "wb_ooo_article_add_to_db": {
-        "task": "reklama.periodic_tasks.ooo_wb_articles_data",
-        "schedule": crontab(hour=22, minute=0)
-    },
-    "wb_ooo_matching_article_campaign": {
-        "task": "reklama.periodic_tasks.matching_wb_ooo_article_campaign",
-        "schedule": crontab(hour=22, minute=10)
-    },
-    "ozon_ooo_matching_article_campaign": {
-        "task": "reklama.periodic_tasks.matching_ozon_ooo_article_campaign",
-        "schedule": crontab(hour=22, minute=15)
-    },
-    "wb_ooo_stock_fbo": {
-        "task": "reklama.periodic_tasks.wb_ooo_fbo_stock_count",
-        "schedule": crontab(hour=22, minute=20)
-    },
-    # =========== КОНЕЦ РАЗДЕЛА REKLAMA ========== #
 }

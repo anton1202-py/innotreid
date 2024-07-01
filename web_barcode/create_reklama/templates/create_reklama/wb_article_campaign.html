@@ -1,0 +1,91 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}Добавление рекламной кампании{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>Артикул в рекламных кампаниях</h1>
+        </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article" class="rand">
+                    <span>Артикул</span><br>
+                    <input type="text" id="common_article" name="common_article" class="input-field">
+                </label>
+                <label for="stock_amount" class="rand">
+                    <span>Остаток</span><br>
+                    <input type="text" id="stock_amount" name="stock_amount" class="input-field">
+                </label>
+                <label for="campaign_id" class="rand">
+                    <span>Кампания</span><br>
+                    <input type="text" id="campaign_id" name="campaign" class="input-field">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+            </form>
+        </div>
+        <table class="reklama_article_campaign">
+            <tr>
+                <th>Артикул продавца WB</th>
+                <!-- <th>Название артикула</th> -->
+                <th>Остаток FBO</th>
+                <th>WB Рекламные кампании</th>
+                <th>Ozon Рекламные кампании</th>
+                <th>WB название кампаний</th>
+                <th>Ozon название кампаний</th>
+            </tr>
+            {% for el in data %}
+                <tr>
+                    <td>{{ el.wb_article.common_article }}</td>
+                    <!-- <td>{{ el.wb_article.article_title }}</td> -->
+                    {% if el.fbo_amount == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.fbo_amount }}</td>
+                    {% endif %}
+                    {% if el.ad_campaign == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ad_campaign }}</td>
+                    {% endif %}
+                    {% if el.ozon_ad_campaign == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ozon_ad_campaign }}</td>
+                    {% endif %}
+                    {% if el.wb_campaigns_name == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.wb_campaigns_name }}</td>
+                    {% endif %}
+                    {% if el.ozon_campaigns_name == None %}
+                        <td></td>
+                    {% else %}
+                        <td>{{ el.ozon_campaigns_name }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+        <script>
+            const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+
+const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+)(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+// do the work...
+document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+const table = th.closest('table');
+Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
+    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+    .forEach(tr => table.appendChild(tr) );
+})));
+        </script>
+    </div>    
+        
+{% endblock %}

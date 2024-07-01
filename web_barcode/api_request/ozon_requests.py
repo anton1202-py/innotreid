@@ -11,8 +11,7 @@ from dotenv import load_dotenv
 from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
+                            OzonCampaign, ProcentForAd, SalesArticleStatistic,
                             WbArticleCommon, WbArticleCompany)
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,

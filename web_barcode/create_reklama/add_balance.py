@@ -8,7 +8,6 @@ import requests
 import telegram
 from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
-                                     advertisment_statistic_info,
                                      get_budget_adv_campaign)
 from create_reklama.models import CreatedCampaign, ProcentForAd
 # from celery_tasks.celery import app
@@ -36,6 +35,7 @@ campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 def ad_list():
     """
     Достает список номеров всех компании из базы данных.
+    Возвращает словарь типа {ur_lico: [article_list]}
     """
     campaign_data = CreatedCampaign.objects.all().values(
         'campaign_number', 'ur_lico__ur_lice_name')
@@ -510,16 +510,10 @@ def ooo_wb_articles_info(update_date=None, mn_id=0, common_data=None):
 @sender_error_to_tg
 def ooo_wb_articles_data():
     """WILDBERRIES. Записывает артикулы ООО ВБ в базу данных"""
-    data = ooo_wb_articles_info()
+    data = Articles.objects.filter(company='ООО Иннотрейд')
     article_list = []
-    for entry in data:
-        wb_article, wb_nomenclature, article_title = entry
-        article_list.append(wb_nomenclature)
-        if not OooWbArticle.objects.filter(wb_article=wb_article).exists():
-            OooWbArticle.objects.get_or_create(
-                wb_article=wb_article,
-                wb_nomenclature=wb_nomenclature,
-                article_title=article_title)
+    for article_obj in data:
+        article_list.append(article_obj.wb_nomenclature)
     return article_list
 
 
