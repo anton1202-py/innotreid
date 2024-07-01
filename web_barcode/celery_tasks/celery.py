@@ -64,10 +64,6 @@ app.conf.beat_schedule = {
     },
 
     # =========== ЗАДАЧИ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
-    "analytika_reklama_adv_common_info": {
-        "task": "analytika_reklama.periodic_tasks.add_info_to_db_about_all_campaigns",
-        "schedule": crontab(hour=18, minute=20)
-    },
     "analytika_reklama_adv_common_statistic": {
         "task": "analytika_reklama.periodic_tasks.add_campaigns_statistic_to_db",
         "schedule": crontab(hour=18, minute=23)

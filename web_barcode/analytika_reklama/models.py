@@ -47,10 +47,10 @@ class CommonCampaignDescription(models.Model):
         blank=True,
         null=True
     )
-    camnpaign_type = models.SmallIntegerField(
+    campaign_type = models.SmallIntegerField(
         verbose_name='Тип рекламной кампании',
     )
-    camnpaign_status = models.SmallIntegerField(
+    campaign_status = models.SmallIntegerField(
         verbose_name='Статус рекламной кампании',
     )
     articles_amount = models.SmallIntegerField(

@@ -82,8 +82,8 @@
                     <td><a href="{% url 'adv_campaign_clusters'  el.id %}">{{ el.campaign_number }}</a></td>
                     <td>{{ el.campaign_name }}</td>
                     <td>{{ el.ur_lico }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.camnpaign_type }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.camnpaign_status }}</td>
+                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
+                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
                     <td>{{ el.articles_amount }}</td>
                     <td>{{ el.change_date }}</td>
                     <td>{{ el.start_date }}</td>

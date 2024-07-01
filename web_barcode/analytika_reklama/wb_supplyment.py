@@ -80,61 +80,6 @@ def type_adv_campaigns():
 
 
 @sender_error_to_tg
-def add_adv_data_to_db_about_all_campaigns(ur_lico: str, campaign_data_list: list):
-    """
-    Записывает информацию в базу данных о всех входящих кампаний.
-    входящие данные:
-    ur_lico - юр. лицо
-    campaign_data_list - данные для рекламных кампаний ur_lico юр. лица (макс 50 кампаний)
-    """
-    for data in campaign_data_list:
-        campaign_number = data['advertId']
-        campaign_name = str(data['name'])
-        campaign_type = data['type']
-        campaign_status = data['status']
-        if 'autoParams' in data.keys() and data['autoParams']['nms']:
-            articles_amount = len(data['autoParams']['nms'])
-            articles_name = data['autoParams']['nms']
-        elif 'params' in data.keys() and data['params'][0]['nms']:
-            articles_amount = len(data['params'][0]['nms'])
-            articles_name = data['params'][0]['nms'][0]['nm']
-        elif 'unitedParams' in data.keys() and data['unitedParams'][0]['nms']:
-            articles_amount = len(data['unitedParams'][0]['nms'])
-            articles_name = data['unitedParams'][0]['nms']
-        else:
-            articles_amount = 0
-            articles_name = None
-        create_date = data['createTime']
-        change_date = data['changeTime']
-        start_date = data['startTime']
-        finish_date = data['endTime']
-        ur_lico = UrLico.objects.get(ur_lice_name=ur_lico)
-        if CreatedCampaign.objects.filter(ur_lico=ur_lico, campaign_number=campaign_number).exists():
-            campaign_obj = CreatedCampaign.objects.get(
-                ur_lico=ur_lico, campaign_number=campaign_number)
-            campaign_obj.campaign_name = campaign_name
-            campaign_obj.campaign_type = campaign_type
-            campaign_obj.campaign_status = campaign_status
-            campaign_obj.articles_name = articles_name
-            campaign_obj.create_date = create_date
-            # campaign_obj.change_date = change_date
-            # campaign_obj.start_date = start_date
-            # campaign_obj.finish_date = finish_date
-            campaign_obj.save()
-        else:
-            CreatedCampaign(
-                ur_lico=ur_lico,
-                campaign_number=campaign_number,
-                campaign_name=campaign_name,
-                campaign_type=campaign_type,
-                campaign_status=campaign_status,
-                articles_name=articles_name,
-                create_date=create_date
-
-            ).save()
-
-
-@sender_error_to_tg
 def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     """
     Записывает информацию в базу данных о всех входящих кампаний.

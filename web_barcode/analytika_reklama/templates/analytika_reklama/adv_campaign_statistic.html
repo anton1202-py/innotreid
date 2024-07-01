@@ -65,8 +65,8 @@
                 <tr>
                     <td><a href="{% url 'adv_campaign_daily_statistic'  el.campaign.id %}">{{ el.campaign.campaign_number }}</a></td>
                     <td>{{ el.campaign.ur_lico }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.camnpaign_type }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.camnpaign_type }}</td>
+                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.campaign_type }}</td>
+                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.campaign_type }}</td>
                     <td>{{ el.views }}</td>
                     <td>{{ el.clicks }}</td>
                     <td>{{ el.ctr }}</td>
