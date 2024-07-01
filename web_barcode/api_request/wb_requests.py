@@ -223,6 +223,9 @@ def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list)
     })
 
     response = requests.request("POST", url, headers=header, data=payload)
+    message = str(response.status_code, campaign_number)
+    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                     text=message)
     return response
 
 
