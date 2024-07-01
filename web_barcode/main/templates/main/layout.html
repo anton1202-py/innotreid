@@ -245,32 +245,7 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="parent">
-                        <span class="expanded">
-                            <span class="material-symbols-sharp">receipt_long</span>
-                            <h3>Реклама</h3>
-                            <span class="material-symbols-outlined">
-                                chevron_right
-                            </span>
-                        </span>
-                        <ul class="submenu">
-                            <!-- {% url 'ad_campaigns' as url_ad_campaigns %}
-                            <li>
-                                <a href="{{ url_ad_campaigns }}" {% if request.path == url_ad_campaigns %}class="active"{% endif %}>
-                                    <span class="material-symbols-sharp">filter_list</span>
-                                    <h3>Список кампаний WB</h3>
-                                </a>
-                            </li> -->
-                            
-                            {% url 'ozon_ad_campaigns' as url_ozon_ad_campaigns %}
-                            <li>
-                                <a href="{{ url_ozon_ad_campaigns }}" {% if request.path == url_ozon_ad_campaigns %}class="active"{% endif %}>
-                                    <span class="material-symbols-sharp">filter_list</span>
-                                    <h3>Список кампаний OZON</h3>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                    
 
                     <li class="parent">
                         <span class="expanded">
@@ -299,13 +274,15 @@
                                 </a>
                             </li>
                         </ul>
-                        {% url 'wb_article_campaign' as url_wb_article_campaigns %}
+                        <ul class="submenu">
+                            {% url 'wb_article_campaign' as url_wb_article_campaigns %}
                             <li>
                                 <a href="{{ url_wb_article_campaigns }}" {% if request.path == url_wb_article_campaigns %}class="active"{% endif %}>
                                     <span class="material-symbols-sharp">filter_list</span>
                                     <h3>OOO Артикулы - Кампании</h3>
                                 </a>
                             </li>
+                        </ul>
                         <ul class="submenu">
                             {% url 'common_minus_words' as url_common_minus_words %}
                             <li>
