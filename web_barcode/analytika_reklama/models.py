@@ -41,9 +41,11 @@ class CommonCampaignDescription(models.Model):
     )
     ur_lico = models.ForeignKey(
         UrLico,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Юр. лицо',
-        related_name='com_desc_campaign'
+        related_name='com_desc_campaign',
+        blank=True,
+        null=True
     )
     camnpaign_type = models.SmallIntegerField(
         verbose_name='Тип рекламной кампании',
@@ -98,9 +100,11 @@ class MainCampaignParameters(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='main_par_campaign'
+        related_name='main_par_campaign',
+        blank=True,
+        null=True
     )
     views = models.IntegerField(
         verbose_name='Просмотры',
@@ -169,9 +173,11 @@ class MainCampaignClusters(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='main_clust_campaign'
+        related_name='main_clust_campaign',
+        blank=True,
+        null=True
     )
     cluster = models.CharField(
         verbose_name='Кластер кампании',
@@ -194,9 +200,11 @@ class MainCampaignClustersKeywords(models.Model):
     """
     cluster = models.ForeignKey(
         MainCampaignClusters,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Кластер рекламной кампании',
-        related_name='main_clust_keyword_campaign'
+        related_name='main_clust_keyword_campaign',
+        blank=True,
+        null=True
     )
     keywords = models.TextField(
         verbose_name='Ключевые фразы кластера',
@@ -213,9 +221,11 @@ class MainCampaignExcluded(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='exclude_main_campaign'
+        related_name='exclude_main_campaign',
+        blank=True,
+        null=True
     )
     excluded = models.TextField(
         verbose_name='Минус-фразы для товаров из кампании',
@@ -232,15 +242,19 @@ class MainArticleCampaignParameters(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='main_art_par_campaign'
+        related_name='main_art_par_campaign',
+        blank=True,
+        null=True
     )
     article = models.ForeignKey(
         Articles,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Артикул',
-        related_name='main_art_par_campaign'
+        related_name='main_art_par_campaign',
+        blank=True,
+        null=True
     )
     views = models.IntegerField(
         verbose_name='Просмотры',
@@ -321,9 +335,11 @@ class DailyCampaignParameters(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='daily_params_campaign'
+        related_name='daily_params_campaign',
+        blank=True,
+        null=True
     )
     statistic_date = models.DateTimeField(
         verbose_name='Дата',
@@ -397,15 +413,19 @@ class DailyArticleCampaignParameters(models.Model):
     """
     campaign = models.ForeignKey(
         CreatedCampaign,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
-        related_name='daily_article_par_campaign'
+        related_name='daily_article_par_campaign',
+        blank=True,
+        null=True
     )
     article = models.ForeignKey(
         Articles,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Артикул',
-        related_name='daily_art_par_campaign'
+        related_name='daily_art_par_campaign',
+        blank=True,
+        null=True
     )
     statistic_date = models.DateTimeField(
         verbose_name='Дата',
@@ -506,9 +526,11 @@ class MainArticleKeyWords(models.Model):
     """
     article = models.ForeignKey(
         Articles,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Артикул',
-        related_name='key_cluster_article'
+        related_name='key_cluster_article',
+        blank=True,
+        null=True
     )
     cluster = models.CharField(
         verbose_name='Название кластера',
@@ -539,9 +561,11 @@ class MainArticleExcluded(models.Model):
     """
     article = models.ForeignKey(
         Articles,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name='Артикул',
-        related_name='excluded_for_article'
+        related_name='excluded_for_article',
+        blank=True,
+        null=True
     )
     excluded = models.CharField(
         verbose_name='Минус слово артикула',

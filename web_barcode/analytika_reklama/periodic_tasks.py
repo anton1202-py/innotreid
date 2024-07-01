@@ -64,7 +64,7 @@ def add_campaigns_statistic_to_db():
     statistic_date = statistic_date_raw.strftime('%Y-%m-%d')
     for ur_lico_obj in ur_lico_data:
         main_data = CreatedCampaign.objects.filter(
-            ur_lico=ur_lico_obj, camnpaign_status__in=[9, 11])
+            ur_lico=ur_lico_obj, campaign_status__in=[9, 11])
         koef_product = math.ceil(len(main_data)/100)
         for i in range(koef_product):
             start_point = i*100
@@ -100,7 +100,7 @@ def get_clusters_statistic_for_autocampaign():
     main_data_dict = {}
     for ur_lico_obj in ur_lico_data:
         main_data = CommonCampaignDescription.objects.filter(
-            ur_lico=ur_lico_obj, camnpaign_status__in=[9], camnpaign_type__in=[8])
+            ur_lico=ur_lico_obj, campaign_status__in=[9], campaign_type__in=[8])
         header = header_wb_dict[ur_lico_obj.ur_lice_name]
         for campaign_data in main_data:
             campaign_number = campaign_data.campaign_number
@@ -119,7 +119,7 @@ def get_searchcampaign_keywords_statistic():
     main_data_dict = {}
     for ur_lico_obj in ur_lico_data:
         main_data = CommonCampaignDescription.objects.filter(
-            ur_lico=ur_lico_obj, camnpaign_type__in=[6, 9])
+            ur_lico=ur_lico_obj, campaign_type__in=[6, 9])
 
         header = header_wb_dict[ur_lico_obj.ur_lice_name]
         for campaign_data in main_data:
