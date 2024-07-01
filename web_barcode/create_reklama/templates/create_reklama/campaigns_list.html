@@ -77,9 +77,11 @@
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td>
 
-
-                <td><input class="procent_for_advert" value="{{ koef_dict|get_item:el.id|list_position:0 }}" type="number" name="ad_koefficient" style="width: 100px" required/></td>
-                    
+                {% if koef_dict|get_item:el.id %}
+                    <td><input class="procent_for_advert" value="{{ koef_dict|get_item:el.id|list_position:0 }}" type="number" name="ad_koefficient" style="width: 100px" required/></td>
+                {% else %} 
+                    <td></td> 
+                {% endif %}  
                 <td>{{ koef_dict|get_item:el.id|list_position:3 }}</td>
                 {% if koef_dict|get_item:el.id|list_position:4 == None %}
                     <td></td>
