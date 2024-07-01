@@ -72,13 +72,14 @@ def set_up_minus_phrase_to_auto_campaigns():
                 header = header_wb_dict[ur_lico_obj.ur_lice_name]
                 campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
                     ur_lico_obj.ur_lice_name, data.campaign_number)
-                message = f"{campaign_minus_phrase_list}, {data.campaign_number}, {data.campaign_name}"
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message)
+
                 if common_minus_phrase_list:
                     for minus_word in common_minus_phrase_list:
                         if minus_word not in campaign_minus_phrase_list:
                             campaign_minus_phrase_list.append(minus_word)
+                            message = f"{campaign_minus_phrase_list}, {data.campaign_number}, {data.campaign_name}"
+                            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                             text=message)
                     get_del_minus_phrase_to_auto_campaigns(
                         header, data.campaign_number, campaign_minus_phrase_list)
 
