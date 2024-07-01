@@ -109,7 +109,6 @@ def update_campaign_status():
                             campaign_obj.campaign_status = campaign_status
                             campaign_obj.save()
                         elif int(campaign_obj.campaign_number) in campaign_list and campaign_status == 7:
-                            print(campaign_obj)
                             campaign_obj.delete()
     campaigns_data = CreatedCampaign.objects.filter(
         campaign_status=7
