@@ -103,8 +103,8 @@ class MainCampaignParameters(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Рекламная кампания',
         related_name='main_par_campaign',
+        null=True,
         blank=True,
-        null=True
     )
     views = models.IntegerField(
         verbose_name='Просмотры',
