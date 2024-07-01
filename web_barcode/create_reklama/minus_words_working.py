@@ -67,16 +67,14 @@ def get_common_minus_phrase(ur_lico_obj):
     Возвращает список общих минус фраз
     """
     common_data = AllMinusWords.objects.filter(ur_lico=ur_lico_obj)
-    message = str('common_data',
-                  str(common_data))[:4000]
+    message = str(f'common_data, {str(common_data)}')[:4000]
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=message)
     minus_phrase_list = []
     if common_data:
         for word_obj in common_data:
             minus_phrase_list.append(word_obj.word)
-        message = str('minus_phrase_list',
-                      str(minus_phrase_list))[:4000]
+        message = str(f'minus_phrase_list:  {str(minus_phrase_list)}')[:4000]
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message)
         return minus_phrase_list
