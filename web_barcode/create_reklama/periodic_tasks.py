@@ -166,30 +166,34 @@ def matching_wb_ooo_article_campaign():
     campaigns_data = CreatedCampaign.objects.filter(
         ur_lico__ur_lice_name='ООО Иннотрейд')
     for campaign in campaigns_data:
-        article = campaign.articles_name
+        article = ''
+        article_list = campaign.articles_name
         wb_campaign_name = campaign.campaign_name
-
-        if Articles.objects.filter(wb_nomenclature=article).exists():
-            article_obj = Articles.objects.filter(
-                wb_nomenclature=article)[0]
-            if not DataOooWbArticle.objects.filter(
-                    wb_article=article_obj).exists():
-                DataOooWbArticle(wb_article=article_obj).save()
-            matching_data = DataOooWbArticle.objects.get(
-                wb_article=article_obj)
-            if matching_data.ad_campaign:
-                if str(campaign.campaign_number) not in str(matching_data.ad_campaign):
-                    matching_data.ad_campaign = str(
-                        matching_data.ad_campaign) + ', ' + str(campaign.campaign_number)
-            else:
-                matching_data.ad_campaign = campaign.campaign_number
-            if matching_data.wb_campaigns_name:
-                if str(wb_campaign_name) not in str(matching_data.wb_campaigns_name):
-                    matching_data.wb_campaigns_name = str(
-                        matching_data.wb_campaigns_name) + ', ' + str(wb_campaign_name)
-            else:
-                matching_data.wb_campaigns_name = wb_campaign_name
-            matching_data.save()
+        if type(article_list) == list:
+            article = article_list[0]
+        else:
+            article = article_list
+            if Articles.objects.filter(wb_nomenclature=article).exists():
+                article_obj = Articles.objects.filter(
+                    wb_nomenclature=article)[0]
+                if not DataOooWbArticle.objects.filter(
+                        wb_article=article_obj).exists():
+                    DataOooWbArticle(wb_article=article_obj).save()
+                matching_data = DataOooWbArticle.objects.get(
+                    wb_article=article_obj)
+                if matching_data.ad_campaign:
+                    if str(campaign.campaign_number) not in str(matching_data.ad_campaign):
+                        matching_data.ad_campaign = str(
+                            matching_data.ad_campaign) + ', ' + str(campaign.campaign_number)
+                else:
+                    matching_data.ad_campaign = campaign.campaign_number
+                if matching_data.wb_campaigns_name:
+                    if str(wb_campaign_name) not in str(matching_data.wb_campaigns_name):
+                        matching_data.wb_campaigns_name = str(
+                            matching_data.wb_campaigns_name) + ', ' + str(wb_campaign_name)
+                else:
+                    matching_data.wb_campaigns_name = wb_campaign_name
+                matching_data.save()
         time.sleep(3)
 
 
