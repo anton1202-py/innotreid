@@ -4,8 +4,7 @@ from analytika_reklama.models import (CommonCampaignDescription,
                                       MainCampaignClusters,
                                       MainCampaignParameters)
 from analytika_reklama.periodic_tasks import (
-    add_campaigns_statistic_to_db, add_info_to_db_about_all_campaigns,
-    get_clusters_statistic_for_autocampaign,
+    add_campaigns_statistic_to_db, get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
