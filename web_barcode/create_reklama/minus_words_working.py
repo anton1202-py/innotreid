@@ -68,7 +68,7 @@ def get_common_minus_phrase(ur_lico_obj):
     """
     common_data = AllMinusWords.objects.filter(ur_lico=ur_lico_obj)
     message = str('common_data',
-                  common_data)[:4000]
+                  str(common_data))[:4000]
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=message)
     minus_phrase_list = []
@@ -76,7 +76,7 @@ def get_common_minus_phrase(ur_lico_obj):
         for word_obj in common_data:
             minus_phrase_list.append(word_obj.word)
         message = str('minus_phrase_list',
-                      minus_phrase_list)[:4000]
+                      str(minus_phrase_list))[:4000]
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message)
         return minus_phrase_list
