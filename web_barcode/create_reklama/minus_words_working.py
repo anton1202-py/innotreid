@@ -61,17 +61,20 @@ def get_campaigns_list_from_api_wb():
 
 
 @sender_error_to_tg
-def get_common_minus_phrase():
+def get_common_minus_phrase(ur_lico_obj):
     """
     Получает общие минус фразы из базы данных.
     Возвращает список общих минус фраз
     """
-    common_data = AllMinusWords.objects.all()
+    common_data = AllMinusWords.objects.filter(ur_lico=ur_lico_obj)
     minus_phrase_list = []
-    for word_obj in common_data:
-        minus_phrase_list.append(word_obj.word)
+    if common_data:
+        for word_obj in common_data:
+            minus_phrase_list.append(word_obj.word)
 
-    return minus_phrase_list
+        return minus_phrase_list
+    else:
+        return []
 
 
 @sender_error_to_tg

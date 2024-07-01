@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from api_request.wb_requests import (
     advertisment_campaign_clusters_statistic, advertisment_campaign_list,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
-    get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info,
-    statistic_search_campaign_keywords)
+    get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info)
 from celery_tasks.celery import app
 from create_reklama.add_balance import (count_sum_orders, header_determinant,
                                         replenish_campaign_budget,
@@ -51,20 +50,22 @@ def set_up_minus_phrase_to_search_catalog_campaigns():
 @app.task
 def set_up_minus_phrase_to_auto_campaigns():
     """Устанавливает минус фразы для автоматческих кампаний"""
-    auto_campaigns_list, _ = get_campaigns_list_from_api_wb()
-    common_minus_phrase_list = get_common_minus_phrase()
-    for main_data in auto_campaigns_list:
-        for ur_lico, campaign_list in main_data.items():
-            header = header_wb_dict[ur_lico]
-            for campaign_number in campaign_list:
+    ur_lico_data = UrLico.objects.all()
+    for ur_lico_obj in ur_lico_data:
+        campaign_data = CreatedCampaign.objects.filter(
+            ur_lico=ur_lico_obj, campaign_type=8)
+        common_minus_phrase_list = get_common_minus_phrase(ur_lico_obj)
+        if campaign_data:
+            for data in campaign_data:
+                header = header_wb_dict[ur_lico_obj.ur_lice_name]
                 campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
-                    ur_lico, campaign_number)
-
-                for minus_word in common_minus_phrase_list:
-                    if minus_word not in campaign_minus_phrase_list:
-                        campaign_minus_phrase_list.append(minus_word)
-                get_del_minus_phrase_to_auto_campaigns(
-                    header, campaign_number, campaign_minus_phrase_list)
+                    ur_lico_obj.ur_lice_name, data.campaign_number)
+                if common_minus_phrase_list:
+                    for minus_word in common_minus_phrase_list:
+                        if minus_word not in campaign_minus_phrase_list:
+                            campaign_minus_phrase_list.append(minus_word)
+                    get_del_minus_phrase_to_auto_campaigns(
+                        header, data.campaign_number, campaign_minus_phrase_list)
 
 
 @app.task

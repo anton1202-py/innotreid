@@ -8,9 +8,39 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
+        <div class='filter-data'>
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Минус слово</span><br>
+                    <input class="add_minus_word" type="text" name="add_minus_word"/>
+                </div>
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select">
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <button type="submit" name="add_word">Добавить</button>
+                </div>
+            </form>
+
+            <form id="minus_words_add" class="create-filter-form" method="GET">
+                <div class="inner-form-data">
+                    <br>
+                    <button type="Submit" id="common_minus_words_add">Применить слова</button>
+                </div>
+            </form>
+        </div>
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Минус слово</th>
+                <th>Юр. лицо</th>
                 <th>Дата добавления</th>
                 <th>Удалить слово</th>
             </tr>
@@ -20,6 +50,7 @@
                 <td>
                     <input class="minus_word" placeholder="{{ el.word }}" type="text" name="minus_word" data-row="{{ el.id }}"/>
                 </td>
+                <td>{{ el.ur_lico.ur_lice_name }}</td>
                 <td>{{ el.create_date }}</td>
                 <td>
                     <form method="post" class="del_article" name="del_article" enctype="multipart/form-data">
@@ -33,18 +64,13 @@
                 </td>
             </tr>
             {% endfor %}
-            <form action="" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <input class="add_minus_word" type="text" name="add_minus_word"/>
-                <button type="submit" name="add_word">Добавить</button>
-            </form>
         </table>
 
     </div>  
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // =========== ОБНОВЛЯЕТ ТАБЛИЦУ С МИНУССЛОВАМИ ========== //
+        // =========== ОБНОВЛЯЕТ ТАБЛИЦУ С МИНУС СЛОВАМИ ========== //
         document.querySelectorAll('.minus_word').forEach(select => {
             select.addEventListener('input', function() {
                 var mainWord = this.value;
@@ -88,6 +114,26 @@
                     .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                     .forEach(tr => table.appendChild(tr) );
             })));
+    
+        // ========== ЗАПУСКАЕТ ПРИМЕНЕНИЕ МИНУС СЛОВ НА ВСЕ КАМПАНИИ ========= //
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var submitBtn = document.getElementById('minus_words_add');
+            submitBtn.addEventListener("submit", function(event) {
+                event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+                var formData = new FormData(this);
+                formData.append("user_chat_id", "{{ user_chat_id }}");
+
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                // Отправка данных на сервер
+                fetch('apply_all_minus_words', {
+                    method: 'POST',
+                    body: formData,
+                })
+                console.log('Отдал данные', formData)
+                document.getElementById("minus_words_add").reset();
+            });
+        });
     </script>
         
 {% endblock %}

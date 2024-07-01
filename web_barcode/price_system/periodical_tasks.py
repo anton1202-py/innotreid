@@ -32,14 +32,14 @@ def wb_add_price_info(ur_lico):
                     marketplace='Wildberries'
                 ).exists():
                     latest_record = ArticlesPrice.objects.filter(
-                        common_article=Articles.objects.get(
-                            wb_nomenclature=data['nmId']),
+                        common_article=Articles.objects.filter(company=ur_lico,
+                                                               wb_nomenclature=data['nmId'])[0],
                         marketplace='Wildberries'
                     ).latest('id')
                     if latest_record.price != data['price']:
                         ArticlesPrice(
-                            common_article=Articles.objects.get(
-                                wb_nomenclature=data['nmId']),
+                            common_article=Articles.objects.filter(company=ur_lico,
+                                                                   wb_nomenclature=data['nmId'])[0],
                             marketplace='Wildberries',
                             price_date=datetime.now().strftime('%Y-%m-%d'),
                             price=data['price'],
@@ -47,8 +47,8 @@ def wb_add_price_info(ur_lico):
                         ).save()
                 else:
                     ArticlesPrice(
-                        common_article=Articles.objects.get(
-                            wb_nomenclature=data['nmId']),
+                        common_article=Articles.objects.filter(company=ur_lico,
+                                                               wb_nomenclature=data['nmId'])[0],
                         marketplace='Wildberries',
                         price_date=datetime.now().strftime('%Y-%m-%d'),
                         price=data['price'],

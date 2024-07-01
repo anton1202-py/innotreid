@@ -206,6 +206,14 @@ class AllMinusWords(models.Model):
         blank=True,
         null=True
     )
+    ur_lico = models.ForeignKey(
+        UrLico,
+        on_delete=models.SET_NULL,
+        verbose_name='Юр. лицо',
+        related_name='common_minus_words',
+        blank=True,
+        null=True
+    )
     create_date = models.DateTimeField(
         verbose_name='Дата добавления',
         auto_now_add=True

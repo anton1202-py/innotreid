@@ -215,7 +215,7 @@ def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list)
     Допускается 1 запрос в 6 секунд.
     Отправка пустого массива удаляет все минус-фразы из кампании.
     """
-    time.sleep(7)
+    time.sleep(10)
     url = f'https://advert-api.wb.ru/adv/v1/auto/set-excluded?id={campaign_number}'
 
     payload = json.dumps({
@@ -287,7 +287,7 @@ def advertisment_campaign_clusters_statistic(header, campaign_number):
     Информация обновляется раз в 15 минут.
     Максимум — 4 запроса секунду.
     """
-    time.sleep(0.3)
+    time.sleep(0.5)
     url = f'https://advert-api.wb.ru/adv/v2/auto/stat-words?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     return response
@@ -301,7 +301,7 @@ def statistic_search_campaign_keywords(header, campaign_number):
     Допускается максимум 4 запроса в секунду.
     Информация обновляется примерно каждые полчаса.
     """
-    time.sleep(0.3)
+    time.sleep(0.5)
     url = f'https://advert-api.wb.ru/adv/v1/stat/words?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     return response

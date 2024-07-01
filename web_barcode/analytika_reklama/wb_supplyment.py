@@ -12,8 +12,7 @@ from analytika_reklama.models import (CommonCampaignDescription,
 from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
-                                     advertisment_statistic_info,
-                                     statistic_search_campaign_keywords)
+                                     advertisment_statistic_info)
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles

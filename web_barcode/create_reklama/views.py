@@ -6,8 +6,9 @@ from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import AllMinusWords, CreatedCampaign, ProcentForAd
-from create_reklama.periodic_tasks import (budget_working,
-                                           update_campaign_status)
+from create_reklama.periodic_tasks import (
+    budget_working, set_up_minus_phrase_to_auto_campaigns,
+    update_campaign_status)
 from create_reklama.supplyment import check_data_for_create_adv_campaign
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
@@ -98,7 +99,6 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
     ur_lico_data = UrLico.objects.all()
-    budget_working()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
     koef_dict = {}
@@ -153,7 +153,7 @@ def change_percent_for_advert(request):
 
 
 def start_checked_campaigns(request):
-    """Запускает чекнутые кампании"""
+    """Запускает или ставит на паузу чекнутые кампании"""
     if request.POST:
         if request.POST['button_name'] == 'startCampaignsBtn':
             for campaign_number, ur_lico in json.loads(request.POST['campaignData']).items():
@@ -168,28 +168,21 @@ def start_checked_campaigns(request):
     return JsonResponse({'error': 'Invalid request method.'})
 
 
-def pausa_checked_campaigns(request):
-    """Ставит на паузу чекнутые кампании"""
-    if request.POST:
-        for campaign_number, ur_lico in request.POST.items():
-            if campaign_number != 'csrfmiddlewaretoken' and campaign_number != 'null':
-                header = header_wb_dict[ur_lico]
-                # start_advertisment_campaigns(header, campaign_number)
-    return JsonResponse({'error': 'Invalid request method.'})
-
-
 @login_required
 def common_minus_words(request):
     """Общие минус слова для всех кампаний"""
     page_name = 'Общие минус слова для всех кампаний'
     minus_words_list = AllMinusWords.objects.all().order_by('word')
     ur_lico_data = UrLico.objects.all()
+    user_chat_id = request.user.tg_chat_id
 
     if request.POST:
         if 'add_word' in request.POST:
             main_word = request.POST.get('add_minus_word')
-            if not AllMinusWords.objects.filter(word=main_word).exists():
-                AllMinusWords(word=main_word).save()
+            ur_lico_select = request.POST.get('ur_lico_select')
+            ur_lico_instance = UrLico.objects.get(id=ur_lico_select)
+            if not AllMinusWords.objects.filter(ur_lico=ur_lico_select, word=main_word).exists():
+                AllMinusWords(ur_lico=ur_lico_instance, word=main_word).save()
         elif "del-button" in request.POST:
             word_id = request.POST.get('del-button')
             AllMinusWords.objects.filter(id=word_id).delete()
@@ -198,6 +191,7 @@ def common_minus_words(request):
         'page_name': page_name,
         'minus_words_list': minus_words_list,
         'ur_lico_data': ur_lico_data,
+        'user_chat_id': user_chat_id,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
@@ -205,6 +199,7 @@ def common_minus_words(request):
 
 
 def update_common_minus_words(request):
+    """Обновляет минус слово, если его исправили"""
     if request.POST:
         if 'main_word' in request.POST:
             main_word = request.POST.get('main_word')
@@ -212,5 +207,20 @@ def update_common_minus_words(request):
             word_object = AllMinusWords.objects.get(id=word_id)
             word_object.word = main_word
             word_object.save()
+        return JsonResponse({'message': 'Value saved successfully.'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+
+def apply_all_minus_words(request):
+    """
+    Применяет все минус слова на юр. лицам на рекламные кампании 
+    по юр лицам при нажатии на кнопку ПРИМЕНИТЬ СЛОВА
+    """
+    if request.POST:
+        user_chat_id = int(request.POST.get('user_chat_id'))
+        set_up_minus_phrase_to_auto_campaigns()
+        message = 'Обновил все минус фразы'
+        bot.send_message(chat_id=user_chat_id,
+                         text=message)
         return JsonResponse({'message': 'Value saved successfully.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
