@@ -178,11 +178,11 @@ def matching_wb_ooo_article_campaign():
                 matching_data = DataOooWbArticle.objects.get(
                     wb_article=article_obj)
                 if matching_data.ad_campaign:
-                    if str(campaign) not in str(matching_data.ad_campaign):
+                    if str(campaign.campaign_number) not in str(matching_data.ad_campaign):
                         matching_data.ad_campaign = str(
-                            matching_data.ad_campaign) + ', ' + str(campaign)
+                            matching_data.ad_campaign) + ', ' + str(campaign.campaign_number)
                 else:
-                    matching_data.ad_campaign = campaign
+                    matching_data.ad_campaign = campaign.campaign_number
                 if matching_data.wb_campaigns_name:
                     if str(wb_campaign_name) not in str(matching_data.wb_campaigns_name):
                         matching_data.wb_campaigns_name = str(

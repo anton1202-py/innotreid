@@ -111,7 +111,7 @@ def keyword_for_articles():
     """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
 
     campaign_with_one_article = MainCampaignClusters.objects.filter(
-        Q(cluster__isnull=False) & Q(campaign__articles_amount=1))
+        cluster__isnull=False)
 
     for cluster_obj in campaign_with_one_article:
         articles_name = 0
@@ -141,7 +141,7 @@ def articles_excluded():
     """Определяем слова исключения для артикула"""
 
     campaign_with_one_article = MainCampaignExcluded.objects.filter(
-        Q(excluded__isnull=False) & Q(campaign__articles_amount=1))
+        excluded__isnull=False)
 
     for excluded_obj in campaign_with_one_article:
         articles_name = 0
