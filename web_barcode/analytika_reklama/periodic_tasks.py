@@ -6,8 +6,7 @@ from analytika_reklama.models import (CommonCampaignDescription,
                                       MainCampaignClusters,
                                       MainCampaignExcluded)
 from analytika_reklama.wb_supplyment import (
-    add_adv_data_to_db_about_all_campaigns, add_adv_statistic_to_db,
-    save_main_clusters_statistic_for_campaign,
+    add_adv_statistic_to_db, save_main_clusters_statistic_for_campaign,
     save_main_keywords_searchcampaign_statistic, type_adv_campaigns)
 from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_campaigns_list_info,
@@ -23,31 +22,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
                                         bot, header_wb_dict)
-
-
-@app.task
-def add_info_to_db_about_all_campaigns():
-    """
-    Собирает информацию о всех кампаниях для всех юр. лиц.
-
-    Переменные:
-    main_data - словарь типа {юр_лицо: [список рекламных кампаний в юр. лице]}
-    main_adv_data - данные для рекламных кампаний какого-то юр. лица (макс 50 кампаний)
-    """
-    main_data = type_adv_campaigns()
-    if main_data:
-        for ur_lico, adv_list in main_data.items():
-            koef_product = math.ceil(len(adv_list)/50)
-            for i in range(koef_product):
-                start_point = i*50
-                finish_point = (i+1)*50
-                adv_current_list = adv_list[
-                    start_point:finish_point]
-                header = header_wb_dict[ur_lico]
-                main_adv_data = advertisment_campaigns_list_info(
-                    adv_current_list, header)
-                # Записываем/обновляем информацию о РК в базу данных
-                add_adv_data_to_db_about_all_campaigns(ur_lico, main_adv_data)
 
 
 @app.task
@@ -99,7 +73,7 @@ def get_clusters_statistic_for_autocampaign():
     ur_lico_data = UrLico.objects.all()
     main_data_dict = {}
     for ur_lico_obj in ur_lico_data:
-        main_data = CommonCampaignDescription.objects.filter(
+        main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_status__in=[9], campaign_type__in=[8])
         header = header_wb_dict[ur_lico_obj.ur_lice_name]
         for campaign_data in main_data:
@@ -118,7 +92,7 @@ def get_searchcampaign_keywords_statistic():
     ur_lico_data = UrLico.objects.all()
     main_data_dict = {}
     for ur_lico_obj in ur_lico_data:
-        main_data = CommonCampaignDescription.objects.filter(
+        main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_type__in=[6, 9])
 
         header = header_wb_dict[ur_lico_obj.ur_lice_name]
