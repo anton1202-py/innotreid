@@ -326,7 +326,7 @@ def article_price_statistic(request, ur_lico):
             mp_dict = {}
             article_data = data.filter(
                 price_date=date,
-                common_article=Articles.objects.get(common_article=article))
+                common_article=Articles.objects.filter(company=ur_lico, common_article=article)[0])
             for i in article_data:
                 if i.marketplace == 'Wildberries':
                     mp_dict['wb_price'] = i.price
