@@ -219,7 +219,7 @@ def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list)
     url = f'https://advert-api.wb.ru/adv/v1/auto/set-excluded?id={campaign_number}'
 
     payload = json.dumps({
-        "phrase": phrase_list
+        "excluded": phrase_list
     })
 
     response = requests.request("POST", url, headers=header, data=payload)
