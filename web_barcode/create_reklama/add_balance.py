@@ -138,6 +138,7 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         },
         "page": 1
     })
+    print('payload', payload)
     response = requests.request(
         "POST", url, headers=header, data=payload)
     if response.status_code == 200:

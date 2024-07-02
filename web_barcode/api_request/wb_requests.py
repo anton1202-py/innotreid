@@ -207,7 +207,7 @@ def get_del_minus_phrase_to_catalog_search_campaigns(header, campaign_number, ph
     return response
 
 
-@api_retry_decorator
+# @api_retry_decorator
 def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list):
     """
     Метод позволяет устанавливать или удалять минус фразы.
