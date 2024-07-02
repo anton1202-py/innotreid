@@ -28,7 +28,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN,
 def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
-    budget_working()
+    # budget_working()
     camps = CreatedCampaign.objects.all()
     today = datetime.now().strftime("%Y-%m-%d %H:%M")
     for camp_obj in camps:
