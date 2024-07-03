@@ -39,7 +39,6 @@ def ad_list():
     """
     campaign_data = CreatedCampaign.objects.all().values(
         'campaign_number', 'ur_lico__ur_lice_name')
-    print(campaign_data)
     campaign_dict = {}
     for i in campaign_data:
         if i['ur_lico__ur_lice_name'] in campaign_dict:
@@ -48,7 +47,6 @@ def ad_list():
         else:
             campaign_dict[i['ur_lico__ur_lice_name']] = [
                 int(i['campaign_number'])]
-    print(campaign_dict)
     return campaign_dict
 
 
@@ -175,10 +173,11 @@ def count_sum_orders():
                     article_for_analyz = campaign_article
                 else:
                     article_for_analyz = [campaign_article]
-                print(campaign_article)
                 data_list = count_sum_orders_action(
                     article_for_analyz, begin_date, end_date, header)
+                print('data_list', data_list)
                 sum = count_sum_adv_campaign(data_list)
+                print('sum', sum)
                 campaign_orders_money_dict[campaign] = sum
                 time.sleep(22)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
