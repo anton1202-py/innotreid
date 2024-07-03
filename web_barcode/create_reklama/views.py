@@ -29,7 +29,7 @@ def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
     # budget_working()
-    count_sum_orders()
+    # count_sum_orders()
     camps = CreatedCampaign.objects.all()
     today = datetime.now().strftime("%Y-%m-%d %H:%M")
     for camp_obj in camps:

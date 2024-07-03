@@ -109,10 +109,10 @@ def count_sum_adv_campaign(data_list: list):
     data_list - входящий список данных по артикулвм в кампании
     """
     sum = 0
-
-    for data in data_list:
-        article_sum = data['statistics']['selectedPeriod']['ordersSumRub']
-        sum += article_sum
+    if data_list:
+        for data in data_list:
+            article_sum = data['statistics']['selectedPeriod']['ordersSumRub']
+            sum += article_sum
     return sum
 
 
@@ -175,9 +175,11 @@ def count_sum_orders():
                     article_for_analyz = [campaign_article]
                 data_list = count_sum_orders_action(
                     article_for_analyz, begin_date, end_date, header)
-                print('data_list', data_list)
-                sum = count_sum_adv_campaign(data_list)
-                print('sum', sum)
+                sum = 0
+                if data_list:
+                    print('data_list', data_list)
+                    sum = count_sum_adv_campaign(data_list)
+                    print('sum', sum)
                 campaign_orders_money_dict[campaign] = sum
                 time.sleep(22)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
