@@ -804,6 +804,8 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+    print(response_data.status_code)
+    print(response_data.text)
 
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
