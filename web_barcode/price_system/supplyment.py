@@ -838,12 +838,14 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
 
                 if price_u != price:
                     print(article, price_u, price)
-                time.sleep(0.5)
-        #         data_for_change.append(inner_data_dict)
+
+                    if price_u != 0:
+                        data_for_change.append(inner_data_dict)
+                time.sleep(0.2)
 
         #         # print('data_for_change', data_for_change)
         # print('ur_lico', ur_lico)
-        # wb_price_changer(header, data_for_change)
+        wb_price_changer(header, data_for_change)
 
 
 def ozon_price_changer(header, info_list: list):
