@@ -802,8 +802,10 @@ def wb_price_changer(header, info_list: list):
     """Изменяет цену входящего списка артикулов на WB"""
     url = 'https://discounts-prices-api.wb.ru/api/v2/upload/task'
     payload = json.dumps({"data": info_list})
+    print(info_list)
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+
     print(response_data.status_code)
     print(response_data.text)
 
