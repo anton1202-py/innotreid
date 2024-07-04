@@ -824,7 +824,7 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
         for article in data_articles_list:
             if article != None:
                 inner_data_dict = {
-                    "nmId": article,
+                    "nmID": article,
                     "price": price,
                     "discount": discount
                 }
