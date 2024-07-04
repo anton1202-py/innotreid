@@ -836,10 +836,9 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                 if priceu_raw:
                     price_u = priceu_raw[0]["priceU"]/100
 
-                if price_u != price:
+                if price_u != price and price_u != 0:
                     print(article, price_u, price)
-
-                    if price_u != 0:
+                    if inner_data_dict not in data_for_change:
                         data_for_change.append(inner_data_dict)
                 time.sleep(0.2)
 
