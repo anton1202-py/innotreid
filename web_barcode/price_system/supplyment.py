@@ -800,6 +800,7 @@ def excel_new_group_data(xlsx_file):
 
 def wb_price_changer(header, info_list: list):
     """Изменяет цену входящего списка артикулов на WB"""
+    time.sleep(1)
     url = 'https://discounts-prices-api.wb.ru/api/v2/upload/task'
     payload = json.dumps({"data": info_list})
     print(info_list)
@@ -829,9 +830,9 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                     "discount": discount
                 }
                 data_for_change.append(inner_data_dict)
-        # print('data_for_change', data_for_change)
-        print('ur_lico', ur_lico)
-        wb_price_changer(header, data_for_change)
+                # print('data_for_change', data_for_change)
+                print('ur_lico', ur_lico)
+                wb_price_changer(header, data_for_change)
 
 
 def ozon_price_changer(header, info_list: list):
