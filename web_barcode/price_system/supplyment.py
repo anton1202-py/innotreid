@@ -823,7 +823,6 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
         data_articles_list = articles_list[
             start_point:finish_point]
         for article in data_articles_list:
-            data_for_change = []
             if article != None:
                 inner_data_dict = {
                     "nmID": article,
@@ -832,8 +831,8 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                 }
                 data_for_change.append(inner_data_dict)
                 # print('data_for_change', data_for_change)
-                print('ur_lico', ur_lico)
-                wb_price_changer(header, data_for_change)
+        print('ur_lico', ur_lico)
+        wb_price_changer(header, data_for_change)
 
 
 def ozon_price_changer(header, info_list: list):
