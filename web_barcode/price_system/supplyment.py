@@ -829,10 +829,18 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                     "price": price,
                     "discount": discount
                 }
-                data_for_change.append(inner_data_dict)
-                # print('data_for_change', data_for_change)
-        print('ur_lico', ur_lico)
-        wb_price_changer(header, data_for_change)
+                URL = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={article}'
+                response = requests.request("GET", URL)
+                priceu_raw = json.loads(response.text)['data']['products']
+                price_u = priceu_raw[0]["priceU"]/100
+                if price_u != price:
+                    print(article, price_u, price)
+                time.sleep(0.5)
+        #         data_for_change.append(inner_data_dict)
+
+        #         # print('data_for_change', data_for_change)
+        # print('ur_lico', ur_lico)
+        # wb_price_changer(header, data_for_change)
 
 
 def ozon_price_changer(header, info_list: list):
