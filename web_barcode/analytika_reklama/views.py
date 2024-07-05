@@ -85,7 +85,7 @@ def keyword_statistic_info(request):
         total_clicks=Sum('clicks'),
         total_summ=Sum('summ'),
         click_to_view_ratio=ExpressionWrapper(
-            F('total_clicks') * 100 / Coalesce(F('total_views'), 0),
+            F('total_clicks') * 100 / Coalesce(F('total_views'), 1),
             output_field=FloatField()
         )
     ).order_by('-total_views')
