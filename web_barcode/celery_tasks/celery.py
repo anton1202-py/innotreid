@@ -124,6 +124,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.wb_ooo_fbo_stock_count",
         "schedule": crontab(hour=22, minute=20)
     },
+    "create_reklama_keyword_statisric": {
+        "task": "create_reklama.periodic_tasks.get_auto_campaign_statistic_common_data",
+        "schedule": crontab(hour=23, minute=10)
+    },
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА FEEDBACKS (ОТЗЫВЫ) ========== #

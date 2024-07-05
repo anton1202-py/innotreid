@@ -1,15 +1,16 @@
 from analytika_reklama.models import (CommonCampaignDescription,
-                                      DailyCampaignParameters,
+                                      DailyCampaignParameters, KeywordPhrase,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
-                                      MainCampaignParameters)
+                                      MainCampaignParameters,
+                                      StatisticCampaignKeywordPhrase)
 from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, get_auto_campaign_statistic_common_data,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, F, Sum
 from django.shortcuts import render
 from django.views.generic import ListView
 from price_system.models import Articles
@@ -70,6 +71,26 @@ def common_adv_statistic(request):
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
     return render(request, 'analytika_reklama/adv_campaign_statistic.html', context)
+
+
+@login_required
+def keyword_statistic_info(request):
+    """Отображает статистику ключевых фраз"""
+    page_name = 'Статитстика ключевых фраз'
+
+    keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
+        keyword_obj=F('keyword'),
+        total_views=Sum('views'),
+        total_clicks=Sum('clicks'),
+        total_summ=Sum('summ')
+    )
+    print(keyword_stats)
+
+    context = {
+        'page_name': page_name,
+        'keyword_stats': keyword_stats
+    }
+    return render(request, 'analytika_reklama/adv_kwstatistic.html', context)
 
 
 @login_required

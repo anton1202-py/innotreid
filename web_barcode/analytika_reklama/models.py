@@ -586,6 +586,9 @@ class KeywordPhrase(models.Model):
         max_length=300
     )
 
+    def __str__(self):
+        return self.phrase
+
     class Meta:
         verbose_name = 'Ключевые фразы'
         verbose_name_plural = 'Ключевые фразы'

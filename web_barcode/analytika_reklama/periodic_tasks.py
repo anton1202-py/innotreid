@@ -183,7 +183,7 @@ def get_auto_campaign_statistic_common_data():
         for data in campaign_statistic:
             date_str = data['date']
             date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
-            date = date_obj - timedelta(days=1)
+            date = date_obj - timedelta(days=2)
             today_date = datetime.now(date_obj.tzinfo).replace(
                 hour=0, minute=0, second=0, microsecond=0)
 

@@ -7,6 +7,10 @@ urlpatterns = [
          name='reklama_data_info'),
     path('common_adv_statistic', views.common_adv_statistic,
          name='common_adv_statistic'),
+
+    path('adv_kw_statistic', views.keyword_statistic_info,
+         name='adv_kw_statistic'),
+
     path('adv_article_words_info',
          views.articles_words_main_info,
          name='adv_article_words_info'

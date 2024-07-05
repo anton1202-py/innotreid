@@ -1,0 +1,60 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+
+        
+        {% if import_data %}
+            <script>
+                alert("{{ import_data }}");
+            </script>
+        {% endif %}
+        <table id="table">
+            <thead>
+                <tr>
+                    <th>Слово</th>
+                    <th>Показы</th>
+                    <th>Клики</th>
+                    <th>CTR</th>
+                    <th>Затраты</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for el in keyword_stats %}
+                <tr>
+                    <td>{{ el|get_item:"keyword__phrase" }}</td>
+                    <td>{{ el|get_item:"total_views" }}</td>
+                    <td>{{ el|get_item:"total_clicks" }}</td>
+                    <td></td>
+                    <td>{{ el|get_item:"total_summ" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+            
+        // do the work...
+        document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+            const table = th.closest('table');
+            Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                .forEach(tr => table.appendChild(tr) );
+        })));
+    </script>
+        
+{% endblock %}
