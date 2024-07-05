@@ -10,7 +10,7 @@ from analytika_reklama.periodic_tasks import (
     get_searchcampaign_keywords_statistic)
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import ExpressionWrapper, F, FloatField, Sum
+from django.db.models import Case, ExpressionWrapper, F, FloatField, Sum, When
 from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.views.generic import ListView
@@ -85,7 +85,11 @@ def keyword_statistic_info(request):
         total_clicks=Sum('clicks'),
         total_summ=Sum('summ'),
         click_to_view_ratio=ExpressionWrapper(
-            F('total_clicks') * 100 / Coalesce(F('total_views'), 1),
+            F('total_clicks') * 100 / Case(
+                When(total_views=0, then=1),
+                default=F('total_views'),
+                output_field=FloatField()
+            ),
             output_field=FloatField()
         )
     ).order_by('-total_views')
