@@ -10,7 +10,8 @@ from analytika_reklama.periodic_tasks import (
     get_searchcampaign_keywords_statistic)
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import Case, ExpressionWrapper, F, FloatField, Sum, When
+from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
+                              Sum, When)
 from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.views.generic import ListView
@@ -78,7 +79,7 @@ def common_adv_statistic(request):
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
     page_name = 'Статистика ключевых фраз'
-    get_auto_campaign_statistic_common_data()
+    # get_auto_campaign_statistic_common_data()
     keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
         total_views=Sum('views'),
