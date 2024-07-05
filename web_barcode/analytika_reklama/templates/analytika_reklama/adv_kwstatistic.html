@@ -32,8 +32,8 @@
                     <td>{{ el|get_item:"keyword__phrase" }}</td>
                     <td>{{ el|get_item:"total_views" }}</td>
                     <td>{{ el|get_item:"total_clicks" }}</td>
-                    <td></td>
-                    <td>{{ el|get_item:"total_summ" }}</td>
+                    <td>{{ el|get_item:"click_to_view_ratio" }}</td>
+                    <td>{{ el|get_item:"total_summ"|round_number }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
