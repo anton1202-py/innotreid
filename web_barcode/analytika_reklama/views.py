@@ -4,7 +4,8 @@ from analytika_reklama.models import (CommonCampaignDescription,
                                       MainCampaignClusters,
                                       MainCampaignParameters)
 from analytika_reklama.periodic_tasks import (
-    add_campaigns_statistic_to_db, get_clusters_statistic_for_autocampaign,
+    add_campaigns_statistic_to_db, get_auto_campaign_statistic_common_data,
+    get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
@@ -23,7 +24,7 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
-    # articles_for_keywords()
+    get_auto_campaign_statistic_common_data()
     campaign_list = CreatedCampaign.objects.filter(
         ur_lico=1).order_by('id')
     ur_lico_data = UrLico.objects.all()

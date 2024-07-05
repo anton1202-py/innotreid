@@ -311,6 +311,19 @@ def statistic_search_campaign_keywords(header, campaign_number):
 
 
 @api_retry_decorator
+def statistic_keywords_auto_campaign(header, campaign_number):
+    """
+    Возвращает статистику по ключевым фразам за каждый день, когда кампания была активна.
+    Информация обновляется раз в 15 минут.
+    Максимум — 4 запроса секунду.
+    """
+    time.sleep(0.5)
+    url = f'https://advert-api.wildberries.ru/adv/v2/auto/daily-words?id={campaign_number}'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
 def statistic_catalog_search_campaign_with_keywords(header, campaign_number):
     """
     Статистика кампаний Поиск + Каталог.

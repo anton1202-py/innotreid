@@ -575,3 +575,70 @@ class MainArticleExcluded(models.Model):
     class Meta:
         verbose_name = 'Минус слово артикула'
         verbose_name_plural = 'Минус слово артикула'
+
+
+class KeywordPhrase(models.Model):
+    """
+    Таблица с ключевыми фразами
+    """
+    phrase = models.CharField(
+        verbose_name='Ключевая фраза',
+        max_length=300
+    )
+
+    class Meta:
+        verbose_name = 'Ключевые фразы'
+        verbose_name_plural = 'Ключевые фразы'
+
+
+class StatisticCampaignKeywordPhrase(models.Model):
+    """
+    Статистика ключевых фраз кампании.
+    """
+    keyword = models.ForeignKey(
+        KeywordPhrase,
+        on_delete=models.SET_NULL,
+        verbose_name='Ключевая фраза',
+        related_name='statistic_keyphrase',
+        blank=True,
+        null=True
+    )
+    campaign = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.SET_NULL,
+        verbose_name='Рекламная кампания',
+        related_name='statistic_campaign',
+        blank=True,
+        null=True
+    )
+    statistic_date = models.DateTimeField(
+        verbose_name='Дата',
+        blank=True,
+        null=True
+    )
+    views = models.IntegerField(
+        verbose_name='Количество просмотров',
+        blank=True,
+        null=True
+    )
+
+    clicks = models.IntegerField(
+        verbose_name='Количество кликов',
+        blank=True,
+        null=True
+    )
+
+    ctr = models.FloatField(
+        verbose_name='Click-Through Rate, отношение количества кликов к количеству показов, %',
+        blank=True,
+        null=True
+    )
+    summ = models.FloatField(
+        verbose_name='Затраты',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Статистика ключевых фраз РК'
+        verbose_name_plural = 'Статистика ключевых фраз РК'

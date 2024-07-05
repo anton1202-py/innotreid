@@ -4,13 +4,16 @@ from datetime import datetime, timedelta
 from analytika_reklama.models import (CommonCampaignDescription,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
-                                      MainCampaignExcluded)
+                                      MainCampaignExcluded,
+                                      StatisticCampaignKeywordPhrase)
+from analytika_reklama.phrase_statistic import add_keyphrase_to_db
 from analytika_reklama.wb_supplyment import (
     add_adv_statistic_to_db, save_main_clusters_statistic_for_campaign,
     save_main_keywords_searchcampaign_statistic, type_adv_campaigns)
 from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      advertisment_campaigns_list_info,
                                      advertisment_statistic_info,
+                                     statistic_keywords_auto_campaign,
                                      statistic_search_campaign_keywords)
 from celery_tasks.celery import app
 from create_reklama.models import CreatedCampaign
@@ -164,3 +167,45 @@ def articles_excluded():
                     article=article_obj,
                     excluded=excluded_obj.excluded
                 ).save()
+
+
+@app.task
+def get_auto_campaign_statistic_common_data():
+    """Получает статистику каждой РК из внутренней баз данных"""
+    common_data = CreatedCampaign.objects.all()
+
+    for campaign_obj in common_data:
+        header = header_wb_dict[campaign_obj.ur_lico.ur_lice_name]
+
+        campaign_statistic = statistic_keywords_auto_campaign(
+            header, int(campaign_obj.campaign_number))
+
+        for data in campaign_statistic:
+            date_str = data['date']
+            date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
+            date = date_obj - timedelta(days=1)
+            today_date = datetime.now(date_obj.tzinfo).replace(
+                hour=0, minute=0, second=0, microsecond=0)
+
+            if date.date() < today_date.date():
+                phrase_stat = data['stat']
+                for phrase_data in phrase_stat:
+                    phrase = phrase_data['keyword']
+                    views = phrase_data['views']
+                    clicks = phrase_data['clicks']
+                    ctr = phrase_data['ctr']
+                    summ = phrase_data['sum']
+
+                    phrase_obj = add_keyphrase_to_db(phrase)
+                    if not StatisticCampaignKeywordPhrase.objects.filter(statistic_date=date_str,
+                                                                         keyword=phrase_obj,
+                                                                         campaign=campaign_obj).exists():
+                        StatisticCampaignKeywordPhrase(
+                            statistic_date=date_str,
+                            keyword=phrase_obj,
+                            campaign=campaign_obj,
+                            views=views,
+                            clicks=clicks,
+                            ctr=ctr,
+                            summ=summ
+                        ).save()
