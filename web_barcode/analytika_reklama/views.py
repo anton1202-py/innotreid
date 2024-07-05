@@ -26,7 +26,7 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
-    get_auto_campaign_statistic_common_data()
+
     campaign_list = CreatedCampaign.objects.filter(
         ur_lico=1).order_by('id')
     ur_lico_data = UrLico.objects.all()
@@ -78,7 +78,7 @@ def common_adv_statistic(request):
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
     page_name = 'Статистика ключевых фраз'
-
+    get_auto_campaign_statistic_common_data()
     keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
         total_views=Sum('views'),
@@ -93,8 +93,6 @@ def keyword_statistic_info(request):
             output_field=FloatField()
         )
     ).order_by('-total_views')
-
-    print(keyword_stats)
 
     context = {
         'page_name': page_name,
