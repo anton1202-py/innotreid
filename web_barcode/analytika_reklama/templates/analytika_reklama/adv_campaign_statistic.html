@@ -63,7 +63,11 @@
             <tbody>
                 {% for el in campaign_info %}
                 <tr>
-                    <td><a href="{% url 'adv_campaign_daily_statistic'  el.campaign.id %}">{{ el.campaign.campaign_number }}</a></td>
+                    {% if el.campaign.id %}
+                        <td><a href="{% url 'adv_campaign_daily_statistic'  el.campaign.id %}">{{ el.campaign.campaign_number }}</a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
                     <td>{{ el.campaign.ur_lico }}</td>
                     <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.campaign_type }}</td>
                     <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.campaign_type }}</td>

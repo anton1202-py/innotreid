@@ -94,7 +94,7 @@ def update_articles_price_info_in_campaigns():
         for article in campaigns_data:
             common_info = get_front_api_wb_info(article.articles_name)
             if common_info:
-                price = ''
+                price = 0
                 if common_info['data']['products']:
                     price = int(common_info['data']['products'][0]
                                 ['salePriceU'])//100
