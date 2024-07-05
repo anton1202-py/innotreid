@@ -65,23 +65,37 @@
                 <tr>
                     {% if el.campaign.id %}
                         <td><a href="{% url 'adv_campaign_daily_statistic'  el.campaign.id %}">{{ el.campaign.campaign_number }}</a></td>
+                        <td>{{ el.campaign.ur_lico }}</td>
+                        <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.campaign_type }}</td>
+                        <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.campaign_type }}</td>
+                        <td>{{ el.views }}</td>
+                        <td>{{ el.clicks }}</td>
+                        <td>{{ el.ctr }}</td>
+                        <td>{{ el.cpc }}</td>
+                        <td>{{ el.summ|round_number }}</td>
+                        <td>{{ el.atbs }}</td>
+                        <td>{{ el.orders }}</td>
+                        <td>{{ el.cr }}</td>
+                        <td>{{ el.shks }}</td>
+                        <td>{{ el.sum_price }}</td>
                     {% else %}
                         <td></td>
-                    {% endif %}
-                    <td>{{ el.campaign.ur_lico }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.campaign_type }}</td>
-                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.campaign_type }}</td>
-                    <td>{{ el.views }}</td>
-                    <td>{{ el.clicks }}</td>
-                    <td>{{ el.ctr }}</td>
-                    <td>{{ el.cpc }}</td>
+                        <td>{{ el.campaign.ur_lico }}</td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ el.views }}</td>
+                        <td>{{ el.clicks }}</td>
+                        <td>{{ el.ctr }}</td>
+                        <td>{{ el.cpc }}</td>
 
-                    <td>{{ el.summ|round_number }}</td>
-                    <td>{{ el.atbs }}</td>
-                    <td>{{ el.orders }}</td>
-                    <td>{{ el.cr }}</td>
-                    <td>{{ el.shks }}</td>
-                    <td>{{ el.sum_price }}</td>
+                        <td>{{ el.summ|round_number }}</td>
+                        <td>{{ el.atbs }}</td>
+                        <td>{{ el.orders }}</td>
+                        <td>{{ el.cr }}</td>
+                        <td>{{ el.shks }}</td>
+                        <td>{{ el.sum_price }}</td>
+                    {% endif %}
+                    
                     
                 {% endfor %}
             </tbody>
