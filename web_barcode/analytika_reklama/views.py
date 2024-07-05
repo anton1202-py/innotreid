@@ -77,7 +77,7 @@ def common_adv_statistic(request):
 @login_required
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
-    page_name = 'Статитстика ключевых фраз'
+    page_name = 'Статистика ключевых фраз'
 
     keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
