@@ -315,11 +315,11 @@ class WildberriesFbsMode():
         # Папка для сохранения фото в jpg формате
         name_photo_folder = f"fbs_mode/data_for_barcodes/photo"
         self.check_folder_availability(name_photo_folder)
-
+        CATEGORY_LIST = ['Ночники', 'Светильники']
         for data in orders_data:
             answer = self.article_info(data['article'])
             if json.loads(answer)['cards']:
-                if json.loads(answer)['cards'][0]['subjectName'] == "Ночники":
+                if json.loads(answer)['cards'][0]['subjectName'] in CATEGORY_LIST:
                     self.clear_article_list.append(data['article'])
                     # Достаем баркод артикула (первый из списка, если их несколько)
                     barcode = json.loads(answer)[
