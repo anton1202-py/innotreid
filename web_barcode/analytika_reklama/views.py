@@ -78,9 +78,9 @@ def common_adv_statistic(request):
 @login_required
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
-    page_name = 'Статистика ключевых фраз'
+    page_name = 'Статистика ключевых фраз (более 300 показов)'
     # get_auto_campaign_statistic_common_data()
-    keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
+    keyword_stats = StatisticCampaignKeywordPhrase.objects.filter(views__gt=10).values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
         total_views=Sum('views'),
         total_clicks=Sum('clicks'),
@@ -225,3 +225,48 @@ class ArticleClustersView(ListView):
     def get_queryset(self):
         return MainArticleKeyWords.objects.filter(
             article=self.kwargs['id'])
+
+
+class KeyPhraseCampaignStatisticView(ListView):
+    """
+    Описывает статистику ключевой фразы у каждой кампании
+    """
+    model = StatisticCampaignKeywordPhrase
+    template_name = 'analytika_reklama/adv_phrase_statistic.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        super(KeyPhraseCampaignStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+
+        context = super(KeyPhraseCampaignStatisticView,
+                        self).get_context_data(**kwargs)
+
+        phrase_data = StatisticCampaignKeywordPhrase.objects.filter(
+            keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
+            campaign_name=F('campaign__campaign_name'),
+            total_views=Sum('views'),
+            total_clicks=Sum('clicks'),
+            total_summ=Sum('summ'),
+            click_to_view_ratio=ExpressionWrapper(
+                F('total_clicks') * 100 / Case(
+                    When(total_views=0, then=1),
+                    default=F('total_views'),
+                    output_field=FloatField()
+                ),
+                output_field=FloatField()
+            )
+        ).order_by('-total_views')[:10]
+        print(phrase_data)
+        phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
+
+        context.update({
+            'phrase_data': phrase_data,
+            'page_name': f"Статитстика фразы: {phrase_obj.phrase}",
+        })
+        return context
+
+    # def get_queryset(self):
+    #     return MainCampaignClusters.objects.filter(
+    #         campaign=self.kwargs['id'])

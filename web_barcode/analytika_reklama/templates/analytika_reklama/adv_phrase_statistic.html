@@ -18,7 +18,8 @@
         <table id="table">
             <thead>
                 <tr>
-                    <th>Слово</th>
+                    <th>Артикул</th>
+                    <th>Название кампании</th>
                     <th>Показы</th>
                     <th>Клики</th>
                     <th>CTR</th>
@@ -27,9 +28,10 @@
                 </tr>
             </thead>
             <tbody>
-                {% for el in keyword_stats %}
+                {% for el in phrase_data %}
                 <tr>
-                    <td><a href="{% url 'adv_keyphrase_article_statistic' el|get_item:'keyword_obj' %}">{{ el|get_item:"keyword__phrase" }}</a></td>
+                    <td>{{ el|get_item:"campaign__articles_name" }}</td>
+                    <td>{{ el|get_item:"campaign_name" }}</td>
                     <td>{{ el|get_item:"total_views" }}</td>
                     <td>{{ el|get_item:"total_clicks" }}</td>
                     <td>{{ el|get_item:"click_to_view_ratio" }}</td>

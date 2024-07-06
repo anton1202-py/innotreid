@@ -27,4 +27,8 @@ urlpatterns = [
          views.ArticleClustersView.as_view(),
          name='adv_article_clusters'
          ),
+    path('adv_keyphrase_article_statistic/<int:id>',
+         views.KeyPhraseCampaignStatisticView.as_view(),
+         name='adv_keyphrase_article_statistic'
+         ),
 ]
