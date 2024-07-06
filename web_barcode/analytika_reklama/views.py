@@ -78,9 +78,9 @@ def common_adv_statistic(request):
 @login_required
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
-    page_name = 'Статистика ключевых фраз (более 100 показов)'
+    page_name = 'Статистика ключевых фраз'
 
-    keyword_stats = StatisticCampaignKeywordPhrase.objects.filter(views__gt=100).values('keyword__phrase').annotate(
+    keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
         total_views=Sum('views'),
         total_clicks=Sum('clicks'),
@@ -93,7 +93,7 @@ def keyword_statistic_info(request):
             ),
             output_field=FloatField()
         )
-    ).order_by('-total_views')
+    ).filter(total_views__gt=300).order_by('-total_views')
 
     context = {
         'page_name': page_name,
