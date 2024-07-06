@@ -79,8 +79,8 @@ def common_adv_statistic(request):
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
     page_name = 'Статистика ключевых фраз (более 300 показов)'
-    # get_auto_campaign_statistic_common_data()
-    keyword_stats = StatisticCampaignKeywordPhrase.objects.filter(views__gt=10).values('keyword__phrase').annotate(
+
+    keyword_stats = StatisticCampaignKeywordPhrase.objects.filter(views__gt=300).values('keyword__phrase').annotate(
         keyword_obj=F('keyword'),
         total_views=Sum('views'),
         total_clicks=Sum('clicks'),
