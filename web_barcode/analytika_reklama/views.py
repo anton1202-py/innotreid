@@ -257,8 +257,7 @@ class KeyPhraseCampaignStatisticView(ListView):
                 ),
                 output_field=FloatField()
             )
-        ).order_by('-total_views')[:10]
-        print(phrase_data)
+        ).order_by('-total_views')
         phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
 
         context.update({
