@@ -251,11 +251,11 @@ class KeyPhraseCampaignStatisticView(ListView):
             total_clicks=Sum('clicks'),
             total_summ=Sum('summ'),
             click_to_view_ratio=ExpressionWrapper(
-                Round(F('total_clicks') / Case(
+                Round(F('total_clicks') * 100 / Case(
                     When(total_views=0, then=1),
                     default=F('total_views'),
                     output_field=FloatField()
-                ), 4),
+                ), 2),
                 output_field=FloatField()
             )
         ).order_by('-total_views')
