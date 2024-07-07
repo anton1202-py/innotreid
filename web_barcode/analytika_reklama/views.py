@@ -188,8 +188,9 @@ def articles_words_main_info(request):
         article_key_words_info[Articles.objects.get(id=data['article'])] = {
             'cluster_count': data['cluster_count']}
     for data in common_excludes_info:
-        article_key_words_info[Articles.objects.get(id=data['article'])
-                               ]['excluded_count'] = data['excluded_count']
+        if Articles.objects.get(id=data['article']) in article_key_words_info:
+            article_key_words_info[Articles.objects.get(id=data['article'])
+                                   ]['excluded_count'] = data['excluded_count']
     context = {
         'page_name': page_name,
         'article_key_words_info': article_key_words_info,
