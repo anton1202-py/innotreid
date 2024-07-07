@@ -26,8 +26,7 @@ from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import (AdvertisingCampaign, DataOooWbArticle,
-                            ProcentForAd, UrLico)
+from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict

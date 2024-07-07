@@ -8,12 +8,9 @@ from api_request.wb_requests import (
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
     get_del_minus_phrase_to_catalog_search_campaigns,
     statistic_search_campaign_keywords)
-from create_reklama.models import AllMinusWords, CreatedCampaign
-from django.db.models import Q
-from motivation.models import Selling
-from price_system.models import Articles
+from create_reklama.models import AllMinusWords
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import AdvertisingCampaign, ProcentForAd, UrLico
+from reklama.models import UrLico
 
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
 

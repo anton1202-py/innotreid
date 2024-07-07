@@ -7,10 +7,7 @@ from django.shortcuts import redirect, render
 from dotenv import load_dotenv
 from price_system.models import Articles
 from reklama.forms import FilterUrLicoForm
-from reklama.models import (AdvertisingCampaign, CompanyStatistic,
-                            DataOooWbArticle, OzonCampaign, ProcentForAd,
-                            SalesArticleStatistic, UrLico, WbArticleCommon,
-                            WbArticleCompany)
+from reklama.models import OzonCampaign, UrLico
 from reklama.periodic_tasks import ozon_status_one_campaign
 from reklama.supplyment import create_articles_company, header_determinant
 

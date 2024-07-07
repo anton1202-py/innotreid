@@ -42,47 +42,6 @@ class AdvertisingCampaign(models.Model):
         verbose_name_plural = 'Рекламная кампания ВБ'
 
 
-class ProcentForAd(models.Model):
-    campaign_number = models.ForeignKey(
-        AdvertisingCampaign,
-        on_delete=models.CASCADE,
-        verbose_name='Рекламная кампания',
-        related_name='procentforad'
-    )
-    koefficient = models.IntegerField(
-        verbose_name='Процент для рекламы',
-        blank=True,
-        null=True
-    )
-    koef_date = models.DateTimeField(
-        verbose_name='Дата коэффициента',
-        auto_now_add=True,
-        blank=True,
-        null=True
-    )
-    virtual_budget = models.IntegerField(
-        verbose_name='Виртуальный бюджет',
-        default=0
-    )
-    virtual_budget_date = models.DateTimeField(
-        verbose_name='Дата изменения виртуального счета',
-        blank=True,
-        null=True
-    )
-    campaign_budget_date = models.DateTimeField(
-        verbose_name='Дата пополнения счета РК',
-        blank=True,
-        null=True
-    )
-
-    def __str__(self):
-        return self.campaign_number.campaign_number, self.koefficient
-
-    class Meta:
-        verbose_name = 'Коэффициент для кампании'
-        verbose_name_plural = 'Коэффициент для кампании'
-
-
 class CompanyStatistic(models.Model):
     campaign_number = models.ForeignKey(
         AdvertisingCampaign,

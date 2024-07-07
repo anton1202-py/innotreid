@@ -4,10 +4,10 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
                                      create_auto_advertisment_campaign,
                                      get_budget_adv_campaign)
-from create_reklama.models import CreatedCampaign
+from create_reklama.models import CreatedCampaign, ProcentForAd
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import AdvertisingCampaign, ProcentForAd, UrLico
+from reklama.models import UrLico
 
 from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
 

@@ -134,12 +134,6 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
         "cpm": cpm
     })
     response = requests.request("POST", url, headers=header, data=payload)
-    message1 = f'{response.status_code}'
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message1[:4000])
-    message1 = f'Ответ на создание кампании для {campaign_name} {response.text}'
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message1[:4000])
     return response
 
 
@@ -223,9 +217,6 @@ def get_del_minus_phrase_to_auto_campaigns(header, campaign_number, phrase_list)
     })
 
     response = requests.request("POST", url, headers=header, data=payload)
-    message = f'{response.status_code}, {campaign_number}, {phrase_list}'
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message)
     return response
 
 

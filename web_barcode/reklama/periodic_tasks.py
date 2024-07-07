@@ -13,8 +13,8 @@ from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic,
-                            WbArticleCommon, WbArticleCompany)
+                            SalesArticleStatistic, WbArticleCommon,
+                            WbArticleCompany)
 from reklama.supplyment import (ad_list, count_sum_orders, header_determinant,
                                 ooo_wb_articles_info,
                                 ozon_adv_campaign_articles_name_data,

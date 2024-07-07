@@ -10,15 +10,15 @@ from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_statistic_info,
                                      get_budget_adv_campaign)
-from create_reklama.models import CreatedCampaign
+from create_reklama.models import CreatedCampaign, ProcentForAd
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import (AdvertisingCampaign, CompanyStatistic,
                             DataOooWbArticle, OooWbArticle, OzonCampaign,
-                            ProcentForAd, SalesArticleStatistic, UrLico,
-                            WbArticleCommon, WbArticleCompany)
+                            SalesArticleStatistic, UrLico, WbArticleCommon,
+                            WbArticleCompany)
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
                                         TELEGRAM_TOKEN, bot, header_ozon_dict,
