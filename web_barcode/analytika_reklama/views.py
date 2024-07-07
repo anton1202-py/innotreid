@@ -12,7 +12,7 @@ from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
 from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
                               Sum, When)
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Round
 from django.shortcuts import render
 from django.views.generic import ListView
 from price_system.models import Articles
@@ -251,11 +251,11 @@ class KeyPhraseCampaignStatisticView(ListView):
             total_clicks=Sum('clicks'),
             total_summ=Sum('summ'),
             click_to_view_ratio=ExpressionWrapper(
-                F('total_clicks') * 100 / Case(
+                Round(F('total_clicks') * 100 / Case(
                     When(total_views=0, then=1),
                     default=F('total_views'),
                     output_field=FloatField()
-                ),
+                ), 2),
                 output_field=FloatField()
             )
         ).order_by('-total_views')
