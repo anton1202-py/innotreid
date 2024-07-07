@@ -86,11 +86,11 @@ def keyword_statistic_info(request):
         total_clicks=Sum('clicks'),
         total_summ=Sum('summ'),
         click_to_view_ratio=ExpressionWrapper(
-            F('total_clicks') * 100 / Case(
+            F('total_clicks') / Case(
                 When(total_views=0, then=1),
                 default=F('total_views'),
                 output_field=FloatField()
-            ),
+            ) * 100,
             output_field=FloatField()
         )
     ).filter(total_views__gt=300).order_by('-total_views')
@@ -251,11 +251,11 @@ class KeyPhraseCampaignStatisticView(ListView):
             total_clicks=Sum('clicks'),
             total_summ=Sum('summ'),
             click_to_view_ratio=ExpressionWrapper(
-                F('total_clicks') * 100 / Case(
+                F('total_clicks') / Case(
                     When(total_views=0, then=1),
                     default=F('total_views'),
                     output_field=FloatField()
-                ),
+                ) * 100,
                 output_field=FloatField()
             )
         ).order_by('-total_views')
