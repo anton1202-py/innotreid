@@ -43,11 +43,12 @@ def set_up_minus_phrase_to_search_catalog_campaigns():
             for campaign_number in campaign_list:
                 campaign_minus_phrase_list = get_minus_phrase_from_wb_search_catalog_campaigns(
                     ur_lico, campaign_number)
-                for minus_word in common_minus_phrase_list:
-                    if minus_word not in campaign_minus_phrase_list:
-                        campaign_minus_phrase_list.append(minus_word)
-                get_del_minus_phrase_to_catalog_search_campaigns(
-                    header, campaign_number, campaign_minus_phrase_list)
+                if campaign_minus_phrase_list:
+                    for minus_word in common_minus_phrase_list:
+                        if minus_word not in campaign_minus_phrase_list:
+                            campaign_minus_phrase_list.append(minus_word)
+                    get_del_minus_phrase_to_catalog_search_campaigns(
+                        header, campaign_number, campaign_minus_phrase_list)
 
 
 @app.task
