@@ -91,10 +91,10 @@ app.conf.beat_schedule = {
     # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА CREATE_REKLAMA ========== #
-    "create_reklama_search_catalog_excluded": {
-        "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_search_catalog_campaigns",
-        "schedule": crontab(hour=1, minute=0)
-    },
+    # "create_reklama_search_catalog_excluded": {
+    #     "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_search_catalog_campaigns",
+    #     "schedule": crontab(hour=1, minute=0)
+    # },
     "create_reklama_auto_excluded": {
         "task": "create_reklama.periodic_tasks.set_up_minus_phrase_to_auto_campaigns",
         "schedule": crontab(hour=1, minute=1)

@@ -149,25 +149,26 @@ def articles_excluded():
 
     for excluded_obj in campaign_with_one_article:
         articles_name = 0
-        if type(excluded_obj.campaign.articles_name) == int:
-            articles_name = excluded_obj.campaign.articles_name
-        elif (type(excluded_obj.campaign.articles_name)) == list:
-            articles_name = excluded_obj.campaign.articles_name[0]
-        if Articles.objects.filter(
-            company=excluded_obj.campaign.ur_lico.ur_lice_name,
-            wb_nomenclature=articles_name
-        ).exists():
-            article_obj = Articles.objects.filter(
+        if excluded_obj.campaign:
+            if type(excluded_obj.campaign.articles_name) == int:
+                articles_name = excluded_obj.campaign.articles_name
+            elif (type(excluded_obj.campaign.articles_name)) == list:
+                articles_name = excluded_obj.campaign.articles_name[0]
+            if Articles.objects.filter(
                 company=excluded_obj.campaign.ur_lico.ur_lice_name,
                 wb_nomenclature=articles_name
-            )[0]
-            if not MainArticleExcluded.objects.filter(
-                    article=article_obj,
-                    excluded=excluded_obj.excluded).exists():
-                MainArticleExcluded(
-                    article=article_obj,
-                    excluded=excluded_obj.excluded
-                ).save()
+            ).exists():
+                article_obj = Articles.objects.filter(
+                    company=excluded_obj.campaign.ur_lico.ur_lice_name,
+                    wb_nomenclature=articles_name
+                )[0]
+                if not MainArticleExcluded.objects.filter(
+                        article=article_obj,
+                        excluded=excluded_obj.excluded).exists():
+                    MainArticleExcluded(
+                        article=article_obj,
+                        excluded=excluded_obj.excluded
+                    ).save()
 
 
 @app.task
