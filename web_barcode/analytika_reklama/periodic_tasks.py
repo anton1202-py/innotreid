@@ -118,25 +118,26 @@ def keyword_for_articles():
 
     for cluster_obj in campaign_with_one_article:
         articles_name = 0
-        if type(cluster_obj.campaign.articles_name) == int:
-            articles_name = cluster_obj.campaign.articles_name
-        elif (type(cluster_obj.campaign.articles_name)) == list:
-            articles_name = cluster_obj.campaign.articles_name[0]
-        if Articles.objects.filter(
-            company=cluster_obj.campaign.ur_lico.ur_lice_name,
-            wb_nomenclature=articles_name
-        ).exists():
-            article_obj = Articles.objects.filter(
+        if cluster_obj:
+            if type(cluster_obj.campaign.articles_name) == int:
+                articles_name = cluster_obj.campaign.articles_name
+            elif (type(cluster_obj.campaign.articles_name)) == list:
+                articles_name = cluster_obj.campaign.articles_name[0]
+            if Articles.objects.filter(
                 company=cluster_obj.campaign.ur_lico.ur_lice_name,
                 wb_nomenclature=articles_name
-            )[0]
-            if not MainArticleKeyWords.objects.filter(
-                    article=article_obj,
-                    cluster=cluster_obj.cluster).exists():
-                MainArticleKeyWords(
-                    article=article_obj,
-                    cluster=cluster_obj.cluster,
-                    views=cluster_obj.count).save()
+            ).exists():
+                article_obj = Articles.objects.filter(
+                    company=cluster_obj.campaign.ur_lico.ur_lice_name,
+                    wb_nomenclature=articles_name
+                )[0]
+                if not MainArticleKeyWords.objects.filter(
+                        article=article_obj,
+                        cluster=cluster_obj.cluster).exists():
+                    MainArticleKeyWords(
+                        article=article_obj,
+                        cluster=cluster_obj.cluster,
+                        views=cluster_obj.count).save()
 
 
 @app.task
