@@ -266,7 +266,3 @@ class KeyPhraseCampaignStatisticView(ListView):
             'page_name': f"Статитстика фразы: {phrase_obj.phrase}",
         })
         return context
-
-    # def get_queryset(self):
-    #     return MainCampaignClusters.objects.filter(
-    #         campaign=self.kwargs['id'])

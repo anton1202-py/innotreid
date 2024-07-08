@@ -8,7 +8,7 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-
+        <button id="openModal">Добавить минус слова</button>
         
         {% if import_data %}
             <script>
@@ -18,6 +18,9 @@
         <table id="table">
             <thead>
                 <tr>
+                    <th>
+                        <input type="checkbox" name="main_check_box" class="input-field" onchange="checkAllCheckboxes(this)"> 
+                    </th>
                     <th>Артикул</th>
                     <th>Название кампании</th>
                     <th>Показы</th>
@@ -29,7 +32,10 @@
             </thead>
             <tbody>
                 {% for el in phrase_data %}
-                <tr>
+                <tr data-campaign-name="{{ el|get_item:'campaign_name' }}">
+                    <td>
+                        <input type="checkbox" name="campaign_check" class="input-field">
+                    </td>
                     <td>{{ el|get_item:"campaign__articles_name" }}</td>
                     <td>{{ el|get_item:"campaign_name" }}</td>
                     <td>{{ el|get_item:"total_views" }}</td>
@@ -40,10 +46,53 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>  
+    </div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <span>Введите минус слова через запятую с пробелом</span><br>
+          <input type="text" id="textInput"><br>
+          <button id="applyBtn">ПРИМЕНИТЬ</button>
+        </div>
+    </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+var modal = document.getElementById("myModal");
+var btn = document.getElementById("openModal");
+var span = document.getElementsByClassName("close")[0];
+var applyBtn = document.getElementById("applyBtn");
+
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+applyBtn.onclick = function() {
+  var textInputValue = document.getElementById("textInput").value;
+  // Здесь вы можете обработать значение из поля ввода
+}
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+        //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
+        function checkAllCheckboxes(mainCheckbox) {
+            var checkboxes = document.getElementsByClassName('input-field');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] !== mainCheckbox) {
+                    checkboxes[i].checked = mainCheckbox.checked;
+                }
+            }
+        }
+
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
         const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
@@ -57,6 +106,8 @@
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                 .forEach(tr => table.appendChild(tr) );
         })));
+
+
     </script>
         
 {% endblock %}

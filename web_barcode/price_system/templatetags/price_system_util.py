@@ -47,3 +47,8 @@ def add(value, arg):
 @register.filter
 def round_number(value):
     return round(value)
+
+
+@register.filter
+def round_number_two(value):
+    return round(value, 2)

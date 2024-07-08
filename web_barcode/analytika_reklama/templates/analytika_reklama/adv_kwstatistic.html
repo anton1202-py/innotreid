@@ -30,10 +30,14 @@
                 {% for el in keyword_stats %}
                 <tr>
                     <td><a href="{% url 'adv_keyphrase_article_statistic' el|get_item:'keyword_obj' %}">{{ el|get_item:"keyword__phrase" }}</a></td>
+                    {% with views=el|get_item:"total_views" %}
+                    {% with clicks=el|get_item:"total_clicks" %}
                     <td>{{ el|get_item:"total_views" }}</td>
                     <td>{{ el|get_item:"total_clicks" }}</td>
-                    <td>{{ el|get_item:"click_to_view_ratio" }}</td>
+                    <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
                     <td>{{ el|get_item:"total_summ"|round_number }}</td>
+                    {% endwith %}
+                    {% endwith %}
                 </tr>
                 {% endfor %}
             </tbody>
