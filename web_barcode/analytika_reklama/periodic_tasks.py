@@ -118,7 +118,7 @@ def keyword_for_articles():
 
     for cluster_obj in campaign_with_one_article:
         articles_name = 0
-        if cluster_obj:
+        if cluster_obj.campaign:
             if type(cluster_obj.campaign.articles_name) == int:
                 articles_name = cluster_obj.campaign.articles_name
             elif (type(cluster_obj.campaign.articles_name)) == list:
