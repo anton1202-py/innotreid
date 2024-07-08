@@ -219,7 +219,7 @@ class ArticleClustersView(ListView):
             article=self.kwargs['id'])[0].article
         context.update({
             'clusters_data': cluster_data,
-            'page_name': f"Кластеры артикула {article_description.common_article}: {article_description}",
+            'page_name': f"Кластеры артикула {article_description.common_article}: {article_description.name}",
         })
         return context
 
