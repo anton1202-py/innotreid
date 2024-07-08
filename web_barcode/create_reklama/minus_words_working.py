@@ -12,7 +12,7 @@ from create_reklama.models import AllMinusWords
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
 
-from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
+from web_barcode.constants_file import CHAT_ID_ADMIN, header_wb_dict
 
 
 @sender_error_to_tg
@@ -64,16 +64,10 @@ def get_common_minus_phrase(ur_lico_obj):
     Возвращает список общих минус фраз
     """
     common_data = AllMinusWords.objects.filter(ur_lico=ur_lico_obj)
-    message = str(f'common_data, {str(common_data)}')[:4000]
-    bot.send_message(chat_id=CHAT_ID_ADMIN,
-                     text=message)
     minus_phrase_list = []
     if common_data:
         for word_obj in common_data:
             minus_phrase_list.append(word_obj.word)
-        message = str(f'minus_phrase_list:  {str(minus_phrase_list)}')[:4000]
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message)
         return minus_phrase_list
     else:
         return []
