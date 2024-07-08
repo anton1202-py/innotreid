@@ -156,10 +156,10 @@ def articles_excluded():
             company=excluded_obj.campaign.ur_lico.ur_lice_name,
             wb_nomenclature=articles_name
         ).exists():
-            article_obj = Articles.objects.get(
+            article_obj = Articles.objects.filter(
                 company=excluded_obj.campaign.ur_lico.ur_lice_name,
                 wb_nomenclature=articles_name
-            )
+            )[0]
             if not MainArticleExcluded.objects.filter(
                     article=article_obj,
                     excluded=excluded_obj.excluded).exists():
