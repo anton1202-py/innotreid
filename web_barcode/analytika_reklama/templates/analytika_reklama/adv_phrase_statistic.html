@@ -36,6 +36,8 @@
                     <td>
                         <input type="checkbox" name="campaign_check" class="input-field">
                     </td>
+                    <td>{{ el|get_item:"campaign__articles_name" }}</td>
+                    <td>{{ el|get_item:"campaign_name" }}</td>
                     {% with views=el|get_item:"total_views" %}
                     {% with clicks=el|get_item:"total_clicks" %}
                     <td>{{ el|get_item:"total_views" }}</td>
