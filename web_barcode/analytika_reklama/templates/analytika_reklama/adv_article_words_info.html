@@ -28,7 +28,7 @@
                 {% for article, data in article_key_words_info.items %}
                 <tr>
                     <td><a href="{% url 'adv_article_clusters'  article.id %}">{{ article.common_article }}</a></td>
-                    <td>{{ article.wb_nomenclature }}</td>
+                    <td><a href="{% url 'adv_article_clusters'  article.id %}">{{ article.wb_nomenclature }}</a></td>
                     <td>{{ data|get_item:cluster_count}}</td>
                     {% if data|get_item:excluded_count %}
                         <td>{{ data|get_item:excluded_count}}</td>
