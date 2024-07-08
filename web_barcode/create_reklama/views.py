@@ -45,6 +45,7 @@ def create_campaign(request):
     ur_lico_data = UrLico.objects.all()
     subject_id = {
         'Ночник': 1673,
+        'Светильник': 330,
         'Грамота/диплом': 3618,
         'Файл вкладыш': 3169
     }
