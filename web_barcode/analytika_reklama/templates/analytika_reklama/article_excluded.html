@@ -32,15 +32,13 @@
         <table id="table">
             <thead>
                 <tr>
-                    <th>Кластеры</th>
-                    <th>Показы кластера</th>
+                    <th>Минус слова</th>
                 </tr>
             </thead>
             <tbody>
                 {% for el in data %}
                 <tr>
-                    <td>{{ el.cluster }}</td>
-                    <td>{{ el.views }}</td>
+                    <td>{{ el.excluded }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -200,6 +200,36 @@ def articles_words_main_info(request):
     return render(request, 'analytika_reklama/adv_article_words_info.html', context)
 
 
+class MainArticleExcludedView(ListView):
+    model = MainArticleExcluded
+    template_name = 'analytika_reklama/article_excluded.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        self.ur_lico = kwargs.pop('ur_lico', None)
+        super(MainArticleExcludedView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(MainArticleExcludedView,
+                        self).get_context_data(**kwargs)
+
+        cluster_data = MainArticleExcluded.objects.filter(
+            article=self.kwargs['id'])
+        article_description = MainArticleExcluded.objects.filter(
+            article=self.kwargs['id'])[0].article
+        article_id = self.kwargs['id']
+        context.update({
+            'article_id': article_id,
+            'clusters_data': cluster_data,
+            'page_name': f"Минус слова артикула {article_description.common_article}: {article_description.name}",
+        })
+        return context
+
+    def get_queryset(self):
+        return MainArticleExcluded.objects.filter(
+            article=self.kwargs['id'])
+
+
 class ArticleClustersView(ListView):
     model = MainArticleKeyWords
     template_name = 'analytika_reklama/article_clusters.html'
@@ -217,7 +247,9 @@ class ArticleClustersView(ListView):
             article=self.kwargs['id'])
         article_description = MainArticleKeyWords.objects.filter(
             article=self.kwargs['id'])[0].article
+        article_id = self.kwargs['id']
         context.update({
+            'article_id': article_id,
             'clusters_data': cluster_data,
             'page_name': f"Кластеры артикула {article_description.common_article}: {article_description.name}",
         })
