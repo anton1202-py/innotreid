@@ -181,33 +181,33 @@ def get_auto_campaign_statistic_common_data():
 
         campaign_statistic = statistic_keywords_auto_campaign(
             header, int(campaign_obj.campaign_number))
+        if campaign_statistic:
+            for data in campaign_statistic:
+                date_str = data['date']
+                date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
+                date = date_obj - timedelta(days=2)
+                today_date = datetime.now(date_obj.tzinfo).replace(
+                    hour=0, minute=0, second=0, microsecond=0)
 
-        for data in campaign_statistic:
-            date_str = data['date']
-            date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
-            date = date_obj - timedelta(days=2)
-            today_date = datetime.now(date_obj.tzinfo).replace(
-                hour=0, minute=0, second=0, microsecond=0)
+                if date.date() < today_date.date():
+                    phrase_stat = data['stat']
+                    for phrase_data in phrase_stat:
+                        phrase = phrase_data['keyword']
+                        views = phrase_data['views']
+                        clicks = phrase_data['clicks']
+                        ctr = phrase_data['ctr']
+                        summ = phrase_data['sum']
 
-            if date.date() < today_date.date():
-                phrase_stat = data['stat']
-                for phrase_data in phrase_stat:
-                    phrase = phrase_data['keyword']
-                    views = phrase_data['views']
-                    clicks = phrase_data['clicks']
-                    ctr = phrase_data['ctr']
-                    summ = phrase_data['sum']
-
-                    phrase_obj = add_keyphrase_to_db(phrase)
-                    if not StatisticCampaignKeywordPhrase.objects.filter(statistic_date=date_str,
-                                                                         keyword=phrase_obj,
-                                                                         campaign=campaign_obj).exists():
-                        StatisticCampaignKeywordPhrase(
-                            statistic_date=date_str,
-                            keyword=phrase_obj,
-                            campaign=campaign_obj,
-                            views=views,
-                            clicks=clicks,
-                            ctr=ctr,
-                            summ=summ
-                        ).save()
+                        phrase_obj = add_keyphrase_to_db(phrase)
+                        if not StatisticCampaignKeywordPhrase.objects.filter(statistic_date=date_str,
+                                                                             keyword=phrase_obj,
+                                                                             campaign=campaign_obj).exists():
+                            StatisticCampaignKeywordPhrase(
+                                statistic_date=date_str,
+                                keyword=phrase_obj,
+                                campaign=campaign_obj,
+                                views=views,
+                                clicks=clicks,
+                                ctr=ctr,
+                                summ=summ
+                            ).save()
