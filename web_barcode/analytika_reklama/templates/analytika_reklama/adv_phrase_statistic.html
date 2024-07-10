@@ -27,12 +27,14 @@
                     <th>Клики</th>
                     <th>CTR</th>
                     <th>Затраты</th>
+                    <th>Присутствие фразы</th>
+
 
                 </tr>
             </thead>
             <tbody>
                 {% for el in phrase_data %}
-                <tr data-campaign-name="{{ el|get_item:'campaign_name' }}">
+                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
                     <td>
                         <input type="checkbox" name="campaign_check" class="input-field">
                     </td>
@@ -46,6 +48,9 @@
                     <td>{{ el|get_item:"total_summ"|round_number }}</td>
                     {% endwith %}
                     {% endwith %}
+                    <td>
+                        <input type="checkbox" class="input-field" disabled {% if el|get_item:'minus_checker' %}checked{% endif %}>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -56,37 +61,76 @@
         <div class="modal-content">
           <span class="close">&times;</span>
           <span>Введите минус слова через запятую с пробелом</span><br>
-          <input type="text" id="textInput"><br>
+          <input type="text" value="{{ minus_phrase }}" id="textInput" disabled><br>
           <button id="applyBtn">ПРИМЕНИТЬ</button>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        //========== РАБОТАЕТ С ВЫБРАННЫМИ ЧЕКБОКСАМИ ==========//
+        document.getElementById('applyBtn').addEventListener('click', function() {
+            sendCampaignData(this);
+        });
 
-var modal = document.getElementById("myModal");
-var btn = document.getElementById("openModal");
-var span = document.getElementsByClassName("close")[0];
-var applyBtn = document.getElementById("applyBtn");
+        function sendCampaignData(button) {
+            var selectedArticles = [];
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            var formData = new FormData();
+        
+            var campaignData = {};
+        
+            checkboxes.forEach(function(checkbox) {
+                var row = checkbox.closest('tr');
+                var campaignNumber = row.getAttribute('data-campaign-number');
+                var urLico = row.getAttribute('data-ur-lico');
+            
+                selectedArticles.push({
+                    campaignNumber: urLico
+                });
+            
+                // Добавляем название кнопки к данным
+                campaignData[campaignNumber] = urLico
 
-btn.onclick = function() {
-  modal.style.display = "block";
-}
+            });
+            formData.append('campaignData', JSON.stringify(campaignData));
+            formData.append('minus_word', '{{ minus_phrase }}');
+            formData.append('button_name', button.id);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+            fetch('../minus_words_checked_campaigns', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+        
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
 
-span.onclick = function() {
-  modal.style.display = "none";
-}
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("openModal");
+        var span = document.getElementsByClassName("close")[0];
+        var applyBtn = document.getElementById("applyBtn");
 
-applyBtn.onclick = function() {
-  var textInputValue = document.getElementById("textInput").value;
-  // Здесь вы можете обработать значение из поля ввода
-}
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
 
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        applyBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
         //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
         function checkAllCheckboxes(mainCheckbox) {
             var checkboxes = document.getElementsByClassName('input-field');

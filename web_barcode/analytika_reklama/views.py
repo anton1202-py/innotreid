@@ -1,18 +1,25 @@
+import json
+
 from analytika_reklama.models import (CommonCampaignDescription,
                                       DailyCampaignParameters, KeywordPhrase,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
+                                      MainCampaignExcluded,
                                       MainCampaignParameters,
                                       StatisticCampaignKeywordPhrase)
 from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, get_auto_campaign_statistic_common_data,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
+from api_request.wb_requests import get_del_minus_phrase_to_auto_campaigns
+from create_reklama.minus_words_working import \
+    get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
 from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
                               Sum, When)
 from django.db.models.functions import Coalesce, Round
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import ListView
 from price_system.models import Articles
@@ -20,7 +27,8 @@ from reklama.models import UrLico
 
 from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_data_dict)
+                                        bot, header_wb_data_dict,
+                                        header_wb_dict)
 
 
 @login_required
@@ -275,10 +283,12 @@ class KeyPhraseCampaignStatisticView(ListView):
 
         context = super(KeyPhraseCampaignStatisticView,
                         self).get_context_data(**kwargs)
-
+        phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
         phrase_data = StatisticCampaignKeywordPhrase.objects.filter(
             keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
             campaign_name=F('campaign__campaign_name'),
+            campaign_number=F('campaign__campaign_number'),
+            campaign_ur_lico=F('campaign__ur_lico__ur_lice_name'),
             total_views=Sum('views'),
             total_clicks=Sum('clicks'),
             total_summ=Sum('summ'),
@@ -291,10 +301,43 @@ class KeyPhraseCampaignStatisticView(ListView):
                 output_field=FloatField()
             )
         ).order_by('-total_views')
-        phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
+        for data in phrase_data:
+            inner_list = []
+            ur_lic = data['campaign_ur_lico']
+            camp_numb = data['campaign_number']
+            minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
+                campaign__ur_lico__ur_lice_name=ur_lic, campaign__campaign_number=camp_numb).values('excluded')
+            for phrase in minus_phrase_campaign_list:
+
+                inner_list.append(phrase['excluded'])
+            if phrase_obj.phrase in inner_list:
+                data['minus_checker'] = True
+            else:
+                data['minus_checker'] = False
 
         context.update({
             'phrase_data': phrase_data,
             'page_name': f"Статитстика фразы: {phrase_obj.phrase}",
+            'minus_phrase': phrase_obj.phrase,
         })
         return context
+
+
+def minus_words_checked_campaigns(request):
+    """Присваивает минус слово чекнутым кампаниям"""
+    campaigns_data = json.loads(request.POST.get('campaignData'))
+    minus_words = request.POST.get('minus_word')
+
+    for campaign_number, ur_lico in campaigns_data.items():
+        print(campaign_number)
+        print(ur_lico)
+        # Получаем список минус фраз кампании
+        campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
+            ur_lico, campaign_number)
+        print('campaign_minus_phrase_list', campaign_minus_phrase_list)
+        if minus_words not in campaign_minus_phrase_list:
+            campaign_minus_phrase_list.append(minus_words)
+            header = header_wb_dict[ur_lico]
+            # get_del_minus_phrase_to_auto_campaigns(header, campaign_number, campaign_minus_phrase_list)
+
+    return JsonResponse({'message': 'Value saved successfully.'})

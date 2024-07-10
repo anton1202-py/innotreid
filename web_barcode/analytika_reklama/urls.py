@@ -35,4 +35,10 @@ urlpatterns = [
          views.KeyPhraseCampaignStatisticView.as_view(),
          name='adv_keyphrase_article_statistic'
          ),
+
+    # ======== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ JQUERY ========== #
+    path('minus_words_checked_campaigns',
+         views.minus_words_checked_campaigns,
+         name='minus_words_checked_campaigns'
+         ),
 ]
