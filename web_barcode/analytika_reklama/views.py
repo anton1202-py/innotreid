@@ -329,15 +329,13 @@ def minus_words_checked_campaigns(request):
     minus_words = request.POST.get('minus_word')
 
     for campaign_number, ur_lico in campaigns_data.items():
-        print(campaign_number)
-        print(ur_lico)
         # Получаем список минус фраз кампании
         campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
             ur_lico, campaign_number)
-        print('campaign_minus_phrase_list', campaign_minus_phrase_list)
         if minus_words not in campaign_minus_phrase_list:
             campaign_minus_phrase_list.append(minus_words)
             header = header_wb_dict[ur_lico]
-            # get_del_minus_phrase_to_auto_campaigns(header, campaign_number, campaign_minus_phrase_list)
+            get_del_minus_phrase_to_auto_campaigns(
+                header, campaign_number, campaign_minus_phrase_list)
 
     return JsonResponse({'message': 'Value saved successfully.'})
