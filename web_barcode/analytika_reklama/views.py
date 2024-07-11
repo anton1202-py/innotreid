@@ -284,8 +284,8 @@ class KeyPhraseCampaignStatisticView(ListView):
         context = super(KeyPhraseCampaignStatisticView,
                         self).get_context_data(**kwargs)
         phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
-        phrase_data = StatisticCampaignKeywordPhrase.objects.filter(
-            keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
+        phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
+                                                                    keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
             campaign_name=F('campaign__campaign_name'),
             campaign_number=F('campaign__campaign_number'),
             campaign_ur_lico=F('campaign__ur_lico__ur_lice_name'),
