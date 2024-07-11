@@ -15,6 +15,10 @@
                 alert("{{ import_data }}");
             </script>
         {% endif %}
+
+        <div class="top-befor-header">
+            <h2>Более 200 показов</h2>
+        </div>
         <table id="table">
             <thead>
                 <tr>
@@ -28,12 +32,11 @@
                     <th>CTR</th>
                     <th>Затраты</th>
                     <th>Присутствие фразы</th>
-
-
                 </tr>
             </thead>
             <tbody>
                 {% for el in phrase_data %}
+                {% if el|get_item:"total_views" > 200 %}
                 <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
                     <td>
                         <input type="checkbox" name="campaign_check" class="input-field">
@@ -42,16 +45,61 @@
                     <td>{{ el|get_item:"campaign_name" }}</td>
                     {% with views=el|get_item:"total_views" %}
                     {% with clicks=el|get_item:"total_clicks" %}
-                    <td>{{ el|get_item:"total_views" }}</td>
-                    <td>{{ el|get_item:"total_clicks" }}</td>
-                    <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
-                    <td>{{ el|get_item:"total_summ"|round_number }}</td>
+                        <td>{{ el|get_item:"total_views" }}</td>
+                        <td>{{ el|get_item:"total_clicks" }}</td>
+                        <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
+                        <td>{{ el|get_item:"total_summ"|round_number }}</td>
                     {% endwith %}
                     {% endwith %}
                     <td>
                         <input type="checkbox" disabled {% if el|get_item:'minus_checker' %}checked{% endif %}>
                     </td>
                 </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="top-befor-header">
+            <h2>Менее 200 показов</h2>
+        </div>
+        <table id="table">
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" name="main_check_box" class="input-field-less-200" onchange="checkAllLessCheckboxes(this)"> 
+                    </th>
+                    <th>Артикул</th>
+                    <th>Название кампании</th>
+                    <th>Показы</th>
+                    <th>Клики</th>
+                    <th>CTR</th>
+                    <th>Затраты</th>
+                    <th>Присутствие фразы</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for el in phrase_data %}
+                {% if el|get_item:"total_views" <= 200 %}
+                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
+                    <td>
+                        <input type="checkbox" name="campaign_check" class="input-field-less-200">
+                    </td>
+                    <td>{{ el|get_item:"campaign__articles_name" }}</td>
+                    <td>{{ el|get_item:"campaign_name" }}</td>
+                    {% with views=el|get_item:"total_views" %}
+                    {% with clicks=el|get_item:"total_clicks" %}
+                        <td>{{ el|get_item:"total_views" }}</td>
+                        <td>{{ el|get_item:"total_clicks" }}</td>
+                        <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
+                        <td>{{ el|get_item:"total_summ"|round_number }}</td>
+                    {% endwith %}
+                    {% endwith %}
+                    <td>
+                        <input type="checkbox" disabled {% if el|get_item:'minus_checker' %}checked{% endif %}>
+                    </td>
+                </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -134,6 +182,15 @@
         //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
         function checkAllCheckboxes(mainCheckbox) {
             var checkboxes = document.getElementsByClassName('input-field');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] !== mainCheckbox) {
+                    checkboxes[i].checked = mainCheckbox.checked;
+                }
+            }
+        }
+
+        function checkAllLessCheckboxes(mainCheckbox) {
+            var checkboxes = document.getElementsByClassName('input-field-less-200');
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i] !== mainCheckbox) {
                     checkboxes[i].checked = mainCheckbox.checked;
