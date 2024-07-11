@@ -811,6 +811,25 @@ def wb_price_changer(header, info_list: list):
     print(response_data.text)
 
 
+def articles_price_discount(ur_lico):
+    """
+    ВОзвращает данные о цене и скидке на артикул
+    """
+    from api_request.wb_requests import get_article_list_data
+    header = header_wb_dict[ur_lico]
+    main_data = get_article_list_data(header)
+    returned_dict = {}
+    for data in main_data['data']['listGoods']:
+        # print(data)
+        price = data['sizes'][0]['price']
+        discount = data['discount']
+        nm_id = data['nmID']
+
+        returned_dict[nm_id] = {'price': price, 'discount': discount}
+    # print(returned_dict)
+    return returned_dict
+
+
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
@@ -823,23 +842,28 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
         data_articles_list = articles_list[
             start_point:finish_point]
         for article in data_articles_list:
+            # print(article)
             if article != None:
                 inner_data_dict = {
                     "nmID": article,
                     "price": price,
                     "discount": discount
                 }
-                price_u = 0
-                URL = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={article}'
-                response = requests.request("GET", URL)
-                priceu_raw = json.loads(response.text)['data']['products']
-                if priceu_raw:
-                    price_u = priceu_raw[0]["priceU"]/100
+                # price_u = 0
+                # URL = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={article}'
+                # response = requests.request("GET", URL)
+                # priceu_raw = json.loads(response.text)['data']['products']
+                # if priceu_raw:
+                #     price_u = priceu_raw[0]["priceU"]/100
 
-                if price_u != price and price_u != 0:
-                    if inner_data_dict not in data_for_change:
-                        data_for_change.append(inner_data_dict)
-                time.sleep(0.1)
+                # if price_u != price and price_u != 0:
+                #     if inner_data_dict not in data_for_change:
+                data_for_change.append(inner_data_dict)
+                # else:
+                # print('price_u:', price_u, 'price:', price)
+                # print('****************************')
+
+        print('data_for_change', data_for_change)
         wb_price_changer(header, data_for_change)
 
 

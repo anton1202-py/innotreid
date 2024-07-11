@@ -88,6 +88,18 @@ def wb_sales_statistic(header, check_date, attempt=0):
 
 
 @api_retry_decorator
+def get_article_list_data(header):
+    """
+    Возвращает информацию о товаре по его артикулу.
+    Чтобы получить информацию обо всех товарах, оставьте артикул пустым
+    """
+    time.sleep(0.8)
+    url = f'https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter?limit=1000'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
 def get_front_api_wb_info(nm_id):
     """
     Получаем информацию артикула на странице ВБ от api фронта ВБ

@@ -22,7 +22,8 @@ from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
-from .supplyment import (excel_article_costprice_export, excel_compare_table,
+from .supplyment import (articles_price_discount,
+                         excel_article_costprice_export, excel_compare_table,
                          excel_creating_mod,
                          excel_import_article_costprice_data,
                          excel_import_data, excel_import_group_create_data,
@@ -150,8 +151,13 @@ def groups_view(request, ur_lico):
             wb_nom_list = []
             oz_nom_list = []
             yandex_nom_list = []
+            articles_wb_data_dict = articles_price_discount(ur_lico)
             for art in names:
-                wb_nom_list.append(art.common_article.wb_nomenclature)
+                if art.common_article.wb_nomenclature in articles_wb_data_dict:
+                    wb_old_price = articles_wb_data_dict[art.common_article.wb_nomenclature]['price']
+                    wb_discount_from_wb = articles_wb_data_dict[art.common_article.wb_nomenclature]['discount']
+                    if wb_old_price != wb_price or wb_discount_from_wb != wb_discount:
+                        wb_nom_list.append(art.common_article.wb_nomenclature)
                 oz_nom_list.append(art.common_article.ozon_product_id)
                 yandex_nom_list.append(
                     art.common_article.yandex_seller_article)
