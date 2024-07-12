@@ -330,7 +330,7 @@ class WildberriesFbsMode():
                     self.data_article_info_dict[data['article']] = [
                         title, barcode]
                     photo = json.loads(answer)[
-                        'cards'][0]['photos'][0]['big']
+                        'cards'][0]['photos'][1]['big']
                     photo_name = self.convert_photo_from_webp_to_jpg(
                         photo, barcode, name_raw_photo_folder, name_photo_folder)
                     brand = json.loads(answer)[
