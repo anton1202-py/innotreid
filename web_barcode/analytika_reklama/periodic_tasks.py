@@ -1,7 +1,7 @@
 import math
 from datetime import datetime, timedelta
 
-from analytika_reklama.models import (CommonCampaignDescription,
+from analytika_reklama.models import (CommonCampaignDescription, KeywordPhrase,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
                                       MainCampaignExcluded,
@@ -17,7 +17,7 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      statistic_search_campaign_keywords)
 from celery_tasks.celery import app
 from create_reklama.models import CreatedCampaign
-from django.db.models import Q
+from django.db.models import F, Q
 from price_system.models import Articles
 from reklama.models import UrLico
 
@@ -211,3 +211,29 @@ def get_auto_campaign_statistic_common_data():
                                 ctr=ctr,
                                 summ=summ
                             ).save()
+
+
+@app.task
+def get_campaigns_amoint_in_keyword_phrase():
+    """Записывает сколько рекламных кампаний рекламируется в одном ключевом слове"""
+    keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
+        keyword_obj=F('keyword')
+    )
+
+    for data in keyword_stats:
+        counter = 0
+        inner_list = []
+        campaigns = StatisticCampaignKeywordPhrase.objects.filter(
+            keyword=data['keyword_obj']).values('campaign').distinct()
+        data['minus_checker'] = len(campaigns)
+        for campaign in campaigns:
+            minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
+                campaign=campaign['campaign']).values('excluded')
+            print(minus_phrase_campaign_list)
+            for phrase in minus_phrase_campaign_list:
+
+                inner_list.append(phrase['excluded'])
+            if data['keyword__phrase'] not in inner_list:
+                counter += 1
+        KeywordPhrase.objects.filter(
+            phrase=data['keyword__phrase']).update(campaigns_amount=counter)

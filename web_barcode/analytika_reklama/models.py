@@ -588,6 +588,11 @@ class KeywordPhrase(models.Model):
         verbose_name='Ключевая фраза',
         max_length=300
     )
+    campaigns_amount = models.IntegerField(
+        verbose_name='Количество кампаний, рекламируемых по фразе',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.phrase

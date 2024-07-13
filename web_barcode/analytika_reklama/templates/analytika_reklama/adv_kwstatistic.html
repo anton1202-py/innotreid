@@ -23,7 +23,7 @@
                     <th>Клики</th>
                     <th>CTR</th>
                     <th>Затраты</th>
-
+                    <th>Рекламируется по фразе, шт</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,6 +36,7 @@
                     <td>{{ el|get_item:"total_clicks" }}</td>
                     <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
                     <td>{{ el|get_item:"total_summ"|round_number }}</td>
+                    <td>{{ el|get_item:"minus_checker" }}</td>
                     {% endwith %}
                     {% endwith %}
                 </tr>
