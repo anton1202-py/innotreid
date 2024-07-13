@@ -36,7 +36,7 @@
                     <td>{{ el|get_item:"total_clicks" }}</td>
                     <td>{{ clicks|divide:views|multiplicity:100|round_number_two }}</td>
                     <td>{{ el|get_item:"total_summ"|round_number }}</td>
-                    <td>{{ el|get_item:"minus_checker" }}</td>
+                    <td>{{ el|get_item:"campaign_amount" }}</td>
                     {% endwith %}
                     {% endwith %}
                 </tr>

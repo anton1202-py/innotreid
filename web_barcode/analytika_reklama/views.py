@@ -9,7 +9,7 @@ from analytika_reklama.models import (CommonCampaignDescription,
                                       StatisticCampaignKeywordPhrase)
 from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, get_auto_campaign_statistic_common_data,
-    get_campaigns_amoint_in_keyword_phrase,
+    get_campaigns_amount_in_keyword_phrase,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
 from api_request.wb_requests import get_del_minus_phrase_to_auto_campaigns
@@ -88,8 +88,6 @@ def common_adv_statistic(request):
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
     page_name = 'Статистика ключевых фраз'
-    get_campaigns_amoint_in_keyword_phrase()
-    # phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
     keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         campaign_amount=F('keyword__campaigns_amount'),
         keyword_obj=F('keyword'),
@@ -105,24 +103,6 @@ def keyword_statistic_info(request):
             output_field=FloatField()
         )
     ).filter(total_views__gt=300).order_by('-total_views')
-    # phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
-    #                                                             keyword=self.kwargs['id'])
-    # for data in keyword_stats:
-    #     data['minus_checker'] = 0
-    #     inner_list = []
-    #     campaigns = StatisticCampaignKeywordPhrase.objects.filter(
-    #         keyword=data['keyword_obj']).values('campaign').distinct()
-    #     data['minus_checker'] = len(campaigns)
-    # for campaign in campaigns:
-    #     minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
-    #         campaign=campaign['campaign']).values_list('excluded')
-    #     print(minus_phrase_campaign_list)
-    #     # for phrase in minus_phrase_campaign_list:
-
-    #     #     inner_list.append(phrase['excluded'])
-    #     if (data['keyword__phrase'],) not in minus_phrase_campaign_list:
-    #         data['minus_checker'] += 1
-
     context = {
         'page_name': page_name,
         'keyword_stats': keyword_stats

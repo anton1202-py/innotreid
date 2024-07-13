@@ -88,6 +88,10 @@ app.conf.beat_schedule = {
         "task": "analytika_reklama.periodic_tasks.get_auto_campaign_statistic_common_data",
         "schedule": crontab(hour=23, minute=10)
     },
+    "analytika_reklama_campaign_keyword_counter": {
+        "task": "analytika_reklama.periodic_tasks.get_campaigns_amount_in_keyword_phrase",
+        "schedule": crontab(hour=23, minute=50)
+    },
     # =========== КОНЕЦ РАЗДЕЛА ANALYTIKA_REKLAMA ========== #
 
     # =========== ЗАДАЧИ РАЗДЕЛА CREATE_REKLAMA ========== #

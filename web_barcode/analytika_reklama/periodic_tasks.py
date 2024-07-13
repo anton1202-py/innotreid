@@ -214,26 +214,20 @@ def get_auto_campaign_statistic_common_data():
 
 
 @app.task
-def get_campaigns_amoint_in_keyword_phrase():
+def get_campaigns_amount_in_keyword_phrase():
     """Записывает сколько рекламных кампаний рекламируется в одном ключевом слове"""
-    keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
-        keyword_obj=F('keyword')
-    )
-
+    keyword_stats = KeywordPhrase.objects.all()
     for data in keyword_stats:
         counter = 0
-        inner_list = []
         campaigns = StatisticCampaignKeywordPhrase.objects.filter(
-            keyword=data['keyword_obj']).values('campaign').distinct()
-        data['minus_checker'] = len(campaigns)
+            keyword=data).values('campaign').distinct()
         for campaign in campaigns:
+            inner_list = []
             minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
                 campaign=campaign['campaign']).values('excluded')
-            print(minus_phrase_campaign_list)
             for phrase in minus_phrase_campaign_list:
-
                 inner_list.append(phrase['excluded'])
-            if data['keyword__phrase'] not in inner_list:
+            if data.phrase not in inner_list:
                 counter += 1
-        KeywordPhrase.objects.filter(
-            phrase=data['keyword__phrase']).update(campaigns_amount=counter)
+        data.campaigns_amount = counter
+        data.save()
