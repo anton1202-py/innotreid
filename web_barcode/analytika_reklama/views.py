@@ -17,7 +17,7 @@ from create_reklama.minus_words_working import \
     get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
+from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField, Q,
                               Sum, When)
 from django.db.models.functions import Coalesce, Round
 from django.http import JsonResponse
@@ -62,7 +62,7 @@ def main_adv_info(request):
 @login_required
 def common_adv_statistic(request):
     """Отображает статистику кампаний"""
-    page_name = 'Статитстика рекламных кампаний'
+    page_name = 'Статистика рекламных кампаний'
     campaign_info = MainCampaignParameters.objects.all().order_by('id')
     ur_lico_data = UrLico.objects.all()
     if request.POST:
@@ -88,6 +88,7 @@ def common_adv_statistic(request):
 def keyword_statistic_info(request):
     """Отображает статистику ключевых фраз"""
     page_name = 'Статистика ключевых фраз'
+    ur_lico_data = UrLico.objects.all()
     keyword_stats = StatisticCampaignKeywordPhrase.objects.values('keyword__phrase').annotate(
         campaign_amount=F('keyword__campaigns_amount'),
         keyword_obj=F('keyword'),
@@ -103,9 +104,42 @@ def keyword_statistic_info(request):
             output_field=FloatField()
         )
     ).filter(total_views__gt=300).order_by('-total_views')
+    if request.POST:
+        keyword_filter_stat = StatisticCampaignKeywordPhrase.objects.all()
+        if 'datestart' in request.POST and request.POST['datestart']:
+            date_start = request.POST.get('datestart')
+            keyword_filter_stat = keyword_filter_stat.filter(
+                Q(statistic_date__gte=date_start))
+
+        if 'datefinish' in request.POST and request.POST['datefinish']:
+            date_finish = request.POST.get('datefinish')
+            keyword_filter_stat = keyword_filter_stat.filter(
+                Q(statistic_date__lt=date_finish))
+
+        if 'ur_lico_select' in request.POST:
+            filter_ur_lico = request.POST['ur_lico_select']
+            keyword_filter_stat = keyword_filter_stat.filter(
+                Q(campaign__ur_lico=filter_ur_lico))
+
+        keyword_stats = keyword_filter_stat.values('keyword__phrase').annotate(
+            campaign_amount=F('keyword__campaigns_amount'),
+            keyword_obj=F('keyword'),
+            total_views=Sum('views'),
+            total_clicks=Sum('clicks'),
+            total_summ=Sum('summ'),
+            click_to_view_ratio=ExpressionWrapper(
+                F('total_clicks') * 100 / Case(
+                    When(total_views=0, then=1),
+                    default=F('total_views'),
+                    output_field=FloatField()
+                ),
+                output_field=FloatField()
+            )
+        ).filter(total_views__gt=300).order_by('-total_views')
     context = {
         'page_name': page_name,
-        'keyword_stats': keyword_stats
+        'keyword_stats': keyword_stats,
+        'ur_lico_data': ur_lico_data,
     }
     return render(request, 'analytika_reklama/adv_kwstatistic.html', context)
 
@@ -275,6 +309,7 @@ class KeyPhraseCampaignStatisticView(ListView):
     model = StatisticCampaignKeywordPhrase
     template_name = 'analytika_reklama/adv_phrase_statistic.html'
     context_object_name = 'data'
+    object_list = None
 
     def __init__(self, *args, **kwargs):
         super(KeyPhraseCampaignStatisticView, self).__init__(*args, **kwargs)
@@ -284,6 +319,7 @@ class KeyPhraseCampaignStatisticView(ListView):
         context = super(KeyPhraseCampaignStatisticView,
                         self).get_context_data(**kwargs)
         phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
+        ur_lico_data = UrLico.objects.all()
         phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
                                                                     keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
             campaign_name=F('campaign__campaign_name'),
@@ -317,10 +353,68 @@ class KeyPhraseCampaignStatisticView(ListView):
 
         context.update({
             'phrase_data': phrase_data,
-            'page_name': f"Статитстика фразы: {phrase_obj.phrase}",
+            'page_name': f"Статистика фразы: {phrase_obj.phrase}",
             'minus_phrase': phrase_obj.phrase,
+            'ur_lico_data': ur_lico_data
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
+        ur_lico_data = UrLico.objects.all()
+        phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
+                                                                    keyword=self.kwargs['id'])
+        if request.POST:
+            if 'datestart' in request.POST and request.POST['datestart']:
+                date_start = request.POST.get('datestart')
+
+                phrase_data = phrase_data.filter(
+                    Q(statistic_date__gte=date_start))
+            if 'datefinish' in request.POST and request.POST['datefinish']:
+                date_finish = request.POST.get('datefinish')
+                phrase_data = phrase_data.filter(
+                    Q(statistic_date__lt=date_finish))
+            if 'ur_lico_select' in request.POST:
+                filter_ur_lico = request.POST['ur_lico_select']
+                phrase_data = phrase_data.filter(
+                    Q(campaign__ur_lico=filter_ur_lico))
+
+        phrase_data = phrase_data.values('campaign__articles_name').annotate(
+            campaign_name=F('campaign__campaign_name'),
+            campaign_number=F('campaign__campaign_number'),
+            campaign_ur_lico=F('campaign__ur_lico__ur_lice_name'),
+            total_views=Sum('views'),
+            total_clicks=Sum('clicks'),
+            total_summ=Sum('summ'),
+            click_to_view_ratio=ExpressionWrapper(
+                Round(F('total_clicks') * 100 / Case(
+                    When(total_views=0, then=1),
+                    default=F('total_views'),
+                    output_field=FloatField()
+                ), 2),
+                output_field=FloatField()
+            )
+        ).order_by('-total_views')
+        for data in phrase_data:
+            inner_list = []
+            ur_lic = data['campaign_ur_lico']
+            camp_numb = data['campaign_number']
+            minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
+                campaign__ur_lico__ur_lice_name=ur_lic, campaign__campaign_number=camp_numb).values('excluded')
+            for phrase in minus_phrase_campaign_list:
+                inner_list.append(phrase['excluded'])
+            if phrase_obj.phrase in inner_list:
+                data['minus_checker'] = True
+            else:
+                data['minus_checker'] = False
+
+        context = {
+            'phrase_data': phrase_data,
+            'page_name': f"Статистика фразы: {phrase_obj.phrase}",
+            'minus_phrase': phrase_obj.phrase,
+            'ur_lico_data': ur_lico_data,
+        }
+        return self.render_to_response(context)
 
 
 def minus_words_checked_campaigns(request):

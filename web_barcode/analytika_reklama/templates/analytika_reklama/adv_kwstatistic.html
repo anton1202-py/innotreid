@@ -9,7 +9,36 @@
             <h1>{{ page_name }}</h1>
         </div>
 
-        
+        <div class='filter-data'>
+            <form id="left-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>От</span><br>
+                    <input type="date"  name="datestart" class="input-field">
+                </div>
+                <div class="inner-form-data">
+                    <span>До</span><br>
+                    <input type="date"  name="datefinish" class="input-field">
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать"/>
+                </div>
+            </form>
+
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select">
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
         {% if import_data %}
             <script>
                 alert("{{ import_data }}");
@@ -60,6 +89,16 @@
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                 .forEach(tr => table.appendChild(tr) );
         })));
+
+        // ========== Обрабатывает выбор юр. лица из выпадающего списка ========= //
+        document.addEventListener('DOMContentLoaded', function() {
+            var mySelect = document.querySelector('.mySelect');
+    
+            mySelect.addEventListener('change', function() {
+                document.getElementById('centr-form').submit();
+            });
+        });
+
     </script>
         
 {% endblock %}
