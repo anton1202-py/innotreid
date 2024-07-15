@@ -9,7 +9,8 @@ import telegram
 from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
                                      get_budget_adv_campaign)
-from create_reklama.models import CreatedCampaign, ProcentForAd
+from create_reklama.models import (CreatedCampaign, ProcentForAd,
+                                   ReplenishWbCampaign)
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from price_system.models import Articles
@@ -254,7 +255,22 @@ def current_budget_adv_campaign(header, campaign):
         return 'Не определено'
 
 
-def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter=0):
+def statistic_campaign_budget_replenish(campaign_obj, campaign_budget):
+    """
+    Записывает данные в таблицу со статистикой пополнения бюджета рекламной кампании
+    Входящие данные:
+    campaign_obj - объект кампании для пополнения бюджета
+    campaign_budget - бюджет, на который пополняется кампания
+    """
+    date_today = datetime.now()
+    ReplenishWbCampaign(
+        campaign_number=campaign_obj,
+        sum=campaign_budget,
+        replenish_date=date_today
+    ).save()
+
+
+def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, campaign_obj, attempt_counter=0):
     """
     Пополняет бюджет рекламной кампаний
     campaign - id кампании
@@ -274,6 +290,8 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, at
     time.sleep(5)
     attempt_counter += 1
     if response.status_code == 200:
+        # Записывает в БД статистику пополнения бюджета
+        statistic_campaign_budget_replenish(campaign_obj, campaign_budget)
         time.sleep(5)
         current_budget = current_budget_adv_campaign(header, campaign)
         view_statistic = view_statistic_adv_campaign(header, campaign)
@@ -320,7 +338,7 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         if common_budget >= 1000:
             campaign_budget = common_budget
         else:
-            # Женя попросил безусловное пополнение раз в день.
+            # Женя попросил безусловное пополнение ВС раз в день.
             info_campaign_obj.virtual_budget = common_budget + 30
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
@@ -339,7 +357,7 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         statistic_date = view_statistic.statistic_date
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
-            campaign, campaign_budget, budget, koef, header)
+            campaign, campaign_budget, budget, koef, header, campaign_obj)
         if 'Пытался' not in message:
             info_campaign_obj.virtual_budget = 0
             info_campaign_obj.campaign_budget_date = now_date

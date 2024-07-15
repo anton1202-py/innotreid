@@ -26,7 +26,18 @@
                 </div>
             </form>
 
-            
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select">
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
             <form action="" class="small-filter-form" method="POST">
                 {% csrf_token %}
                 <div class="inner-form-data">
@@ -208,6 +219,15 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+            });
+        });
+
+        // ========== Обрабатывает выбор юр. лица из выпадающего списка ========= //
+        document.addEventListener('DOMContentLoaded', function() {
+            var mySelect = document.querySelector('.mySelect');
+    
+            mySelect.addEventListener('change', function() {
+                document.getElementById('centr-form').submit();
             });
         });
     </script>

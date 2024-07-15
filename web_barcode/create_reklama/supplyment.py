@@ -4,7 +4,7 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
                                      create_auto_advertisment_campaign,
                                      get_budget_adv_campaign)
-from create_reklama.models import CreatedCampaign, ProcentForAd
+from create_reklama.models import CpmWbCampaign, CreatedCampaign, ProcentForAd
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
@@ -165,6 +165,7 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
     Обновляет cpm кампании
     """
     main_data = advertisment_campaigns_list_info(data_adv_list, header)
+    date_now = datetime.now()
     for campaign_data in main_data:
         if "autoParams" in campaign_data:
             if 'cpm' in campaign_data["autoParams"]:
@@ -177,6 +178,15 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
             ur_lico=ur_lico_obj, campaign_number=str(campaign_data["advertId"]))
         campaign_obj.current_cpm = cpm
         campaign_obj.save()
+        cpm_data = CpmWbCampaign.objects.filter(
+            campaign=campaign_obj).order_by('-id').first()
+
+        if cpm_data.cpm != cpm:
+            CpmWbCampaign(
+                campaign=campaign_obj,
+                cpm=cpm,
+                cpm_date=date_now
+            ).save()
 
 
 @sender_error_to_tg

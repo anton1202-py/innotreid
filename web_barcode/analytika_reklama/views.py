@@ -63,7 +63,8 @@ def main_adv_info(request):
 def common_adv_statistic(request):
     """Отображает статистику кампаний"""
     page_name = 'Статистика рекламных кампаний'
-    campaign_info = MainCampaignParameters.objects.all().order_by('id')
+    campaign_info = MainCampaignParameters.objects.filter(
+        campaign__ur_lico__ur_lice_name="ООО Иннотрейд").order_by('id')
     ur_lico_data = UrLico.objects.all()
     if request.POST:
         if 'campaign_number' in request.POST:

@@ -101,7 +101,8 @@ def create_many_campaigns(request):
 def campaigns_were_created_with_system(request):
     """Отображает созданные кампании через эту систему"""
     page_name = 'Созданные рекламные кампании'
-    campaigns_list = CreatedCampaign.objects.all().order_by('ur_lico')
+    campaigns_list = CreatedCampaign.objects.filter(
+        ur_lico__ur_lice_name='ООО Иннотрейд')
     ur_lico_data = UrLico.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
@@ -129,7 +130,10 @@ def campaigns_were_created_with_system(request):
         elif 'update_data' in request.POST:
             update_campaign_status()
             return redirect('campaigns_list')
-
+        elif 'ur_lico_select' in request.POST:
+            filter_ur_lico = request.POST['ur_lico_select']
+            campaigns_list = CreatedCampaign.objects.filter(
+                ur_lico=filter_ur_lico)
     context = {
         'page_name': page_name,
         'campaigns_list': campaigns_list,
