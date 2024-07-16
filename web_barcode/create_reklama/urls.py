@@ -13,6 +13,10 @@ urlpatterns = [
          name='common_minus_words'),
     path('wb_article_campaign', views.wb_article_campaign,
          name='wb_article_campaign'),
+    path('create_cpm_budget_stat/<int:id>',
+         views.CampaignCpmStatisticView.as_view(),
+         name='create_cpm_budget_stat'
+         ),
 
 
     path('update_common_minus_words', views.update_common_minus_words,

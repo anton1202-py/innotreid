@@ -5,7 +5,8 @@ from datetime import datetime
 from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.add_balance import ad_list, count_sum_orders
-from create_reklama.models import AllMinusWords, CreatedCampaign, ProcentForAd
+from create_reklama.models import (AllMinusWords, CpmWbCampaign,
+                                   CreatedCampaign, ProcentForAd)
 from create_reklama.periodic_tasks import (
     budget_working, set_up_minus_phrase_to_auto_campaigns,
     update_campaign_status)
@@ -14,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.generic import ListView
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
@@ -262,3 +264,27 @@ def wb_article_campaign(request):
         'data': data,
     }
     return render(request, 'create_reklama/wb_article_campaign.html', context)
+
+
+class CampaignCpmStatisticView(ListView):
+    model = CreatedCampaign
+    template_name = 'create_reklama/create_campaign_cpm_bud_stat.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        super(CampaignCpmStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+
+        context = super(CampaignCpmStatisticView,
+                        self).get_context_data(**kwargs)
+        campaign_obj = CreatedCampaign.objects.get(id=self.kwargs['id'])
+        cpm_data = CpmWbCampaign.objects.filter(campaign_number=campaign_obj)
+        context.update({
+            'cpm_data': cpm_data,
+            'campaign_obj': self.kwargs['id'],
+            'page_name': f"Статистика CPM: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
+            'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+            'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
+        })
+        return context

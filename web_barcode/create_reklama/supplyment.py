@@ -179,11 +179,11 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
         campaign_obj.current_cpm = cpm
         campaign_obj.save()
         cpm_data = CpmWbCampaign.objects.filter(
-            campaign=campaign_obj).order_by('-id').first()
+            campaign_number=campaign_obj).order_by('-id').first()
 
         if cpm_data.cpm != cpm:
             CpmWbCampaign(
-                campaign=campaign_obj,
+                campaign_number=campaign_obj,
                 cpm=cpm,
                 cpm_date=date_now
             ).save()

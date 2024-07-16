@@ -82,7 +82,7 @@
                 <td>
                     <input type="checkbox" name="campaign_start" class="input-field">
                 </td>
-                <td>{{ el.campaign_number }}</td>
+                <td><a href="{% url 'create_cpm_budget_stat'  el.id %}">{{ el.campaign_number }}</a></td>
                 <td>{{ el.ur_lico.ur_lice_name }}</td>
                 <td>{{ el.campaign_name }}</td>
                 <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign_type }}</td>
