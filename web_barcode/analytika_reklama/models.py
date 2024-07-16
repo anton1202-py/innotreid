@@ -653,3 +653,36 @@ class StatisticCampaignKeywordPhrase(models.Model):
     class Meta:
         verbose_name = 'Статистика ключевых фраз РК'
         verbose_name_plural = 'Статистика ключевых фраз РК'
+
+
+class ArticleCampaignWhiteList(models.Model):
+    """
+    Белый лист фраз артикулов и кампаний, в которых эти артикулы есть
+    """
+    article = models.ForeignKey(
+        Articles,
+        on_delete=models.SET_NULL,
+        verbose_name='Артикул',
+        related_name='white_list_article',
+        blank=True,
+        null=True
+    )
+    campaign = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.SET_NULL,
+        verbose_name='Рекламная кампания',
+        related_name='white_list_campaign',
+        blank=True,
+        null=True
+    )
+    phrase_list = models.TextField(
+        verbose_name='Список слов артикула в кампании',
+        max_length=300
+    )
+
+    def __str__(self):
+        return self.phrase_list
+
+    class Meta:
+        verbose_name = 'Белый лист фраз артикулов и кампаний'
+        verbose_name_plural = 'Белый лист фраз артикулов и кампаний'
