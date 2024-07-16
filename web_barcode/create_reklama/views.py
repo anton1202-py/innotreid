@@ -6,7 +6,8 @@ from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import (AllMinusWords, CpmWbCampaign,
-                                   CreatedCampaign, ProcentForAd)
+                                   CreatedCampaign, ProcentForAd,
+                                   ReplenishWbCampaign)
 from create_reklama.periodic_tasks import (
     budget_working, set_up_minus_phrase_to_auto_campaigns,
     update_campaign_status)
@@ -268,7 +269,7 @@ def wb_article_campaign(request):
 
 class CampaignCpmStatisticView(ListView):
     model = CreatedCampaign
-    template_name = 'create_reklama/create_campaign_cpm_bud_stat.html'
+    template_name = 'create_reklama/create_campaign_cpm_stat.html'
     context_object_name = 'data'
 
     def __init__(self, *args, **kwargs):
@@ -283,8 +284,32 @@ class CampaignCpmStatisticView(ListView):
         context.update({
             'cpm_data': cpm_data,
             'campaign_obj': self.kwargs['id'],
+            'campaign_data': campaign_obj,
             'page_name': f"Статистика CPM: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
-            'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
-            'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
+        })
+        return context
+
+
+class CampaignReplenishStatisticView(ListView):
+    model = CreatedCampaign
+    template_name = 'create_reklama/create_campaign_replenish_stat.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        super(CampaignReplenishStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+
+        context = super(CampaignReplenishStatisticView,
+                        self).get_context_data(**kwargs)
+        campaign_obj = CreatedCampaign.objects.get(id=self.kwargs['id'])
+        replenish_data = ReplenishWbCampaign.objects.filter(
+            campaign_number=campaign_obj)
+        context.update({
+            'replenish_data': replenish_data,
+            'campaign_obj': self.kwargs['id'],
+            'campaign_data': campaign_obj,
+            'page_name': f"Статистика пополнения: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
+
         })
         return context

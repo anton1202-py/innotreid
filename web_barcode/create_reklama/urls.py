@@ -17,6 +17,10 @@ urlpatterns = [
          views.CampaignCpmStatisticView.as_view(),
          name='create_cpm_budget_stat'
          ),
+    path('create_replenish_stat/<int:id>',
+         views.CampaignReplenishStatisticView.as_view(),
+         name='create_replenish_stat'
+         ),
 
 
     path('update_common_minus_words', views.update_common_minus_words,
