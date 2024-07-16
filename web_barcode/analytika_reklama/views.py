@@ -1,6 +1,7 @@
 import json
 
-from analytika_reklama.models import (CommonCampaignDescription,
+from analytika_reklama.models import (ArticleCampaignWhiteList,
+                                      CommonCampaignDescription,
                                       DailyCampaignParameters, KeywordPhrase,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
@@ -17,8 +18,8 @@ from create_reklama.minus_words_working import \
     get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
 from django.contrib.auth.decorators import login_required
-from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField, Q,
-                              Sum, When)
+from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
+                              OuterRef, Q, Subquery, Sum, When)
 from django.db.models.functions import Coalesce, Round
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -323,7 +324,9 @@ class KeyPhraseCampaignStatisticView(ListView):
         ur_lico_data = UrLico.objects.all()
         phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
                                                                     keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
+            campaign_obj=F('campaign'),
             campaign_name=F('campaign__campaign_name'),
+
             campaign_number=F('campaign__campaign_number'),
             campaign_ur_lico=F('campaign__ur_lico__ur_lice_name'),
             total_views=Sum('views'),
@@ -336,6 +339,10 @@ class KeyPhraseCampaignStatisticView(ListView):
                     output_field=FloatField()
                 ), 2),
                 output_field=FloatField()
+            ),
+            phrase_list=Subquery(
+                ArticleCampaignWhiteList.objects.filter(
+                    campaign=OuterRef('campaign')).values('phrase_list')[:1]
             )
         ).order_by('-total_views')
         for data in phrase_data:
@@ -381,7 +388,9 @@ class KeyPhraseCampaignStatisticView(ListView):
                     Q(campaign__ur_lico=filter_ur_lico))
 
         phrase_data = phrase_data.values('campaign__articles_name').annotate(
+            campaign_obj=F('campaign'),
             campaign_name=F('campaign__campaign_name'),
+
             campaign_number=F('campaign__campaign_number'),
             campaign_ur_lico=F('campaign__ur_lico__ur_lice_name'),
             total_views=Sum('views'),
@@ -394,6 +403,10 @@ class KeyPhraseCampaignStatisticView(ListView):
                     output_field=FloatField()
                 ), 2),
                 output_field=FloatField()
+            ),
+            phrase_list=Subquery(
+                ArticleCampaignWhiteList.objects.filter(
+                    campaign=OuterRef('campaign')).values('phrase_list')[:1]
             )
         ).order_by('-total_views')
         for data in phrase_data:
@@ -432,5 +445,24 @@ def minus_words_checked_campaigns(request):
             header = header_wb_dict[ur_lico]
             get_del_minus_phrase_to_auto_campaigns(
                 header, campaign_number, campaign_minus_phrase_list)
+
+    return JsonResponse({'message': 'Value saved successfully.'})
+
+
+def update_white_phrase(request):
+    """Обновлят белый список у рекламной кампании"""
+    if request.POST:
+        print(request.POST)
+        campaign_obj = request.POST.get('campaign_obj')
+        white_phrase = request.POST.get('white_phrase')
+        camp_obj = CreatedCampaign.objects.get(id=campaign_obj)
+        if ArticleCampaignWhiteList.objects.filter(campaign=camp_obj).exists():
+            ArticleCampaignWhiteList.objects.filter(
+                campaign=camp_obj).update(phrase_list=white_phrase)
+        else:
+            ArticleCampaignWhiteList(
+                campaign=camp_obj,
+                phrase_list=white_phrase
+            ).save()
 
     return JsonResponse({'message': 'Value saved successfully.'})

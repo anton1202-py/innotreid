@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from analytika_reklama.models import ArticleCampaignWhiteList
 from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
                                      create_auto_advertisment_campaign,
@@ -206,3 +207,18 @@ def update_campaign_budget(campaign_obj, header):
         balance = budget_data['total']
         campaign_obj.balance = balance
         campaign_obj.save()
+
+
+@sender_error_to_tg
+def white_list_phrase(campaign_obj):
+    """
+    Возвращает белый список кампании
+    """
+    if ArticleCampaignWhiteList.objects.filter(campaign=campaign_obj).exists():
+        white_phrases = ArticleCampaignWhiteList.objects.get(
+            campaign=campaign_obj).phrase_list
+
+        white_list = white_phrases.split(', ')
+        return white_list
+    else:
+        return []

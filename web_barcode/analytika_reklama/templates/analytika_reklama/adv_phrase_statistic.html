@@ -67,12 +67,13 @@
                     <th>CTR</th>
                     <th>Затраты</th>
                     <th>Присутствие фразы</th>
+                    <th>Белый лист</th>
                 </tr>
             </thead>
             <tbody>
                 {% for el in phrase_data %}
                 {% if el|get_item:"total_views" > 200 %}
-                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
+                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-campaign-obj="{{ el|get_item:'campaign_obj' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
                     <td>
                         <input type="checkbox" name="campaign_check" class="input-field">
                     </td>
@@ -88,6 +89,9 @@
                     {% endwith %}
                     <td>
                         <input type="checkbox" disabled {% if el|get_item:'minus_checker' %}checked{% endif %}>
+                    </td>
+                    <td>
+                        <input type="text" {% if el|get_item:'phrase_list' %} value="{{ el|get_item:'phrase_list' }}" {% else %} value="" {% endif %}  name="white_list" class="white_list_words">
                     </td>
                 </tr>
                 {% endif %}
@@ -118,7 +122,7 @@
             <tbody>
                 {% for el in phrase_data %}
                 {% if el|get_item:"total_views" <= 200 %}
-                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
+                <tr data-campaign-number="{{ el|get_item:'campaign_number' }}" data-campaign-obj="{{ el|get_item:'campaign_obj' }}" data-ur-lico="{{ el|get_item:'campaign_ur_lico' }}">
                     <td>
                         <input type="checkbox" name="campaign_check" class="input-field-less-200">
                     </td>
@@ -136,7 +140,7 @@
                         <input type="checkbox" disabled {% if el|get_item:'minus_checker' %}checked{% endif %}>
                     </td>
                     <td>
-                        <input type="text" name="white_list" class="input-field-less-200">
+                        <input type="text" {% if el|get_item:'phrase_list' %} value="{{ el|get_item:'phrase_list' }}" {% else %} value="" {% endif %}  name="white_list" class="white_list_words">
                     </td>
                 </tr>
                 {% endif %}
@@ -257,6 +261,41 @@
     
             mySelect.addEventListener('change', function() {
                 document.getElementById('centr-form').submit();
+            });
+        });
+
+
+        // =========== ОБНОВЛЯЕТ ЯЧеЙку С белЫМ ЛИСТОМ ========== //
+        document.querySelectorAll('.white_list_words').forEach(select => {
+            select.addEventListener('input', function() {
+                var selectedArticles = [];
+                var campaignData = {};
+                var whitePhrase = this.value;
+                console.log('whitePhrase', whitePhrase)
+                var row = this.closest('tr');
+                console.log('row', row)
+                var campaignObj = row.getAttribute('data-campaign-obj');
+                
+                var formData = new FormData();
+                formData.append('campaign_obj', campaignObj);
+                formData.append('white_phrase', whitePhrase);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('../update_white_phrase', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             });
         });
     </script>

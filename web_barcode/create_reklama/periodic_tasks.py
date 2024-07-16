@@ -21,7 +21,7 @@ from create_reklama.minus_words_working import (
 from create_reklama.models import AllMinusWords, CreatedCampaign
 from create_reklama.supplyment import (filter_campaigns_status_type,
                                        update_campaign_budget,
-                                       update_campaign_cpm)
+                                       update_campaign_cpm, white_list_phrase)
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
@@ -62,6 +62,8 @@ def set_up_minus_phrase_to_auto_campaigns():
         common_minus_phrase_list = get_common_minus_phrase(ur_lico_obj)
         if campaign_data:
             for data in campaign_data:
+
+                white_list = white_list_phrase(data)
                 header = header_wb_dict[ur_lico_obj.ur_lice_name]
                 campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
                     ur_lico_obj.ur_lice_name, data.campaign_number)
@@ -70,8 +72,12 @@ def set_up_minus_phrase_to_auto_campaigns():
                     for minus_word in common_minus_phrase_list:
                         if minus_word not in campaign_minus_phrase_list:
                             campaign_minus_phrase_list.append(minus_word)
+                    minus_phrase_for_campaign = []
+                    for word in campaign_minus_phrase_list:
+                        if word not in white_list:
+                            minus_phrase_for_campaign.append(word)
                     get_del_minus_phrase_to_auto_campaigns(
-                        header, data.campaign_number, campaign_minus_phrase_list)
+                        header, data.campaign_number, minus_phrase_for_campaign)
 
 
 @app.task

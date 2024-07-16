@@ -41,4 +41,8 @@ urlpatterns = [
          views.minus_words_checked_campaigns,
          name='minus_words_checked_campaigns'
          ),
+    path('update_white_phrase',
+         views.update_white_phrase,
+         name='update_white_phrase'
+         ),
 ]
