@@ -342,7 +342,7 @@ class KeyPhraseCampaignStatisticView(ListView):
             ),
             phrase_list=Subquery(
                 ArticleCampaignWhiteList.objects.filter(
-                    campaign=OuterRef('campaign')).values('phrase_list')[:1]
+                    campaign=OuterRef('campaign'), keyword=phrase_obj).values('phrase_list')[:1]
             )
         ).order_by('-total_views')
         for data in phrase_data:
@@ -407,7 +407,7 @@ class KeyPhraseCampaignStatisticView(ListView):
             ),
             phrase_list=Subquery(
                 ArticleCampaignWhiteList.objects.filter(
-                    campaign=OuterRef('campaign')).values('phrase_list')[:1]
+                    campaign=OuterRef('campaign'), keyword=phrase_obj).values('phrase_list')[:1]
             )
         ).order_by('-total_views')
         for data in phrase_data:
