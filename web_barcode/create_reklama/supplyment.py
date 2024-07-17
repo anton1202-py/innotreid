@@ -215,10 +215,15 @@ def white_list_phrase(campaign_obj):
     Возвращает белый список кампании
     """
     if ArticleCampaignWhiteList.objects.filter(campaign=campaign_obj).exists():
-        white_phrases = ArticleCampaignWhiteList.objects.get(
-            campaign=campaign_obj).phrase_list
-
-        white_list = white_phrases.split(', ')
-        return white_list
+        white_phrases = ArticleCampaignWhiteList.objects.filter(
+            campaign=campaign_obj)
+        main_list_for_return = []
+        for phrase in white_phrases:
+            white_phrase = phrase.phrase_list
+            white_list = white_phrase.split(', ')
+            for word in white_list:
+                if word not in main_list_for_return:
+                    main_list_for_return.append(word)
+        return main_list_for_return
     else:
         return []
