@@ -361,6 +361,7 @@ class KeyPhraseCampaignStatisticView(ListView):
 
         context.update({
             'phrase_data': phrase_data,
+            'keyphrase_obj': phrase_obj,
             'page_name': f"Статистика фразы: {phrase_obj.phrase}",
             'minus_phrase': phrase_obj.phrase,
             'ur_lico_data': ur_lico_data
@@ -424,6 +425,7 @@ class KeyPhraseCampaignStatisticView(ListView):
 
         context = {
             'phrase_data': phrase_data,
+            'keyphrase_obj': phrase_obj,
             'page_name': f"Статистика фразы: {phrase_obj.phrase}",
             'minus_phrase': phrase_obj.phrase,
             'ur_lico_data': ur_lico_data,
@@ -455,14 +457,16 @@ def update_white_phrase(request):
         print(request.POST)
         campaign_obj = request.POST.get('campaign_obj')
         white_phrase = request.POST.get('white_phrase')
+        keyphrase_obj = request.POST.get('keyphrase_obj')
         camp_obj = CreatedCampaign.objects.get(id=campaign_obj)
-        if ArticleCampaignWhiteList.objects.filter(campaign=camp_obj).exists():
+        if ArticleCampaignWhiteList.objects.filter(campaign=camp_obj, keyword=keyphrase_obj).exists():
             ArticleCampaignWhiteList.objects.filter(
-                campaign=camp_obj).update(phrase_list=white_phrase)
+                campaign=camp_obj, keyword=keyphrase_obj).update(phrase_list=white_phrase)
         else:
             ArticleCampaignWhiteList(
                 campaign=camp_obj,
-                phrase_list=white_phrase
+                phrase_list=white_phrase,
+                keyword=keyphrase_obj
             ).save()
 
     return JsonResponse({'message': 'Value saved successfully.'})

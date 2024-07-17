@@ -675,6 +675,14 @@ class ArticleCampaignWhiteList(models.Model):
         blank=True,
         null=True
     )
+    keyword = models.ForeignKey(
+        KeywordPhrase,
+        on_delete=models.SET_NULL,
+        verbose_name='Ключевая фраза',
+        related_name='white_list_keyphrase',
+        blank=True,
+        null=True
+    )
     phrase_list = models.TextField(
         verbose_name='Список слов артикула в кампании',
         max_length=300
