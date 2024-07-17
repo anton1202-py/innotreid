@@ -76,9 +76,13 @@
                 <th>Баланс</th>
                 <th>Цена артикула</th>
                 <th>Текущая ставка</th>
+
+                <th>Автопополнение</th>
+                <th>Сумма автопополнения</th>
+
             </tr>
             {% for el in campaigns_list %}
-            <tr data-campaign-id="{{ el.id }}" data-ur-lico="{{ el.ur_lico.ur_lice_name }}">
+            <tr data-campaign-id="{{ el.id }}" data-ur-lico="{{ el.ur_lico.ur_lice_name }}" data-campaign-number="{{ el.campaign_number }}">
                 <td>
                     <input type="checkbox" name="campaign_start" class="input-field">
                 </td>
@@ -113,7 +117,15 @@
                 <td>{{ el.articles_name }}</td>
                 <td>{{ el.balance }}</td>
                 <td>{{ el.article_price_on_page }}</td>
-                <td>{{ el.current_cpm }}</td>  
+                <td>{{ el.current_cpm }}</td>
+
+                {% if auto_replenish|get_item:el.id %}
+                    <td><input type="checkbox" class="check_auto_rep_sum" {% if auto_replenish|get_item:el.id|list_position:0 == True %}checked{% endif %}></td>
+                    <td><input class="auto_rep_sum_class" type="number" value="{{ auto_replenish|get_item:el.id|list_position:1 }}" name="auto_rep_sum" style="width: 100px"></td>
+                {% else %} 
+                    <td></td> 
+                    <td><input class="auto_rep_sum_class" type="number" name="auto_rep_sum" style="width: 100px" min="1000"></td>
+                {% endif %} 
             </tr>
             {% endfor %}
         </table>
@@ -228,6 +240,65 @@
     
             mySelect.addEventListener('change', function() {
                 document.getElementById('centr-form').submit();
+            });
+        });
+
+        // ========== ИЗМЕНЯЕТ СУММУ АВТОПОПОЛНЕНИЯ ========= //
+        document.querySelectorAll('.auto_rep_sum_class').forEach(select => {
+            select.addEventListener('input', function() {
+                var replenishSum = this.value;
+                var row = this.closest('tr');
+                var campaignId = row.getAttribute('data-campaign-id');
+                var formData = new FormData();
+                formData.append('replenish_sum', replenishSum);
+                formData.append('campaign_id', campaignId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                fetch('update_auto_replenish_sum', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // ========== ЗАПИСЫВАЕТ В БАЗУ ДАННЫХ НАЖАТИЕ ЧКБОКСА ОБ АВТОПОПОЛНЕНИИ ========= //
+        document.querySelectorAll('.check_auto_rep_sum').forEach(select => {
+            select.addEventListener('change', function() {
+                var isChecked = this.checked;
+                console.log(isChecked)
+                var row = this.closest('tr');
+                var campaignId = row.getAttribute('data-campaign-id');
+
+                var formData = new FormData();
+                formData.append('is_checked', isChecked);
+                formData.append('campaign_id', campaignId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_checkbox_auto_replenish', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             });
         });
     </script>

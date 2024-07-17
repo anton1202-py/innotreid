@@ -167,6 +167,28 @@ def start_advertisment_campaigns(header, campaign_number):
 
 
 @api_retry_decorator
+def replenish_deposit_campaigns(header, campaign_number, summ):
+    """
+    Метод позволяет пополнять бюджет кампании.
+    Допускается 1 запрос в секунду.
+
+    header - хедер для запроса
+    campaign_number - номер рекламной кампании
+    summ - суммадля пополнения
+    """
+
+    time.sleep(2)
+    url = f'https://advert-api.wildberries.ru/adv/v1/budget/deposit?id={campaign_number}'
+    payload = json.dumps({
+        "sum": summ,
+        "type": 1,
+        "return": True
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+
+
+@api_retry_decorator
 def pausa_advertisment_campaigns(header, campaign_number):
     """
     Ставит на паузу рекламные кампании
@@ -346,7 +368,7 @@ def get_budget_adv_campaign(header, campaign_number):
     Метод позволяет получать информацию о бюджете кампании.
     Допускается 4 запроса в секунду.
     """
-    time.sleep(0.6)
+    time.sleep(1)
     url = f'https://advert-api.wb.ru/adv/v1/budget?id={campaign_number}'
     response = requests.request("GET", url, headers=header)
     return response

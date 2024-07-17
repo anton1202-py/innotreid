@@ -195,8 +195,7 @@ class AutoReplenish(models.Model):
     )
     auto_replenish_summ = models.IntegerField(
         verbose_name='Сумма автопополнения',
-        blank=True,
-        null=True
+        default=0
     )
 
     def __str__(self):

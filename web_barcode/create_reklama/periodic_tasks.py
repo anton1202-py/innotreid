@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 from api_request.wb_requests import (
     advertisment_campaign_clusters_statistic, advertisment_campaign_list,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
-    get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info)
+    get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info,
+    replenish_deposit_campaigns, start_advertisment_campaigns)
 from celery_tasks.celery import app
 from create_reklama.add_balance import (ad_list, count_sum_orders,
                                         header_determinant,
@@ -18,8 +19,10 @@ from create_reklama.minus_words_working import (
     get_campaigns_list_from_api_wb, get_common_minus_phrase,
     get_minus_phrase_from_wb_auto_campaigns,
     get_minus_phrase_from_wb_search_catalog_campaigns)
-from create_reklama.models import AllMinusWords, CreatedCampaign
-from create_reklama.supplyment import (filter_campaigns_status_type,
+from create_reklama.models import (AllMinusWords, AutoReplenish,
+                                   CreatedCampaign, ReplenishWbCampaign)
+from create_reklama.supplyment import (filter_campaigns_status_only,
+                                       filter_campaigns_status_type,
                                        update_campaign_budget,
                                        update_campaign_cpm, white_list_phrase)
 from django.db.models import Q
@@ -29,7 +32,9 @@ from price_system.supplyment import sender_error_to_tg
 from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
-from web_barcode.constants_file import CHAT_ID_ADMIN, bot, header_wb_dict
+from web_barcode.constants_file import (CHAT_ID_ADMIN, bot,
+                                        campaign_budget_users_list,
+                                        header_wb_dict)
 
 
 @app.task
@@ -167,6 +172,42 @@ def budget_working():
                 time.sleep(3)
                 start_add_campaign(campaign, header)
     send_common_message(messages_list)
+
+
+@app.task
+def auto_replenish_budget_campaign():
+    """Безусловное пополнение рекламной кампании"""
+    campaigns_data = AutoReplenish.objects.all()
+
+    message = 'Автоматическое пополнение кампаний:'
+    raw_message = ''
+    status_main_data = filter_campaigns_status_only()
+    for campaign in campaigns_data:
+        if campaign.auto_replenish == True and campaign.auto_replenish_summ and campaign.auto_replenish_summ > 0:
+            campaign_number = campaign.campaign_number.campaign_number
+            summ = campaign.auto_replenish_summ
+
+            ur_lico = campaign.campaign_number.ur_lico.ur_lice_name
+            campaign_status = status_main_data[ur_lico][campaign_number]
+            header = header_wb_dict[ur_lico]
+
+            info = replenish_deposit_campaigns(header, campaign_number, summ)
+            if info:
+
+                ReplenishWbCampaign(
+                    campaign_number=campaign.campaign_number,
+                    sum=summ,
+                    replenish_date=datetime.now()
+                ).save()
+                if campaign_status == 11 or campaign_status == 4:
+                    start_advertisment_campaigns(header, campaign_number)
+                raw_message = raw_message + \
+                    f'\n\n{campaign.campaign_number.campaign_number} {campaign.campaign_number.campaign_name} на {campaign.auto_replenish_summ}р.'
+    if raw_message:
+        message = message + raw_message
+        for user in campaign_budget_users_list:
+            bot.send_message(chat_id=user,
+                             text=message)
 
 
 # ========== СОПОСТАВЛЯЕТ КАКОЙ АРТИКУЛ В КАКОЙ РЕКЛАМНОЙ КАМПАНИИ НАХОДИТСЯ ========= #

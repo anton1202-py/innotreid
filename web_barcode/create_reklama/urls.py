@@ -31,4 +31,8 @@ urlpatterns = [
          name='change_percent_for_advert'),
     path('apply_all_minus_words', views.apply_all_minus_words,
          name='apply_all_minus_words'),
+    path('update_auto_replenish_sum', views.update_auto_replenish_sum,
+         name='update_auto_replenish_sum'),
+    path('update_checkbox_auto_replenish', views.update_checkbox_auto_replenish,
+         name='update_checkbox_auto_replenish'),
 ]

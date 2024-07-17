@@ -194,3 +194,6 @@ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT = {
     8: 'автоматическая',
     9: 'поиск + каталог'
 }
+
+
+campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]

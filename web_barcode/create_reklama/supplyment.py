@@ -5,7 +5,8 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
                                      create_auto_advertisment_campaign,
                                      get_budget_adv_campaign)
-from create_reklama.models import CpmWbCampaign, CreatedCampaign, ProcentForAd
+from create_reklama.models import (AutoReplenish, CpmWbCampaign,
+                                   CreatedCampaign, ProcentForAd)
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
@@ -120,6 +121,10 @@ def add_created_campaign_data_to_database(main_data):
         campaign_budget_date=today
     ).save()
 
+    AutoReplenish(
+        campaign_number=adv_obj
+    ).save()
+
 
 @sender_error_to_tg
 def filter_campaigns_status_type() -> dict:
@@ -157,6 +162,32 @@ def filter_campaigns_status_type() -> dict:
                     inner_campaigns_data[data['type']] = {
                         data['status']: inner_campaign_list}
         returned_dict[ur_lico_obj.ur_lice_name] = inner_campaigns_data
+    return returned_dict
+
+
+@sender_error_to_tg
+def filter_campaigns_status_only() -> dict:
+    """
+    Фильтрует рекламные кампании по статусу.
+    Возвращает словарь типа:
+    {ur_lico:
+        {campaign_number: campaign_status}
+    }
+    """
+    ur_lico_data = UrLico.objects.all()
+    returned_dict = {}
+    type_list = [8, 9]
+    for ur_lico_obj in ur_lico_data:
+        header = header_wb_dict[ur_lico_obj.ur_lice_name]
+        campaigns_wb_answer_list = advertisment_campaign_list(header)
+        inner_campaigns_dict = {}
+        for data in campaigns_wb_answer_list['adverts']:
+            # Автоматические кампании
+            if data['type'] in type_list:
+                for campaign in data['advert_list']:
+                    inner_campaigns_dict[campaign['advertId']] = data['type']
+
+        returned_dict[ur_lico_obj.ur_lice_name] = inner_campaigns_dict
     return returned_dict
 
 

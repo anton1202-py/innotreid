@@ -5,7 +5,7 @@ from datetime import datetime
 from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.add_balance import ad_list, count_sum_orders
-from create_reklama.models import (AllMinusWords, CpmWbCampaign,
+from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign)
 from create_reklama.periodic_tasks import (
@@ -106,6 +106,7 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.filter(
         ur_lico__ur_lice_name='ООО Иннотрейд')
+
     ur_lico_data = UrLico.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
@@ -114,6 +115,12 @@ def campaigns_were_created_with_system(request):
         koef_dict[koef['campaign_number']] = [
             koef['koefficient'], koef['koef_date'], koef['latest_add'], koef['virtual_budget'], koef['campaign_budget_date'], koef['virtual_budget_date']]
 
+    auto_replenish_data = AutoReplenish.objects.values('campaign_number').values(
+        'campaign_number', 'auto_replenish', 'auto_replenish_summ')
+    auto_replenish = {}
+    for auto_rep in auto_replenish_data:
+        auto_replenish[auto_rep['campaign_number']] = [
+            auto_rep['auto_replenish'], auto_rep['auto_replenish_summ']]
     for_pausa_data = []
     for campaign_obj in campaigns_list:
         for_pausa_data.append({'campaign_number': campaign_obj.campaign_number,
@@ -142,6 +149,7 @@ def campaigns_were_created_with_system(request):
         'campaigns_list': campaigns_list,
         'ur_lico_data': ur_lico_data,
         'koef_dict': koef_dict,
+        'auto_replenish': auto_replenish,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
@@ -166,6 +174,7 @@ def change_percent_for_advert(request):
 def start_checked_campaigns(request):
     """Запускает или ставит на паузу чекнутые кампании"""
     if request.POST:
+        print(request.POST)
         if request.POST['button_name'] == 'startCampaignsBtn':
             for campaign_number, ur_lico in json.loads(request.POST['campaignData']).items():
                 if campaign_number != 'null':
@@ -313,3 +322,30 @@ class CampaignReplenishStatisticView(ListView):
 
         })
         return context
+
+
+def update_auto_replenish_sum(request):
+    """Обновляет сумму для автопополнения"""
+    if request.POST:
+        campaign_id = request.POST.get('campaign_id')
+        replenish_sum = request.POST.get('replenish_sum')
+        campaign_object = CreatedCampaign.objects.get(id=campaign_id)
+        if replenish_sum == '':
+            replenish_sum = 0
+        AutoReplenish.objects.filter(campaign_number=campaign_object).update(
+            auto_replenish_summ=replenish_sum)
+    return JsonResponse({'message': 'Value saved successfully.'})
+
+
+def update_checkbox_auto_replenish(request):
+    """Обновляет статус о необходимости автопополнения рекламной кампании"""
+    if request.POST:
+        campaign_id = request.POST.get('campaign_id')
+        check_status = request.POST.get('is_checked')
+        status = False
+        if check_status == 'true':
+            status = True
+        campaign_object = CreatedCampaign.objects.get(id=campaign_id)
+        AutoReplenish.objects.filter(campaign_number=campaign_object).update(
+            auto_replenish=status)
+    return JsonResponse({'message': 'Value saved successfully.'})

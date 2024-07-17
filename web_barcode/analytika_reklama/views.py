@@ -13,7 +13,8 @@ from analytika_reklama.periodic_tasks import (
     get_campaigns_amount_in_keyword_phrase,
     get_clusters_statistic_for_autocampaign,
     get_searchcampaign_keywords_statistic)
-from api_request.wb_requests import get_del_minus_phrase_to_auto_campaigns
+from api_request.wb_requests import (get_del_minus_phrase_to_auto_campaigns,
+                                     statistic_keywords_auto_campaign)
 from create_reklama.minus_words_working import \
     get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
@@ -322,6 +323,7 @@ class KeyPhraseCampaignStatisticView(ListView):
                         self).get_context_data(**kwargs)
         phrase_obj = KeywordPhrase.objects.get(id=self.kwargs['id'])
         ur_lico_data = UrLico.objects.all()
+        # get_auto_campaign_statistic_common_data()
         phrase_data = StatisticCampaignKeywordPhrase.objects.filter(campaign__isnull=False,
                                                                     keyword=self.kwargs['id']).values('campaign__articles_name').annotate(
             campaign_obj=F('campaign'),

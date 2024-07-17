@@ -132,6 +132,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.wb_ooo_fbo_stock_count",
         "schedule": crontab(hour=22, minute=20)
     },
+    "create_reklama_auto_replenish": {
+        "task": "create_reklama.periodic_tasks.auto_replenish_budget_campaign",
+        "schedule": crontab(hour=2, minute=0)
+    },
 
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 
