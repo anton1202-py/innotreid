@@ -279,7 +279,7 @@
                 var formData = new FormData();
                 formData.append('campaign_obj', campaignObj);
                 formData.append('white_phrase', whitePhrase);
-                formData.append('keyphrase_obj', keyphrase_obj);
+                formData.append('keyphrase_obj', '{{keyphrase_obj}}');
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
             
                 fetch('../update_white_phrase', {
