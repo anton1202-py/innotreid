@@ -33,6 +33,16 @@ class CreatedCampaign(models.Model):
         blank=True,
         null=True
     )
+    pausa_date = models.DateTimeField(
+        verbose_name='Дата остановки кампании',
+        blank=True,
+        null=True
+    )
+    start_date = models.DateTimeField(
+        verbose_name='Дата запуска кампании',
+        blank=True,
+        null=True
+    )
     articles_name = models.JSONField(
         verbose_name='Список артикулов nmID',
         blank=True,
@@ -167,6 +177,34 @@ class ProcentForAd(models.Model):
     class Meta:
         verbose_name = 'Процент для поплнения кампании'
         verbose_name_plural = 'Процент для поплнения кампании'
+
+
+class AutoReplenish(models.Model):
+    """Автопополнение кампаний"""
+    campaign_number = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.SET_NULL,
+        verbose_name='Рекламная кампания',
+        related_name='auto_replenish',
+        blank=True,
+        null=True
+    )
+    auto_replenish = models.BooleanField(
+        verbose_name='Автопополнение',
+        default=False
+    )
+    auto_replenish_summ = models.IntegerField(
+        verbose_name='Сумма автопополнения',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.campaign_number.campaign_number
+
+    class Meta:
+        verbose_name = 'Автопополнение кампаний'
+        verbose_name_plural = 'Автопополнение кампаний'
 
 # ========= КОНЕЦ ПОПОЛНЕНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========== #
 
