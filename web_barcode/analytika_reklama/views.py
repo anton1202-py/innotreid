@@ -18,6 +18,7 @@ from api_request.wb_requests import (get_del_minus_phrase_to_auto_campaigns,
 from create_reklama.minus_words_working import \
     get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
+from create_reklama.supplyment import white_list_phrase
 from django.contrib.auth.decorators import login_required
 from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
                               OuterRef, Q, Subquery, Sum, When)
@@ -353,9 +354,12 @@ class KeyPhraseCampaignStatisticView(ListView):
             camp_numb = data['campaign_number']
             minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
                 campaign__ur_lico__ur_lice_name=ur_lic, campaign__campaign_number=camp_numb).values('excluded')
+            campaign_obj = CreatedCampaign.objects.get(
+                ur_lico__ur_lice_name=ur_lic, campaign_number=camp_numb)
+            white_list = white_list_phrase(campaign_obj)
             for phrase in minus_phrase_campaign_list:
-
-                inner_list.append(phrase['excluded'])
+                if phrase['excluded'] not in white_list:
+                    inner_list.append(phrase['excluded'])
             if phrase_obj.phrase in inner_list:
                 data['minus_checker'] = True
             else:
@@ -418,8 +422,13 @@ class KeyPhraseCampaignStatisticView(ListView):
             camp_numb = data['campaign_number']
             minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
                 campaign__ur_lico__ur_lice_name=ur_lic, campaign__campaign_number=camp_numb).values('excluded')
+
+            campaign_obj = CreatedCampaign.objects.get(
+                ur_lico__ur_lice_name=ur_lic, campaign_number=camp_numb)
+            white_list = white_list_phrase(campaign_obj)
             for phrase in minus_phrase_campaign_list:
-                inner_list.append(phrase['excluded'])
+                if phrase['excluded'] not in white_list:
+                    inner_list.append(phrase['excluded'])
             if phrase_obj.phrase in inner_list:
                 data['minus_checker'] = True
             else:
