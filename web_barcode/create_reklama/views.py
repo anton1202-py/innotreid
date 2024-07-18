@@ -9,9 +9,11 @@ from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign)
 from create_reklama.periodic_tasks import (
-    budget_working, set_up_minus_phrase_to_auto_campaigns,
-    update_campaign_status)
-from create_reklama.supplyment import check_data_for_create_adv_campaign
+    auto_replenish_budget_campaign, budget_working,
+    set_up_minus_phrase_to_auto_campaigns, update_campaign_status)
+from create_reklama.supplyment import (check_data_for_create_adv_campaign,
+                                       create_reklama_template_excel_file,
+                                       filter_campaigns_status_only)
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import JsonResponse
@@ -31,20 +33,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN,
 def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
-    # budget_working()
-    # count_sum_orders()
-    camps = CreatedCampaign.objects.all()
-    today = datetime.now().strftime("%Y-%m-%d %H:%M")
-    for camp_obj in camps:
-        if not ProcentForAd.objects.filter(campaign_number=camp_obj):
-            ProcentForAd(
-                campaign_number=camp_obj,
-                koefficient=4,
-                koef_date=today,
-                virtual_budget=0,
-                virtual_budget_date=today,
-                campaign_budget_date=today
-            ).save()
     ur_lico_data = UrLico.objects.all()
     subject_id = {
         'Ночник': 1673,
@@ -57,8 +45,15 @@ def create_campaign(request):
     errors_list = []
     ok_answer = []
     if request.POST:
-        pass
+        if 'export' in request.POST or 'import_file' in request.FILES:
+            if request.POST.get('export') == 'create_file':
+                return create_reklama_template_excel_file(ur_lico_data, subject_id)
 
+            # elif 'import_file' in request.FILES:
+            #     import_data = motivation_article_type_excel_import(
+            #         request.FILES['import_file'], ur_lico)
+            #     if type(import_data) != str:
+            #         return redirect('motivation_article_type')
     context = {
         'user_chat_id': user_chat_id,
         'errors_list': errors_list,

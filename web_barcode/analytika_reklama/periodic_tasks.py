@@ -17,6 +17,7 @@ from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
                                      statistic_search_campaign_keywords)
 from celery_tasks.celery import app
 from create_reklama.models import CreatedCampaign
+from create_reklama.supplyment import white_list_phrase
 from django.db.models import F, Q
 from price_system.models import Articles
 from reklama.models import UrLico
@@ -173,7 +174,7 @@ def articles_excluded():
 
 @app.task
 def get_auto_campaign_statistic_common_data():
-    """Получает статистику каждой РК из внутренней баз данных"""
+    """Получает статистику каждой РК и записывает в базу данных"""
     common_data = CreatedCampaign.objects.all()
     for campaign_obj in common_data:
         header = header_wb_dict[campaign_obj.ur_lico.ur_lice_name]
@@ -229,11 +230,14 @@ def get_campaigns_amount_in_keyword_phrase():
         campaigns = StatisticCampaignKeywordPhrase.objects.filter(
             keyword=data).values('campaign').distinct()
         for campaign in campaigns:
+
             inner_list = []
+            white_list = white_list_phrase(campaign['campaign'])
             minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
                 campaign=campaign['campaign']).values('excluded')
             for phrase in minus_phrase_campaign_list:
-                inner_list.append(phrase['excluded'])
+                if phrase['excluded'] not in white_list:
+                    inner_list.append(phrase['excluded'])
             if data.phrase not in inner_list:
                 counter += 1
         data.campaigns_amount = counter

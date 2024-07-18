@@ -27,6 +27,28 @@
                 {{ ok_answer }}
             </div>
         {% endif %}
+
+        <div class='filter-data'>
+            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <button type="submit" name="export" value="create_file" title="Шаблон Excel">
+                        <span class="material-symbols-outlined">
+                            ios_share
+                        </span>
+                    </button>
+                </div>
+    
+                <div class="inner-form-data">
+                    <label for="import_data" title="Згрузить группы из Excel">
+                        <span class="material-symbols-outlined">
+                            download
+                        </span>
+                    </label>
+                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                </div>
+            </form>
+        </div>
         
         <div class='filter-data'>
             <form id="campaigns_create" class="create-filter-form" method="GET">

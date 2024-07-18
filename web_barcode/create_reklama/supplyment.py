@@ -7,6 +7,9 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      get_budget_adv_campaign)
 from create_reklama.models import (AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd)
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Side
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
 from reklama.models import UrLico
@@ -258,3 +261,54 @@ def white_list_phrase(campaign_obj):
         return main_list_for_return
     else:
         return []
+
+
+def create_reklama_template_excel_file(ur_lico_data, subject_id):
+    """Создает и скачивает excel файл"""
+    # Создаем DataFrame из данных
+    wb = Workbook()
+    # Получаем активный лист
+    ws = wb.active
+
+    # Устанавливаем заголовки столбцов
+    ws.cell(row=1, column=1, value='Юр. лицо')
+    ws.cell(row=1, column=2, value='Тип кампании')
+    ws.cell(row=1, column=3, value='Предмет')
+    ws.cell(row=1, column=4, value='Артикул WB (nmID)')
+    ws.cell(row=1, column=5, value='Бюджет')
+    ws.cell(row=1, column=6, value='Ставка')
+
+    ws.cell(row=1, column=9, value='Юр. лица')
+    for i in range(len(ur_lico_data)):
+        ws.cell(row=2+i, column=9, value=ur_lico_data[i].ur_lice_name)
+
+    ws.cell(row=1, column=10, value='Типы кампаний')
+    ws.cell(row=2, column=10, value='Автоматическая')
+
+    ws.cell(row=1, column=11, value='Предметы')
+    for j in range(len(subject_id.keys())):
+        ws.cell(row=2+j, column=11, value=list(subject_id.keys())[j])
+
+    ws.cell(row=1, column=12, value='Бюджет')
+    ws.cell(row=2, column=12, value='Минимум 1000р')
+
+    ws.column_dimensions['A'].width = 12
+    ws.column_dimensions['B'].width = 14
+    ws.column_dimensions['C'].width = 10
+    ws.column_dimensions['D'].width = 18
+    ws.column_dimensions['E'].width = 10
+    ws.column_dimensions['F'].width = 10
+
+    ws.column_dimensions['I'].width = 20
+    ws.column_dimensions['J'].width = 16
+    ws.column_dimensions['K'].width = 16
+    ws.column_dimensions['L'].width = 16
+
+    # Сохраняем книгу Excel в память
+    response = HttpResponse(content_type='application/xlsx')
+    name = f'Template_campaign_reklama_{datetime.now().strftime("%Y.%m.%d")}.xlsx'
+    file_data = 'attachment; filename=' + name
+    response['Content-Disposition'] = file_data
+    wb.save(response)
+
+    return response
