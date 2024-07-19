@@ -135,6 +135,16 @@ def create_auto_advertisment_campaign(header, campaign_type, campaign_name, subj
     """
     time.sleep(21)
     url = 'https://advert-api.wb.ru/adv/v1/save-ad'
+    print(
+        "type", campaign_type,
+        "name", campaign_name,
+        "subjectId", subject_id,
+        "sum", budget,
+        "btype", 1,
+        "on_pause", False,
+        "nms", mns_list,
+        "cpm", cpm
+    )
     payload = json.dumps({
         "type": campaign_type,
         "name": campaign_name,

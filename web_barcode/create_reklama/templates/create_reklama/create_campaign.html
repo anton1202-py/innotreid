@@ -8,46 +8,43 @@
         <div class="top-befor-header">
             <h1>{{ page_name }}</h1>
         </div>
-        <!-- {% if errors_list %}
-            <script>
-                alert("{{ errors_list }}");
-            </script>
-        {% endif %} -->
         {% if errors_list %}
             <div class="alert alert-danger" role="alert">
-                {% for i in errors_list %}
-                    {{ i|safe }}<br>
-                {% endfor %}
+                {{ errors_list|safe }}<br>
             </div>
         {% endif %}
 
 
         {% if ok_answer %}
             <div class="alert alert-success" role="alert">
-                {{ ok_answer }}
+                {{ ok_answer|safe }}
             </div>
         {% endif %}
 
         <div class='filter-data'>
-            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <button type="submit" name="export" value="create_file" title="Шаблон Excel">
-                        <span class="material-symbols-outlined">
-                            ios_share
-                        </span>
-                    </button>
-                </div>
-    
-                <div class="inner-form-data">
-                    <label for="import_data" title="Згрузить группы из Excel">
-                        <span class="material-symbols-outlined">
-                            download
-                        </span>
-                    </label>
-                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
-                </div>
-            </form>
+            <div class="inner-form-data" style="display: flex; gap: 1rem;">
+                <form method="POST" id="downloadForm" enctype="multipart/form-data" class="big-filter-form">
+                    {% csrf_token %}
+                    <div class="inner-form-data" style="margin-top: 10px;">
+                        <button type="submit" name="export" value="create_file" title="Шаблон Excel">
+                            <span class="material-symbols-outlined">
+                                ios_share
+                            </span>
+                        </button>
+                    </div>
+                </form>
+                <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form">
+                    {% csrf_token %}
+                    <div class="inner-form-data">
+                        <label for="import_data" title="Загрузить группы из Excel">
+                            <span class="material-symbols-outlined">
+                                download
+                            </span>
+                        </label>
+                        <input type="file" id="import_data" name="import_file" class="input-file" style="margin-top: 0px;">
+                    </div>
+                </form>
+            </div>
         </div>
         
         <div class='filter-data'>
@@ -125,28 +122,35 @@
                     method: 'POST',
                     body: formData,
                 })
-                console.log('Отдал данные', formData)
+                
                 document.getElementById("campaigns_create").reset();
             });
         });
 
-        // document.getElementById("campaigns_create").addEventListener("submit", function(event) {
-        //     event.preventDefault();
-        //     var formData = new FormData(this);
-        //     formData.append("user_chat_id", "{{ user_chat_id }}");
-        //     var xhr = new XMLHttpRequest();
-        //     xhr.open("POST", "create_reklama_create_many_campaigns", true);
-        //     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-        //     xhr.send(formData);
-        //     console.log("Function is still running in the background.");
-        //     location.reload()
-            // xhr.onreadystatechange = function() {
-            //     if (xhr.readyState == 4 && xhr.status == 200) {
-            //         console.log("Function is still running in the background.");
-            //         location.reload(); // Перезагрузка страницы
-            //     }
-            // };
-            
+        // ========== ОБРБАТЫВАЕТ СОЗДАНИЕ КАМПАНИЙ ИЗ EXCEL ФАЙЛА ========= //
+        $(document).ready(function(){
+    $('#import_data').change(function(){
+        var formData = new FormData($('#uploadForm')[0]);
+        formData.append("user_chat_id", "{{ user_chat_id }}");
+        $.ajax({
+            url: 'create_reklama_from_excel',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response){
+                alert(response);
+            },
+            error: function(){
+                alert('Ошибка при загрузке файла');
+            }
+        });
+    });
+});
+
+        // ========== ОБРБАТЫВАЕТ НАЖАТИЕ КНОПКИ ЗАГРУЗИТЬ ИЗ ФАЙЛА ========= //
+        // document.getElementById('import_data').addEventListener('change', function() {
+        //     document.getElementById('uploadForm').submit();
         // });
     </script>
         

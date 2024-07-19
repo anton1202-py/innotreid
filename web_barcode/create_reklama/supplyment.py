@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pandas as pd
 from analytika_reklama.models import ArticleCampaignWhiteList
 from api_request.wb_requests import (advertisment_campaign_list,
                                      advertisment_campaigns_list_info,
@@ -263,6 +264,7 @@ def white_list_phrase(campaign_obj):
         return []
 
 
+@sender_error_to_tg
 def create_reklama_template_excel_file(ur_lico_data, subject_id):
     """Создает и скачивает excel файл"""
     # Создаем DataFrame из данных
@@ -289,7 +291,7 @@ def create_reklama_template_excel_file(ur_lico_data, subject_id):
     for j in range(len(subject_id.keys())):
         ws.cell(row=2+j, column=11, value=list(subject_id.keys())[j])
 
-    ws.cell(row=1, column=12, value='Бюджет')
+    ws.cell(row=1, column=12, value='Бюджеты')
     ws.cell(row=2, column=12, value='Минимум 1000р')
 
     ws.column_dimensions['A'].width = 12
@@ -312,3 +314,65 @@ def create_reklama_template_excel_file(ur_lico_data, subject_id):
     wb.save(response)
 
     return response
+
+
+@sender_error_to_tg
+def create_reklama_excel_with_campaign_data(xlsx_file):
+    """Импортирует данные о группе артикула из Excel"""
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    if 'Юр. лицо' in column_list and 'Тип кампании' in column_list and 'Предмет' in column_list and 'Артикул WB (nmID)' in column_list:
+        excel_data = pd.DataFrame(excel_data_common, columns=[
+                                  'Юр. лицо', 'Тип кампании', 'Предмет', 'Артикул WB (nmID)', 'Бюджет', 'Ставка'])
+        article_list = excel_data['Артикул WB (nmID)'].to_list()
+        ur_lico_list = excel_data['Юр. лицо'].to_list()
+        type_list = excel_data['Тип кампании'].to_list()
+        subject_list = excel_data['Предмет'].to_list()
+        budget_list = excel_data['Бюджет'].to_list()
+        cpm_list = excel_data['Ставка'].to_list()
+        # return article_list, ur_lico_list, type_list, subject_list, budget_list, cpm_list
+
+    else:
+        return f'Вы пытались загрузить ошибочный файл {xlsx_file}.'
+
+
+def check_data_create_adv_campaign_from_excel_file(articles_list, nmid, ur_lico, user_chat_id, campaign_type, subject_id, budget, cpm):
+    """Обрабатывает и проверяет данные для создания рекламной кампании, полученные из excel файла"""
+    if nmid not in articles_list:
+        error = f'Нет артикула {nmid} в на портале у {ur_lico}.'
+        bot.send_message(chat_id=user_chat_id,
+                         text=error[:4000])
+    else:
+        if CreatedCampaign.objects.filter(ur_lico__ur_lice_name=ur_lico, articles_name=nmid).exists():
+            exist_campaign_obj = CreatedCampaign.objects.filter(
+                ur_lico__ur_lice_name=ur_lico, articles_name=nmid)[0]
+            error = f'Кампания с артикулом {nmid} уже есть у {ur_lico}. Ее номер: {exist_campaign_obj.campaign_number}, название: {exist_campaign_obj.campaign_name}'
+            bot.send_message(chat_id=user_chat_id,
+                             text=error[:4000])
+        else:
+            nm_id_for_request = [int(nmid)]
+            article_name = Articles.objects.filter(
+                company=ur_lico, wb_nomenclature=nmid)[0].name
+            name_for_request = f'{nmid} {article_name}'
+            header = header_wb_dict[ur_lico]
+            response = create_auto_advertisment_campaign(
+                header, campaign_type, name_for_request, subject_id, budget, nm_id_for_request, cpm)
+            if response.status_code != 200:
+                error = f'Не создал кампанию для артикула {nmid} ({article_name}). Ошибка: {response.text}'
+                bot.send_message(chat_id=user_chat_id,
+                                 text=error[:4000])
+            else:
+                error = f'Создал кампанию для артикула {nmid} ({article_name}). Ее номер: {response.text}'
+                bot.send_message(chat_id=user_chat_id,
+                                 text=error[:4000])
+                saved_data = {
+                    'ur_lico': UrLico.objects.get(ur_lice_name=ur_lico),
+                    'campaign_name': name_for_request,
+                    'campaign_number': int(response.text),
+                    'campaign_type': campaign_type,
+                    'subject_id': subject_id,
+                    'cpm': cpm,
+                    'budget': budget,
+                    'article': nmid
+                }
+                add_created_campaign_data_to_database(saved_data)

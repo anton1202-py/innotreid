@@ -35,4 +35,6 @@ urlpatterns = [
          name='update_auto_replenish_sum'),
     path('update_checkbox_auto_replenish', views.update_checkbox_auto_replenish,
          name='update_checkbox_auto_replenish'),
+    path('create_reklama_from_excel', views.create_reklama_from_excel,
+         name='create_reklama_from_excel'),
 ]

@@ -2,7 +2,9 @@
 import json
 from datetime import datetime
 
-from api_request.wb_requests import (pausa_advertisment_campaigns,
+import pandas as pd
+from api_request.wb_requests import (create_auto_advertisment_campaign,
+                                     pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
 from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
@@ -11,18 +13,21 @@ from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
 from create_reklama.periodic_tasks import (
     auto_replenish_budget_campaign, budget_working,
     set_up_minus_phrase_to_auto_campaigns, update_campaign_status)
-from create_reklama.supplyment import (check_data_for_create_adv_campaign,
-                                       create_reklama_template_excel_file,
-                                       filter_campaigns_status_only)
+from create_reklama.supplyment import (
+    add_created_campaign_data_to_database,
+    check_data_create_adv_campaign_from_excel_file,
+    check_data_for_create_adv_campaign,
+    create_reklama_excel_with_campaign_data,
+    create_reklama_template_excel_file, filter_campaigns_status_only)
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
-from web_barcode.constants_file import (CHAT_ID_ADMIN,
+from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
                                         bot, header_wb_data_dict,
@@ -34,33 +39,28 @@ def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
-    subject_id = {
-        'Ночник': 1673,
-        'Светильник': 330,
-        'Грамота/диплом': 3618,
-        'Файл вкладыш': 3169
-    }
     user_chat_id = request.user.tg_chat_id
-
+    import_data = ''
     errors_list = []
     ok_answer = []
     if request.POST:
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
-                return create_reklama_template_excel_file(ur_lico_data, subject_id)
+                return create_reklama_template_excel_file(ur_lico_data, SUBJECT_REKLAMA_ID_DICT)
 
-            # elif 'import_file' in request.FILES:
-            #     import_data = motivation_article_type_excel_import(
-            #         request.FILES['import_file'], ur_lico)
-            #     if type(import_data) != str:
-            #         return redirect('motivation_article_type')
+            elif 'import_file' in request.FILES:
+                errors_list = create_reklama_excel_with_campaign_data(
+                    request.FILES['import_file'])
+                if type(errors_list) != str:
+                    ok_answer = f"Файл {request.FILES['import_file']} принят в работу"
     context = {
         'user_chat_id': user_chat_id,
         'errors_list': errors_list,
         'ok_answer': ok_answer,
         'page_name': page_name,
         'ur_lico_data': ur_lico_data,
-        'subject_id': subject_id,
+        'subject_id': SUBJECT_REKLAMA_ID_DICT,
+        'errors_list': errors_list,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }
@@ -344,3 +344,49 @@ def update_checkbox_auto_replenish(request):
         AutoReplenish.objects.filter(campaign_number=campaign_object).update(
             auto_replenish=status)
     return JsonResponse({'message': 'Value saved successfully.'})
+
+
+def create_reklama_from_excel(request):
+    """Обрабатывает Excel файл для создания рекламных кампаний"""
+    if 'export' in request.POST or 'import_file' in request.FILES:
+        if 'import_file' in request.FILES:
+            user_chat_id = int(request.POST.get('user_chat_id'))
+
+            import_data = create_reklama_excel_with_campaign_data(
+                request.FILES['import_file'])
+            if type(import_data) == str:
+                return HttpResponse(f"Вы пытались загрузить ошибочный файл {request.FILES['import_file']}.")
+            excel_data_common = pd.read_excel(request.FILES['import_file'])
+            column_list = excel_data_common.columns.tolist()
+
+            excel_data = pd.DataFrame(excel_data_common, columns=[
+                                      'Юр. лицо', 'Тип кампании', 'Предмет', 'Артикул WB (nmID)', 'Бюджет', 'Ставка'])
+            article_list = excel_data['Артикул WB (nmID)'].to_list()
+            ur_lico_list = excel_data['Юр. лицо'].to_list()
+            type_list = excel_data['Тип кампании'].to_list()
+            subject_list = excel_data['Предмет'].to_list()
+            budget_list = excel_data['Бюджет'].to_list()
+            cpm_list = excel_data['Ставка'].to_list()
+            main_articles_list = Articles.objects.all().values('wb_nomenclature')
+            articles_list = []
+            mns_list = []
+            for article in main_articles_list:
+                articles_list.append(str(article['wb_nomenclature']))
+
+            # Проверка артикулов на наличие в системе:
+
+            for i in range(len(article_list)):
+                if str(article_list[i]) != 'nan':
+                    nmid = str(int(article_list[i]))
+                    ur_lico = ur_lico_list[i]
+                    campaign_type = 8
+                    subject_id = SUBJECT_REKLAMA_ID_DICT[subject_list[i]]
+                    budget = int(budget_list[i])
+                    cpm = int(cpm_list[i])
+                    check_data_create_adv_campaign_from_excel_file(
+                        articles_list, nmid, ur_lico, user_chat_id, campaign_type, subject_id, budget, cpm)
+            return HttpResponse(f'Файл {request.FILES["import_file"]} успешно обработан')
+        else:
+            return HttpResponse('Неправильный формат файла')
+
+    return HttpResponse('Ошибка при загрузке файла')
