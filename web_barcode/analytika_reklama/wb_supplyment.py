@@ -87,73 +87,93 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     ur_lico - юр. лицо
     campaign_data_list - данные для рекламных кампаний ur_lico юр. лица (макс 50 кампаний)
     """
-    for data in campaign_data_list:
+    for main_data in campaign_data_list:
         campaign_data = data['advertId']
-        campaign = CreatedCampaign.objects.get(
-            ur_lico=ur_lico, campaign_number=campaign_data)
-        views = data['views']
-        clicks = data['clicks']
-        ctr = data['ctr']
-        cpc = data['cpc']
-        summ = data['sum']
-        atbs = data['atbs']
-        orders = data['orders']
-        cr = data['cr']
-        shks = data['shks']
-        sum_price = data['sum_price']
-        statistic_date = data['interval']['end']
-        if MainCampaignParameters.objects.filter(campaign=campaign).exists():
+        for data in main_data['days']:
 
-            campaign_params_obj = MainCampaignParameters.objects.get(
-                campaign=campaign)
-            campaign_params_obj.views += views
-            campaign_params_obj.clicks += clicks
-            campaign_params_obj.summ += summ
-            campaign_params_obj.atbs += atbs
-            campaign_params_obj.orders += orders
-            campaign_params_obj.shks += shks
-            campaign_params_obj.sum_price += sum_price
-            campaign_params_obj.ctr = round(
-                (campaign_params_obj.clicks/campaign_params_obj.views)*100, 2)
+            campaign = CreatedCampaign.objects.get(
+                ur_lico=ur_lico, campaign_number=campaign_data)
+            views = data['views']
+            clicks = data['clicks']
+            ctr = data['ctr']
+            cpc = data['cpc']
+            summ = data['sum']
+            atbs = data['atbs']
+            orders = data['orders']
+            cr = data['cr']
+            shks = data['shks']
+            sum_price = data['sum_price']
+            statistic_date = data['date']
 
-            if campaign_params_obj.clicks != 0:
-                campaign_params_obj.cpc = round(
-                    campaign_params_obj.summ/campaign_params_obj.clicks, 2)
-                campaign_params_obj.cr = round(
-                    campaign_params_obj.orders/campaign_params_obj.clicks, 2)
+            formatted_date = datetime.strptime(
+                statistic_date, '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d')
+            delta = datetime.today() - timedelta(days=1)
+            delta = delta.strftime('%Y-%m-%d')
+            if formatted_date == delta:
+                if MainCampaignParameters.objects.filter(campaign=campaign).exists():
+
+                    campaign_params_obj = MainCampaignParameters.objects.get(
+                        campaign=campaign)
+                    campaign_params_obj.views += views
+                    campaign_params_obj.clicks += clicks
+                    campaign_params_obj.summ += summ
+                    campaign_params_obj.atbs += atbs
+                    campaign_params_obj.orders += orders
+                    campaign_params_obj.shks += shks
+                    campaign_params_obj.sum_price += sum_price
+                    campaign_params_obj.ctr = round(
+                        (campaign_params_obj.clicks/campaign_params_obj.views)*100, 2)
+
+                    if campaign_params_obj.clicks != 0:
+                        campaign_params_obj.cpc = round(
+                            campaign_params_obj.summ/campaign_params_obj.clicks, 2)
+                        campaign_params_obj.cr = round(
+                            campaign_params_obj.orders/campaign_params_obj.clicks, 2)
+                    else:
+                        campaign_params_obj.cpc = 0
+                        campaign_params_obj.cr = 0
+                    campaign_params_obj.save()
+
+                else:
+                    MainCampaignParameters(
+                        campaign=campaign,
+                        views=views,
+                        clicks=clicks,
+                        summ=summ,
+                        atbs=atbs,
+                        orders=orders,
+                        shks=shks,
+                        ctr=ctr,
+                        cpc=cpc,
+                        cr=cr
+                    ).save()
+
+            if not DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=statistic_date).exists():
+                DailyCampaignParameters(
+                    campaign=campaign,
+                    statistic_date=statistic_date,
+                    views=views,
+                    clicks=clicks,
+                    summ=summ,
+                    atbs=atbs,
+                    orders=orders,
+                    shks=shks,
+                    ctr=ctr,
+                    cpc=cpc,
+                    cr=cr
+                ).save()
             else:
-                campaign_params_obj.cpc = 0
-                campaign_params_obj.cr = 0
-            campaign_params_obj.save()
-
-        else:
-            MainCampaignParameters(
-                campaign=campaign,
-                views=views,
-                clicks=clicks,
-                summ=summ,
-                atbs=atbs,
-                orders=orders,
-                shks=shks,
-                ctr=ctr,
-                cpc=cpc,
-                cr=cr
-            ).save()
-
-        if not DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=statistic_date,).exists():
-            DailyCampaignParameters(
-                campaign=campaign,
-                statistic_date=statistic_date,
-                views=views,
-                clicks=clicks,
-                summ=summ,
-                atbs=atbs,
-                orders=orders,
-                shks=shks,
-                ctr=ctr,
-                cpc=cpc,
-                cr=cr
-            ).save()
+                DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=statistic_date).update(
+                    views=views,
+                    clicks=clicks,
+                    summ=summ,
+                    atbs=atbs,
+                    orders=orders,
+                    shks=shks,
+                    ctr=ctr,
+                    cpc=cpc,
+                    cr=cr
+                )
 
 
 @sender_error_to_tg

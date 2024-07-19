@@ -295,8 +295,27 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, ca
         time.sleep(5)
         current_budget = current_budget_adv_campaign(header, campaign)
         view_statistic = view_statistic_adv_campaign(header, campaign)
+        # Показы
+        view_count = ''
+        # Переходы
+        view_clicks = ''
+        # CTR
+        view_ctr = ''
+        # Заказы
+        view_orders = ''
+        statistic_date = ''
         if view_statistic:
-            message = (f"Пополнил {campaign}: {view_statistic.campaign.campaign_name}. Продаж {budget} руб. Показов: {view_statistic.views}. Пополнил на {campaign_budget}руб ({koef}%)"
+            # Показы
+            view_count = view_statistic.views
+            # Переходы
+            view_clicks = view_statistic.clicks
+            # CTR
+            view_ctr = view_statistic.ctr
+            # Заказы
+            view_orders = view_statistic.orders
+            statistic_date = view_statistic.statistic_date
+        if view_statistic:
+            message = (f"Пополнил {campaign}: {view_statistic.campaign.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}. \nПополнил на {campaign_budget}руб ({koef}%)"
                        f"Итого бюджет: {current_budget}."
                        f"Дата статистики: {view_statistic.statistic_date}")
         else:
@@ -348,12 +367,26 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         campaign_budget = 10000
 
     message = ''
+    # Показы
     view_count = ''
+    # Переходы
+    view_clicks = ''
+    # CTR
+    view_ctr = ''
+    # Заказы
+    view_orders = ''
     statistic_date = ''
     view_statistic = view_statistic_adv_campaign(header, campaign)
 
     if view_statistic:
+        # Показы
         view_count = view_statistic.views
+        # Переходы
+        view_clicks = view_statistic.clicks
+        # CTR
+        view_ctr = view_statistic.ctr
+        # Заказы
+        view_orders = view_statistic.orders
         statistic_date = view_statistic.statistic_date
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
@@ -367,10 +400,10 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
-        message = (f'{campaign}: {campaign_obj.campaign_name} - продаж {budget} руб.\nПоказов: {view_count}.\nНачислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%).\nБаланс ВС: {info_campaign_obj.virtual_budget}р.'
+        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}.\nНачислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%).\nБаланс ВС: {info_campaign_obj.virtual_budget}р.'
                    f'Текущий баланс кампании: {current_campaign_budget}.\nДата статистики: {statistic_date}')
     else:
-        message = (f'{campaign}: {campaign_obj.campaign_name} - продаж {budget} руб.\nПоказов: {view_count}. Не пополнилась.\nТекущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}. Не пополнилась.\nТекущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
                    f'\nТекущий баланс кампании: {current_campaign_budget}.\nДата статистики: {statistic_date}')
     return message
 

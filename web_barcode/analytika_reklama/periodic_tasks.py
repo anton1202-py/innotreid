@@ -38,8 +38,9 @@ def add_campaigns_statistic_to_db():
     main_adv_data - данные для рекламных кампаний какого-то юр. лица (макс 50 кампаний)
     """
     ur_lico_data = UrLico.objects.all()
-    statistic_date_raw = datetime.now() - timedelta(days=1)
-    statistic_date = statistic_date_raw.strftime('%Y-%m-%d')
+    statistic_date_raw = datetime.now() - timedelta(days=9)
+    statistic_date_begin = datetime.now().strftime('%Y-%m-%d')
+    statistic_date_finish = statistic_date_raw.strftime('%Y-%m-%d')
     for ur_lico_obj in ur_lico_data:
         main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_status__in=[9, 11])
@@ -54,8 +55,8 @@ def add_campaigns_statistic_to_db():
                 inner_dict = {
                     "id": int(campaign.campaign_number),
                     "interval": {
-                        "begin": statistic_date,
-                        "end": statistic_date
+                        "begin": statistic_date_begin,
+                        "end": statistic_date_finish
                     }
                 }
                 data_campaign_list.append(inner_dict)
