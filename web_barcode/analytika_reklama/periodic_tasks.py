@@ -39,8 +39,8 @@ def add_campaigns_statistic_to_db():
     """
     ur_lico_data = UrLico.objects.all()
     statistic_date_raw = datetime.now() - timedelta(days=9)
-    statistic_date_begin = datetime.now().strftime('%Y-%m-%d')
-    statistic_date_finish = statistic_date_raw.strftime('%Y-%m-%d')
+    statistic_date_finish = datetime.now().strftime('%Y-%m-%d')
+    statistic_date_begin = statistic_date_raw.strftime('%Y-%m-%d')
     for ur_lico_obj in ur_lico_data:
         main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_status__in=[9, 11])

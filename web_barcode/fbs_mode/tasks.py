@@ -239,9 +239,14 @@ class WildberriesFbsMode():
         url = "https://suppliers-api.wildberries.ru/api/v3/orders/new"
         response = requests.request(
             "GET", url, headers=self.headers)
-        orders_data = json.loads(response.text)['orders']
         if response.status_code == 200:
-            return orders_data
+            returned_data_list = []
+            orders_data = json.loads(response.text)['orders']
+            # Сделал обход склада в НСК (его id = 1003917). Если склад = НСК, то товары не участвуют в сборке.
+            for data in orders_data:
+                if data['warehouseId'] != 1003917:
+                    returned_data_list.append(data)
+            return returned_data_list
         else:
             time.sleep(10)
             return self.process_new_orders()

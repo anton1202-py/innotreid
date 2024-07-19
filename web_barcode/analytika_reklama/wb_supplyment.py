@@ -88,7 +88,7 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     campaign_data_list - данные для рекламных кампаний ur_lico юр. лица (макс 50 кампаний)
     """
     for main_data in campaign_data_list:
-        campaign_data = data['advertId']
+        campaign_data = main_data['advertId']
         for data in main_data['days']:
 
             campaign = CreatedCampaign.objects.get(
