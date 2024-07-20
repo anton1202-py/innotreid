@@ -44,10 +44,10 @@ def add_campaigns_statistic_to_db():
     for ur_lico_obj in ur_lico_data:
         main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_status__in=[9, 11])
-        koef_product = math.ceil(len(main_data)/100)
+        koef_product = math.ceil(len(main_data)/10)
         for i in range(koef_product):
-            start_point = i*100
-            finish_point = (i+1)*100
+            start_point = i*10
+            finish_point = (i+1)*10
             adv_current_list = main_data[
                 start_point:finish_point]
             data_campaign_list = []
