@@ -172,17 +172,18 @@ def count_sum_orders():
             if CreatedCampaign.objects.filter(ur_lico=ur_lico_obj, campaign_number=campaign).exists():
                 campaign_article = CreatedCampaign.objects.get(
                     ur_lico=ur_lico_obj, campaign_number=campaign).articles_name
-                if type(campaign_article) == list:
-                    article_for_analyz = campaign_article
-                else:
-                    article_for_analyz = [int(campaign_article)]
-                data_list = count_sum_orders_action(
-                    article_for_analyz, begin_date, end_date, header)
-                sum = 0
-                if data_list:
-                    sum = count_sum_adv_campaign(data_list)
-                campaign_orders_money_dict[campaign] = sum
-                time.sleep(22)
+                if campaign_article:
+                    if type(campaign_article) == list:
+                        article_for_analyz = campaign_article
+                    else:
+                        article_for_analyz = [int(campaign_article)]
+                    data_list = count_sum_orders_action(
+                        article_for_analyz, begin_date, end_date, header)
+                    sum = 0
+                    if data_list:
+                        sum = count_sum_adv_campaign(data_list)
+                    campaign_orders_money_dict[campaign] = sum
+                    time.sleep(22)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
     return returned_campaign_orders_money_dict
 
