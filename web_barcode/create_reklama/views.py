@@ -39,6 +39,7 @@ def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
+    # set_up_minus_phrase_to_auto_campaigns()
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []

@@ -137,9 +137,11 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         },
         "page": 1
     })
-    print('payload', payload)
+    print('payload в count_sum_orders_action', payload)
     response = requests.request(
         "POST", url, headers=header, data=payload)
+
+    print(response.status_code)
     if response.status_code == 200:
         data_list = json.loads(response.text)['data']['cards']
         return data_list
@@ -155,7 +157,7 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
 def count_sum_orders():
     """Считает сумму заказов каждой рекламной кампании за позавчера"""
     campaign_dict = ad_list()
-    calculate_data = datetime.now() - timedelta(days=2)
+    calculate_data = datetime.now() - timedelta(days=1)
     begin_date = calculate_data.strftime('%Y-%m-%d 00:00:00')
     end_date = calculate_data.strftime('%Y-%m-%d 23:59:59')
     # Словарь вида: {номер_компании: заказов_за_позавчера}
@@ -173,14 +175,12 @@ def count_sum_orders():
                 if type(campaign_article) == list:
                     article_for_analyz = campaign_article
                 else:
-                    article_for_analyz = [campaign_article]
+                    article_for_analyz = [int(campaign_article)]
                 data_list = count_sum_orders_action(
                     article_for_analyz, begin_date, end_date, header)
                 sum = 0
                 if data_list:
-                    print('data_list', data_list)
                     sum = count_sum_adv_campaign(data_list)
-                    print('sum', sum)
                 campaign_orders_money_dict[campaign] = sum
                 time.sleep(22)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict

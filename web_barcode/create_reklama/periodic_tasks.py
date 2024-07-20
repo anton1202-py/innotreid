@@ -70,6 +70,7 @@ def set_up_minus_phrase_to_auto_campaigns():
 
                 white_list = white_list_phrase(data)
                 header = header_wb_dict[ur_lico_obj.ur_lice_name]
+                print(ur_lico_obj.ur_lice_name, data.campaign_number)
                 campaign_minus_phrase_list = get_minus_phrase_from_wb_auto_campaigns(
                     ur_lico_obj.ur_lice_name, data.campaign_number)
 
