@@ -137,11 +137,9 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         },
         "page": 1
     })
-    print('payload в count_sum_orders_action', payload)
     response = requests.request(
         "POST", url, headers=header, data=payload)
 
-    print(response.status_code)
     if response.status_code == 200:
         data_list = json.loads(response.text)['data']['cards']
         return data_list
@@ -166,6 +164,8 @@ def count_sum_orders():
         ur_lico_obj = UrLico.objects.get(ur_lice_name=ur_lico)
 
         campaign_orders_money_dict = {}
+        print(len(campaign_list))
+        n = len(campaign_list)
         for campaign in campaign_list:
             header = header = header_wb_dict[ur_lico]
             article_for_analyz = ''
@@ -184,6 +184,8 @@ def count_sum_orders():
                         sum = count_sum_adv_campaign(data_list)
                     campaign_orders_money_dict[campaign] = sum
                     time.sleep(22)
+            n -= 1
+            print(n)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
     return returned_campaign_orders_money_dict
 
@@ -290,6 +292,7 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, ca
     response = requests.request("POST", url, headers=header, data=payload)
     time.sleep(5)
     attempt_counter += 1
+
     if response.status_code == 200:
         # Записывает в БД статистику пополнения бюджета
         statistic_campaign_budget_replenish(campaign_obj, campaign_budget)
@@ -323,12 +326,20 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, ca
             message = (f"Пополнил {campaign}. Продаж {budget} руб. Пополнил на {campaign_budget}руб ({koef}%)"
                        f"Итого бюджет: {current_budget}.")
         return message
+    elif response.status_code == 401:
+        message = (f'Кампания {campaign} не пополнил.'
+                   f'Ошибка авторизации {response.text}')
+        return message
+    elif response.status_code == 400:
+        message = (f'Кампания {campaign} не пополнил.'
+                   f'Пытался пополнить. Ошибка {response.text}')
+        return message
     else:
-        if attempt_counter <= 50:
-            return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, attempt_counter)
+        if attempt_counter <= 10:
+            return campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, campaign_obj, attempt_counter)
         else:
             message = (f'Бюджет кампании {campaign} не пополнил.'
-                       f'Пытался пополнить 50 раз - возвращалась ошибка.')
+                       f'Пытался пополнить 10 раз - возвращалась ошибка. {response.text}')
             return message
 
 
@@ -517,6 +528,7 @@ def send_common_message(messages_list: list):
             finish_point = (i+1)*4000
             message_for_send = message[
                 start_point:finish_point]
+            time.sleep(1)
             for user in campaign_budget_users_list:
                 bot.send_message(chat_id=user,
                                  text=message_for_send)

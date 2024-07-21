@@ -52,3 +52,8 @@ def round_number(value):
 @register.filter
 def round_number_two(value):
     return round(value, 2)
+
+
+@register.filter
+def float_number_filter(value):
+    return float(value)

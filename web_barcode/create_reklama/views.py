@@ -37,6 +37,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
 @login_required
 def create_campaign(request):
     """Отображает страницу создания кампании"""
+    # budget_working()
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id

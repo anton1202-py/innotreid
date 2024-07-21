@@ -244,7 +244,7 @@ class WildberriesFbsMode():
             orders_data = json.loads(response.text)['orders']
             # Сделал обход склада в НСК (его id = 1003917). Если склад = НСК, то товары не участвуют в сборке.
             for data in orders_data:
-                if data['warehouseId'] != 1003917:
+                if data['warehouseId'] != 1003917 and data['warehouseId'] != 1057680:
                     returned_data_list.append(data)
             return returned_data_list
         else:
