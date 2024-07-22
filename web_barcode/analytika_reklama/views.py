@@ -12,7 +12,7 @@ from analytika_reklama.periodic_tasks import (
     add_campaigns_statistic_to_db, get_auto_campaign_statistic_common_data,
     get_campaigns_amount_in_keyword_phrase,
     get_clusters_statistic_for_autocampaign,
-    get_searchcampaign_keywords_statistic)
+    get_searchcampaign_keywords_statistic, keyword_for_articles)
 from api_request.wb_requests import (get_del_minus_phrase_to_auto_campaigns,
                                      statistic_keywords_auto_campaign)
 from create_reklama.minus_words_working import \
@@ -39,7 +39,7 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
-    get_clusters_statistic_for_autocampaign()
+    # keyword_for_articles()
     # add_campaigns_statistic_to_db()
     campaign_list = CreatedCampaign.objects.filter(
         ur_lico=1).order_by('id')
