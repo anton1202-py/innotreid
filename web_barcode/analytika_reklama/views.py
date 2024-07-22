@@ -348,8 +348,11 @@ class KeyPhraseCampaignStatisticView(ListView):
                     campaign=OuterRef('campaign'), keyword=phrase_obj).values('phrase_list')[:1]
             )
         ).order_by('-total_views')
+        numeric_list = []
         for data in phrase_data:
             inner_list = []
+            numeric_list.append(
+                round(100*(data['total_clicks']/data['total_views']), 2))
             ur_lic = data['campaign_ur_lico']
             camp_numb = data['campaign_number']
             minus_phrase_campaign_list = MainCampaignExcluded.objects.filter(
@@ -364,7 +367,7 @@ class KeyPhraseCampaignStatisticView(ListView):
                 data['minus_checker'] = True
             else:
                 data['minus_checker'] = False
-
+        print(numeric_list)
         context.update({
             'phrase_data': phrase_data,
             'keyphrase_obj': self.kwargs['id'],

@@ -244,16 +244,17 @@
 
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
-        const comparer = (idx, asc) => (a, b) => {
-            const valueA = parseFloat(getCellValue(a, idx));
-            const valueB = parseFloat(getCellValue(b, idx));
-            if (!isNaN(valueA) && !isNaN(valueB)) {
-                return asc ? valueA - valueB : valueB - valueA;
-            } else {
-                const comparison = getCellValue(a, idx).localeCompare(getCellValue(b, idx));
-                return asc ? comparison : -comparison;
-            }
-        };
+        function comparer(index, asc) {
+            return function(a, b) {
+                const valA = parseFloat(a.children[index].textContent.replace(',', '.')) || 0;
+                const valB = parseFloat(b.children[index].textContent.replace(',', '.')) || 0;
+                if (valA === valB) {
+                    return 0;
+                } else {
+                    return (asc ? (valA > valB) : (valA < valB)) ? 1 : -1;
+                }
+            };
+        }
 
         document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
             const table = th.closest('table');
