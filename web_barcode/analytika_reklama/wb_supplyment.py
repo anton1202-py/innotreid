@@ -1,24 +1,14 @@
-import math
-import time
 from datetime import datetime, timedelta
 
-from analytika_reklama.models import (CommonCampaignDescription,
-                                      DailyCampaignParameters,
-                                      MainArticleExcluded, MainArticleKeyWords,
+from analytika_reklama.models import (DailyCampaignParameters,
                                       MainCampaignClusters,
                                       MainCampaignClustersKeywords,
                                       MainCampaignExcluded,
                                       MainCampaignParameters)
-from api_request.wb_requests import (advertisment_campaign_clusters_statistic,
-                                     advertisment_campaign_list,
-                                     advertisment_campaigns_list_info,
-                                     advertisment_statistic_info)
+from analytika_reklama.phrase_statistic import add_keyphrase_to_db
+from api_request.wb_requests import advertisment_campaign_list
 from create_reklama.models import CreatedCampaign
-from django.db.models import Q
-from motivation.models import Selling
-from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import UrLico
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
@@ -195,27 +185,28 @@ def save_main_clusters_statistic_for_campaign(campaign_obj, clusters_info):
                     excluded=str(incoming_frase)).save()
     if incoming_clusters:
         for clusters_data in incoming_clusters:
-            if not MainCampaignClusters.objects.filter(campaign=campaign_obj, cluster=clusters_data['cluster']).exists():
+            cluster_obj = add_keyphrase_to_db(clusters_data['cluster'])
+            if not MainCampaignClusters.objects.filter(campaign=campaign_obj, cluster=cluster_obj).exists():
                 MainCampaignClusters(
                     campaign=campaign_obj,
-                    cluster=clusters_data['cluster'],
+                    cluster=cluster_obj,
                     count=clusters_data['count']
                 ).save()
             else:
                 current_cluster_obj = MainCampaignClusters.objects.get(
-                    campaign=campaign_obj, cluster=clusters_data['cluster'])
+                    campaign=campaign_obj, cluster=cluster_obj)
                 current_cluster_obj.count = clusters_data['count']
                 current_cluster_obj.save()
 
             if 'keywords' in clusters_data.keys():
-                cluster_obj = MainCampaignClusters.objects.get(
-                    campaign=campaign_obj, cluster=clusters_data['cluster'])
+                cluster__keyword_obj = MainCampaignClusters.objects.get(
+                    campaign=campaign_obj, cluster=cluster_obj)
 
                 for incoming_keywords in clusters_data['keywords']:
                     if not MainCampaignClustersKeywords.objects.filter(
-                            cluster=cluster_obj, keywords=incoming_keywords).exists():
+                            cluster=cluster__keyword_obj, keywords=incoming_keywords).exists():
                         MainCampaignClustersKeywords(
-                            cluster=cluster_obj,
+                            cluster=cluster__keyword_obj,
                             keywords=incoming_keywords).save()
 
 

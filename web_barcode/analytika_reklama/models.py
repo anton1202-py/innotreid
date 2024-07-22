@@ -179,9 +179,11 @@ class MainCampaignClusters(models.Model):
         blank=True,
         null=True
     )
-    cluster = models.CharField(
-        verbose_name='Кластер кампании',
-        max_length=300,
+    cluster = models.ForeignKey(
+        'KeywordPhrase',
+        on_delete=models.SET_NULL,
+        verbose_name='Кластер',
+        related_name='main_campaign_cluster',
         blank=True,
         null=True
     )
@@ -535,25 +537,116 @@ class MainArticleKeyWords(models.Model):
         blank=True,
         null=True
     )
-    cluster = models.CharField(
-        verbose_name='Название кластера',
-        max_length=300
+    cluster = models.ForeignKey(
+        'KeywordPhrase',
+        on_delete=models.SET_NULL,
+        verbose_name='Кластер',
+        related_name='main_article_kw',
+        blank=True,
+        null=True
     )
     views = models.IntegerField(
-        verbose_name='Просмотры',
+        verbose_name='Показы',
         blank=True,
         null=True
     )
-    clicks = models.IntegerField(
-        verbose_name='Клики',
+    source = models.CharField(
+        verbose_name='Источник статистики',
+        max_length=300,
         blank=True,
         null=True
     )
-    summ = models.FloatField(
-        verbose_name='Затраты, ₽.',
+
+    class Meta:
+        verbose_name = 'Статистика запросов из Рекламы ВБ'
+        verbose_name_plural = 'Статистика запросов из Рекламы ВБ'
+
+
+class JamMainArticleKeyWords(models.Model):
+    """
+    Статистика ключевых кластеров из Джема
+    Получаем через загрузку Excel файлов на еженедельной основе.
+    """
+    article = models.ForeignKey(
+        Articles,
+        on_delete=models.SET_NULL,
+        verbose_name='Артикул',
+        related_name='jam_key_cluster_article',
         blank=True,
         null=True
     )
+    cluster = models.ForeignKey(
+        'KeywordPhrase',
+        on_delete=models.SET_NULL,
+        verbose_name='Кластер',
+        related_name='jam_main_article_cluster',
+        blank=True,
+        null=True
+    )
+    date_start = models.DateField(
+        verbose_name='Дата начала статистики',
+        blank=True,
+        null=True
+    )
+    date_finish = models.DateField(
+        verbose_name='Дата конца статистики',
+        blank=True,
+        null=True
+    )
+    frequency = models.IntegerField(
+        verbose_name='Частота',
+        blank=True,
+        null=True
+    )
+    visibility = models.IntegerField(
+        verbose_name='Видимость',
+        blank=True,
+        null=True
+    )
+    views = models.IntegerField(
+        verbose_name='Показы',
+        blank=True,
+        null=True
+    )
+    average_position = models.IntegerField(
+        verbose_name='Средняя позиция',
+        blank=True,
+        null=True
+    )
+    median_position = models.IntegerField(
+        verbose_name='Медианная позиция',
+        blank=True,
+        null=True
+    )
+    go_to_card = models.IntegerField(
+        verbose_name='Переходы в карточку',
+        blank=True,
+        null=True
+    )
+    added_to_cart = models.IntegerField(
+        verbose_name='Положили в корзину',
+        blank=True,
+        null=True
+    )
+    conversion_to_cart = models.FloatField(
+        verbose_name='Конверсия в корзину',
+        blank=True,
+        null=True
+    )
+    ordered = models.IntegerField(
+        verbose_name='Заказали',
+        blank=True,
+        null=True
+    )
+    conversion_to_order = models.FloatField(
+        verbose_name='Конверсия в заказ',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Статистика запросов из Джема'
+        verbose_name_plural = 'Статистика запросов из Джема'
 
 
 class MainArticleExcluded(models.Model):

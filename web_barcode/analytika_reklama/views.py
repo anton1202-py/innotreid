@@ -39,7 +39,8 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
-    add_campaigns_statistic_to_db()
+    get_clusters_statistic_for_autocampaign()
+    # add_campaigns_statistic_to_db()
     campaign_list = CreatedCampaign.objects.filter(
         ur_lico=1).order_by('id')
     ur_lico_data = UrLico.objects.all()
