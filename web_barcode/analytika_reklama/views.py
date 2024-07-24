@@ -1,8 +1,11 @@
 import json
 
+from analytika_reklama.jam_statistic import \
+    analytika_reklama_excel_with_jam_data
 from analytika_reklama.models import (ArticleCampaignWhiteList,
                                       CommonCampaignDescription,
-                                      DailyCampaignParameters, KeywordPhrase,
+                                      DailyCampaignParameters,
+                                      JamMainArticleKeyWords, KeywordPhrase,
                                       MainArticleExcluded, MainArticleKeyWords,
                                       MainCampaignClusters,
                                       MainCampaignExcluded,
@@ -18,13 +21,16 @@ from api_request.wb_requests import (get_del_minus_phrase_to_auto_campaigns,
 from create_reklama.minus_words_working import \
     get_minus_phrase_from_wb_auto_campaigns
 from create_reklama.models import CreatedCampaign
-from create_reklama.supplyment import white_list_phrase
+from create_reklama.supplyment import (create_reklama_excel_with_campaign_data,
+                                       white_list_phrase)
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
+from django.db import models
 from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
                               OuterRef, Q, Subquery, Sum, When)
 from django.db.models.functions import Coalesce, Round
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import ListView
 from price_system.models import Articles
 from reklama.models import UrLico
@@ -230,7 +236,7 @@ def articles_words_main_info(request):
         'article').annotate(cluster_count=Count('cluster')).order_by('-cluster_count')
 
     common_excludes_info = MainArticleExcluded.objects.values(
-        'article').annotate(excluded_count=Count('excluded'))
+        'article').annotate(excluded_count=Count('excluded'))[:10]
     for data in common_keywords_info:
         article_key_words_info[Articles.objects.get(id=data['article'])] = {
             'cluster_count': data['cluster_count']}
@@ -238,8 +244,18 @@ def articles_words_main_info(request):
         if Articles.objects.get(id=data['article']) in article_key_words_info:
             article_key_words_info[Articles.objects.get(id=data['article'])
                                    ]['excluded_count'] = data['excluded_count']
+    errors_data = ''
+    ok_answer = ''
+    if request.POST:
+        if 'import_file' in request.FILES:
+            errors_data = analytika_reklama_excel_with_jam_data(
+                request.FILES['import_file'])
+            if type(errors_data) != str:
+                ok_answer = f"Файл {request.FILES['import_file']} принят в работу"
     context = {
         'page_name': page_name,
+        'errors_data': errors_data,
+        'ok_answer': ok_answer,
         'article_key_words_info': article_key_words_info,
         'excluded_count': 'excluded_count',
         'cluster_count': 'cluster_count'
@@ -289,15 +305,40 @@ class ArticleClustersView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ArticleClustersView,
                         self).get_context_data(**kwargs)
-
+        data_dict = {}
         cluster_data = MainArticleKeyWords.objects.filter(
             article=self.kwargs['id'])
+        for data in cluster_data:
+            data_dict[data.cluster.phrase] = [data.views]
+
         article_description = MainArticleKeyWords.objects.filter(
             article=self.kwargs['id'])[0].article
         article_id = self.kwargs['id']
+
+        jam_data = JamMainArticleKeyWords.objects.filter(
+            article=self.kwargs['id']).values('cluster').annotate(
+                cluster_name=F('cluster__phrase'),
+                total_frequency=Sum('frequency'),
+                total_views=Sum('views'),
+                total_go_to_card=Sum('go_to_card'),
+                total_added_to_cart=Sum('added_to_cart'),
+                total_ordered=Sum('ordered')
+        )
+        for data in jam_data:
+            if data['cluster_name'] in data_dict:
+                data_dict[data['cluster_name']].append(data['total_frequency'])
+                data_dict[data['cluster_name']].append(data['total_views'])
+                data_dict[data['cluster_name']].append(
+                    data['total_added_to_cart'])
+                data_dict[data['cluster_name']].append(data['total_ordered'])
+            else:
+                data_dict[data['cluster_name']] = [0, data['total_frequency'],
+                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered']]
+
         context.update({
             'article_id': article_id,
             'clusters_data': cluster_data,
+            'data_dict': data_dict,
             'page_name': f"Кластеры артикула {article_description.common_article}: {article_description.name}",
         })
         return context

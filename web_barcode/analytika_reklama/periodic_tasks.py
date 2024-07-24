@@ -124,6 +124,7 @@ def keyword_for_articles():
             if type(cluster_obj.campaign.articles_name) == int:
                 articles_name = cluster_obj.campaign.articles_name
             elif (type(cluster_obj.campaign.articles_name)) == list:
+
                 articles_name = cluster_obj.campaign.articles_name[0]
             if Articles.objects.filter(
                 company=cluster_obj.campaign.ur_lico.ur_lice_name,

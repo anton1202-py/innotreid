@@ -80,14 +80,16 @@ def process_yandex_daily_orders():
         for campaign_id_dict in yandex_campaign_id_dict_list:
             main_data = yandex_daily_orders(
                 header, campaign_id_dict[ur_lico], check_date)
-            if main_data['result']['orders']:
-                for data in main_data['result']['orders']:
-                    save_yandex_daily_orders(
-                        data, check_date, month_report, year_report, ur_lico)
-                    save_yandex_daily_orders_data_for_motivation(
-                        data, check_date, month_report, year_report, ur_lico)
-                    # time.sleep(1)
-                time.sleep(65)
+            if main_data:
+                if main_data['result']:
+                    if main_data['result']['orders']:
+                        for data in main_data['result']['orders']:
+                            save_yandex_daily_orders(
+                                data, check_date, month_report, year_report, ur_lico)
+                            save_yandex_daily_orders_data_for_motivation(
+                                data, check_date, month_report, year_report, ur_lico)
+                            # time.sleep(1)
+                        time.sleep(65)
 
 
 @app.task

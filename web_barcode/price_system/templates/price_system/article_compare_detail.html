@@ -36,7 +36,7 @@
                 <tr>
                     <form method="post" name="name" enctype="multipart/form-data" action="">
                         {% csrf_token %}
-                        <td>{{ el.common_article }}</td>
+                        <td><input value="{{ el.common_article }}" type="text" name="common_article"/></td>
                         <td>{{ el.status }}</td>
                         <td>{{ el.company }}</td>
 

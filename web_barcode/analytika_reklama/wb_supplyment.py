@@ -241,7 +241,8 @@ def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
                             excluded=str(frase)).save()
     if incoming_keywords:
         for keyword in incoming_keywords:
-            if not MainCampaignClusters.objects.filter(campaign=campaign_obj, cluster=str(keyword['keyword'])).exists():
+            cluster_obj = add_keyphrase_to_db(str(keyword['keyword']))
+            if not MainCampaignClusters.objects.filter(campaign=campaign_obj, cluster=cluster_obj).exists():
                 MainCampaignClusters(
                     campaign=campaign_obj,
                     cluster=str(keyword['keyword']),

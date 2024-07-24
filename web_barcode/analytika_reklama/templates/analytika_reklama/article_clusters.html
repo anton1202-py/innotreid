@@ -33,14 +33,30 @@
             <thead>
                 <tr>
                     <th>Кластеры</th>
-                    <th>Показы кластера</th>
+                    <th>Показы кластера в рекламе</th>
+                    <th>Частотность в джеме</th>
+                    <th>Показы в джеме</th>
+                    <th>Добавление в корзину</th>
+                    <th>Заказы</th>
                 </tr>
             </thead>
             <tbody>
-                {% for el in data %}
+                {% for cluster, data in data_dict.items %}
                 <tr>
-                    <td>{{ el.cluster }}</td>
-                    <td>{{ el.views }}</td>
+                    <td>{{ cluster }}</td>
+                    <td>{{ data.0 }}</td>
+
+                    {% if data.1 %}
+                        <td>{{ data.1 }}</td>
+                        <td>{{ data.2 }}</td>
+                        <td>{{ data.3 }}</td>
+                        <td>{{ data.4 }}</td>
+                    {% else %}
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

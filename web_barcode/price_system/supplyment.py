@@ -199,22 +199,22 @@ def wb_matching_articles(ur_lico):
     else:
         wb_article_data = wb_ooo_article_compare(ur_lico)
     for common_article, wb_data in wb_article_data.items():
-        if Articles.objects.filter(company=ur_lico, common_article=common_article).exists() == True:
+        if Articles.objects.filter(company=ur_lico, wb_nomenclature=wb_data[2]).exists():
             wb_article = Articles.objects.get(company=ur_lico,
-                                              common_article=common_article)
-            if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]) or str(wb_article.wb_nomenclature) != str(wb_data[2]):
+                                              wb_nomenclature=wb_data[2])
+            if wb_article.wb_seller_article != wb_data[0] or str(wb_article.wb_barcode) != str(wb_data[1]):
                 wb_article.status = 'Не сопоставлено'
                 wb_article.company = ur_lico
                 wb_article.wb_seller_article = wb_data[0]
                 wb_article.wb_barcode = wb_data[1]
-                wb_article.wb_nomenclature = wb_data[2]
+                wb_article.common_article = common_article
                 wb_article.name = wb_data[3]
                 wb_article.wb_photo_address = wb_data[4]
                 wb_article.save()
                 message = (f'{ur_lico} проверьте артикул {common_article} на вб вручную. \
                            Не совпали данные. Артикулы: {wb_article.wb_seller_article} {wb_data[0]}. \
                            Баркоды: {wb_article.wb_barcode} {wb_data[1]}. \
-                           Ном номера: {wb_article.wb_nomenclature} {wb_data[2]}')
+                           common_article: {wb_article.common_article} {common_article}')
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             else:
                 wb_article.status = 'Сопоставлено'

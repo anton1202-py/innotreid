@@ -212,6 +212,7 @@ class ArticleGroup(models.Model):
     common_article = models.ForeignKey(
         Articles,
         verbose_name='Общий артикул',
+        related_name='articlegroup',
         on_delete=models.CASCADE,
         blank=True,
         null=True

@@ -12,15 +12,15 @@ urlpatterns = [
     path('delete_articles', views.delete_artices,
          name='delete_articles'),
 
-    path('article_compare/<ur_lico>/<str:common_article>',
+    path('article_compare/<ur_lico>/<int:pk>',
          views.ArticleCompareDetailKaravaev.as_view(),
          name='article_compare_detail'
          ),
-    path('article_compare/<ur_lico>/<str:common_article>',
+    path('article_compare/<ur_lico>/<int:pk>',
          views.ArticleCompareDetailInnotreid.as_view(),
          name='article_compare_detail'
          ),
-    path('article_compare/<ur_lico>/<str:common_article>',
+    path('article_compare/<ur_lico>/<int:pk>',
          views.ArticleCompareDetailChudes.as_view(),
          name='article_compare_detail'
          ),

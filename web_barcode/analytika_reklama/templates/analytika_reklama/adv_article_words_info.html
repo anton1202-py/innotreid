@@ -10,11 +10,28 @@
         </div>
 
         
-        {% if import_data %}
-            <script>
-                alert("{{ import_data }}");
-            </script>
+        {% if errors_data %}
+            <div class="alert alert-danger" role="alert">
+                {{ errors_data|safe }}<br>
+            </div>
         {% endif %}
+        {% if ok_answer %}
+            <div class="alert alert-success" role="alert">
+                {{ ok_answer|safe }}
+            </div>
+        {% endif %}
+
+        <div class='filter-data'>
+            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <label for="import_data" title="Загрузить группы из Excel">
+                        Загрузить статистику Джема
+                    </label>
+                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                </div>
+            </form>
+        </div>
         <table id="table">
             <thead>
                 <tr>
@@ -87,6 +104,11 @@
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                 .forEach(tr => table.appendChild(tr) );
         })));
+
+        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+        function submitForm() {
+          document.getElementById('uploadForm').submit();
+        }
        
     </script>
         

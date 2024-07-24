@@ -129,24 +129,24 @@
 
         // ========== ОБРБАТЫВАЕТ СОЗДАНИЕ КАМПАНИЙ ИЗ EXCEL ФАЙЛА ========= //
         $(document).ready(function(){
-    $('#import_data').change(function(){
-        var formData = new FormData($('#uploadForm')[0]);
-        formData.append("user_chat_id", "{{ user_chat_id }}");
-        $.ajax({
-            url: 'create_reklama_from_excel',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response){
-                alert(response);
-            },
-            error: function(){
-                alert('Ошибка при загрузке файла');
-            }
+            $('#import_data').change(function(){
+                var formData = new FormData($('#uploadForm')[0]);
+                formData.append("user_chat_id", "{{ user_chat_id }}");
+                $.ajax({
+                    url: 'create_reklama_from_excel',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response){
+                        alert(response);
+                    },
+                    error: function(){
+                        alert('Ошибка при загрузке файла');
+                    }
+                });
+            });
         });
-    });
-});
 
         // ========== ОБРБАТЫВАЕТ НАЖАТИЕ КНОПКИ ЗАГРУЗИТЬ ИЗ ФАЙЛА ========= //
         // document.getElementById('import_data').addEventListener('change', function() {

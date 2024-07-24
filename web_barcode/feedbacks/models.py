@@ -13,6 +13,7 @@ class FeedbacksWildberries(models.Model):
     common_article = models.ForeignKey(
         Articles,
         verbose_name='Общий артикул',
+        related_name='feedbacks_wildberries',
         on_delete=models.SET_NULL,
         null=True,
     )

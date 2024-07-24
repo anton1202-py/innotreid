@@ -56,10 +56,10 @@
                 </div>
             </form>
         </div>
-        <!-- <button id="submitBtn">Отправить выбранные артикулы</button> -->
+        <button id="submitBtn">Отправить выбранные артикулы</button>
             <table style="overflow-x: scroll; display: block; width: 100%;">
                 <tr>
-                    <!-- <th>Чек</th> -->
+                    <th>Чек</th>
                     <th>Артикул</th>
                     <th>Статус</th>
                     <th>Компания</th>
@@ -83,15 +83,15 @@
                     <th>Удалить</th>
                 </tr>
                 {% for el in data %}   
-                <tr>
-                    <!-- <td>
+                <tr data-article-id="{{ el.id }}">
+                    <td>
                         <input type="checkbox" name="common_article" class="input-field">
-                    </td> -->
-                    <td><a href="{% url 'article_compare_detail' el.company el.common_article %}">{{ el.common_article }}</a></td>
+                    </td>
+                    <td><a href="{% url 'article_compare_detail' el.company el.id %}">{{ el.common_article }}</a></td>
                     <td>{{ el.status }}</td>
                     <td>{{ el.company }}</td>
                     <td>{{ el.name }}</td>
-                    <td>{{ el.cost_price }}</td>
+                    <td>{{ el.id }}</td>
 
                     <td>{{ el.wb_seller_article }}</td>
                     <td>{{ el.wb_barcode }}</td>
@@ -151,11 +151,12 @@
                 var checkboxes = document.querySelectorAll('.input-field:checked');
                 
                 checkboxes.forEach(function(checkbox) {
-                    var articleElement = checkbox.closest('tr').querySelector('a');
+                    var articleElement = checkbox.closest('tr');
                     console.log('selectedArticles', checkbox.closest('tr'))
-                    var article = articleElement.innerText;
                     
-                    selectedArticles.push(article);
+                    var articleNumber = articleElement.getAttribute('data-article-id');
+                    console.log('articleNumber', articleNumber)
+                    selectedArticles.push(articleNumber);
                     
                 });
                 

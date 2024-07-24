@@ -77,11 +77,11 @@ def delete_artices(request):
     """Удаляет артикулы"""
 
     if request.POST:
+        print(request.POST)
         raw_articles_list = request.POST.get('articles')
         article_list = raw_articles_list.split(',')
         for article in article_list:
-            Articles.objects.get(company='ИП Караваев',
-                                 common_article=article).delete()
+            Articles.objects.get(id=int(article)).delete()
     return JsonResponse({'message': 'Value saved successfully.'})
 
 
@@ -367,41 +367,87 @@ class ArticleCompareDetailView(ListView):
 
     def __init__(self, *args, **kwargs):
         self.ur_lico = kwargs.pop('ur_lico', None)
+        self.pk = kwargs.pop('pk', None)
         super(ArticleCompareDetailView, self).__init__(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ArticleCompareDetailView,
                         self).get_context_data(**kwargs)
+        print(self.kwargs)
         return context
 
     def post(self, request, *args, **kwargs):
         if request.POST:
             post_data = request.POST
+
+            wb_nomenclature = post_data.get('wb_nomenclature')
+            wb_seller_article = post_data.get('wb_seller_article')
+            wb_barcode = post_data.get('wb_barcode')
             article = Articles.objects.get(company=self.kwargs['ur_lico'],
-                                           common_article=self.kwargs['common_article'])
+                                           pk=self.kwargs['pk'])
             article.status = 'Сопоставлено'
-            article.wb_seller_article = post_data.get('wb_seller_article')
-            article.wb_barcode = post_data.get('wb_barcode')
-            article.wb_nomenclature = post_data.get('wb_nomenclature')
+            article.common_article = post_data.get('common_article')
 
-            article.ozon_seller_article = post_data.get('ozon_seller_article')
-            article.ozon_barcode = post_data.get('ozon_barcode')
-            article.ozon_product_id = post_data.get('ozon_product_id')
-            article.ozon_sku = post_data.get('ozon_sku')
-            article.ozon_fbo_sku_id = post_data.get('ozon_fbo_sku_id')
-            article.ozon_fbs_sku_id = post_data.get('ozon_fbs_sku_id')
+            ozon_seller_article = post_data.get('ozon_seller_article')
+            ozon_barcode = post_data.get('ozon_barcode')
+            ozon_product_id = post_data.get('ozon_product_id')
+            ozon_sku = post_data.get('ozon_sku')
+            ozon_fbo_sku_id = post_data.get('ozon_fbo_sku_id')
+            ozon_fbs_sku_id = post_data.get('ozon_fbs_sku_id')
 
-            article.yandex_seller_article = post_data.get(
+            yandex_seller_article = post_data.get(
                 'yandex_seller_article')
-            article.yandex_barcode = post_data.get('yandex_barcode')
-            article.yandex_sku = post_data.get('yandex_sku')
+            yandex_barcode = post_data.get('yandex_barcode')
+            yandex_sku = post_data.get('yandex_sku')
+
+            if wb_seller_article == '':
+                wb_seller_article = None
+            if wb_barcode == '':
+                wb_barcode = None
+            if wb_nomenclature == '':
+                wb_nomenclature = None
+
+            if ozon_seller_article == '':
+                ozon_seller_article = None
+            if ozon_barcode == '':
+                ozon_barcode = None
+            if ozon_product_id == '':
+                ozon_product_id = None
+            if ozon_sku == '':
+                ozon_sku = None
+            if ozon_fbo_sku_id == '':
+                ozon_fbo_sku_id = None
+            if ozon_fbs_sku_id == '':
+                ozon_fbs_sku_id = None
+
+            if yandex_seller_article == '':
+                yandex_seller_article = None
+            if yandex_barcode == '':
+                yandex_barcode = None
+            if yandex_sku == '':
+                yandex_sku = None
+            article.wb_seller_article = wb_seller_article
+            article.wb_barcode = wb_barcode
+            article.wb_nomenclature = wb_nomenclature
+
+            article.ozon_seller_article = ozon_seller_article
+            article.ozon_barcode = ozon_barcode
+            article.ozon_product_id = ozon_product_id
+            article.ozon_sku = ozon_sku
+            article.ozon_fbo_sku_id = ozon_fbo_sku_id
+            article.ozon_fbs_sku_id = ozon_fbs_sku_id
+
+            article.yandex_seller_article = yandex_seller_article
+            article.yandex_barcode = yandex_barcode
+            article.yandex_sku = yandex_sku
             article.save()
-        return redirect('article_compare_detail', self.kwargs['ur_lico'], self.kwargs['common_article'])
+        return redirect('article_compare_detail', self.kwargs['ur_lico'], self.kwargs['pk'])
 
     def get_queryset(self):
-        common_article = self.kwargs['common_article']
+        print('self.kwargs', self.kwargs)
+        pk = self.kwargs['pk']
         self.ur_lico = self.kwargs['ur_lico']
-        return Articles.objects.filter(company=self.ur_lico, common_article=common_article)
+        return Articles.objects.filter(company=self.ur_lico, pk=self.kwargs['pk'])
 
 
 class ArticleCompareDetailInnotreid(ArticleCompareDetailView):
