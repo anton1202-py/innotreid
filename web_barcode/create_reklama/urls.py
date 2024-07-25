@@ -37,4 +37,6 @@ urlpatterns = [
          name='update_checkbox_auto_replenish'),
     path('create_reklama_from_excel', views.create_reklama_from_excel,
          name='create_reklama_from_excel'),
+    path('days_sender_statistic', views.days_sender_statistic,
+         name='days_sender_statistic'),
 ]

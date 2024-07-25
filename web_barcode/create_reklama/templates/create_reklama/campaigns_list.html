@@ -10,47 +10,19 @@
         </div>
         
         <div class='filter-data'>
-            <form action="" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <label for="common_article_id" class="rand">
-                    <span>Цена больше чем</span><br>
-                    <input type="number" id="common_article_id" name="article_price" class="input-field">
-                </label>
-                <label for="common_article_id" class="rand">
-                    <span>Цена меньше чем</span><br>
-                    <input type="number" id="common_article_id" name="less_article_price" class="input-field">
-                </label>
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
-                </div>
-            </form>
+            <div class="inner-form-data" style="display: flex; gap: 1rem">
+                <br>
+                <button id="filterButton" style="white-space: nowrap; display: flex; gap: 1rem" >
+                    Фильтры 
+                    <span class="material-symbols-outlined">
+                        instant_mix
+                    </span>
+                </button>
+            </div>
 
-            <form id="centr-form" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <span>Юр. лицо</span><br>
-                    <select class="mySelect" name="ur_lico_select">
-                        <option value=""></option>
-                        {% for ur_lico in ur_lico_data %}
-                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
-            <form action="" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="update_data" name="update_data" value="Обновить данные" />
-                </div>
-            </form>
-
-            <div class="inner-form-data">
+            <div class="inner-form-data" style="display: flex; gap: 1rem">
                 <br>
                 <button id="startCampaignsBtn" style="white-space: nowrap;" >Старт Кампаний</button>
-            </div>
-            <div class="inner-form-data">
                 <br>
                 <button id="pausaCampaignsBtn" style="white-space: nowrap;" >Пауза Кампаний</button>
             </div>
@@ -129,6 +101,49 @@
             </tr>
             {% endfor %}
         </table>
+        <div class="filter-overlay" id="overlay"></div>
+        <div class="filter-popup" id="popup">
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <label for="common_article_id" class="rand">
+                    <span>Цена больше чем</span><br>
+                    <input type="number" id="common_article_id" name="article_price" class="input-field">
+                </label>
+                <label for="common_article_id" class="rand">
+                    <span>Цена меньше чем</span><br>
+                    <input type="number" id="common_article_id" name="less_article_price" class="input-field">
+                </label>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать" />
+                </div>
+            </form>
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select class="mySelect" name="ur_lico_select">
+                        <option value=""></option>
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <br>
+            <label for="common_article_id" class="rand">
+                <span>Отправлять статистику за посление</span><br>
+                <input type="number" placeholder="{{ statistic_days.0.days_amount }}" id="statistic_days" name="statistic_days_sender" class="statistic_days_sender">
+            </label>
+
+            <form action="" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="update_data" name="update_data" value="Обновить данные" />
+                </div>
+            </form>
+        </div>
 
     </div>  
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -285,6 +300,51 @@
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
             
                 fetch('update_checkbox_auto_replenish', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+    // РАБОТА С ВСПЛЫВАЮЩИМ ОКНОМ ФИЛЬТРОВ
+    const filterButton = document.getElementById('filterButton');
+    const popup = document.getElementById('popup');
+    const overlay = document.getElementById('overlay');
+
+    // Функция для открытия всплывающего окна
+    filterButton.addEventListener('click', () => {
+        popup.style.display = 'block';
+        overlay.style.display = 'block';
+    });
+
+    // Функция для закрытия всплывающего окна
+    overlay.addEventListener('click', () => {
+        popup.style.display = 'none';
+        overlay.style.display = 'none';
+    });
+
+    // =========== ОБНОВЛЯЕТ КОЛИЧЕСТВО ДНЕЙ ДЛЯ ОТПРАВКИ СТАТИСТИКИ ========== //
+    document.querySelectorAll('.statistic_days_sender').forEach(select => {
+            select.addEventListener('input', function() {
+                var days = this.value;
+                console.log(days)
+                
+                var formData = new FormData();
+                formData.append('days', days);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('days_sender_statistic', {
                     method: 'POST',
                     body: formData,
                 })

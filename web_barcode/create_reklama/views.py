@@ -20,6 +20,7 @@ from create_reklama.supplyment import (
     check_data_for_create_adv_campaign,
     create_reklama_excel_with_campaign_data,
     create_reklama_template_excel_file, filter_campaigns_status_only)
+from create_reklama.tests import camp_data
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import HttpResponse, JsonResponse
@@ -38,7 +39,6 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
 @login_required
 def create_campaign(request):
     """Отображает страницу создания кампании"""
-    # budget_working()
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
@@ -393,3 +393,15 @@ def create_reklama_from_excel(request):
             return HttpResponse('Неправильный формат файла')
 
     return HttpResponse('Ошибка при загрузке файла')
+
+
+def days_sender_statistic(request):
+    """Обновляет количество дней для отрпавки статистики в телеграм"""
+
+    if request.POST:
+        print(request.POST)
+        days = int(request.POST.get('days'))
+
+        SenderStatisticDaysAmount.objects.filter(id=1).update(days_amount=days)
+
+    return HttpResponse('Запрос обработался')
