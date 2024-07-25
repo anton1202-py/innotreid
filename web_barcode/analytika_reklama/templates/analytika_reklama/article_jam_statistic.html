@@ -33,11 +33,27 @@
                 </div>
             </div>
         </div>
+        <div class='filter-data'>
+            <form id="left-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>От</span><br>
+                    <input type="date"  name="datestart" class="input-field">
+                </div>
+                <div class="inner-form-data">
+                    <span>До</span><br>
+                    <input type="date"  name="datefinish" class="input-field">
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter" value="Фильтровать"/>
+                </div>
+            </form>
+        </div>
         <table id="table">
             <thead>
                 <tr>
                     <th>Кластеры</th>
-                    <th>Показы кластера в рекламе</th>
                     <th>Частотность в джеме</th>
                     <th>Показы в джеме</th>
                     <th>Добавление в корзину</th>
@@ -48,13 +64,12 @@
                 {% for cluster, data in data_dict.items %}
                 <tr>
                     <td>{{ cluster }}</td>
-                    <td>{{ data.0 }}</td>
 
-                    {% if data.1 %}
+                    {% if data.0 %}
+                        <td>{{ data.0 }}</td>
                         <td>{{ data.1 }}</td>
                         <td>{{ data.2 }}</td>
                         <td>{{ data.3 }}</td>
-                        <td>{{ data.4 }}</td>
                     {% else %}
                         <td></td>
                         <td></td>

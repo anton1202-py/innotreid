@@ -348,6 +348,98 @@ class ArticleClustersView(ListView):
             article=self.kwargs['id'])
 
 
+class ArticleJamStatisticView(ListView):
+    model = JamMainArticleKeyWords
+    template_name = 'analytika_reklama/article_jam_statistic.html'
+    context_object_name = 'data'
+    object_list = None
+
+    def __init__(self, *args, **kwargs):
+        self.ur_lico = kwargs.pop('ur_lico', None)
+        super(ArticleJamStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ArticleJamStatisticView,
+                        self).get_context_data(**kwargs)
+        data_dict = {}
+
+        article_description = Articles.objects.filter(
+            id=self.kwargs['id'])[0]
+
+        jam_data = JamMainArticleKeyWords.objects.filter(
+            article=self.kwargs['id']).values('cluster').annotate(
+                cluster_name=F('cluster__phrase'),
+                total_frequency=Sum('frequency'),
+                total_views=Sum('views'),
+                total_go_to_card=Sum('go_to_card'),
+                total_added_to_cart=Sum('added_to_cart'),
+                total_ordered=Sum('ordered')
+        )
+        for data in jam_data:
+            if data['cluster_name'] in data_dict:
+                data_dict[data['cluster_name']].append(data['total_frequency'])
+                data_dict[data['cluster_name']].append(data['total_views'])
+                data_dict[data['cluster_name']].append(
+                    data['total_added_to_cart'])
+                data_dict[data['cluster_name']].append(data['total_ordered'])
+            else:
+                data_dict[data['cluster_name']] = [data['total_frequency'],
+                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered']]
+
+        context.update({
+            'article_id': article_description.pk,
+            'data_dict': data_dict,
+            'page_name': f"Статистика Джема артикула {article_description.common_article}: {article_description.name}",
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        article_description = Articles.objects.filter(
+            id=self.kwargs['id'])[0]
+        data_dict = {}
+        jam_data = JamMainArticleKeyWords.objects.filter(
+            article=self.kwargs['id'])
+        if request.POST:
+            if 'datestart' in request.POST and request.POST['datestart']:
+                date_start = request.POST.get('datestart')
+
+                jam_data = jam_data.filter(
+                    Q(date_start__gte=date_start))
+            if 'datefinish' in request.POST and request.POST['datefinish']:
+                date_finish = request.POST.get('datefinish')
+                jam_data = jam_data.filter(
+                    Q(date_finish__lt=date_finish))
+
+        jam_data = jam_data.values('cluster').annotate(
+            cluster_name=F('cluster__phrase'),
+            total_frequency=Sum('frequency'),
+            total_views=Sum('views'),
+            total_go_to_card=Sum('go_to_card'),
+            total_added_to_cart=Sum('added_to_cart'),
+            total_ordered=Sum('ordered')
+        )
+        for data in jam_data:
+            if data['cluster_name'] in data_dict:
+                data_dict[data['cluster_name']].append(data['total_frequency'])
+                data_dict[data['cluster_name']].append(data['total_views'])
+                data_dict[data['cluster_name']].append(
+                    data['total_added_to_cart'])
+                data_dict[data['cluster_name']].append(data['total_ordered'])
+            else:
+                data_dict[data['cluster_name']] = [data['total_frequency'],
+                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered']]
+        context = {
+            'article_id': article_description.pk,
+            'data_dict': data_dict,
+            'page_name': f"Статистика Джема артикула {article_description.common_article}: {article_description.name}",
+        }
+        return self.render_to_response(context)
+
+    def get_queryset(self):
+        return MainArticleKeyWords.objects.filter(
+            article=self.kwargs['id'])
+
+
 class KeyPhraseCampaignStatisticView(ListView):
     """
     Описывает статистику ключевой фразы у каждой кампании
@@ -409,7 +501,6 @@ class KeyPhraseCampaignStatisticView(ListView):
                 data['minus_checker'] = True
             else:
                 data['minus_checker'] = False
-        print(numeric_list)
         context.update({
             'phrase_data': phrase_data,
             'keyphrase_obj': self.kwargs['id'],

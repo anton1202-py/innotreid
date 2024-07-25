@@ -27,6 +27,10 @@ urlpatterns = [
          views.ArticleClustersView.as_view(),
          name='adv_article_clusters'
          ),
+    path('adv_article_jam_statistic/<int:id>',
+         views.ArticleJamStatisticView.as_view(),
+         name='adv_article_jam_statistic'
+         ),
     path('adv_article_excluded/<int:id>',
          views.MainArticleExcludedView.as_view(),
          name='adv_article_excluded'
