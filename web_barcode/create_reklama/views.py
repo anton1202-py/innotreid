@@ -103,7 +103,7 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.filter(
         ur_lico__ur_lice_name='ООО Иннотрейд')
-    statistic_days = SenderStatisticDaysAmount.objects.all()[0]
+    statistic_days = SenderStatisticDaysAmount.objects.all()
     ur_lico_data = UrLico.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
