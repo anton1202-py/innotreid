@@ -9,7 +9,8 @@ from api_request.wb_requests import (create_auto_advertisment_campaign,
 from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
-                                   ReplenishWbCampaign)
+                                   ReplenishWbCampaign,
+                                   SenderStatisticDaysAmount)
 from create_reklama.periodic_tasks import (
     auto_replenish_budget_campaign, budget_working,
     set_up_minus_phrase_to_auto_campaigns, update_campaign_status)
@@ -102,7 +103,7 @@ def campaigns_were_created_with_system(request):
     page_name = 'Созданные рекламные кампании'
     campaigns_list = CreatedCampaign.objects.filter(
         ur_lico__ur_lice_name='ООО Иннотрейд')
-
+    statistic_days = SenderStatisticDaysAmount.objects.all()[0]
     ur_lico_data = UrLico.objects.all()
     koef_campaign_data = ProcentForAd.objects.values('campaign_number').annotate(
         latest_add=Max('id')).values('campaign_number', 'latest_add', 'koef_date', 'koefficient', 'virtual_budget', 'campaign_budget_date', 'virtual_budget_date')
@@ -146,6 +147,7 @@ def campaigns_were_created_with_system(request):
         'ur_lico_data': ur_lico_data,
         'koef_dict': koef_dict,
         'auto_replenish': auto_replenish,
+        'statistic_days': statistic_days,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }

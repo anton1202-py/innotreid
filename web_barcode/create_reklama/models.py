@@ -262,3 +262,18 @@ class AllMinusWords(models.Model):
     class Meta:
         verbose_name = 'Минус слова для всех кампаний'
         verbose_name_plural = 'Минус слова для всех кампаний'
+
+
+class SenderStatisticDaysAmount(models.Model):
+    """Определяет за какое количество дней отрпавлять статитстику в рекламных кампаниях"""
+    days_amount = models.IntegerField(
+        verbose_name='Количество дней',
+        default=0
+    )
+
+    def __str__(self):
+        return self.days_amount
+
+    class Meta:
+        verbose_name = 'Количество дней для статистики'
+        verbose_name_plural = 'Количество дней для статистики'

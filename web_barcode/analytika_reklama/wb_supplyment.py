@@ -245,11 +245,11 @@ def save_main_keywords_searchcampaign_statistic(campaign_obj, keywords_data):
             if not MainCampaignClusters.objects.filter(campaign=campaign_obj, cluster=cluster_obj).exists():
                 MainCampaignClusters(
                     campaign=campaign_obj,
-                    cluster=str(keyword['keyword']),
+                    cluster=cluster_obj,
                     count=(keyword['count'])
                 ).save()
             else:
                 current_cluster_obj = MainCampaignClusters.objects.get(
-                    campaign=campaign_obj, cluster=str(keyword['keyword']))
+                    campaign=campaign_obj, cluster=cluster_obj)
                 current_cluster_obj.count = keyword['count']
                 current_cluster_obj.save()

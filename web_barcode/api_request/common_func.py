@@ -42,8 +42,6 @@ def api_retry_decorator(func):
                     return
                 elif response.status_code == 403:
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Доступ запрещен'
-                elif response.status_code == 429:
-                    message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Слишком много запросов'
                 elif response.status_code == 401:
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Не авторизован'
                 elif response.status_code == 404:
