@@ -21,6 +21,10 @@ urlpatterns = [
          views.CampaignReplenishStatisticView.as_view(),
          name='create_replenish_stat'
          ),
+    path('create_pausa_stat/<int:id>',
+         views.StartPausaStatisticView.as_view(),
+         name='create_pausa_stat'
+         ),
 
 
     path('update_common_minus_words', views.update_common_minus_words,

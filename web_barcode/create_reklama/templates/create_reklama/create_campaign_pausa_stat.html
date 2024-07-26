@@ -60,11 +60,12 @@
                       {
                         type: 'line',
                         data: {
-                          labels: [{% for date in replenish_data %} '{{ date.replenish_date }}', {% endfor %}],
+                          labels: [{% for date in pausa_data %} '{{ date.date_status }}', {% endfor %}],
                           datasets: [
                             {
-                              label: 'Пополнение бюджета кампании {{ campaign_data.campaign_name|safe }}',
-                              data: [{% for value in replenish_data %} {{ value.sum }}, {% endfor %}],
+                              label: 'Статитстика остановок {{ campaign_data.campaign_name|safe }}.  Статус 9 - идут показы. Статус 11 - на паузе.',
+                              
+                              data: [{% for value in pausa_data %} {{ value.campaign_status }}, {% endfor %}],
                               lineTension: 0.3,
                               fill: true,
                               backgroundColor: function (context) {
@@ -103,12 +104,12 @@
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Дата</th>
-                <th>Пополнение</th>
+                <th>Статус</th>
             </tr>
-            {% for el in replenish_data %}
+            {% for el in pausa_data %}
             <tr>
-                <td>{{ el.replenish_date }}</td>
-                <td>{{ el.sum }}</td> 
+                <td>{{ el.date_status }}</td>
+                <td>{{WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign_status }}</td> 
             </tr>
             {% endfor %}
         </table>

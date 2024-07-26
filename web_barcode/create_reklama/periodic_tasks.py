@@ -20,7 +20,8 @@ from create_reklama.minus_words_working import (
     get_minus_phrase_from_wb_auto_campaigns,
     get_minus_phrase_from_wb_search_catalog_campaigns)
 from create_reklama.models import (AllMinusWords, AutoReplenish,
-                                   CreatedCampaign, ReplenishWbCampaign)
+                                   CreatedCampaign, ReplenishWbCampaign,
+                                   StartPausaCampaign)
 from create_reklama.supplyment import (filter_campaigns_status_only,
                                        filter_campaigns_status_type,
                                        update_campaign_budget,
@@ -119,13 +120,23 @@ def update_campaign_status():
                     for campaign_obj in campaigns_data:
                         if int(campaign_obj.campaign_number) in campaign_list and campaign_status != 7:
                             campaign_obj.campaign_status = campaign_status
+                            if not StartPausaCampaign.objects.filter(
+                                campaign_number=campaign_obj,
+                                campaign_status=campaign_status,
+                                date_status=datetime.now().strftime("%Y-%m-%d")
+                            ).exists():
+                                StartPausaCampaign(
+                                    campaign_number=campaign_obj,
+                                    campaign_status=campaign_status,
+                                    date_status=datetime.now().strftime("%Y-%m-%d")
+                                ).save()
                             campaign_obj.save()
                         elif int(campaign_obj.campaign_number) in campaign_list and campaign_status == 7:
                             campaign_obj.delete()
-    campaigns_data = CreatedCampaign.objects.filter(
-        campaign_status=7
+    campaigns_del_data = CreatedCampaign.objects.exclude(
+        campaign_status__in=[4, 9, 11]
     )
-    for i in campaigns_data:
+    for i in campaigns_del_data:
         i.delete()
 
 

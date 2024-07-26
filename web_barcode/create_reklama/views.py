@@ -10,7 +10,8 @@ from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign,
-                                   SenderStatisticDaysAmount)
+                                   SenderStatisticDaysAmount,
+                                   StartPausaCampaign)
 from create_reklama.periodic_tasks import (
     auto_replenish_budget_campaign, budget_working,
     set_up_minus_phrase_to_auto_campaigns, update_campaign_status)
@@ -318,6 +319,32 @@ class CampaignReplenishStatisticView(ListView):
             'campaign_data': campaign_obj,
             'page_name': f"Статистика пополнения: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
 
+        })
+        return context
+
+
+class StartPausaStatisticView(ListView):
+    model = CreatedCampaign
+    template_name = 'create_reklama/create_campaign_pausa_stat.html'
+    context_object_name = 'data'
+
+    def __init__(self, *args, **kwargs):
+        super(StartPausaStatisticView, self).__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+
+        context = super(StartPausaStatisticView,
+                        self).get_context_data(**kwargs)
+        campaign_obj = CreatedCampaign.objects.get(id=self.kwargs['id'])
+        pausa_data = StartPausaCampaign.objects.filter(
+            campaign_number=campaign_obj)
+
+        context.update({
+            'pausa_data': pausa_data,
+            'campaign_obj': self.kwargs['id'],
+            'campaign_data': campaign_obj,
+            'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+            'page_name': f"Статистика остановок: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
         })
         return context
 

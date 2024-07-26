@@ -7,7 +7,8 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      create_auto_advertisment_campaign,
                                      get_budget_adv_campaign)
 from create_reklama.models import (AutoReplenish, CpmWbCampaign,
-                                   CreatedCampaign, ProcentForAd)
+                                   CreatedCampaign, ProcentForAd,
+                                   StartPausaCampaign)
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
@@ -127,6 +128,12 @@ def add_created_campaign_data_to_database(main_data):
 
     AutoReplenish(
         campaign_number=adv_obj
+    ).save()
+
+    StartPausaCampaign(
+        campaign_number=adv_obj,
+        date_status=today,
+        campaign_status=9
     ).save()
 
 
