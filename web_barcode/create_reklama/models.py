@@ -137,6 +137,35 @@ class CpmWbCampaign(models.Model):
         verbose_name_plural = 'Изменение ставок рекламной кампании ВБ'
 
 
+class StartPausaCampaign(models.Model):
+    """История остановок и запусков рекламной кампании"""
+    campaign_number = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.SET_NULL,
+        verbose_name='Рекламная кампания',
+        related_name='start_pausa_campaign',
+        blank=True,
+        null=True
+    )
+    campaign_status = models.IntegerField(
+        verbose_name='Статус РК',
+        blank=True,
+        null=True
+    )
+    date_status = models.DateTimeField(
+        verbose_name='Дата статуса',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f'{self.campaign_number.campaign_name}'
+
+    class Meta:
+        verbose_name = 'Статистика пауз и запусков кампании ВБ'
+        verbose_name_plural = 'Статистика пауз и запусков кампании ВБ'
+
+
 # ========= ПОПОЛНЕНИЕ РЕКЛАМНЫХ КАМПАНИЙ ========== #
 class ProcentForAd(models.Model):
     """Процент от продаж для пополнения рекламной кампании"""
