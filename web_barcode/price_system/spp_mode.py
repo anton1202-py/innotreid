@@ -22,6 +22,7 @@ def wb_discounts_prices_single_article_info(header, article, counter=0):
     url = f'https://discounts-prices-api.wb.ru/api/v2/list/goods/filter?limit=1000&filterNmID={article}'
     response = requests.request("GET", url, headers=header)
     counter += 1
+    print(response.status_code, article, counter)
     if response.status_code == 200:
         main_data = json.loads(response.text)['data']['listGoods']
         return main_data
@@ -36,9 +37,8 @@ def wb_discounts_prices_single_article_info(header, article, counter=0):
 @sender_error_to_tg
 def return_article_discount_price_info(ur_lico, article):
     """Возвращает данные о цене и скидке артикула"""
-    header = header_wb_data_dict[ur_lico]
+    header = header_wb_dict[ur_lico]
     main_data = wb_discounts_prices_single_article_info(header, article)
-
     data_dict = {}
     if main_data:
         for data in main_data:
@@ -57,6 +57,7 @@ def price_group_article_info():
     # находим по первому артикулу в каждой ценовой группе
     for group_data in main_db_data:
         group_obj = Groups.objects.get(id=group_data[0])
+
         article = ArticleGroup.objects.filter(group=group_obj)
         inner_dict = {}
         if article.exists():
@@ -114,7 +115,6 @@ def article_spp_info():
     group_db_data = price_group_article_info()
     group_spp_data_dict = {}
     for group_data in group_db_data:
-
         ur_lico = group_data['ur_lico']
         article = group_data['wb_nmid']
         group_object = group_data['group_object']

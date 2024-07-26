@@ -21,7 +21,7 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
-                               yandex_add_price_info)
+                               write_group_spp_data, yandex_add_price_info)
 from .supplyment import (articles_price_discount,
                          excel_article_costprice_export, excel_compare_table,
                          excel_creating_mod,
@@ -105,7 +105,6 @@ def groups_view(request, ur_lico):
     data = Groups.objects.filter(company=ur_lico).order_by('id')
     page_name = f'Ценовые группы {ur_lico}'
     import_data_error_text = ''
-
     if request.POST:
         if request.POST.get('export') == 'create_file':
             return excel_with_price_groups_creating_mod(data, ur_lico)
