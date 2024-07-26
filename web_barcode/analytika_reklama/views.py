@@ -210,13 +210,20 @@ class CampaignDailyStatisticView(ListView):
 
         context = super(CampaignDailyStatisticView,
                         self).get_context_data(**kwargs)
-        campaign_object = CreatedCampaign.objects.get(
+        campaign_obj = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
+        # delete_data = DailyCampaignParameters.objects.filter(
+        #     statistic_date='2024-07-13 21:00:00+00:00')
+        # for i in delete_data:
+        #     i.delete()
         statistic_data = DailyCampaignParameters.objects.filter(
-            campaign=self.kwargs['id'])
+            campaign=self.kwargs['id']).order_by('statistic_date')
+
         context.update({
             'statistic_data': statistic_data,
-            'page_name': f"Статистика кампании: {campaign_object.campaign_name} ({campaign_object.campaign_number})",
+            'campaign_obj': self.kwargs['id'],
+            'campaign_data': campaign_obj,
+            'page_name': f"Статистика кампании {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",
             'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
             'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
         })

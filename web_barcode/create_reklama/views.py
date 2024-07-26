@@ -293,7 +293,7 @@ class CampaignCpmStatisticView(ListView):
             'cpm_data': cpm_data,
             'campaign_obj': self.kwargs['id'],
             'campaign_data': campaign_obj,
-            'page_name': f"Статистика CPM: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
+            'page_name': f"Статистика CPM {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",
         })
         return context
 
@@ -317,7 +317,7 @@ class CampaignReplenishStatisticView(ListView):
             'replenish_data': replenish_data,
             'campaign_obj': self.kwargs['id'],
             'campaign_data': campaign_obj,
-            'page_name': f"Статистика пополнения: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
+            'page_name': f"Статистика пополнения {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",
 
         })
         return context
@@ -344,7 +344,7 @@ class StartPausaStatisticView(ListView):
             'campaign_obj': self.kwargs['id'],
             'campaign_data': campaign_obj,
             'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
-            'page_name': f"Статистика остановок: {campaign_obj.campaign_name} ({campaign_obj.campaign_number})",
+            'page_name': f"Статистика остановок {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",
         })
         return context
 

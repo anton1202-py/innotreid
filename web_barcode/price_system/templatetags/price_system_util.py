@@ -57,3 +57,8 @@ def round_number_two(value):
 @register.filter
 def float_number_filter(value):
     return float(value)
+
+
+@register.filter
+def float_for_js(value):
+    return str(value).replace(',', '.')

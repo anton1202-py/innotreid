@@ -16,10 +16,172 @@
                 alert("{{ import_data }}");
             </script>
         {% endif %}
+        <div class='filter-data'>
+            
+            <div style="display: flex; gap: 2rem;">
+                <div class="inner-form-data">
+                    <br>
+                    <a href="{% url 'create_cpm_budget_stat' campaign_obj %}">CPM</a>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <a href="{% url 'create_replenish_stat' campaign_obj %}">Бюджет</a>
+                </div>
+                <div class="inner-form-data">
+                  <br>
+                  <a href="{% url 'create_pausa_stat' campaign_obj %}">Остановки</a>
+              </div>
+              <div class="inner-form-data">
+                <br>
+                <a href="{% url 'adv_campaign_daily_statistic' campaign_obj %}">Ежедневная статистика</a>
+            </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warninng">
+            <div class="charts_sales_by_week">
+              <div class='chart'>
+                <canvas id="acquisitions" width="580" height="300"></canvas>
+                <script>
+                  function getGradient(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                        0,
+                        chartArea.bottom,
+                        0,
+                        chartArea.top
+                      );
+                      gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                      gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                      return gradient;
+                  }
+                  function getGradient2(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                      0,
+                      chartArea.bottom,
+                      0,
+                      chartArea.top
+                    );
+                    gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+                    gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+                    return gradient;
+                  }
+                  (async function() {
+                    new Chart(
+                      document.getElementById('acquisitions'),
+                      {
+                        type: 'line',
+                        data: {
+                          labels: [{% for date in statistic_data %} '{{ date.statistic_date }}', {% endfor %}],
+                          datasets: [
+                            {
+                              label: 'CTR {{ campaign_data.campaign_name|safe }}',
+                              data: [{% for value in statistic_data %} {{ value.ctr|float_for_js }}, {% endfor %}],
+                              lineTension: 0.3,
+                              fill: true,
+                              backgroundColor: function (context) {
+                                const chart = context.chart;
+                                const { ctx, chartArea } = chart;
+                                // This case happens on initial chart load
+                                if (!chartArea) return;
+                                return getGradient2(ctx, chartArea);
+                              }
+                            },
+                          ]
+                        },
+                        options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: {
+                                  labels: {
+                                      // This more specific font property overrides the global property
+                                      font: {
+                                        size: 14,
+                                        family: "'Open Sans', 'Arial', 'sans-serif'"
+                                      }
+                                  }
+                              }
+                          }
+                        }
+                      }
+                    );
+                  })();
+                </script>
+              </div>
+
+              <div class='chart'>
+                <canvas id="acquisitions2" width="580" height="300"></canvas>
+                <script>
+                  function getGradient(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                        0,
+                        chartArea.bottom,
+                        0,
+                        chartArea.top
+                      );
+                      gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                      gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                      return gradient;
+                  }
+                  function getGradient2(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                      0,
+                      chartArea.bottom,
+                      0,
+                      chartArea.top
+                    );
+                    gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+                    gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+                    return gradient;
+                  }
+                  (async function() {
+                    new Chart(
+                      document.getElementById('acquisitions2'),
+                      {
+                        type: 'line',
+                        data: {
+                          labels: [{% for date in statistic_data %} '{{ date.statistic_date }}', {% endfor %}],
+                          datasets: [
+                            {
+                              label: 'Показы {{ campaign_data.campaign_name|safe }}',
+                              data: [{% for value in statistic_data %} {{ value.views }}, {% endfor %}],
+                              lineTension: 0.3,
+                              fill: true,
+                              backgroundColor: function (context) {
+                                const chart = context.chart;
+                                const { ctx, chartArea } = chart;
+                                // This case happens on initial chart load
+                                if (!chartArea) return;
+                                return getGradient2(ctx, chartArea);
+                              }
+                            },
+                          ]
+                        },
+                        options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: {
+                                  labels: {
+                                      // This more specific font property overrides the global property
+                                      font: {
+                                        size: 14,
+                                        family: "'Open Sans', 'Arial', 'sans-serif'"
+                                      }
+                                  }
+                              }
+                          }
+                        }
+                      }
+                    );
+                  })();
+                </script>
+              </div>
+            </div>
+          </div>
         <table id="table">
             <thead>
                 <tr>
-                    <th>Кампания</th>
                     <th>Дата</th>
                     <th>Просмотры</th>
                     <th>Клики</th>
@@ -30,26 +192,22 @@
                     <th>orders</th>
                     <th>CR</th>
                     <th>Заказы</th>
-                    <th>Сумма заказов</th>
                 </tr>
             </thead>
             <tbody>
                 {% for el in data %}
                 <tr>
-                    <td>{{ el.campaign.campaign_number }}</td>
                     <td>{{ el.statistic_date }}</td>
     
                     <td>{{ el.views }}</td>
                     <td>{{ el.clicks }}</td>
                     <td>{{ el.ctr }}</td>
                     <td>{{ el.cpc }}</td>
-
                     <td>{{ el.summ|round_number }}</td>
                     <td>{{ el.atbs }}</td>
                     <td>{{ el.orders }}</td>
                     <td>{{ el.cr }}</td>
                     <td>{{ el.shks }}</td>
-                    <td>{{ el.sum_price }}</td>
                     
                 {% endfor %}
             </tbody>
@@ -58,191 +216,35 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // ========== Блокрует нажатие чекбокса copyrightcheckbox, если designcheckbox не нажат
-        document.querySelectorAll('.designcheckbox').forEach(checkbox => {
-            // Проверяем состояние чекбокса designer_checkbox_id при загрузке страницы
-            if (checkbox.checked) {
-                checkbox.closest('tr').querySelector('.copyrightcheckbox').disabled = false;
-            } else {
-                checkbox.closest('tr').querySelector('.copyrightcheckbox').checked = false;
-                checkbox.closest('tr').querySelector('.copyrightcheckbox').disabled = true;
-            }
         
-            checkbox.addEventListener('change', function() {
-                let copyrightCheckbox = this.closest('tr').querySelector('.copyrightcheckbox');
-                if (this.checked) {
-                    copyrightCheckbox.disabled = false;
-                } else {
-                    copyrightCheckbox.checked = false;
-                    copyrightCheckbox.disabled = true;
-                }
-            });
-        });
-
-        // ========== Показывает отфильтрованную по артикулам таблицу ========= //
-        $(document).ready(function() {
-            $('#common_article_id').on('input', function() {
-                var search_term = $(this).val();
-                $.ajax({
-                    url: '',
-                    data: {'search_term': search_term},
-                    success: function(data) {
-                        $('#table tbody').empty();
-                        if (data.length > 0) {
-                            $('#table thead').html('<tr><th>Ночник</th><th>Дизайнерский</th><th>С правами</th></tr>');
-                            data.forEach(function(article) {
-                                var newRow = '<tr><td>' + article.common_article + '</td><td><input class="designcheckbox" data-row="' + article.common_article + '" type="checkbox" name="designer_checkbox" value="' + article.designer_article + '"';
-                                if (article.designer_article) {
-                                    newRow += ' checked';
-                                }
-                                newRow += '></td><td><input class="copyrightcheckbox" data-row="' + article.common_article + '" type="checkbox" name="copyright_checkbox" value="' + article.copy_right + '"';
-                                if (article.copy_right) {
-                                    newRow += ' checked';
-                                }
-                                newRow += '></td></tr>';
-                                $('#table tbody').append(newRow);
-                            });
-                        } else {
-                            $('#table thead').html('<tr><th colspan="3">No matching articles found</th></tr>');
-                        }
-                    }
-                });
-            });
-        });
-           
-        // ========== Записывает в БД нажатия чекбоксов .designcheckbox ========= //
-        document.querySelectorAll('.designcheckbox').forEach(select => {
-            select.addEventListener('change', function() {
-                var selectedSurname = this.value;
-                console.log(selectedSurname)
-                var rowNumber = this.dataset.row;
-                console.log(rowNumber)
-
-                var formData = new FormData();
-                formData.append('designer_article_type', selectedSurname);
-                formData.append('article', rowNumber);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('update_article_designer_boolean_field/', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-         // ========== Записывает в БД нажатия чекбоксов .nondesigncheckbox ========= //
-         document.querySelectorAll('.nondesigncheckbox').forEach(select => {
-            select.addEventListener('change', function() {
-                var selectedSurname = this.value;
-                console.log(selectedSurname)
-                var rowNumber = this.dataset.row;
-                console.log(rowNumber)
-
-                var formData = new FormData();
-                formData.append('non_designer_article_type', selectedSurname);
-                formData.append('article', rowNumber);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('update_article_designer_boolean_field/', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-        // ========== Записывает в БД нажатия чекбоксов .copyrightcheckbox ========= //
-        document.querySelectorAll('.copyrightcheckbox').forEach(select => {
-            select.addEventListener('change', function() {
-                var selectedSurname = this.value;
-                console.log(selectedSurname)
-                var rowNumber = this.dataset.row;
-                console.log(rowNumber)
-
-                var formData = new FormData();
-                formData.append('copyright_article_type', selectedSurname);
-                formData.append('article', rowNumber);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('update_article_designer_boolean_field/', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
+        
+        
         // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
         function submitForm() {
           document.getElementById('uploadForm').submit();
         }
-        // ========== Показывает артикулы без статуса дизайнерский/не дизайнерский ==========//
-        document.getElementById('articles_without_status').addEventListener('change', function() {
-            var isChecked = this.checked;
-            var rows = document.querySelectorAll('#table tbody tr');
-                
-            rows.forEach(function(row) {
-                var designCheckbox = row.querySelector('.designcheckbox');
-                var nondesignCheckbox = row.querySelector('.nondesigncheckbox');
-                
-                if (isChecked) {
-                    if (!designCheckbox.checked && !nondesignCheckbox.checked) {
-                        row.style.display = 'table-row';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                } else {
-                    row.style.display = 'table-row';
-                }
-            });
-        });
-
-        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
-        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
-            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
-            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
-            
-        // do the work...
+        function comparer(index, asc) {
+            return function(a, b) {
+                const valA = parseFloat(a.children[index].textContent.replace(',', '.')) || 0;
+                const valB = parseFloat(b.children[index].textContent.replace(',', '.')) || 0;
+                if (valA === valB) {
+                    return 0;
+                } else {
+                    return (asc ? (valA > valB) : (valA < valB)) ? 1 : -1;
+                }
+            };
+        }
+
         document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
             const table = th.closest('table');
             Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                 .forEach(tr => table.appendChild(tr) );
         })));
-       
+
        
     </script>
         
