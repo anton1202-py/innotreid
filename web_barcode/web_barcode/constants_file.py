@@ -1,5 +1,6 @@
 import os
 
+import dropbox
 import telegram
 from dotenv import load_dotenv
 
@@ -12,6 +13,12 @@ APP_KEY_DB = os.getenv('APP_KEY_DB')
 APP_SECRET_DB = os.getenv('APP_SECRET_DB')
 
 API_KEY_WB_IP = os.getenv('API_KEY_WB_IP')
+
+EMAIL_ADDRESS_FROM = os.getenv('EMAIL_ADDRESS_FROM')
+EMAIL_ADDRESS_FROM_PASSWORD = os.getenv('EMAIL_ADDRESS_FROM_PASSWORD')
+EMAIL_ADDRESS_TO = os.getenv('EMAIL_ADDRESS_TO')
+POST_SERVER = os.getenv('POST_SERVER')
+POST_PORT = os.getenv('POST_PORT')
 
 API_KEY_OZON_KARAVAEV = os.getenv('API_KEY_OZON_KARAVAEV')
 CLIENT_ID_OZON_KARAVAEV = os.getenv('CLIENT_ID_OZON_KARAVAEV')
@@ -59,6 +66,10 @@ YANDEX_IP_FBY_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBY_CAMPAIGN_ID')
 YANDEX_IP_FBS_CAMPAIGN_ID = os.getenv('YANDEX_IP_FBS_CAMPAIGN_ID')
 YANDEX_GRAMOTY_FBY_CAMPAIGN_ID = os.getenv('YANDEX_GRAMOTY_FBY_CAMPAIGN_ID')
 YANDEX_GRAMOTY_FBS_CAMPAIGN_ID = os.getenv('YANDEX_GRAMOTY_FBS_CAMPAIGN_ID')
+
+dbx_db = dropbox.Dropbox(oauth2_refresh_token=REFRESH_TOKEN_DB,
+                         app_key=APP_KEY_DB,
+                         app_secret=APP_SECRET_DB)
 
 wb_headers_karavaev = {
     'Content-Type': 'application/json',
@@ -110,11 +121,6 @@ header_wb_dict = {
     'ООО Мастерская чудес': wb_headers_gramoty
 }
 
-header_wb_data_dict = {
-    'ООО Иннотрейд': wb_data_ooo_headers,
-    'ИП Караваев': wb_headers_karavaev,
-    'ООО Мастерская чудес': wb_headers_gramoty
-}
 
 header_ozon_dict = {
     'ООО Иннотрейд': ozon_headers_ooo,

@@ -12,8 +12,8 @@ from price_system.models import Articles, DesignUser
 from price_system.supplyment import sender_error_to_tg
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN, bot,
-                                        header_ozon_dict, header_wb_data_dict,
-                                        header_wb_dict, header_yandex_dict,
+                                        header_ozon_dict, header_wb_dict,
+                                        header_yandex_dict,
                                         ozon_adv_client_access_id_dict,
                                         ozon_adv_client_secret_dict,
                                         ozon_api_token_dict,

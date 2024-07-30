@@ -26,17 +26,14 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-import xlsxwriter
-# from celery_tasks.celery import app
+from celery_tasks.celery import app
 from dotenv import load_dotenv
 from msoffice2pdf import convert
 from openpyxl import Workbook, load_workbook
-from openpyxl.cell.rich_text import CellRichText, TextBlock
-from openpyxl.cell.text import InlineFont
 from openpyxl.drawing import image
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from PIL import Image, ImageDraw, ImageFont
-# from price_system.supplyment import sender_error_to_tg
+from price_system.supplyment import sender_error_to_tg
 from sqlalchemy import create_engine
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_AN, CHAT_ID_EU,
@@ -151,23 +148,7 @@ class WildberriesFbsMode():
         except dropbox.exceptions.ApiError as e:
             return False
 
-    def create_dropbox_folder(self):
-        """
-        WILDBERRIES
-        Создает папку для созданных документов на Дропбоксе.
-        """
-        hour = datetime.now().hour
-        date_folder = datetime.today().strftime('%Y-%m-%d')
-
-        if hour >= 6 and hour < 18:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
-        else:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
-        # Создаем папку на dropbox, если ее еще нет
-        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
-            dbx_db.files_create_folder_v2(
-                self.dropbox_current_assembling_folder)
-
+    @sender_error_to_tg
     def check_folder_availability(self, folder):
         """Проверяет наличие папки, если ее нет, то создает"""
         folder_path = os.path.join(
@@ -175,6 +156,7 @@ class WildberriesFbsMode():
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
+    @sender_error_to_tg
     def convert_photo_from_webp_to_jpg(self, photo_address, article_barcode, name_raw_photo_folder, name_photo_folder):
         """Конвертирует webp изображение в jpg и сохраняет в нужных папках."""
         response = requests.get(photo_address)
@@ -188,6 +170,7 @@ class WildberriesFbsMode():
         webp_image.save(name_photo, 'JPEG')
         return name_photo
 
+    @sender_error_to_tg
     def process_new_orders(self):
         """
         WILDBERRIES
@@ -201,13 +184,14 @@ class WildberriesFbsMode():
             orders_data = json.loads(response.text)['orders']
             # Сделал обход склада в НСК (его id = 1003917). Если склад = НСК, то товары не участвуют в сборке.
             for data in orders_data:
-                # if data['warehouseId'] == 1003917 or data['warehouseId'] == 1057680:
-                returned_data_list.append(data)
+                if data['warehouseId'] == 1003917 or data['warehouseId'] == 1057680:
+                    returned_data_list.append(data)
             return returned_data_list
         else:
             time.sleep(10)
             return self.process_new_orders()
 
+    @sender_error_to_tg
     def time_filter_orders(self):
         """
         WILDBERRIES
@@ -221,11 +205,12 @@ class WildberriesFbsMode():
             # Время создания заказа в переводе с UTC на московское
             create_order_time = datetime.strptime(
                 order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
-            # delta_order_time = now_time - create_order_time
-            # if delta_order_time > timedelta(hours=1):
-            filters_order_data.append(order)
+            delta_order_time = now_time - create_order_time
+            if delta_order_time > timedelta(hours=1):
+                filters_order_data.append(order)
         return filters_order_data
 
+    @sender_error_to_tg
     def article_info(self, article):
         """
         WILDBERRIES
@@ -254,6 +239,7 @@ class WildberriesFbsMode():
             time.sleep(5)
             return self.article_info(article)
 
+    @sender_error_to_tg
     def article_data_for_tickets(self):
         """
         WILDBERRIES
@@ -305,6 +291,7 @@ class WildberriesFbsMode():
         self.amount_articles = dict(Counter(self.clear_article_list))
         return self.amount_articles
 
+    @sender_error_to_tg
     def create_barcode_tickets(self):
         """WILDBERRIES. Функция создает этикетки со штрихкодами для артикулов"""
         if self.clear_article_list and self.data_article_info_dict:
@@ -315,6 +302,7 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def create_delivery(self):
         """WILDBERRIES. Создание поставки"""
         amount_articles = self.article_data_for_tickets()
@@ -340,6 +328,32 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    def add_shelf_number_to_selection_dict(self, selection_dict: dict):
+        """Добавляет полку хранения в словарь с данными отправления"""
+        SHELVES_DATA = '/DATABASE/Стеллажи Новосибирск.xlsx'
+        db_file_data = stream_dropbox_file(SHELVES_DATA)
+        pd_file_data = pd.read_excel(db_file_data)
+        special_tickets_data_file = pd.DataFrame(
+            pd_file_data, columns=['Артикул', 'Ячейка'])
+        articles_list = special_tickets_data_file['Артикул'].to_list()
+        shelves_list = special_tickets_data_file['Ячейка'].to_list()
+        article_address = {}
+        for i in range(len(articles_list)):
+            article = str(articles_list[i])
+            address = str(shelves_list[i])
+            if str(articles_list[i]) != 'nan':
+                if article.capitalize() in article_address:
+                    article_address[article.capitalize()] += f'\n{address}'
+                else:
+                    article_address[article.capitalize()] = address
+        for _, order_data in selection_dict.items():
+            if order_data[3].capitalize() in article_address:
+                order_data.append(article_address[order_data[3].capitalize()])
+            else:
+                order_data.append('')
+        return selection_dict
+
+    @sender_error_to_tg
     def qrcode_order(self):
         """
         WILDBERRIES.
@@ -386,33 +400,9 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
-    def add_shelf_number_to_selection_dict(self, selection_dict: dict):
-        """Добавляет полку хранения в словарь с данными отправления"""
-        SHELVES_DATA = '/DATABASE/Стеллажи Новосибирск.xlsx'
-        db_file_data = stream_dropbox_file(SHELVES_DATA)
-        pd_file_data = pd.read_excel(db_file_data)
-        special_tickets_data_file = pd.DataFrame(
-            pd_file_data, columns=['Артикул', 'Ячейка'])
-        articles_list = special_tickets_data_file['Артикул'].to_list()
-        shelves_list = special_tickets_data_file['Ячейка'].to_list()
-        article_address = {}
-        for i in range(len(articles_list)):
-            article = str(articles_list[i])
-            address = str(shelves_list[i])
-            if str(articles_list[i]) != 'nan':
-                if article.capitalize() in article_address:
-                    article_address[article.capitalize()] += f'\n{address}'
-                else:
-                    article_address[article.capitalize()] = address
-        for _, order_data in selection_dict.items():
-            if order_data[3].capitalize() in article_address:
-                order_data.append(article_address[order_data[3].capitalize()])
-            else:
-                order_data.append('')
-        return selection_dict
-
+    @sender_error_to_tg
     def create_selection_list(self):
-        """WILDBERRIES. Создает лист сборки и возвращет его адрес"""
+        """WILDBERRIES. Создает лист сборки"""
         if self.selection_dict:
             self.selection_dict = self.add_shelf_number_to_selection_dict(
                 self.selection_dict)
@@ -444,8 +434,8 @@ class WildberriesFbsMode():
                 # загружаем изображение
                 img = image.Image(value[0])
                 # задаем размеры изображения
-                img.width = 50
-                img.height = 70
+                img.width = 30
+                img.height = 50
                 create.cell(row=COUNT_HELPER, column=1).value = key
                 # вставляем изображение в Столбец В
                 sheet.add_image(img, f'B{COUNT_HELPER}')
@@ -454,7 +444,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
-                # create.cell(row=COUNT_HELPER, column=7).value = value[5]
+                create.cell(row=COUNT_HELPER, column=6).value = value[5]
                 COUNT_HELPER += 1
             folder_path = os.path.join(
                 os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
@@ -518,23 +508,15 @@ class WildberriesFbsMode():
                 source_page2.row_dimensions[i].height = 60
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
-            print('folder_path ', folder_path)
-            name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
-            name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}.xlsx'
-            # output = convert(source=path_file,
-            #                  output_dir=folder_path, soft=1)
-            # print('output', output)
-            print(name_selection_file)
+            output = convert(source=path_file,
+                             output_dir=folder_path, soft=1)
             self.files_for_send.append(name_selection_file)
-            #  Сохраняем на DROPBOX
-            # with open(output, 'rb') as f:
-            #     dbx_db.files_upload(
-            #         f.read(), f'{folder_path}/{name_for_file}.pdf')
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def supply_to_delivery(self, numb=0):
         """
         WILDBERRIES.
@@ -558,6 +540,7 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def qrcode_supply(self):
         """
         WILDBERRIES.
@@ -589,6 +572,7 @@ class WildberriesFbsMode():
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
 
+    @sender_error_to_tg
     def list_for_print_create(self):
         """
         WILDBERRIES.
@@ -680,7 +664,7 @@ class WildberriesFbsMode():
         from_email = EMAIL_ADDRESS_FROM
         to_email = EMAIL_ADDRESS_TO
         subject = f'Сборка {self.file_add_name} {delivery_date}'
-        body = 'Текст вашего письма'
+        body = f'Сборка {self.file_add_name} {delivery_date}'
 
         # Создаем сообщение
         msg = MIMEMultipart()
@@ -699,7 +683,7 @@ class WildberriesFbsMode():
                     part.set_payload(attachment.read())
                     encoders.encode_base64(part)
                     part.add_header('Content-Disposition',
-                                    f'attachment; filename*=UTF-8\'\'{os.path.basename(filename)}')
+                                    f'attachment; filename*=UTF-8\'\'{filename}')
 
                     # Добавляем вложение в сообщение
                     msg.attach(part)
@@ -712,7 +696,6 @@ class WildberriesFbsMode():
             server.starttls()  # Начинаем TLS шифрование
             server.login(username, password)
             server.send_message(msg)
-            print('Письмо успешно отправлено')
         except Exception as e:
             print(f'Ошибка: {e}')
         finally:
@@ -1016,7 +999,9 @@ class CreatePivotFile(WildberriesFbsMode):
             output = convert(source=path_file, output_dir=folder_path, soft=1)
 
             # Сохраняем на DROPBOX
-
+            with open(f'{path_file}', 'rb') as f:
+                dbx_db.files_upload(
+                    f.read(), f'{self.dropbox_current_assembling_folder}/{name_xls_dropbox}.xlsx')
             with open(output, 'rb') as f:
                 dbx_db.files_upload(
                     f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
@@ -1091,33 +1076,59 @@ class CreatePivotFile(WildberriesFbsMode):
 
 # ==================== Сборка WILDBERRIES =================== #
 
-
+@sender_error_to_tg
 def action_wb(db_folder, file_add_name, headers_wb):
     wb_actions = WildberriesFbsMode(
         headers_wb, db_folder, file_add_name)
 
     clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
-    # 1. Создаю папку на dropbox для документов
-    # wb_actions.create_dropbox_folder()
-    # 2. Создаю поставку
-    # wb_actions.create_delivery()
-
-    wb_actions.article_data_for_tickets()
-    # wb_actions.add_shelf_number_to_selection_dict([])
-
-    # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # 1. Создаю поставку
+    wb_actions.create_delivery()
+    # 2. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
     # задания и сохраняю его в папку
-    # wb_actions.qrcode_order()
-    # # 4. Создаю лист сборки
+    wb_actions.qrcode_order()
+    # 3. Создаю лист сборки
     wb_actions.create_selection_list()
-    # 5. Создаю шрихкоды для артикулов
+    # 4. Создаю шрихкоды для артикулов
     wb_actions.create_barcode_tickets()
-    # # 6. Добавляю поставку в доставку.
-    # wb_actions.supply_to_delivery()
-    # # 7. Получаю QR код поставки
-    # # и преобразует этот QR код в необходимый формат.
-    # wb_actions.qrcode_supply()
-    # 8. Создаю список с полными именами файлов, которые нужно объединить
+    # 5. Добавляю поставку в доставку.
+    wb_actions.supply_to_delivery()
+    # 6. Получаю QR код поставки
+    # и преобразует этот QR код в необходимый формат.
+    wb_actions.qrcode_supply()
+    # 7. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
+    # 8. Отрпавляю документы на элктронный адрес
     wb_actions.send_email()
+
+
+@app.task
+def nsk_fbs_task():
+    """Запускает утреннюю FBS сборку ИП (Без документов ОЗОН)"""
+    try:
+        action_wb(
+            db_folder, file_add_name_ip, wb_headers_karavaev)
+        message_text = f'Сборка Новосибирск {file_add_name_ip} сформирована'
+        bot.send_message(chat_id=CHAT_ID_MANAGER,
+                         text=message_text, parse_mode='HTML')
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message_text, parse_mode='HTML')
+    except:
+        text = f'Приложение fbs_mode. Не сработала функция action_wb для ИП'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')
+
+    try:
+        time.sleep(60)
+        action_wb(
+            db_folder, file_add_name_ooo, wb_headers_ooo)
+        message_text = f'Сборка Новосибирск {file_add_name_ooo} сформирована'
+        bot.send_message(chat_id=CHAT_ID_MANAGER,
+                         text=message_text, parse_mode='HTML')
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=message_text, parse_mode='HTML')
+    except:
+        text = f'Приложение fbs_mode. Не сработала функция action_wb для ООО'
+        bot.send_message(chat_id=CHAT_ID_ADMIN,
+                         text=text, parse_mode='HTML')

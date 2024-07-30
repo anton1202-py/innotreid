@@ -37,8 +37,7 @@ from reklama.models import UrLico
 
 from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_data_dict,
-                                        header_wb_dict)
+                                        bot, header_wb_dict)
 
 
 @login_required

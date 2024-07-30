@@ -40,7 +40,7 @@ def type_adv_campaigns():
 
     Переменные:
     adv_campaigns_ur_lico_dict - возвращаемый словарь
-    header_wb_data_dict - словарь с хедерами для каждого юр. лица
+    header_wb_dict - словарь с хедерами для каждого юр. лица
     main_data - данные, полученные от метода https://advert-api.wb.ru/adv/v1/promotion/count
     campaign_inner_list - список со всеми кампаниями юр. лица
 

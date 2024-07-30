@@ -455,6 +455,63 @@ def print_barcode_to_pdf2(list_filenames, folder_summary_file_name, dropbox_fold
         dbx_db.files_upload(f.read(), dropbox_folder)
 
 
+@sender_error_to_tg
+def print_barcode_to_pdf_without_dropbox(list_filenames, folder_summary_file_name):
+    """
+    Создает pdf файл для печати. С возможностью удаления всего кеша.
+    Входящие данные:
+    list_filenames - список с полными адресами и названиями файлов для объединения,
+    folder_summary_file_name - полное название файла для сохранения 
+    (вместе с названием папок в пути)
+    dropbox_folder - папка на Дропбокс в которой будет сохранятся конечный файл
+    """
+
+    with open(list_filenames[0], "rb") as f:
+        input1 = PdfFileReader(f, strict=False)
+        page1 = input1.getPage(0)
+        total_width = max([page1.mediaBox.upperRight[0]*(3)])
+        total_height = max([page1.mediaBox.upperRight[1]*(6)])
+        horiz_size = page1.mediaBox.upperRight[0]
+        vertic_size = page1.mediaBox.upperRight[1]
+        output = PdfFileWriter()
+        file_name = folder_summary_file_name
+        new_page = PageObject.createBlankPage(
+            file_name, total_width, total_height)
+        new_page.mergeTranslatedPage(page1, 0, vertic_size*(5))
+        output.addPage(new_page)
+        page_amount = (len(list_filenames) // 18)
+        if len(list_filenames) % 18 > 0:
+            page_amount = page_amount + 1
+        pages_names = []
+        for p in range(1, page_amount):
+            p = PageObject.createBlankPage(
+                file_name, total_width, total_height)
+            output.addPage(p)
+            pages_names.append(p)
+        for i in range(1, len(list_filenames)):
+            with open(list_filenames[i], "rb") as bb:
+                # Коэффициент показывает целый остаток от деления на 18.
+                m = i // 18
+                # Коэффициент чтобы найти координату по вертикали
+                n = (i // 3) - 6*m
+                # Коэффициент чтобы найти координату по горизонтали
+                # k - остаток от деления на 3
+                k = i % 3
+                if i < 18:
+                    new_page.mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(5-n))
+                elif i >= 18:
+                    (pages_names[m-1]).mergeTranslatedPage(
+                        PdfFileReader(bb,
+                                      strict=False).getPage(0),
+                        horiz_size*(k),
+                        vertic_size*(5-n))
+                output.write(open(file_name, "wb"))
+
+
 def atoi(text):
     """Для сортировки файлов в списках для присоединения"""
     return int(text) if text.isdigit() else text

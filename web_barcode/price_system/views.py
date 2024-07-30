@@ -13,8 +13,8 @@ from ozon_system.supplyment import \
 from price_system.spp_mode import article_spp_info
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
-                                        header_ozon_dict, header_wb_data_dict,
-                                        header_wb_dict, header_yandex_dict,
+                                        header_ozon_dict, header_wb_dict,
+                                        header_yandex_dict,
                                         wb_headers_karavaev, wb_headers_ooo,
                                         yandex_business_id_dict)
 

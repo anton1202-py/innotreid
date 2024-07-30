@@ -20,6 +20,7 @@ app = Celery('celery_tasks',
                       'ozon_system.tasks',
                       'motivation.google_sheet_report',
                       'fbs_mode.tasks',
+                      'fbs_mode.task_nsk',
                       'price_system.periodical_tasks',
                       'reklama.periodic_tasks',
                       ])
@@ -173,6 +174,14 @@ app.conf.beat_schedule = {
     "ip_fbs_friday_action": {
         "task": "fbs_mode.tasks.ip_friday_task",
         "schedule": crontab(hour=17, minute=20, day_of_week=5)
+    },
+    "nsk_fbs_action_morning": {
+        "task": "fbs_mode.task_nsk.nsk_fbs_task",
+        "schedule": crontab(hour=2, minute=0)
+    },
+    "nsk_fbs_action_evening": {
+        "task": "fbs_mode.task_nsk.nsk_fbs_task",
+        "schedule": crontab(hour=11, minute=0)
     },
 
     # "ip_fbs_friday_action_test": {

@@ -7,8 +7,7 @@ from price_system.supplyment import sender_error_to_tg
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
                                         TELEGRAM_TOKEN, admins_chat_id_list,
-                                        bot, header_ozon_dict,
-                                        header_wb_data_dict, header_wb_dict,
+                                        bot, header_ozon_dict, header_wb_dict,
                                         header_yandex_dict,
                                         wb_headers_karavaev, wb_headers_ooo,
                                         yandex_business_id_dict)
