@@ -26,7 +26,6 @@ import pandas as pd
 import psycopg2
 import requests
 import telegram
-import xlsxwriter
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
 from msoffice2pdf import convert

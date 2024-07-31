@@ -27,8 +27,6 @@ from django.db.models import Max, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
-from fbs_mode.tasks_test_ur import action_wb
-from fbs_mode.testt import send_email_test
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
