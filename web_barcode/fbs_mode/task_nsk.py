@@ -444,7 +444,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
-                create.cell(row=COUNT_HELPER, column=6).value = value[5]
+                create.cell(row=COUNT_HELPER, column=7).value = value[5]
                 COUNT_HELPER += 1
             folder_path = os.path.join(
                 os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
@@ -742,8 +742,8 @@ class WildberriesFbsMode():
             list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
             sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
             ur_lico_for_message_dict = {
-                'ООО': 'Amstek',
-                'ИП': '3Д Ночник'
+                'OOO': 'Amstek',
+                'IP': '3Д Ночник'
             }
             message = f'''Отправлено на сборку Фбс в Новосибирске {ur_lico_for_message_dict[self.file_add_name]}
                 Итого по ФБС WB {ur_lico_for_message_dict[self.file_add_name]}: {sum_all_fbs} штук
