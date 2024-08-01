@@ -27,6 +27,7 @@ from django.db.models import Max, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
+from fbs_mode.tasks_test_ur import action_wb
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
@@ -41,8 +42,8 @@ def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
-    db_folder = '/!На производство'
-
+    # file_add_name = 'OOO'
+    # action_wb(file_add_name, wb_headers_ooo)
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []

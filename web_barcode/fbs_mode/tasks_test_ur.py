@@ -135,10 +135,9 @@ def error_message(function_name: str, function, error_text: str) -> str:
 class WildberriesFbsMode():
     """Класс отвечает за работу с заказами Wildberries"""
 
-    def __init__(self, headers, db_forder, file_add_name):
+    def __init__(self, headers, file_add_name):
         """Основные данные класса"""
         self.amount_articles = {}
-        self.dropbox_main_fbs_folder = db_forder
         self.headers = headers
         self.file_add_name = file_add_name
         self.files_for_send = []
@@ -149,23 +148,6 @@ class WildberriesFbsMode():
             return True
         except dropbox.exceptions.ApiError as e:
             return False
-
-    def create_dropbox_folder(self):
-        """
-        WILDBERRIES
-        Создает папку для созданных документов на Дропбоксе.
-        """
-        hour = datetime.now().hour
-        date_folder = datetime.today().strftime('%Y-%m-%d')
-
-        if hour >= 6 and hour < 18:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
-        else:
-            self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
-        # Создаем папку на dropbox, если ее еще нет
-        if self.check_folder_exists(self.dropbox_current_assembling_folder) == False:
-            dbx_db.files_create_folder_v2(
-                self.dropbox_current_assembling_folder)
 
     def check_folder_availability(self, folder):
         """Проверяет наличие папки, если ее нет, то создает"""
@@ -200,8 +182,8 @@ class WildberriesFbsMode():
             orders_data = json.loads(response.text)['orders']
             # Сделал обход склада в НСК (его id = 1003917). Если склад = НСК, то товары не участвуют в сборке.
             for data in orders_data:
-                # if data['warehouseId'] == 1003917 or data['warehouseId'] == 1057680:
-                returned_data_list.append(data)
+                if data['warehouseId'] == 1003917 or data['warehouseId'] == 1057680:
+                    returned_data_list.append(data)
             return returned_data_list
         else:
             time.sleep(10)
@@ -220,9 +202,9 @@ class WildberriesFbsMode():
             # Время создания заказа в переводе с UTC на московское
             create_order_time = datetime.strptime(
                 order['createdAt'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=3)
-            # delta_order_time = now_time - create_order_time
-            # if delta_order_time > timedelta(hours=1):
-            filters_order_data.append(order)
+            delta_order_time = now_time - create_order_time
+            if delta_order_time > timedelta(hours=1):
+                filters_order_data.append(order)
         return filters_order_data
 
     def article_info(self, article):
@@ -1091,9 +1073,9 @@ class CreatePivotFile(WildberriesFbsMode):
 # ==================== Сборка WILDBERRIES =================== #
 
 
-def action_wb(db_folder, file_add_name, headers_wb):
+def action_wb(file_add_name, headers_wb):
     wb_actions = WildberriesFbsMode(
-        headers_wb, db_folder, file_add_name)
+        headers_wb, file_add_name)
 
     clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
@@ -1111,7 +1093,7 @@ def action_wb(db_folder, file_add_name, headers_wb):
     # # 4. Создаю лист сборки
     wb_actions.create_selection_list()
     # 5. Создаю шрихкоды для артикулов
-    wb_actions.create_barcode_tickets()
+    # wb_actions.create_barcode_tickets()
     # # 6. Добавляю поставку в доставку.
     # wb_actions.supply_to_delivery()
     # # 7. Получаю QR код поставки

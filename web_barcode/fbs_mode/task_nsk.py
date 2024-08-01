@@ -532,7 +532,7 @@ class WildberriesFbsMode():
                 numb += 1
                 self.supply_to_delivery(numb)
             elif response_to_supply.status_code != 204 and numb >= 10:
-                text = 'Не получилось перевести поставку в доставку, поэтому не будет QR-кода'
+                text = f'Не получилось перевести поставку в доставку, поэтому не будет QR-кода. Статус код {response_to_supply.status_code}. {response_to_supply.text}'
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=text, parse_mode='HTML')
         else:
@@ -582,15 +582,15 @@ class WildberriesFbsMode():
         """
         if self.amount_articles:
             qrcode_list = qrcode_print_for_products()
-            pdf_filenames = glob.glob(
-                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
-            logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
+            # pdf_filenames = glob.glob(
+            #     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+            # logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
 
             list_pdf_file_ticket_for_complect = []
-            for j in pdf_filenames:
-                while self.amount_articles[str(Path(j).stem)] > 0:
-                    list_pdf_file_ticket_for_complect.append(j)
-                    self.amount_articles[str(Path(j).stem)] -= 1
+            # for j in pdf_filenames:
+            #     while self.amount_articles[str(Path(j).stem)] > 0:
+            #         list_pdf_file_ticket_for_complect.append(j)
+            #         self.amount_articles[str(Path(j).stem)] -= 1
             logging.info(
                 f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
             # Определяем число qr кодов для поставки.
