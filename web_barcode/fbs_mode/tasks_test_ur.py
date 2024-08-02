@@ -450,7 +450,7 @@ class WildberriesFbsMode():
             al_left = Alignment(horizontal="left",
                                 vertical="center", wrapText=True)
             source_page2.column_dimensions['A'].width = 16  # Номер задания
-            source_page2.column_dimensions['B'].width = 25  # Картинка
+            source_page2.column_dimensions['B'].width = 35  # Картинка
             source_page2.column_dimensions['C'].width = 16  # Бренд
             source_page2.column_dimensions['D'].width = 16  # Наименование
             # Артикул продавца
@@ -458,7 +458,7 @@ class WildberriesFbsMode():
 
             thin = Side(border_style="thin", color="000000")
             for i in range(len(self.selection_dict)+1):
-                for c in source_page2[f'A{i+1}:G{i+1}']:
+                for c in source_page2[f'A{i+2}:G{i+2}']:
                     c[0].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
                     c[0].font = Font(size=12)
@@ -484,10 +484,8 @@ class WildberriesFbsMode():
                     c[4].font = Font(size=12, bold=True)
                     c[4].alignment = al_left
 
-                    c[5].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
             # Увеличиваем высоту строки
-            source_page2.row_dimensions[1].height = 30
+            source_page2.row_dimensions[2].height = 30
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
 
