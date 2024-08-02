@@ -434,7 +434,7 @@ class WildberriesFbsMode():
                 print('num_lines', num_lines)
                 row_height = base_height + (num_lines * line_height)
                 print('row_height', row_height)
-                source_page2.row_dimensions[COUNT_HELPER].height = row_height
+                create.row_dimensions[COUNT_HELPER].height = row_height
                 # create.cell(row=COUNT_HELPER, column=5).value = value[3]
 
                 COUNT_HELPER += 1
