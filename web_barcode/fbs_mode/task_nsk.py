@@ -487,7 +487,7 @@ class WildberriesFbsMode():
             output = convert(source=path_file,
                              output_dir=folder_path, soft=1)
             self.files_for_send.append(name_selection_file)
-            source_page2.row_dimensions[1].height = 20
+            source_page2.row_dimensions[1].height = 30
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
             bot.send_message(chat_id=CHAT_ID_ADMIN,

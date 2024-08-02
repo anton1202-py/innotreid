@@ -406,6 +406,8 @@ class WildberriesFbsMode():
                 title='pivot_list', index=0)
             sheet = selection_file['pivot_list']
             # Установка параметров печати
+            base_height = 15
+            line_height = 12
             create.page_setup.paperSize = create.PAPERSIZE_A4
             create.page_setup.orientation = create.ORIENTATION_PORTRAIT
             create.page_margins.left = 0.25
@@ -428,9 +430,13 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
+                num_lines = (len(value[2]) // 6) + 1
+                print('num_lines', num_lines)
+                row_height = base_height + (num_lines * line_height)
+                print('row_height', row_height)
+                source_page2.row_dimensions[COUNT_HELPER].height = row_height
                 # create.cell(row=COUNT_HELPER, column=5).value = value[3]
 
-                # create.cell(row=COUNT_HELPER, column=7).value = value[5]
                 COUNT_HELPER += 1
             folder_path = os.path.join(
                 os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
@@ -482,12 +488,10 @@ class WildberriesFbsMode():
                     c[5].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
             # Увеличиваем высоту строки
-            source_page2.row_dimensions[1].height = 20
+            source_page2.row_dimensions[1].height = 30
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
-            print('folder_path ', folder_path)
-            name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
-            name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}.xlsx'
+
             output = convert(source=path_file,
                              output_dir=folder_path, soft=1)
             name_selection_pdf = f'{folder_path}/NSK_WB_{self.file_add_name}_Selection_list_{delivery_date}.pdf'
@@ -502,12 +506,8 @@ class WildberriesFbsMode():
                 print("У вас нет прав для переименования этого файла.")
             except Exception as e:
                 print(f"Произошла ошибка: {e}")
-            print('output', output)
             self.files_for_send.append(name_selection_pdf)
-            #  Сохраняем на DROPBOX
-            # with open(output, 'rb') as f:
-            #     dbx_db.files_upload(
-            #         f.read(), f'{folder_path}/{name_for_file}.pdf')
+
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
