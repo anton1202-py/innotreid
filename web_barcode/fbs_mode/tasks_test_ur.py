@@ -386,8 +386,8 @@ class WildberriesFbsMode():
                 else:
                     article_address[article.capitalize()] = address
         for _, order_data in selection_dict.items():
-            if order_data[3].capitalize() in article_address:
-                order_data.append(article_address[order_data[3].capitalize()])
+            if order_data[1].capitalize() in article_address:
+                order_data.append(article_address[order_data[1].capitalize()])
             else:
                 order_data.append('')
         return selection_dict
