@@ -426,7 +426,7 @@ class WildberriesFbsMode():
                 # загружаем изображение
                 # create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=1).value = key
-                create.cell(row=COUNT_HELPER, column=2).value = value[0]
+                create.cell(row=COUNT_HELPER, column=2).value = value[0][:40]
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 num_lines = (len(value[2]) // 6) + 1
