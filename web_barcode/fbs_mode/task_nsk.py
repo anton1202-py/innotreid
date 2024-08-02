@@ -347,8 +347,8 @@ class WildberriesFbsMode():
                 else:
                     article_address[article.capitalize()] = address
         for _, order_data in selection_dict.items():
-            if order_data[3].capitalize() in article_address:
-                order_data.append(article_address[order_data[3].capitalize()])
+            if order_data[1].capitalize() in article_address:
+                order_data.append(article_address[order_data[1].capitalize()])
             else:
                 order_data.append('')
         return selection_dict
@@ -453,7 +453,6 @@ class WildberriesFbsMode():
             source_page2.column_dimensions['B'].width = 7  # Картинка
             source_page2.column_dimensions['C'].width = 16  # Бренд
             source_page2.column_dimensions['D'].width = 25  # Наименование
-            # Артикул продавца
             source_page2.column_dimensions['E'].width = 16
             thin = Side(border_style="thin", color="000000")
             for i in range(len(sorted_dict)+1):
@@ -488,6 +487,7 @@ class WildberriesFbsMode():
             output = convert(source=path_file,
                              output_dir=folder_path, soft=1)
             self.files_for_send.append(name_selection_file)
+            source_page2.row_dimensions[1].height = 20
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
