@@ -411,12 +411,14 @@ class WildberriesFbsMode():
             delivery_date = datetime.today().strftime("%d-%m-%Y_%H-%M-%S")
             # создаем новую книгу Excel
             selection_file = Workbook()
-            COUNT_HELPER = 2
+            COUNT_HELPER = 3
             # выбираем лист Sheet1
             create = selection_file.create_sheet(
                 title='pivot_list', index=0)
             sheet = selection_file['pivot_list']
             # Установка параметров печати
+            base_height = 15
+            line_height = 12
             create.page_setup.paperSize = create.PAPERSIZE_A4
             create.page_setup.orientation = create.ORIENTATION_PORTRAIT
             create.page_margins.left = 0.25
@@ -425,17 +427,21 @@ class WildberriesFbsMode():
             create.page_margins.bottom = 0.25
             create.page_margins.header = 0.3
             create.page_margins.footer = 0.3
-            sheet['A1'] = '№ Задания'
-            sheet['B1'] = 'Наименование'
-            sheet['C1'] = 'Артикул продавца'
-            sheet['D1'] = 'Стикер'
-            sheet['E1'] = 'Ячейка'
+            sheet['A2'] = '№ Задания'
+            sheet['B2'] = 'Наименование'
+            sheet['C2'] = 'Артикул продавца'
+            sheet['D2'] = 'Стикер'
+            sheet['E2'] = 'Ячейка'
+            sheet['A1'] = f'Товаров в отгрузке: {len(list(self.selection_dict.keys()))}'
             for key, value in sorted_dict.items():
                 create.cell(row=COUNT_HELPER, column=1).value = key
-                create.cell(row=COUNT_HELPER, column=2).value = value[1]
-                create.cell(row=COUNT_HELPER, column=3).value = value[2]
-                create.cell(row=COUNT_HELPER, column=4).value = value[3]
-                create.cell(row=COUNT_HELPER, column=6).value = value[4]
+                create.cell(row=COUNT_HELPER, column=2).value = value[0]
+                create.cell(row=COUNT_HELPER, column=3).value = value[1]
+                create.cell(row=COUNT_HELPER, column=4).value = value[2]
+                create.cell(row=COUNT_HELPER, column=6).value = value[3]
+                num_lines = (len(value[2]) // 6) + 1
+                row_height = base_height + (num_lines * line_height)
+                create.row_dimensions[COUNT_HELPER].height = row_height
                 COUNT_HELPER += 1
             folder_path = os.path.join(
                 os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
@@ -450,13 +456,13 @@ class WildberriesFbsMode():
             al_left = Alignment(horizontal="left",
                                 vertical="center", wrapText=True)
             source_page2.column_dimensions['A'].width = 16  # Номер задания
-            source_page2.column_dimensions['B'].width = 7  # Картинка
+            source_page2.column_dimensions['B'].width = 35  # Картинка
             source_page2.column_dimensions['C'].width = 16  # Бренд
             source_page2.column_dimensions['D'].width = 25  # Наименование
             source_page2.column_dimensions['E'].width = 16
             thin = Side(border_style="thin", color="000000")
             for i in range(len(sorted_dict)+1):
-                for c in source_page2[f'A{i+1}:E{i+1}']:
+                for c in source_page2[f'A{i+2}:E{i+2}']:
                     c[0].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
                     c[0].font = Font(size=12)
@@ -465,7 +471,7 @@ class WildberriesFbsMode():
                     c[1].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
                     c[1].font = Font(size=12)
-                    c[1].alignment = al
+                    c[1].alignment = al_left
 
                     c[2].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
@@ -481,13 +487,25 @@ class WildberriesFbsMode():
                                          bottom=thin, right=thin)
                     c[4].font = Font(size=12, bold=True)
                     c[4].alignment = al_left
-
+            source_page2.row_dimensions[2].height = 30
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
             output = convert(source=path_file,
                              output_dir=folder_path, soft=1)
-            self.files_for_send.append(name_selection_file)
-            source_page2.row_dimensions[1].height = 30
+            name_selection_pdf = f'{folder_path}/NSK_WB_{self.file_add_name}_Selection_list_{delivery_date}.pdf'
+            try:
+                # Переименовываем файл
+                os.rename(output, name_selection_pdf)
+                print(f"Файл переименован с {output} на {name_selection_pdf}")
+
+            except FileNotFoundError:
+                print("Файл не найден. Проверьте путь.")
+            except PermissionError:
+                print("У вас нет прав для переименования этого файла.")
+            except Exception as e:
+                print(f"Произошла ошибка: {e}")
+            self.files_for_send.append(name_selection_pdf)
+
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
