@@ -504,8 +504,20 @@ class WildberriesFbsMode():
             name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}.xlsx'
             output = convert(source=path_file,
                              output_dir=folder_path, soft=1)
+            name_selection_pdf = f'{folder_path}/NSK_WB_{self.file_add_name}_Selection_list_{delivery_date}.pdf'
+            try:
+                # Переименовываем файл
+                os.rename(output, name_selection_pdf)
+                print(f"Файл переименован с {output} на {name_selection_pdf}")
+
+            except FileNotFoundError:
+                print("Файл не найден. Проверьте путь.")
+            except PermissionError:
+                print("У вас нет прав для переименования этого файла.")
+            except Exception as e:
+                print(f"Произошла ошибка: {e}")
             print('output', output)
-            self.files_for_send.append(name_selection_file)
+            self.files_for_send.append(name_selection_pdf)
             #  Сохраняем на DROPBOX
             # with open(output, 'rb') as f:
             #     dbx_db.files_upload(
@@ -997,9 +1009,6 @@ class CreatePivotFile(WildberriesFbsMode):
 
             # Сохраняем на DROPBOX
 
-            with open(output, 'rb') as f:
-                dbx_db.files_upload(
-                    f.read(), f'{self.dropbox_current_assembling_folder}/{name_for_file}.pdf')
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
