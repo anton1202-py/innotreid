@@ -426,13 +426,11 @@ class WildberriesFbsMode():
                 # загружаем изображение
                 # create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=1).value = key
-                create.cell(row=COUNT_HELPER, column=2).value = value[0][:40]
+                create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 num_lines = (len(value[2]) // 6) + 1
-                print('num_lines', num_lines)
                 row_height = base_height + (num_lines * line_height)
-                print('row_height', row_height)
                 create.row_dimensions[COUNT_HELPER].height = row_height
                 # create.cell(row=COUNT_HELPER, column=5).value = value[3]
 
@@ -467,7 +465,7 @@ class WildberriesFbsMode():
                     c[1].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
                     c[1].font = Font(size=12)
-                    c[1].alignment = al
+                    c[1].alignment = al_left
 
                     c[2].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
