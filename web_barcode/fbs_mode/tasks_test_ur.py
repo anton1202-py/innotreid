@@ -502,10 +502,9 @@ class WildberriesFbsMode():
             print('folder_path ', folder_path)
             name_for_file = f'WB - {self.file_add_name} лист подбора {delivery_date}'
             name_xls_dropbox = f'WB - {self.file_add_name} Лист подбора {delivery_date}.xlsx'
-            # output = convert(source=path_file,
-            #                  output_dir=folder_path, soft=1)
-            # print('output', output)
-            print(name_selection_file)
+            output = convert(source=path_file,
+                             output_dir=folder_path, soft=1)
+            print('output', output)
             self.files_for_send.append(name_selection_file)
             #  Сохраняем на DROPBOX
             # with open(output, 'rb') as f:

@@ -42,8 +42,8 @@ def create_campaign(request):
     """Отображает страницу создания кампании"""
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
-    # file_add_name = 'OOO'
-    # action_wb(file_add_name, wb_headers_ooo)
+    file_add_name = 'OOO'
+    action_wb(file_add_name, wb_headers_ooo)
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []

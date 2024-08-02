@@ -39,8 +39,10 @@ from sqlalchemy import create_engine
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_AN, CHAT_ID_EU,
                                         CHAT_ID_MANAGER, EMAIL_ADDRESS_FROM,
                                         EMAIL_ADDRESS_FROM_PASSWORD,
-                                        EMAIL_ADDRESS_TO, NKS_EMAIL_ADDRESS,
-                                        POST_PORT, POST_SERVER, bot, dbx_db,
+                                        EMAIL_ADDRESS_TO,
+                                        MANAGER_EMAIL_ADDRESS,
+                                        NKS_EMAIL_ADDRESS, POST_PORT,
+                                        POST_SERVER, bot, dbx_db,
                                         header_wb_dict, wb_headers_karavaev,
                                         wb_headers_ooo)
 
@@ -278,14 +280,12 @@ class WildberriesFbsMode():
                         'cards'][0]['photos'][1]['big']
                     photo_name = self.convert_photo_from_webp_to_jpg(
                         photo, barcode, name_raw_photo_folder, name_photo_folder)
-                    brand = json.loads(answer)[
-                        'cards'][0]['brand']
                     title_article = json.loads(answer)[
                         'cards'][0]['title']
                     seller_article = data['article']
                     # Заполняем словарь данными для Листа подбора
                     self.selection_dict[data['id']] = [
-                        photo_name, brand, title_article, seller_article]
+                        title_article, seller_article]
             time.sleep(2)
         # Словарь с данными: {артикул_продавца: количество}
         self.amount_articles = dict(Counter(self.clear_article_list))
@@ -406,6 +406,8 @@ class WildberriesFbsMode():
         if self.selection_dict:
             self.selection_dict = self.add_shelf_number_to_selection_dict(
                 self.selection_dict)
+            sorted_dict = dict(
+                sorted(self.selection_dict.items(), key=lambda item: item[1][1]))
             delivery_date = datetime.today().strftime("%d-%m-%Y_%H-%M-%S")
             # создаем новую книгу Excel
             selection_file = Workbook()
@@ -424,27 +426,16 @@ class WildberriesFbsMode():
             create.page_margins.header = 0.3
             create.page_margins.footer = 0.3
             sheet['A1'] = '№ Задания'
-            sheet['B1'] = 'Фото'
-            sheet['C1'] = 'Бренд'
-            sheet['D1'] = 'Наименование'
-            sheet['E1'] = 'Артикул продавца'
-            sheet['F1'] = 'Стикер'
-            sheet['G1'] = 'Ячейка'
-            for key, value in self.selection_dict.items():
-                # загружаем изображение
-                img = image.Image(value[0])
-                # задаем размеры изображения
-                img.width = 30
-                img.height = 50
+            sheet['B1'] = 'Наименование'
+            sheet['C1'] = 'Артикул продавца'
+            sheet['D1'] = 'Стикер'
+            sheet['E1'] = 'Ячейка'
+            for key, value in sorted_dict.items():
                 create.cell(row=COUNT_HELPER, column=1).value = key
-                # вставляем изображение в Столбец В
-                sheet.add_image(img, f'B{COUNT_HELPER}')
-                # create.cell(row=COUNT_HELPER, column=2).value = value[0]
-                create.cell(row=COUNT_HELPER, column=3).value = value[1]
-                create.cell(row=COUNT_HELPER, column=4).value = value[2]
-                create.cell(row=COUNT_HELPER, column=5).value = value[3]
+                create.cell(row=COUNT_HELPER, column=2).value = value[1]
+                create.cell(row=COUNT_HELPER, column=3).value = value[2]
+                create.cell(row=COUNT_HELPER, column=4).value = value[3]
                 create.cell(row=COUNT_HELPER, column=6).value = value[4]
-                create.cell(row=COUNT_HELPER, column=7).value = value[5]
                 COUNT_HELPER += 1
             folder_path = os.path.join(
                 os.getcwd(), 'fbs_mode/data_for_barcodes/pivot_excel')
@@ -464,11 +455,9 @@ class WildberriesFbsMode():
             source_page2.column_dimensions['D'].width = 25  # Наименование
             # Артикул продавца
             source_page2.column_dimensions['E'].width = 16
-            source_page2.column_dimensions['F'].width = 16  # Стикер
-            source_page2.column_dimensions['G'].width = 16  # Адрес ячейки
             thin = Side(border_style="thin", color="000000")
-            for i in range(len(self.selection_dict)+1):
-                for c in source_page2[f'A{i+1}:G{i+1}']:
+            for i in range(len(sorted_dict)+1):
+                for c in source_page2[f'A{i+1}:E{i+1}']:
                     c[0].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
                     c[0].font = Font(size=12)
@@ -494,18 +483,6 @@ class WildberriesFbsMode():
                     c[4].font = Font(size=12, bold=True)
                     c[4].alignment = al_left
 
-                    c[5].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[5].font = Font(size=12, bold=True)
-                    c[5].alignment = al_left
-
-                    c[6].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[6].font = Font(size=12, bold=True)
-                    c[6].alignment = al_left
-            # Увеличиваем высоту строки
-            for i in range(2, len(self.selection_dict) + 2):
-                source_page2.row_dimensions[i].height = 60
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
             output = convert(source=path_file,
@@ -582,15 +559,15 @@ class WildberriesFbsMode():
         """
         if self.amount_articles:
             qrcode_list = qrcode_print_for_products()
-            # pdf_filenames = glob.glob(
-            #     'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
-            # logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
+            pdf_filenames = glob.glob(
+                'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
+            logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
 
             list_pdf_file_ticket_for_complect = []
-            # for j in pdf_filenames:
-            #     while self.amount_articles[str(Path(j).stem)] > 0:
-            #         list_pdf_file_ticket_for_complect.append(j)
-            #         self.amount_articles[str(Path(j).stem)] -= 1
+            for j in pdf_filenames:
+                while self.amount_articles[str(Path(j).stem)] > 0:
+                    list_pdf_file_ticket_for_complect.append(j)
+                    self.amount_articles[str(Path(j).stem)] -= 1
             logging.info(
                 f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
             # Определяем число qr кодов для поставки.
@@ -663,7 +640,8 @@ class WildberriesFbsMode():
         username = EMAIL_ADDRESS_FROM
         password = EMAIL_ADDRESS_FROM_PASSWORD
         from_email = EMAIL_ADDRESS_FROM
-        addresses_for_email = [EMAIL_ADDRESS_TO, NKS_EMAIL_ADDRESS]
+        addresses_for_email = [EMAIL_ADDRESS_TO,
+                               NKS_EMAIL_ADDRESS, MANAGER_EMAIL_ADDRESS]
         subject = f'Сборка {self.file_add_name} {delivery_date}'
 
         # Создаем сообщение
