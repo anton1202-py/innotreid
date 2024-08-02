@@ -400,7 +400,7 @@ class WildberriesFbsMode():
             delivery_date = datetime.today().strftime("%d-%m-%Y_%H-%M-%S")
             # создаем новую книгу Excel
             selection_file = Workbook()
-            COUNT_HELPER = 2
+            COUNT_HELPER = 3
             # выбираем лист Sheet1
             create = selection_file.create_sheet(
                 title='pivot_list', index=0)
@@ -416,13 +416,12 @@ class WildberriesFbsMode():
             create.page_margins.bottom = 0.25
             create.page_margins.header = 0.3
             create.page_margins.footer = 0.3
-            sheet['A1'] = '№ Задания'
-            sheet['B1'] = 'Фото'
-            sheet['C1'] = 'Бренд'
-            sheet['D1'] = 'Наименование'
-            sheet['E1'] = 'Артикул продавца'
-            sheet['F1'] = 'Стикер'
-            sheet['G1'] = 'Ячейка'
+            sheet['A2'] = '№ Задания'
+            sheet['B2'] = 'Наименование'
+            sheet['C2'] = 'Артикул продавца'
+            sheet['D2'] = 'Стикер'
+            sheet['E2'] = 'Ячейка'
+            sheet['A1'] = f'Товаров в отгрузке: {len(list(self.selection_dict.keys()))}'
             for key, value in self.selection_dict.items():
                 # загружаем изображение
                 # create.cell(row=COUNT_HELPER, column=2).value = value[0]
@@ -451,9 +450,9 @@ class WildberriesFbsMode():
             al_left = Alignment(horizontal="left",
                                 vertical="center", wrapText=True)
             source_page2.column_dimensions['A'].width = 16  # Номер задания
-            source_page2.column_dimensions['B'].width = 7  # Картинка
+            source_page2.column_dimensions['B'].width = 25  # Картинка
             source_page2.column_dimensions['C'].width = 16  # Бренд
-            source_page2.column_dimensions['D'].width = 25  # Наименование
+            source_page2.column_dimensions['D'].width = 16  # Наименование
             # Артикул продавца
             source_page2.column_dimensions['E'].width = 16
 
