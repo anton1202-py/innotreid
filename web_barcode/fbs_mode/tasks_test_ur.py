@@ -280,7 +280,7 @@ class WildberriesFbsMode():
                     seller_article = data['article']
                     # Заполняем словарь данными для Листа подбора
                     self.selection_dict[data['id']] = [
-                        photo_name, brand, title_article, seller_article]
+                        title_article, seller_article]
             time.sleep(2)
         # Словарь с данными: {артикул_продавца: количество}
         self.amount_articles = dict(Counter(self.clear_article_list))
@@ -423,18 +423,13 @@ class WildberriesFbsMode():
             sheet['G1'] = 'Ячейка'
             for key, value in self.selection_dict.items():
                 # загружаем изображение
-                img = image.Image(value[0])
-                # задаем размеры изображения
-                img.width = 50
-                img.height = 70
-                create.cell(row=COUNT_HELPER, column=1).value = key
-                # вставляем изображение в Столбец В
-                sheet.add_image(img, f'B{COUNT_HELPER}')
                 # create.cell(row=COUNT_HELPER, column=2).value = value[0]
+                create.cell(row=COUNT_HELPER, column=1).value = key
+                create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
-                create.cell(row=COUNT_HELPER, column=6).value = value[4]
+
                 # create.cell(row=COUNT_HELPER, column=7).value = value[5]
                 COUNT_HELPER += 1
             folder_path = os.path.join(
@@ -455,8 +450,7 @@ class WildberriesFbsMode():
             source_page2.column_dimensions['D'].width = 25  # Наименование
             # Артикул продавца
             source_page2.column_dimensions['E'].width = 16
-            source_page2.column_dimensions['F'].width = 16  # Стикер
-            source_page2.column_dimensions['G'].width = 16  # Адрес ячейки
+
             thin = Side(border_style="thin", color="000000")
             for i in range(len(self.selection_dict)+1):
                 for c in source_page2[f'A{i+1}:G{i+1}']:
@@ -487,16 +481,8 @@ class WildberriesFbsMode():
 
                     c[5].border = Border(top=thin, left=thin,
                                          bottom=thin, right=thin)
-                    c[5].font = Font(size=12, bold=True)
-                    c[5].alignment = al_left
-
-                    c[6].border = Border(top=thin, left=thin,
-                                         bottom=thin, right=thin)
-                    c[6].font = Font(size=12, bold=True)
-                    c[6].alignment = al_left
             # Увеличиваем высоту строки
-            for i in range(2, len(self.selection_dict) + 2):
-                source_page2.row_dimensions[i].height = 60
+            source_page2.row_dimensions[1].height = 20
             w_b2.save(name_selection_file)
             folder_path = os.path.dirname(os.path.abspath(path_file))
             print('folder_path ', folder_path)
