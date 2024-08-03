@@ -582,15 +582,16 @@ class WildberriesFbsMode():
             logging.info(f"len(pdf_filenames): {len(pdf_filenames)}")
 
             list_pdf_file_ticket_for_complect = []
+            counter_supply_qr_amount = []
             for j in pdf_filenames:
                 while self.amount_articles[str(Path(j).stem)] > 0:
-                    list_pdf_file_ticket_for_complect.append(j)
+                    counter_supply_qr_amount.append(j)
                     self.amount_articles[str(Path(j).stem)] -= 1
             logging.info(
-                f"list_pdf_file_ticket_for_complect после добавления количества: {list_pdf_file_ticket_for_complect}")
+                f"list_pdf_file_ticket_for_complect после добавления количества: {counter_supply_qr_amount}")
             # Определяем число qr кодов для поставки.
             amount_of_supply_qrcode = math.ceil(
-                len(list_pdf_file_ticket_for_complect)/20)
+                len(counter_supply_qr_amount)/20)
             for file in qrcode_list:
                 list_pdf_file_ticket_for_complect.append(file)
             logging.info(
