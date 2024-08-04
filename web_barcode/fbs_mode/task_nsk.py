@@ -456,9 +456,9 @@ class WildberriesFbsMode():
             al_left = Alignment(horizontal="left",
                                 vertical="center", wrapText=True)
             source_page2.column_dimensions['A'].width = 16  # Номер задания
-            source_page2.column_dimensions['B'].width = 35  # Картинка
+            source_page2.column_dimensions['B'].width = 25  # Картинка
             source_page2.column_dimensions['C'].width = 16  # Бренд
-            source_page2.column_dimensions['D'].width = 25  # Наименование
+            source_page2.column_dimensions['D'].width = 16  # Наименование
             source_page2.column_dimensions['E'].width = 16
             thin = Side(border_style="thin", color="000000")
             for i in range(len(sorted_dict)+1):
