@@ -438,7 +438,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=2).value = value[0]
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
-                create.cell(row=COUNT_HELPER, column=6).value = value[3]
+                create.cell(row=COUNT_HELPER, column=5).value = value[3]
                 num_lines = (len(value[2]) // 6) + 1
                 row_height = base_height + (num_lines * line_height)
                 create.row_dimensions[COUNT_HELPER].height = row_height
