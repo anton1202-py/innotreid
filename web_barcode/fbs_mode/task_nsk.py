@@ -681,7 +681,7 @@ class WildberriesFbsMode():
                             part.set_payload(attachment.read())
                             encoders.encode_base64(part)
                             part.add_header('Content-Disposition',
-                                            f'attachment; filename*=UTF-8\'\'{filename}')
+                                            f'attachment; filename*=UTF-8\'\'{os.path.basename(filename)}')
 
                             # Добавляем вложение в сообщение
                             msg.attach(part)
