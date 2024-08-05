@@ -439,7 +439,7 @@ class WildberriesFbsMode():
                 create.cell(row=COUNT_HELPER, column=3).value = value[1]
                 create.cell(row=COUNT_HELPER, column=4).value = value[2]
                 create.cell(row=COUNT_HELPER, column=5).value = value[3]
-                num_lines = (len(value[2]) // 6) + 1
+                num_lines = (len(value[3]) // 6) + 1
                 row_height = base_height + (num_lines * line_height)
                 create.row_dimensions[COUNT_HELPER].height = row_height
                 COUNT_HELPER += 1
@@ -456,9 +456,9 @@ class WildberriesFbsMode():
             al_left = Alignment(horizontal="left",
                                 vertical="center", wrapText=True)
             source_page2.column_dimensions['A'].width = 16  # Номер задания
-            source_page2.column_dimensions['B'].width = 25  # Картинка
+            source_page2.column_dimensions['B'].width = 25  # Наименование
             source_page2.column_dimensions['C'].width = 16  # Бренд
-            source_page2.column_dimensions['D'].width = 16  # Наименование
+            source_page2.column_dimensions['D'].width = 16
             source_page2.column_dimensions['E'].width = 16
             thin = Side(border_style="thin", color="000000")
             for i in range(len(sorted_dict)+1):
