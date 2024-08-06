@@ -216,7 +216,7 @@ class CampaignDailyStatisticView(ListView):
         # for i in delete_data:
         #     i.delete()
         statistic_data = DailyCampaignParameters.objects.filter(
-            campaign=self.kwargs['id']).order_by('statistic_date')
+            campaign=self.kwargs['id']).order_by('-statistic_date')
 
         context.update({
             'statistic_data': statistic_data,

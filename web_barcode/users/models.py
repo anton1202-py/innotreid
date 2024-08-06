@@ -66,16 +66,9 @@ User = get_user_model()
 class CustomUserBackend:
 
     def authenticate(self, request, username=None, password=None):
-
-        print('я в классе бэкенда')
         try:
             user = User.objects.get(username=username)
-            print('user from backend', user)
-            print(user.password)
-            print('user.check_password(password)',
-                  user.check_password(password))
             if not user.check_password(password):
-                print('проверил в классе пароль')
                 return user
         except User.DoesNotExist:
             return None

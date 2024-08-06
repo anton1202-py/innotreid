@@ -129,8 +129,8 @@ class CpmWbCampaign(models.Model):
         null=True
     )
 
-    def __str__(self):
-        return f'{self.campaign_number.campaign_name}'
+    # def __str__(self):
+    #     return f'{self.campaign_number.campaign_name}'
 
     class Meta:
         verbose_name = 'Изменение ставок кампании ВБ'

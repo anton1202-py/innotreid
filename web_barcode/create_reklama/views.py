@@ -14,7 +14,8 @@ from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    StartPausaCampaign)
 from create_reklama.periodic_tasks import (
     auto_replenish_budget_campaign, budget_working,
-    set_up_minus_phrase_to_auto_campaigns, update_campaign_status)
+    set_up_minus_phrase_to_auto_campaigns, update_campaign_budget_and_cpm,
+    update_campaign_status)
 from create_reklama.supplyment import (
     add_created_campaign_data_to_database,
     check_data_create_adv_campaign_from_excel_file,

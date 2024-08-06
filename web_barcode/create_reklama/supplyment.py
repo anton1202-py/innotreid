@@ -212,7 +212,7 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
     for campaign_data in main_data:
         if "autoParams" in campaign_data:
             if 'cpm' in campaign_data["autoParams"]:
-                cpm = campaign_data["autoParams"]['cpm']
+                cpm = campaign_data["autoParams"]['nmCPM'][0]['cpm']
             else:
                 cpm = None
         else:
