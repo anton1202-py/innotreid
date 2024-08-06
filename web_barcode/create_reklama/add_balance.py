@@ -500,6 +500,8 @@ def start_add_campaign(campaign, header, counter=0):
         if status == 4 or status == 11:
             if budget > 0:
                 response = requests.request("GET", url, headers=header)
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=f'{campaign} {response.status_code}')
                 if response.status_code != 200 and response.status_code != 422:
                     start_add_campaign(campaign, header, counter)
                 elif response.status_code == 404:
