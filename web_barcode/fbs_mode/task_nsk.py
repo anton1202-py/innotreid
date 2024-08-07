@@ -576,6 +576,7 @@ class WildberriesFbsMode():
         Объединяет эти файлы и сохраняет конечный файл на дропбоксе.
         """
         if self.amount_articles:
+            counter_for_qrcode_amount = self.amount_articles
             qrcode_list = qrcode_print_for_products()
             pdf_filenames = glob.glob(
                 'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
@@ -584,9 +585,9 @@ class WildberriesFbsMode():
             list_pdf_file_ticket_for_complect = []
             counter_supply_qr_amount = []
             for j in pdf_filenames:
-                while self.amount_articles[str(Path(j).stem)] > 0:
+                while counter_for_qrcode_amount[str(Path(j).stem)] > 0:
                     counter_supply_qr_amount.append(j)
-                    self.amount_articles[str(Path(j).stem)] -= 1
+                    counter_for_qrcode_amount[str(Path(j).stem)] -= 1
             logging.info(
                 f"list_pdf_file_ticket_for_complect после добавления количества: {counter_supply_qr_amount}")
             # Определяем число qr кодов для поставки.
@@ -736,7 +737,7 @@ class WildberriesFbsMode():
         """Отправляет количество артикулов в телеграм бот"""
 
         try:
-            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
+            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN, CHAT_ID_ADMIN]
             sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
             ur_lico_for_message_dict = {
                 'OOO': 'Amstek',

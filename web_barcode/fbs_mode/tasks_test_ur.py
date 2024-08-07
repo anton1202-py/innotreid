@@ -691,325 +691,15 @@ class WildberriesFbsMode():
         finally:
             server.quit()
 
-
-class CreatePivotFile(WildberriesFbsMode):
-    """Создает общий файл для производства"""
-
-    def __init__(self, db_folder, file_add_name, headers_wb):
-        self.dropbox_main_fbs_folder = db_folder
-        self.file_add_name = file_add_name
-        self.headers_wb = headers_wb
-        self.main_save_folder_server = 'fbs_mode/data_for_barcodes'
-        # Получаем текущую дату
-        today = datetime.today()
-        hour = today.hour
-        wb_ip_days = ['Friday']
-        # Используем метод strftime() для форматирования даты и вывода дня недели
-        day_of_week = today.strftime('%A')
-        self.amount_articles = {}
-
-        if self.file_add_name == 'ООО':
-            self.warehouse_dict = {
-                'day_stock': 1020001030027000, 'night_stock': 22676408482000}
-        elif self.file_add_name == 'ИП':
-            self.warehouse_dict = {
-                'day_stock': 1020000089903000, 'night_stock': 22655170176000}
-
-    def delivery_data(self, next_number=0, limit_number=1000):
-        """
-        СВОДНЫЙ ФАЙЛ
-        Собирает данные по поставке, которая уже создалась
-        """
-        try:
-            url_data = f'https://suppliers-api.wildberries.ru/api/v3/supplies?limit={limit_number}&next={next_number}'
-            response_data = requests.request(
-                "GET", url_data, headers=self.headers_wb)
-            delivery_date = datetime.today().strftime("%d.%m.%Y")
-            hour = datetime.now().hour
-            delivery_name = ''
-            if hour >= 6 and hour < 18:
-                delivery_name = f'День {delivery_date}'
-            else:
-                delivery_name = f'Ночь {delivery_date}'
-            if response_data.status_code == 200:
-                if len(json.loads(response_data.text)['supplies']) >= limit_number:
-                    next_number_new = json.loads(response_data.text)['next']
-                    return self.delivery_data(next_number_new)
-                else:
-                    last_sup = json.loads(response_data.text)['supplies'][-1]
-                    if delivery_name in last_sup['name']:
-                        supply_id = last_sup['id']
-                        return supply_id
-                    else:
-                        return ''
-            else:
-                time.sleep(5)
-                return self.delivery_data()
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'delivery_data', self.delivery_data, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
-    def data_for_production_list(self):
-        """
-        СВОДНЫЙ ФАЙЛ
-        Сводит данные из данных о поставке к словарю: {артикул: количество}
-        """
-        try:
-            supply_id = self.delivery_data()
-            article_amount = {}
-            if supply_id:
-                url = f'https://suppliers-api.wildberries.ru/api/v3/supplies/{supply_id}/orders'
-                response_data = requests.request(
-                    "GET", url, headers=self.headers_wb)
-                if response_data.status_code == 200:
-
-                    orders_data = json.loads(response_data.text)['orders']
-                    for data in orders_data:
-                        if data['article'] in article_amount:
-                            article_amount[data['article']] += 1
-                        else:
-                            article_amount[data['article']] = 1
-                else:
-                    time.sleep(5)
-                    return self.data_for_production_list()
-            return article_amount
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'data_for_production_list', self.data_for_production_list, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-            return article_amount
-
-    def create_pivot_xls(self):
-        '''
-        СВОДНЫЙ ФАЙЛ.
-        Создает сводный файл excel с количеством каждого артикула.
-        Подключается к базе данных на сервере'''
-        try:
-            self.wb_article_amount = self.data_for_production_list()
-            delivery_date = datetime.today().strftime("%d.%m.%Y %H-%M-%S")
-            # Задаем словарь с данными WB, а входящий становится общим для всех маркетплейсов
-            if not self.wb_article_amount:
-                self.wb_article_amount = {}
-            self.amount_articles = self.wb_article_amount.copy()
-            hour = datetime.now().hour
-            date_folder = datetime.today().strftime('%Y-%m-%d')
-
-            if hour >= 6 and hour < 18:
-                self.delivary_method_id = self.warehouse_dict['day_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!ДЕНЬ СБОРКА ФБС/{date_folder}'
-            else:
-                self.delivary_method_id = self.warehouse_dict['night_stock']
-                self.dropbox_current_assembling_folder = f'{self.dropbox_main_fbs_folder}/!НОЧЬ СБОРКА ФБС/{date_folder}'
-
-            CELL_LIMIT = 16
-            COUNT_HELPER = 2
-
-            sorted_data_for_pivot_xls = dict(
-                sorted(self.amount_articles.items(), key=lambda v: v[0].upper()))
-            pivot_xls = openpyxl.Workbook()
-            create = pivot_xls.create_sheet(title='pivot_list', index=0)
-            sheet = pivot_xls['pivot_list']
-            sheet['A1'] = 'Артикул продавца'
-            sheet['B1'] = 'Ячейка стеллажа'
-            # Можно вернуть столбец для производства
-            # sheet['C1'] = 'На производство'
-            sheet['D1'] = 'Всего для FBS'
-            sheet['E1'] = 'FBS WB'
-            sheet['F1'] = 'FBS Ozon'
-            sheet['G1'] = 'FBY Yandex'
-
-            for key, value in sorted_data_for_pivot_xls.items():
-                create.cell(row=COUNT_HELPER, column=1).value = key
-                create.cell(row=COUNT_HELPER, column=4).value = value
-                COUNT_HELPER += 1
-            select_file_folder = os.path.join(
-                os.getcwd(), f'{self.main_save_folder_server}/pivot_excel')
-            if not os.path.exists(select_file_folder):
-                os.makedirs(select_file_folder)
-            name_pivot_xls = f'{select_file_folder}/for_production.xlsx'
-            path_file = os.path.abspath(name_pivot_xls)
-            # file_name_dir = path.parent
-
-            pivot_xls.save(name_pivot_xls)
-            # ========= Подключение к базе данных ========= #
-            engine = create_engine(
-                "postgresql://databaseadmin:Up3psv8x@158.160.28.219:5432/innotreid")
-
-            data = pd.read_sql_table(
-                "database_shelvingstocks",
-                con=engine,
-                columns=['task_start_date',
-                         'task_finish_date',
-                         'seller_article_wb',
-                         'seller_article',
-                         'shelf_number',
-                         'amount']
-            )
-            connection = psycopg2.connect(user="databaseadmin",
-                                          # пароль, который указали при установке PostgreSQL
-                                          password="Up3psv8x",
-                                          host="158.160.28.219",
-                                          port="5432",
-                                          database="innotreid")
-            cursor = connection.cursor()
-
-            shelf_seller_article_list = data['seller_article_wb'].to_list()
-            shelf_number_list = data['shelf_number'].to_list()
-            shelf_amount_list = data['amount'].to_list()
-            w_b = load_workbook(name_pivot_xls)
-            source_page = w_b.active
-            name_article = source_page['A']
-            amount_all_fbs = source_page['D']
-
-            for i in range(1, len(name_article)):
-                if name_article[i].value in self.wb_article_amount.keys():
-                    source_page.cell(
-                        row=i+1, column=5).value = self.wb_article_amount[name_article[i].value]
-                # Заполняется столбец "В" - номер ячейки на внутреннем складе
-                for s in range(len(shelf_seller_article_list)):
-                    if name_article[i].value == shelf_seller_article_list[s] and (
-                            int(amount_all_fbs[i].value) < int(shelf_amount_list[s])):
-                        source_page.cell(
-                            row=i+1, column=2).value = shelf_number_list[s]
-                        new_amount = int(
-                            shelf_amount_list[s]) - int(amount_all_fbs[i].value)
-                        select_table_query = f'''UPDATE database_shelvingstocks SET amount={new_amount},
-                            task_start_date=current_timestamp, task_finish_date=NULL WHERE seller_article='{shelf_seller_article_list[s]}';'''
-                        cursor.execute(select_table_query)
-                    elif name_article[i].value == shelf_seller_article_list[s] and (
-                            int(amount_all_fbs[i].value) >= int(shelf_amount_list[s])):
-                        # ========== Сюда вставить отметку, если мало артикулов в полке =========
-                        source_page.cell(
-                            row=i+1, column=2).value = f'{shelf_number_list[s]}'
-            connection.commit()
-            w_b.save(name_pivot_xls)
-            w_b2 = load_workbook(name_pivot_xls)
-            source_page2 = w_b2.active
-            amount_all_fbs = source_page2['D']
-            amount_for_production = source_page2['C']
-            PROD_DETAIL_CONST = 4
-            for r in range(1, len(amount_all_fbs)):
-                # Заполняет столбец ['C'] = 'Производство'
-                if amount_all_fbs[r].value == 1:
-                    source_page2.cell(
-                        row=r+1, column=3).value = int(PROD_DETAIL_CONST)
-                elif 2 <= int(amount_all_fbs[r].value) <= PROD_DETAIL_CONST-1:
-                    source_page2.cell(
-                        row=r+1, column=3).value = int(2 * PROD_DETAIL_CONST)
-                elif PROD_DETAIL_CONST <= int(amount_all_fbs[r].value) <= 2 * PROD_DETAIL_CONST - 1:
-                    source_page2.cell(
-                        row=r+1, column=3).value = int(3 * PROD_DETAIL_CONST)
-                else:
-                    source_page2.cell(row=r+1, column=3).value = ' '
-            w_b2.save(name_pivot_xls)
-            w_b2 = load_workbook(name_pivot_xls)
-            source_page2 = w_b2.active
-            amount_all_fbs = source_page2['D']
-            al = Alignment(horizontal="center", vertical="center")
-            al_left = Alignment(horizontal="left", vertical="center")
-            # Задаем толщину и цвет обводки ячейки
-            font_bold = Font(bold=True)
-            thin = Side(border_style="thin", color="000000")
-            thick = Side(border_style="medium", color="000000")
-            for i in range(len(amount_all_fbs)):
-                for c in source_page2[f'A{i+1}:G{i+1}']:
-                    if i == 0:
-                        c[0].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[1].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[2].border = Border(top=thick, left=thick,
-                                             bottom=thin, right=thick)
-                        c[3].border = Border(top=thick, left=thick,
-                                             bottom=thin, right=thick)
-                        c[4].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[5].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[6].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                    elif i == len(amount_all_fbs)-1:
-                        c[0].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[1].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[2].border = Border(top=thin, left=thick,
-                                             bottom=thick, right=thick)
-                        c[3].border = Border(top=thin, left=thick,
-                                             bottom=thick, right=thick)
-                        c[4].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[5].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[6].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                    else:
-                        c[0].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[1].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[2].border = Border(top=thin, left=thick,
-                                             bottom=thin, right=thick)
-                        c[3].border = Border(top=thin, left=thick,
-                                             bottom=thin, right=thick)
-                        c[4].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[5].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                        c[6].border = Border(top=thin, left=thin,
-                                             bottom=thin, right=thin)
-                    c[0].alignment = al_left
-                    c[1].alignment = al
-                    c[2].alignment = al
-                    c[3].alignment = al
-                    c[4].alignment = al
-                    c[5].alignment = al
-                    c[6].alignment = al
-            source_page2.column_dimensions['A'].width = 18
-            source_page2.column_dimensions['B'].width = 18
-            source_page2.column_dimensions['C'].width = 18
-            source_page2.column_dimensions['D'].width = 10
-            source_page2.column_dimensions['E'].width = 10
-            source_page2.column_dimensions['F'].width = 12
-            source_page2.column_dimensions['G'].width = 12
-
-            # Когда понадобится столбец НА ПРОИЗВОДСТВО - удалить следующую строку
-            source_page2.delete_cols(3, 1)
-            w_b2.save(name_pivot_xls)
-
-            folder_path = os.path.dirname(os.path.abspath(path_file))
-            name_for_file = f'Общий файл производство {self.file_add_name} {delivery_date}'
-            name_xls_dropbox = f'На производство {self.file_add_name} {delivery_date}'
-
-            output = convert(source=path_file, output_dir=folder_path, soft=1)
-
-            # Сохраняем на DROPBOX
-
-        except Exception as e:
-            # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'create_pivot_xls', self.create_pivot_xls, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
-
     def analyze_fbs_amount(self):
         """
         СВОДНЫЙ ФАЙЛ.
         Анализирует количество артикулов в текущей сборке
         """
+
         try:
             sum_all_fbs = sum(self.amount_articles.values())
-            sum_fbs_wb = 0
-            if self.wb_article_amount:
-                for i in self.wb_article_amount.values():
-                    sum_fbs_wb += int(i)
-
-            if len(self.amount_articles) == 0:
+            if not self.amount_articles:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
                 max_article_amount_all_fbs = 0
@@ -1019,8 +709,7 @@ class CreatePivotFile(WildberriesFbsMode):
                 articles_for_fbs = list(self.amount_articles.keys())
                 max_article_amount_all_fbs = articles_for_fbs[amount_for_fbs.index(
                     max_amount_all_fbs)]
-            return (sum_fbs_wb,
-                    sum_all_fbs,
+            return (sum_all_fbs,
                     articles_for_fbs,
                     max_article_amount_all_fbs,
                     max_amount_all_fbs)
@@ -1035,20 +724,20 @@ class CreatePivotFile(WildberriesFbsMode):
         """Отправляет количество артикулов в телеграм бот"""
 
         try:
-            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
-            sum_fbs_wb, sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
+            # list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
+            sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
             ur_lico_for_message_dict = {
-                'ООО': 'Amstek',
-                'ИП': '3Д Ночник'
+                'OOO': 'Amstek',
+                'IP': '3Д Ночник'
             }
-            message = f''' Отправлено на сборку Фбс в Новосибирске {ur_lico_for_message_dict[self.file_add_name]}
-                ВБ: {sum_fbs_wb}, 
-                Итого по ФБС {ur_lico_for_message_dict[self.file_add_name]}: {sum_all_fbs} штук
+            message = f'''Отправлено на сборку Фбс в Новосибирске {ur_lico_for_message_dict[self.file_add_name]}
+                Итого по ФБС WB {ur_lico_for_message_dict[self.file_add_name]}: {sum_all_fbs} штук
                 В сборке {len(articles_for_fbs)} артикулов
                 Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
             message = message.replace('            ', '')
-            for chat_id in list_chat_id_tg:
-                bot.send_message(chat_id=chat_id, text=message)
+            print(message)
+            # for chat_id in list_chat_id_tg:
+            #     bot.send_message(chat_id=chat_id, text=message)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -1091,3 +780,5 @@ def action_wb(file_add_name, headers_wb):
     # 8. Создаю список с полными именами файлов, которые нужно объединить
     wb_actions.list_for_print_create()
     wb_actions.send_email()
+    wb_actions.analyze_fbs_amount()
+    wb_actions.sender_message_to_telegram()
