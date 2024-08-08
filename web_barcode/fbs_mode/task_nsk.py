@@ -575,7 +575,7 @@ class WildberriesFbsMode():
         Объединяет эти файлы и сохраняет конечный файл на дропбоксе.
         """
         if self.amount_articles:
-            counter_for_qrcode_amount = self.amount_articles
+            counter_for_qrcode_amount = self.amount_articles.copy()
             qrcode_list = qrcode_print_for_products()
             pdf_filenames = glob.glob(
                 'fbs_mode/data_for_barcodes/cache_dir/*.pdf')
@@ -640,6 +640,7 @@ class WildberriesFbsMode():
                 os.getcwd(), 'fbs_mode/data_for_barcodes/done_data')
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
+
             file_name = (
                 f'{folder_path}/NSK_WB_{self.file_add_name}_tickets_FBS_{time.strftime("%Y-%m-%d_%H-%M-%S")}.pdf')
             print_barcode_to_pdf_without_dropbox(list_pdf_file_ticket_for_complect,
@@ -710,7 +711,6 @@ class WildberriesFbsMode():
 
         try:
             sum_all_fbs = sum(self.amount_articles.values())
-            print('self.amount_articles', self.amount_articles)
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=f'self.amount_articles: {self.amount_articles}')
             if not self.amount_articles:
@@ -737,7 +737,6 @@ class WildberriesFbsMode():
     @sender_error_to_tg
     def sender_message_to_telegram(self):
         """Отправляет количество артикулов в телеграм бот"""
-
         try:
             list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN, CHAT_ID_ADMIN]
             sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
@@ -750,9 +749,8 @@ class WildberriesFbsMode():
                 В сборке {len(articles_for_fbs)} артикулов
                 Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
             message = message.replace('            ', '')
-            print(message)
-            # for chat_id in list_chat_id_tg:
-            #     bot.send_message(chat_id=chat_id, text=message)
+            for chat_id in list_chat_id_tg:
+                bot.send_message(chat_id=chat_id, text=message)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -792,27 +790,6 @@ def action_wb(file_add_name, headers_wb):
     wb_actions.send_email()
     # 9. Отрпавляю данные о сборке в ТГ
     wb_actions.sender_message_to_telegram()
-
-    # wb_actions.article_data_for_tickets()
-    # # wb_actions.add_shelf_number_to_selection_dict([])
-
-    # # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
-    # # задания и сохраняю его в папку
-    # # wb_actions.qrcode_order()
-    # # # 4. Создаю лист сборки
-    # wb_actions.create_selection_list()
-    # # 5. Создаю шрихкоды для артикулов
-    # # wb_actions.create_barcode_tickets()
-    # # # 6. Добавляю поставку в доставку.
-    # # wb_actions.supply_to_delivery()
-    # # # 7. Получаю QR код поставки
-    # # # и преобразует этот QR код в необходимый формат.
-    # # wb_actions.qrcode_supply()
-    # # 8. Создаю список с полными именами файлов, которые нужно объединить
-    # wb_actions.list_for_print_create()
-    # wb_actions.send_email()
-
-    # wb_actions.sender_message_to_telegram()
 
 
 @app.task
