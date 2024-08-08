@@ -135,10 +135,9 @@ def error_message(function_name: str, function, error_text: str) -> str:
 class WildberriesFbsMode():
     """Класс отвечает за работу с заказами Wildberries"""
 
-    def __init__(self, headers, db_forder, file_add_name):
+    def __init__(self, headers, file_add_name):
         """Основные данные класса"""
         self.amount_articles = {}
-        self.dropbox_main_fbs_folder = db_forder
         self.headers = headers
         self.file_add_name = file_add_name
         self.files_for_send = []
@@ -711,6 +710,9 @@ class WildberriesFbsMode():
 
         try:
             sum_all_fbs = sum(self.amount_articles.values())
+            print('self.amount_articles', self.amount_articles)
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=f'self.amount_articles: {self.amount_articles}')
             if not self.amount_articles:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
@@ -748,8 +750,9 @@ class WildberriesFbsMode():
                 В сборке {len(articles_for_fbs)} артикулов
                 Артикул с максимальным количеством {max_article_amount_all_fbs}. В сборке {max_amount_all_fbs} штук'''
             message = message.replace('            ', '')
-            for chat_id in list_chat_id_tg:
-                bot.send_message(chat_id=chat_id, text=message)
+            print(message)
+            # for chat_id in list_chat_id_tg:
+            #     bot.send_message(chat_id=chat_id, text=message)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
@@ -763,9 +766,9 @@ class WildberriesFbsMode():
 # ==================== Сборка WILDBERRIES =================== #
 
 @sender_error_to_tg
-def action_wb(db_folder, file_add_name, headers_wb):
+def action_wb(file_add_name, headers_wb):
     wb_actions = WildberriesFbsMode(
-        headers_wb, db_folder, file_add_name)
+        headers_wb, file_add_name)
 
     clearning_folders()
     # =========== АЛГОРИТМ  ДЕЙСТВИЙ С WILDBERRIES ========== #
@@ -790,13 +793,34 @@ def action_wb(db_folder, file_add_name, headers_wb):
     # 9. Отрпавляю данные о сборке в ТГ
     wb_actions.sender_message_to_telegram()
 
+    # wb_actions.article_data_for_tickets()
+    # # wb_actions.add_shelf_number_to_selection_dict([])
+
+    # # 3. добавляю сборочные задания по их id в созданную поставку и получаю qr стикер каждого
+    # # задания и сохраняю его в папку
+    # # wb_actions.qrcode_order()
+    # # # 4. Создаю лист сборки
+    # wb_actions.create_selection_list()
+    # # 5. Создаю шрихкоды для артикулов
+    # # wb_actions.create_barcode_tickets()
+    # # # 6. Добавляю поставку в доставку.
+    # # wb_actions.supply_to_delivery()
+    # # # 7. Получаю QR код поставки
+    # # # и преобразует этот QR код в необходимый формат.
+    # # wb_actions.qrcode_supply()
+    # # 8. Создаю список с полными именами файлов, которые нужно объединить
+    # wb_actions.list_for_print_create()
+    # wb_actions.send_email()
+
+    # wb_actions.sender_message_to_telegram()
+
 
 @app.task
 def nsk_fbs_task():
     """Запускает утреннюю FBS сборку ИП (Без документов ОЗОН)"""
     try:
         action_wb(
-            db_folder, file_add_name_ip, wb_headers_karavaev)
+            file_add_name_ip, wb_headers_karavaev)
         message_text = f'Сборка Новосибирск {file_add_name_ip} сформирована'
         bot.send_message(chat_id=CHAT_ID_MANAGER,
                          text=message_text, parse_mode='HTML')
@@ -810,7 +834,7 @@ def nsk_fbs_task():
     try:
         time.sleep(60)
         action_wb(
-            db_folder, file_add_name_ooo, wb_headers_ooo)
+            file_add_name_ooo, wb_headers_ooo)
         message_text = f'Сборка Новосибирск {file_add_name_ooo} сформирована'
         bot.send_message(chat_id=CHAT_ID_MANAGER,
                          text=message_text, parse_mode='HTML')

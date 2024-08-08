@@ -699,6 +699,7 @@ class WildberriesFbsMode():
 
         try:
             sum_all_fbs = sum(self.amount_articles.values())
+            print('self.amount_articles', self.amount_articles)
             if not self.amount_articles:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
