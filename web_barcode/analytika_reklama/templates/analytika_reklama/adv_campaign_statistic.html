@@ -46,41 +46,26 @@
                 <tr>
                     <th>Кампания</th>
                     <th>Юр. лицо</th>
-                    <th>Тип</th>
+                    <th>Название</th>
                     <th>Статус</th>
                     <th>Просмотры</th>
                     <th>Клики</th>
-                    <th>CTR</th>
-                    <th>CPC</th>
-                    <th>Затраты</th>
-                    <th>Добавления в корзину</th>
-                    <th>orders</th>
-                    <th>CR</th>
                     <th>Заказы</th>
-                    <th>Сумма заказов</th>
                 </tr>
             </thead>
             <tbody>
-                {% for el in campaign_info %}
+                {% for campaign_number, data_list in campaign_period_data.items %}
                 <tr>
-                    {% if el.campaign.id %}
-                        <td><a href="{% url 'adv_campaign_daily_statistic'  el.campaign.id %}">{{ el.campaign.campaign_number }}</a></td>
-                        <td>{{ el.campaign.ur_lico }}</td>
-                        <td>{{ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT|get_item:el.campaign.campaign_type }}</td>
-                        <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:el.campaign.campaign_status }}</td>
-                        <td>{{ el.views }}</td>
-                        <td>{{ el.clicks }}</td>
-                        <td>{{ el.ctr }}</td>
-                        <td>{{ el.cpc }}</td>
-                        <td>{{ el.summ|round_number }}</td>
-                        <td>{{ el.atbs }}</td>
-                        <td>{{ el.orders }}</td>
-                        <td>{{ el.cr }}</td>
-                        <td>{{ el.shks }}</td>
-                        <td>{{ el.sum_price|integer }}</td>
-                    {% endif %}
                     
+                    <td><a href="{% url 'adv_campaign_daily_statistic'  data_list.0 %}">{{ campaign_number }}</a></td>
+                    <td>{{ data_list.1 }}</td>
+                    <td>{{ WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT|get_item:data_list.2 }}</td>
+                    <td>{{ data_list.3 }}</td>
+                    <td>{{ data_list.4 }}</td>
+                    <td>{{ data_list.5 }}</td>
+                    <td>{{ data_list.6 }}</td>
                     
+ 
                 {% endfor %}
             </tbody>
         </table>

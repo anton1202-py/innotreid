@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta
 
 from analytika_reklama.jam_statistic import \
     analytika_reklama_excel_with_jam_data
@@ -74,6 +75,10 @@ def common_adv_statistic(request):
     page_name = 'Статистика рекламных кампаний'
     campaign_info = MainCampaignParameters.objects.filter(
         campaign__ur_lico__ur_lice_name="ООО Иннотрейд").order_by('id')
+    statistic_date_finish = datetime.now()
+    statistic_date_start = statistic_date_finish - timedelta(days=8)
+    campaign_period_data = {}
+
     ur_lico_data = UrLico.objects.all()
     if request.POST:
         if 'campaign_number' in request.POST:
@@ -84,10 +89,40 @@ def common_adv_statistic(request):
             filter_ur_lico = request.POST['ur_lico_select']
             campaign_info = MainCampaignParameters.objects.filter(
                 campaign__ur_lico=int(filter_ur_lico)).order_by('id')
+    for data in campaign_info:
+        if DailyCampaignParameters.objects.filter(
+                campaign__ur_lico=data.campaign.ur_lico,
+                campaign__campaign_number=str(data.campaign.campaign_number),
+                statistic_date__gt=statistic_date_start,
+                statistic_date__lt=statistic_date_finish).exists():
+            statistic_data = DailyCampaignParameters.objects.filter(
+                campaign__ur_lico=data.campaign.ur_lico,
+                campaign__campaign_number=str(data.campaign.campaign_number),
+                statistic_date__gt=statistic_date_start,
+                statistic_date__lt=statistic_date_finish
+            ).values('campaign__id', 'campaign__ur_lico__ur_lice_name', 'campaign__campaign_status', 'campaign__campaign_name').annotate(
+
+                total_views=Sum('views'),
+                total_clicks=Sum('clicks'),
+                total_orders=Sum('orders')
+            )[0]
+
+            campaign_period_data[data.campaign.campaign_number] = [
+                statistic_data['campaign__id'],
+                statistic_data['campaign__ur_lico__ur_lice_name'],
+                statistic_data['campaign__campaign_status'],
+                statistic_data['campaign__campaign_name'],
+                statistic_data['total_views'],
+                statistic_data['total_clicks'],
+                statistic_data['total_orders']
+            ]
+
+    print(campaign_period_data)
     context = {
         'page_name': page_name,
         'campaign_info': campaign_info,
         'ur_lico_data': ur_lico_data,
+        'campaign_period_data': campaign_period_data,
         'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
         'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
     }

@@ -165,7 +165,6 @@ def count_sum_orders():
         ur_lico_obj = UrLico.objects.get(ur_lice_name=ur_lico)
 
         campaign_orders_money_dict = {}
-        print(len(campaign_list))
         n = len(campaign_list)
         for campaign in campaign_list:
             header = header = header_wb_dict[ur_lico]
@@ -393,7 +392,7 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
             campaign_budget = common_budget
         else:
             # Женя попросил безусловное пополнение ВС раз в день.
-            info_campaign_obj.virtual_budget = common_budget + 30
+            info_campaign_obj.virtual_budget = common_budget + 5
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
             campaign_budget = common_budget
@@ -433,6 +432,10 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         else:
             info_campaign_obj.virtual_budget += campaign_budget
         info_campaign_obj.virtual_budget_date = now_date
+        print('info_campaign_obj.virtual_budget',
+              campaign, info_campaign_obj.virtual_budget)
+        print('info_campaign_obj.virtual_budget_date',
+              campaign, info_campaign_obj.virtual_budget_date)
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
