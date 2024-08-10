@@ -72,13 +72,12 @@ def main_adv_info(request):
 @login_required
 def common_adv_statistic(request):
     """Отображает статистику кампаний"""
-    page_name = 'Статистика рекламных кампаний'
     campaign_info = MainCampaignParameters.objects.filter(
         campaign__ur_lico__ur_lice_name="ООО Иннотрейд").order_by('id')
     statistic_date_finish = datetime.now()
     statistic_date_start = statistic_date_finish - timedelta(days=8)
     campaign_period_data = {}
-
+    page_name = f"Статистика рекламных кампаний c {statistic_date_start.strftime('%Y-%m-%d')} до {statistic_date_finish.strftime('%Y-%m-%d')}"
     ur_lico_data = UrLico.objects.all()
     if request.POST:
         if 'campaign_number' in request.POST:
@@ -116,8 +115,6 @@ def common_adv_statistic(request):
                 statistic_data['total_clicks'],
                 statistic_data['total_orders']
             ]
-
-    print(campaign_period_data)
     context = {
         'page_name': page_name,
         'campaign_info': campaign_info,

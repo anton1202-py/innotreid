@@ -52,20 +52,6 @@ def ad_list():
     return campaign_dict
 
 
-# @sender_error_to_tg
-# def db_articles_in_campaign(campaign_number):
-#     """Достает артикулы, которые есть у компании в базе данных"""
-#     campaign_obj = CreatedCampaign.objects.get(
-#         campaign_number=campaign_number)
-#     articles_data = WbArticleCompany.objects.filter(
-#         campaign_number=campaign_obj
-#     )
-#     articles_list = []
-#     for data in articles_data:
-#         articles_list.append(int(data.wb_article.wb_article))
-#     return articles_list
-
-
 @sender_error_to_tg
 def get_wb_campaign_info(campaign_number, header, attempt=0):
     """Получает информацию о рекламной кампании ВБ"""
