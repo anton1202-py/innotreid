@@ -711,8 +711,6 @@ class WildberriesFbsMode():
 
         try:
             sum_all_fbs = sum(self.amount_articles.values())
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=f'self.amount_articles: {self.amount_articles}')
             if not self.amount_articles:
                 max_amount_all_fbs = 0
                 articles_for_fbs = []
@@ -738,7 +736,7 @@ class WildberriesFbsMode():
     def sender_message_to_telegram(self):
         """Отправляет количество артикулов в телеграм бот"""
         try:
-            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN, CHAT_ID_ADMIN]
+            list_chat_id_tg = [CHAT_ID_EU, CHAT_ID_AN]
             sum_all_fbs, articles_for_fbs, max_article_amount_all_fbs, max_amount_all_fbs = self.analyze_fbs_amount()
             ur_lico_for_message_dict = {
                 'OOO': 'Amstek',

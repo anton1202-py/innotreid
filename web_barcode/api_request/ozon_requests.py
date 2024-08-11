@@ -56,7 +56,7 @@ def ozon_sales_monthly_report(header, month, year, attempt=0):
 
 
 @sender_error_to_tg
-def ozon_orsers_daily_report(header, check_date, attempt=0):
+def ozon_orders_daily_report(header, check_date, attempt=0):
     """Получаем данные по заказам с ОЗОН за позавчера"""
     url = "https://api-seller.ozon.ru/v1/analytics/data"
     payload = json.dumps({
@@ -75,13 +75,13 @@ def ozon_orsers_daily_report(header, check_date, attempt=0):
     response = requests.request("POST", url, headers=header, data=payload)
     attempt += 1
     message = ''
-    if attempt <= 50:
+    if attempt <= 30:
         if response.status_code == 200:
             all_data = json.loads(response.text)
             return all_data
         else:
             time.sleep(65)
-            return ozon_orsers_daily_report(header, attempt)
+            return ozon_orders_daily_report(header, attempt)
     elif response.status_code == 403:
         message = f'статус код {response.status_code}. Доступ запрещен'
     elif response.status_code == 429:
@@ -91,5 +91,5 @@ def ozon_orsers_daily_report(header, check_date, attempt=0):
     else:
         message = f'статус код {response.status_code} у получения инфы заказов артикулов ОЗОН'
     if message:
-        message = f'api_request.ozon_orsers_daily_report {message}'
-        # bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
+        message = f'api_request.ozon_orders_daily_report {message}'
+        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)

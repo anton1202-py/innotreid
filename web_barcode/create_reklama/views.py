@@ -23,6 +23,7 @@ from create_reklama.supplyment import (
     create_reklama_excel_with_campaign_data,
     create_reklama_template_excel_file, filter_campaigns_status_only)
 from create_reklama.tests import camp_data
+from database.periodic_tasks import process_ozon_daily_orders
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import HttpResponse, JsonResponse
@@ -44,6 +45,9 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
+    ProcentForAd.objects.filter(
+        virtual_budget__gt=1020).update(virtual_budget=1020)
+    # process_ozon_daily_orders()
     # budget_working()
     # print('Перед тестом')
     # action_wb(file_add_name, wb_headers_ooo)

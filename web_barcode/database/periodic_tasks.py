@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from api_request.ozon_requests import (ozon_orsers_daily_report,
+from api_request.ozon_requests import (ozon_orders_daily_report,
                                        ozon_sales_monthly_report)
 from api_request.wb_requests import wb_sales_statistic
 from api_request.yandex_requests import yandex_daily_orders
@@ -59,13 +59,14 @@ def process_ozon_daily_orders():
     month_report = int(nessesary_date.strftime('%m'))
     year_report = nessesary_date.strftime('%Y')
     for ur_lico, header in header_ozon_dict.items():
-        main_data = ozon_orsers_daily_report(header, check_date)
+        main_data = ozon_orders_daily_report(header, check_date)
         for data in main_data['result']['data']:
+            # print(data)
             save_ozon_daily_orders(
                 data, check_date, month_report, year_report, ur_lico)
             save_ozon_daily_orders_data_for_motivation(
                 data, check_date, month_report, year_report, ur_lico)
-            # time.sleep(1)
+            time.sleep(1)
         time.sleep(65)
 
 
