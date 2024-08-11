@@ -209,33 +209,37 @@ def update_campaign_cpm(data_adv_list, ur_lico_obj, header):
     """
     main_data = advertisment_campaigns_list_info(data_adv_list, header)
     date_now = datetime.now()
+
     for campaign_data in main_data:
         if "autoParams" in campaign_data:
-            if 'cpm' in campaign_data["autoParams"]:
+            if 'nmCPM' in campaign_data["autoParams"]:
                 cpm = campaign_data["autoParams"]['nmCPM'][0]['cpm']
+            elif 'cpm' in campaign_data["autoParams"]:
+                cpm = campaign_data["autoParams"]['cpm']
             else:
                 cpm = None
         else:
             cpm = None
-        campaign_obj = CreatedCampaign.objects.get(
-            ur_lico=ur_lico_obj, campaign_number=str(campaign_data["advertId"]))
-        campaign_obj.current_cpm = cpm
-        campaign_obj.save()
-        cpm_data = CpmWbCampaign.objects.filter(
-            campaign_number=campaign_obj).order_by('-id').first()
-        if cpm_data:
-            if cpm_data.cpm != cpm:
+        if cpm:
+            campaign_obj = CreatedCampaign.objects.get(
+                ur_lico=ur_lico_obj, campaign_number=str(campaign_data["advertId"]))
+            campaign_obj.current_cpm = cpm
+            campaign_obj.save()
+            cpm_data = CpmWbCampaign.objects.filter(
+                campaign_number=campaign_obj).order_by('-id').first()
+            if cpm_data:
+                if cpm_data.cpm != cpm:
+                    CpmWbCampaign(
+                        campaign_number=campaign_obj,
+                        cpm=cpm,
+                        cpm_date=date_now
+                    ).save()
+            else:
                 CpmWbCampaign(
                     campaign_number=campaign_obj,
                     cpm=cpm,
                     cpm_date=date_now
                 ).save()
-        else:
-            CpmWbCampaign(
-                campaign_number=campaign_obj,
-                cpm=cpm,
-                cpm_date=date_now
-            ).save()
 
 
 @sender_error_to_tg
