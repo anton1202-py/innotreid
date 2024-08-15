@@ -660,8 +660,7 @@ class WildberriesFbsMode():
         username = EMAIL_ADDRESS_FROM
         password = EMAIL_ADDRESS_FROM_PASSWORD
         from_email = EMAIL_ADDRESS_FROM
-        addresses_for_email = [EMAIL_ADDRESS_TO,
-                               NKS_EMAIL_ADDRESS, MANAGER_EMAIL_ADDRESS]
+        addresses_for_email = [NKS_EMAIL_ADDRESS, MANAGER_EMAIL_ADDRESS]
         subject = f'Сборка {self.file_add_name} {delivery_date}'
 
         # Создаем сообщение

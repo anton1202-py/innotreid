@@ -148,12 +148,16 @@ def count_sum_orders():
     # Словарь вида: {номер_компании: заказов_за_позавчера}
     returned_campaign_orders_money_dict = {}
     for ur_lico, campaign_list in campaign_dict.items():
+        # if ur_lico == 'ИП Караваев':
+        #     print('ur_lico', ur_lico)
         ur_lico_obj = UrLico.objects.get(ur_lice_name=ur_lico)
-
         campaign_orders_money_dict = {}
         n = len(campaign_list)
         for campaign in campaign_list:
-            header = header = header_wb_dict[ur_lico]
+            # uh_list = [18209090, 18209117, 18209152, 18210180, 18209378
+            #            ]
+            # if campaign in uh_list:
+            header = header_wb_dict[ur_lico]
             article_for_analyz = ''
             if CreatedCampaign.objects.filter(ur_lico=ur_lico_obj, campaign_number=campaign).exists():
                 campaign_article = CreatedCampaign.objects.get(
@@ -169,10 +173,12 @@ def count_sum_orders():
                     if data_list:
                         sum = count_sum_adv_campaign(data_list)
                     campaign_orders_money_dict[campaign] = sum
+                    print(campaign, sum)
                     time.sleep(22)
             n -= 1
             print(n)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
+        # print(returned_campaign_orders_money_dict)
     return returned_campaign_orders_money_dict
 
 
@@ -327,12 +333,12 @@ def campaign_info_for_budget(campaign, campaign_budget, budget, koef, header, ca
             statistic_date = SenderStatisticDaysAmount.objects.get(
                 id=1).days_amount
         if view_statistic:
-            message = (f"Пополнил {campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}. \nПополнил на {campaign_budget}руб ({koef}%)"
-                       f"\nИтого бюджет: {current_budget}."
-                       f"\nСтатистика за последние : {statistic_date} дней")
+            message = (f"Пополнил {campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб. Показов: {view_count}. Переходов: {view_clicks}.\nCTR: {view_ctr}. \nПополнил на {campaign_budget}руб ({koef}%)"
+                       )
+            #    f"\nСтатистика за последние : {statistic_date} дней")
         else:
             message = (f"Пополнил {campaign}. \nПродаж {budget} руб. \nПополнил на {campaign_budget}руб ({koef}%)"
-                       f"\nИтого бюджет: {current_budget}.")
+                       )
         return message
     elif response.status_code == 401:
         message = (f'Кампания {campaign} не пополнил.'
@@ -356,7 +362,7 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
     """
     Определяем кампании для пополнения бюджета
     campaign - id рекламной кампании
-    budget - сумма заказов текущей рекламной кампании за позавчера
+    budget - сумма заказов артикулов из рекламной кампании за позавчера
     header - header текущего юр лица для связи с АПИ ВБ
     """
     now_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -374,6 +380,8 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
 
     if campaign_budget < 1000:
         common_budget = campaign_budget + virtual_budjet
+        print(campaign, 'campaign_budget после сравнения с < 1000', campaign_budget,
+              'common_budget', common_budget, 'virtual_budjet', virtual_budjet)
         if common_budget >= 1000:
             campaign_budget = common_budget
         else:
@@ -385,7 +393,6 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
 
     elif campaign_budget > 10000:
         campaign_budget = 10000
-
     message = ''
     # Показы
     view_count = ''
@@ -406,9 +413,9 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         # CTR
         view_ctr = view_statistic['total_ctr']
         # Заказы
-        view_orders = view_statistic['total_orders']
-        statistic_date = SenderStatisticDaysAmount.objects.get(
-            id=1).days_amount
+        # view_orders = view_statistic['total_orders']
+        # statistic_date = SenderStatisticDaysAmount.objects.get(
+        #     id=1).days_amount
     if campaign_budget >= 1000 and campaign_budget >= current_campaign_budget:
         message = campaign_info_for_budget(
             campaign, campaign_budget, budget, koef, header, campaign_obj)
@@ -424,11 +431,11 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:
-        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}.\nНачислено на виртуальный счет: {add_to_virtual_bill}руб ({koef}%).\nБаланс ВС: {info_campaign_obj.virtual_budget}р.'
-                   f'\nТекущий баланс кампании: {current_campaign_budget}.\nСтатистика за последние: {statistic_date} дней')
+        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб. Показов: {view_count}. Переходов: {view_clicks}.\nCTR: {view_ctr}.'
+                   )
     else:
-        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб.\nПоказов: {view_count}.\nПереходов: {view_clicks}.\nCTR: {view_ctr}.\nЗаказов: {view_orders}. Не пополнилась.\nТекущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
-                   f'\nТекущий баланс кампании: {current_campaign_budget}.\nСтатистика за последние: {statistic_date} дней')
+        message = (f'{campaign}: {campaign_obj.campaign_name}. \nПродаж {budget} руб. Показов: {view_count}. Переходов: {view_clicks}.\nCTR: {view_ctr}.\nНе пополнилась. Текущий бюджет {current_campaign_budget}р > бюджета для пополнения {campaign_budget}р'
+                   )
     return message
 
 

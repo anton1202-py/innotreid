@@ -45,8 +45,9 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
-    ProcentForAd.objects.filter(
-        virtual_budget__gt=1020).update(virtual_budget=1020)
+    # ProcentForAd.objects.filter(
+    #     virtual_budget__gt=1020).update(virtual_budget=0)
+
     # process_ozon_daily_orders()
     # budget_working()
     # print('Перед тестом')
