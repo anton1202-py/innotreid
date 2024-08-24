@@ -425,9 +425,6 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         else:
             info_campaign_obj.virtual_budget += campaign_budget
         info_campaign_obj.virtual_budget_date = now_date
-        mess = f'{campaign}, {campaign_obj.campaign_name},\n{campaign_obj.ur_lico.ur_lice_name},\n"campaign_budget": {campaign_budget},\n"info_campaign_obj.virtual_budget": {info_campaign_obj.virtual_budget}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=mess)
         info_campaign_obj.save()
 
     elif campaign_budget < 1000:

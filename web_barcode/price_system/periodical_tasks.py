@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from celery_tasks.celery import app
-from price_system.models import Articles, ArticlesPrice
+from price_system.models import ArticleGroup, Articles, ArticlesPrice
 from price_system.spp_mode import article_spp_info
 from price_system.supplyment import (ozon_articles_list,
                                      ozon_matching_articles,
@@ -9,10 +9,10 @@ from price_system.supplyment import (ozon_articles_list,
                                      wb_matching_articles,
                                      yandex_articles_list,
                                      yandex_matching_articles)
+from reklama.models import UrLico
 
-from web_barcode.constants_file import bot, spp_group_list
-
-spp_group_list
+from web_barcode.constants_file import (CHAT_ID_ADMIN, admins_chat_id_list,
+                                        bot, spp_group_list)
 
 
 @sender_error_to_tg
@@ -203,3 +203,22 @@ def write_group_spp_data():
                 for chat_id in spp_group_list:
                     bot.send_message(chat_id=chat_id,
                                      text=message, parse_mode='HTML')
+
+
+@app.task
+def check_articles_without_pricegroup():
+    """Проверяет, чтобы не было артикулов без группы цен"""
+    ur_lico_list = UrLico.objects.all()
+
+    for urlico_obj in ur_lico_list:
+        print(urlico_obj)
+        group_data = ArticleGroup.objects.filter(common_article__company=urlico_obj.ur_lice_name,
+                                                 group__isnull=True)
+        empty_group_list = []
+        for data in group_data:
+            empty_group_list.append(data.common_article.common_article)
+
+        message = f'У Юр. лица {urlico_obj.ur_lice_name} Артикулы, у которых нет группы: {empty_group_list}'
+        for chat_id in admins_chat_id_list:
+            bot.send_message(chat_id=chat_id,
+                             text=message, parse_mode='HTML')

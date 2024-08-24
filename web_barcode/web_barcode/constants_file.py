@@ -178,7 +178,7 @@ yandex_fbs_warehouse_id_dict = {
 yandex_campaign_id_dict_list = [
     yandex_fbs_campaign_id_dict, yandex_fby_campaign_id_dict]
 
-spp_group_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
+spp_group_list = [CHAT_ID_EU]
 
 ur_lico_list_for_yandex_fbs_balance = ['ООО Иннотрейд', 'ИП Караваев']
 admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]

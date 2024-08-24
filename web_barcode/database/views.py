@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 
 import pandas as pd
 from database.periodic_tasks import (process_ozon_daily_orders,
+                                     process_wb_sales_data,
                                      process_yandex_daily_orders)
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout

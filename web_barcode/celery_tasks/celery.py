@@ -230,5 +230,9 @@ app.conf.beat_schedule = {
         "task": "price_system.periodical_tasks.write_group_spp_data",
         "schedule": crontab(minute='*/40')
     },
+    "price_system_article_without_group": {
+        "task": "price_system.periodical_tasks.check_articles_without_pricegroup",
+        "schedule": crontab(hour=6, minute=53)
+    },
 
 }

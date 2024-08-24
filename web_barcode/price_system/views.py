@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from analytika_reklama.wb_supplyment import type_adv_campaigns
 from asgiref.sync import sync_to_async
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, When
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
@@ -20,7 +20,8 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
-from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
+from .periodical_tasks import (check_articles_without_pricegroup,
+                               ozon_add_price_info, wb_add_price_info,
                                write_group_spp_data, yandex_add_price_info)
 from .supplyment import (articles_price_discount,
                          excel_article_costprice_export, excel_compare_table,
@@ -240,7 +241,14 @@ def article_groups_view(request, ur_lico):
                 common_article=Articles.objects.get(id=article_id['pk']))
             obj.save()
     data = ArticleGroup.objects.filter(
-        common_article__company=ur_lico).order_by('common_article')
+        common_article__company=ur_lico).annotate(
+        group_is_empty=Case(
+            When(group__isnull=True, then=0),
+            When(group__isnull=False, then=1),
+            output_field=IntegerField()
+        )
+    ).order_by('group_is_empty', 'common_article')
+
     if request.GET.get('checkbox_value') == 'true':
         data = ArticleGroup.objects.filter(
             common_article__company=ur_lico,
