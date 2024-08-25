@@ -221,4 +221,4 @@ def check_articles_without_pricegroup():
         message = f'У Юр. лица {urlico_obj.ur_lice_name} Артикулы, у которых нет группы: {empty_group_list}'
         for chat_id in admins_chat_id_list:
             bot.send_message(chat_id=chat_id,
-                             text=message, parse_mode='HTML')
+                             text=message[:4000], parse_mode='HTML')
