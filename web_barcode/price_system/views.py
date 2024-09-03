@@ -29,17 +29,18 @@ from .supplyment import (articles_price_discount,
                          excel_import_article_costprice_data,
                          excel_import_data, excel_import_group_create_data,
                          excel_with_price_groups_creating_mod,
-                         ozon_articles_list, ozon_matching_articles,
-                         ozon_price_change, wb_articles_list,
-                         wb_matching_articles, wilberries_price_change,
-                         yandex_articles_list, yandex_matching_articles,
-                         yandex_price_change)
+                         ozon_articles_list, ozon_cleaning_articles,
+                         ozon_matching_articles, ozon_price_change,
+                         wb_articles_list, wb_matching_articles,
+                         wilberries_price_change, yandex_articles_list,
+                         yandex_matching_articles, yandex_price_change)
 
 
 def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")

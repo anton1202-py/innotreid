@@ -249,6 +249,7 @@ def update_campaign_budget(campaign_obj, header):
     """
     budget_data = get_budget_adv_campaign(
         header, int(campaign_obj.campaign_number))
+    print('budget_data', budget_data)
     if budget_data:
         balance = budget_data['total']
         campaign_obj.balance = balance

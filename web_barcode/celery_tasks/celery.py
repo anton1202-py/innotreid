@@ -177,7 +177,7 @@ app.conf.beat_schedule = {
     },
     "nsk_fbs_action_morning": {
         "task": "fbs_mode.task_nsk.nsk_fbs_task",
-        "schedule": crontab(hour=2, minute=0)
+        "schedule": crontab(hour=1, minute=0)
     },
     "nsk_fbs_action_evening": {
         "task": "fbs_mode.task_nsk.nsk_fbs_task",

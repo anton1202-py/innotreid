@@ -211,7 +211,6 @@ def check_articles_without_pricegroup():
     ur_lico_list = UrLico.objects.all()
 
     for urlico_obj in ur_lico_list:
-        print(urlico_obj)
         group_data = ArticleGroup.objects.filter(common_article__company=urlico_obj.ur_lice_name,
                                                  group__isnull=True)
         empty_group_list = []
