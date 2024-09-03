@@ -234,5 +234,9 @@ app.conf.beat_schedule = {
         "task": "price_system.periodical_tasks.check_articles_without_pricegroup",
         "schedule": crontab(hour=6, minute=53)
     },
+    "price_system_transfer_article_to_group": {
+        "task": "price_system.periodical_tasks.transfer_article_to_designer_group",
+        "schedule": crontab(hour=3, minute=21)
+    },
 
 }

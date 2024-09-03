@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from celery_tasks.celery import app
-from price_system.models import ArticleGroup, Articles, ArticlesPrice
-from price_system.spp_mode import article_spp_info
-from price_system.supplyment import (ozon_articles_list,
+from price_system.models import ArticleGroup, Articles, ArticlesPrice, Groups
+from price_system.supplyment import (applies_price_for_price_group,
+                                     ozon_articles_list,
                                      ozon_matching_articles,
                                      sender_error_to_tg, wb_articles_list,
                                      wb_matching_articles,
@@ -189,6 +189,7 @@ def periodic_compare_articles():
 @app.task
 def write_group_spp_data():
     """Записывает в базу данных информацию об СПП ценовой группы"""
+    from price_system.spp_mode import article_spp_info
     time_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     main_info = article_spp_info()
     if main_info:
@@ -221,3 +222,48 @@ def check_articles_without_pricegroup():
         for chat_id in admins_chat_id_list:
             bot.send_message(chat_id=chat_id,
                              text=message[:4000], parse_mode='HTML')
+
+
+@app.task
+def transfer_article_to_designer_group():
+    """Переводит артикулы с правами в Лицензионную и Авторскую группу"""
+    ur_lico_list = UrLico.objects.all()
+    for urlico_obj in ur_lico_list:
+        articles_data = Articles.objects.filter(
+            company=urlico_obj.ur_lice_name)
+        group_name_list = []
+        for article_obj in articles_data:
+            article_group = ArticleGroup.objects.get(
+                common_article=article_obj).group
+            if article_obj.copy_right == True:
+                if article_group:
+                    if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
+                        if 't' in article_obj.common_article and article_group.name != 'Лицензия':
+                            article_group.name = 'Лицензия'
+                        elif article_group.name != 'Авторские':
+                            article_group.name = 'Авторские'
+                    if urlico_obj.ur_lice_name == 'ИП Караваев':
+                        if ArticleGroup.objects.get(common_article=article_obj).group.name != 'Ночник ИП авторский':
+                            article_group.name = 'Ночник ИП авторский'
+                else:
+                    if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
+                        if 't' in article_obj.common_article:
+                            article_group = Groups.objects.get(
+                                company='ООО Иннотрейд', name='Лицензия')
+                        else:
+                            article_group = Groups.objects.get(
+                                company='ООО Иннотрейд', name='Авторские')
+                    if urlico_obj.ur_lice_name == 'ИП Караваев':
+                        article_group = Groups.objects.get(
+                            company='ИП Караваев', name='Ночник ИП авторский')
+                article_group.save()
+                group_name_list.append(article_group.name)
+
+        # Применяем цены на группу
+        for group_name in group_name_list:
+            applies_price_for_price_group(group_name, urlico_obj.ur_lice_name)
+
+        # message = f'У Юр. лица {urlico_obj.ur_lice_name} Артикулы, у которых нет группы: {empty_group_list}'
+        # for chat_id in admins_chat_id_list:
+        #     bot.send_message(chat_id=chat_id,
+        #                      text=message[:4000], parse_mode='HTML')

@@ -1027,3 +1027,41 @@ def yandex_articles_list(ur_lico, page_token='', main_price_data=None):
         return main_price_data
     else:
         return yandex_articles_list(ur_lico)
+
+
+def applies_price_for_price_group(group_name, ur_lico_name):
+    """Присваивает цены артикулам, которые находятся в группе с названием group_name"""
+    from price_system.periodical_tasks import (ozon_add_price_info,
+                                               wb_add_price_info,
+                                               yandex_add_price_info)
+    names = ArticleGroup.objects.filter(
+        group__name=group_name)
+    wb_price = names[0].group.wb_price
+    wb_discount = names[0].group.wb_discount
+    ozon_price = names[0].group.ozon_price
+    yandex_price = names[0].group.yandex_price
+    min_price = names[0].group.min_price
+    old_price = names[0].group.old_price
+    wb_nom_list = []
+    oz_nom_list = []
+    yandex_nom_list = []
+    articles_wb_data_dict = articles_price_discount(ur_lico_name)
+    for art in names:
+        if art.common_article.wb_nomenclature in articles_wb_data_dict:
+            wb_old_price = articles_wb_data_dict[art.common_article.wb_nomenclature]['price']
+            wb_discount_from_wb = articles_wb_data_dict[art.common_article.wb_nomenclature]['discount']
+            if wb_old_price != wb_price or wb_discount_from_wb != wb_discount:
+                wb_nom_list.append(art.common_article.wb_nomenclature)
+        oz_nom_list.append(art.common_article.ozon_product_id)
+        yandex_nom_list.append(
+            art.common_article.yandex_seller_article)
+    wilberries_price_change(
+        ur_lico_name, wb_nom_list, wb_price, wb_discount)
+    ozon_price_change(ur_lico_name, oz_nom_list,
+                      ozon_price, min_price, old_price)
+    yandex_price_change(ur_lico_name, yandex_nom_list,
+                        yandex_price, old_price)
+    # Записываем изененные цены в базу данных
+    wb_add_price_info(ur_lico_name)
+    ozon_add_price_info(ur_lico_name)
+    yandex_add_price_info(ur_lico_name)

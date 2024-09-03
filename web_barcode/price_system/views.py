@@ -21,8 +21,10 @@ from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
 from .periodical_tasks import (check_articles_without_pricegroup,
-                               ozon_add_price_info, wb_add_price_info,
-                               write_group_spp_data, yandex_add_price_info)
+                               ozon_add_price_info,
+                               transfer_article_to_designer_group,
+                               wb_add_price_info, write_group_spp_data,
+                               yandex_add_price_info)
 from .supplyment import (articles_price_discount,
                          excel_article_costprice_export, excel_compare_table,
                          excel_creating_mod,
@@ -40,7 +42,6 @@ def article_compare(request, ur_lico: str):
     """Отображает страницу с таблицей сопоставления ООО"""
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
@@ -104,7 +105,7 @@ def gramoty_article_compare(request):
 
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
-    data = Groups.objects.filter(company=ur_lico).order_by('id')
+    data = Groups.objects.filter(company=ur_lico).order_by('old_price')
     page_name = f'Ценовые группы {ur_lico}'
     import_data_error_text = ''
     if request.POST:
