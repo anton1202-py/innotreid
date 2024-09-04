@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from analytika_reklama.wb_supplyment import type_adv_campaigns
 from asgiref.sync import sync_to_async
-from django.db.models import Case, IntegerField, Q, When
+from django.db.models import Case, Count, IntegerField, Q, When
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
@@ -105,8 +105,10 @@ def gramoty_article_compare(request):
 
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
-    data = Groups.objects.filter(company=ur_lico).order_by('old_price')
+
     page_name = f'Ценовые группы {ur_lico}'
+    data = Groups.objects.filter(company=ur_lico).order_by('old_price').annotate(
+        article_count=Count('articlegroup'))
     import_data_error_text = ''
     if request.POST:
         if request.POST.get('export') == 'create_file':

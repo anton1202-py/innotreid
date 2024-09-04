@@ -55,6 +55,7 @@
                     <th>ID</th>
                     <th>Название</th>
                     <th>Юр. лицо</th>
+                    <th>Артикулов, шт</th>
                     <th>Старая цена</th>
                     <th>Скидка WB</th>
                     <th>Цена WB</th>
@@ -73,6 +74,7 @@
                         {% csrf_token %}
                         <td><input value="{{ el.name }}" type="text" name="name" required/></td>
                         <td>{{ el.company }}</td>
+                        <td>{{ el.article_count }}</td>
                         <td><input value="{{ el.old_price }}" type="number" name="old_price" required/></td>
                         <td><input value="{{ el.wb_discount }}" type="number" name="wb_discount" required/></td>
                         {% if el.wb_price and el.wb_discount %}
