@@ -91,7 +91,7 @@
                         <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
                     </form>
                     <td>{{ el.spp }}</td>
-                    <td>{{ el.change_date_spp }}</td>
+                    <td>{{ el.change_date_spp|date:"d-m-Y" }}</td>
                     <td>
                         <form method="post" class="" name="action_price" enctype="multipart/form-data">
                             {% csrf_token %}

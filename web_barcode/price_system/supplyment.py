@@ -1000,30 +1000,30 @@ def ozon_articles_list(ur_lico, last_id='', main_price_data=None):
 
 @sender_error_to_tg
 def yandex_articles_list(ur_lico, page_token='', main_price_data=None):
-    """Получаем массив арткулов с ценами и скидками для OZON"""
+    """Получаем массив арткулов с ценами и скидками для YANDEX"""
     header = header_yandex_dict[ur_lico]
     business_id = yandex_business_id_dict[ur_lico]
     if main_price_data is None:
         main_price_data = []
+
     url = f'https://api.partner.market.yandex.ru/businesses/{business_id}/offer-mappings?limit=200&page_token={page_token}'
-    payload = json.dumps({
-        "offerIds": [],
-        "cardStatuses": [],
-        "categoryIds": [],
-        "vendorNames": [],
-        "tags": [],
-        "archived": False
-    })
+    payload = {}
     response = requests.request(
         "POST", url, headers=header, data=payload)
     if response.status_code == 200:
         article_price_data = json.loads(response.text)[
             'result']['offerMappings']
+
         for data in article_price_data:
             main_price_data.append(data)
+        if 'nextPageToken' in json.loads(response.text)[
+                'result']['paging']:
+            page_toket = json.loads(response.text)[
+                'result']['paging']['nextPageToken']
+        else:
+            page_toket = ''
         if len(article_price_data) == 200:
-            yandex_articles_list(ur_lico, json.loads(response.text)[
-                                 'result']['paging']['nextPageToken'], main_price_data)
+            yandex_articles_list(ur_lico, page_toket, main_price_data)
         return main_price_data
     else:
         return yandex_articles_list(ur_lico)

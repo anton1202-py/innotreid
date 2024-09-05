@@ -105,7 +105,6 @@ def gramoty_article_compare(request):
 
 def groups_view(request, ur_lico):
     """Отвечает за Отображение ценовых групп"""
-
     page_name = f'Ценовые группы {ur_lico}'
     data = Groups.objects.filter(company=ur_lico).order_by('old_price').annotate(
         article_count=Count('articlegroup'))

@@ -239,12 +239,16 @@ def transfer_article_to_designer_group():
                 if article_group:
                     if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
                         if 't' in article_obj.common_article and article_group.name != 'Лицензия':
-                            article_group.name = 'Лицензия'
+                            article_group = Groups.objects.get(
+                                company=urlico_obj.ur_lice_name, name='Лицензия')
                         elif article_group.name != 'Авторские':
-                            article_group.name = 'Авторские'
+                            article_group = Groups.objects.get(
+                                company=urlico_obj.ur_lice_name, name='Авторские')
                     if urlico_obj.ur_lice_name == 'ИП Караваев':
                         if ArticleGroup.objects.get(common_article=article_obj).group.name != 'Ночник ИП авторский':
                             article_group.name = 'Ночник ИП авторский'
+                            article_group = Groups.objects.get(
+                                company=urlico_obj.ur_lice_name, name='Ночник ИП авторский')
                 else:
                     if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
                         if 't' in article_obj.common_article:
