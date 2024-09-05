@@ -803,12 +803,8 @@ def wb_price_changer(header, info_list: list):
     time.sleep(1)
     url = 'https://discounts-prices-api.wb.ru/api/v2/upload/task'
     payload = json.dumps({"data": info_list})
-    print(info_list)
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-
-    print(response_data.status_code)
-    print(response_data.text)
 
 
 def articles_price_discount(ur_lico):
@@ -863,7 +859,6 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
                 # print('price_u:', price_u, 'price:', price)
                 # print('****************************')
 
-        print('data_for_change', data_for_change)
         wb_price_changer(header, data_for_change)
 
 
@@ -909,7 +904,6 @@ def yandex_price_changer(header, business_id, info_list: list):
     payload = json.dumps({"offers": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    # print('yandex_price_changer', response_data.status_code)
 
 
 def yandex_price_change(ur_lico, articles_list: list, price: float, old_price=0):

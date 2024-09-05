@@ -63,6 +63,7 @@
                     <th>Цена YANDEX</th>
                     <th>Мин. цена</th>
                     <th>СПП</th>
+                    <th>Цена с СПП</th>
                     <th>Дата СПП</th>
                     <th>Применить цены</th>
                     <th>del</th>
@@ -91,6 +92,15 @@
                         <button type="Submit" value="{{el.id}}" class="custom-button" name="change_button" method="POST" style="display: none;">Добавить</button>
                     </form>
                     <td>{{ el.spp }}</td>
+                    {% if el.spp %}
+                        {% with name=100|sub:el.spp|divide:100 %}
+                            <td>{{ 100|sub:el.wb_discount|divide:100|multiplicity:el.wb_price|multiplicity:name|round_number }}</td>
+                        {% endwith %}
+                    {% else %}
+                    <td>0</td>
+                    {% endif %}
+                        
+                    
                     <td>{{ el.change_date_spp|date:"d-m-Y" }}</td>
                     <td>
                         <form method="post" class="" name="action_price" enctype="multipart/form-data">

@@ -10,7 +10,7 @@ from django.template.response import TemplateResponse
 from django.views.generic import ListView
 from ozon_system.supplyment import \
     delete_ozon_articles_with_low_price_current_ur_lico
-from price_system.spp_mode import article_spp_info
+from price_system.spp_mode import article_spp_info, get_front_api_wb_info
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
                                         header_ozon_dict, header_wb_dict,
@@ -108,6 +108,7 @@ def groups_view(request, ur_lico):
     page_name = f'Ценовые группы {ur_lico}'
     data = Groups.objects.filter(company=ur_lico).order_by('old_price').annotate(
         article_count=Count('articlegroup'))
+
     import_data_error_text = ''
     if request.POST:
         if request.POST.get('export') == 'create_file':
