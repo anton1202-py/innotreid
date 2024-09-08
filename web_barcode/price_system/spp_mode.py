@@ -87,11 +87,17 @@ def get_front_api_wb_info(nm_id, ur_lico, group_object):
         return price
     else:
         if response.status_code == 200:
-            article_obj = Articles.objects.get(
-                company=ur_lico, wb_nomenclature=nm_id)
-            ArticleGroup.objects.get(
-                common_article=article_obj, group=group_object).delete()
-            ArticlesPrice.objects.filter(common_article=article_obj).delete()
+            try:
+                article_obj = Articles.objects.get(
+                    company=ur_lico, wb_nomenclature=nm_id)
+                ArticleGroup.objects.get(
+                    common_article=article_obj, group=group_object).delete()
+                ArticlesPrice.objects.filter(
+                    common_article=article_obj).delete()
+            except:
+                message = f'{ur_lico} Нашел много артикулов {nm_id} через фронт апи ВБ.'
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=message, parse_mode='HTML')
         message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
         bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
