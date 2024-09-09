@@ -148,15 +148,10 @@ def count_sum_orders():
     # Словарь вида: {номер_компании: заказов_за_позавчера}
     returned_campaign_orders_money_dict = {}
     for ur_lico, campaign_list in campaign_dict.items():
-        # if ur_lico == 'ИП Караваев':
-        #     print('ur_lico', ur_lico)
         ur_lico_obj = UrLico.objects.get(ur_lice_name=ur_lico)
         campaign_orders_money_dict = {}
         n = len(campaign_list)
         for campaign in campaign_list:
-            # uh_list = [18209090, 18209117, 18209152, 18210180, 18209378
-            #            ]
-            # if campaign in uh_list:
             header = header_wb_dict[ur_lico]
             article_for_analyz = ''
             if CreatedCampaign.objects.filter(ur_lico=ur_lico_obj, campaign_number=campaign).exists():
@@ -175,10 +170,9 @@ def count_sum_orders():
                     campaign_orders_money_dict[campaign] = sum
                     print(campaign, sum)
                     time.sleep(22)
-            n -= 1
-            print(n)
+            # n -= 1
+            # print(n)
         returned_campaign_orders_money_dict[ur_lico] = campaign_orders_money_dict
-        # print(returned_campaign_orders_money_dict)
     return returned_campaign_orders_money_dict
 
 
@@ -380,8 +374,6 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
 
     if campaign_budget < 1000:
         common_budget = campaign_budget + virtual_budjet
-        print(campaign, 'campaign_budget после сравнения с < 1000', campaign_budget,
-              'common_budget', common_budget, 'virtual_budjet', virtual_budjet)
         if common_budget >= 1000:
             campaign_budget = common_budget
         else:

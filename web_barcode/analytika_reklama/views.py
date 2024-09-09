@@ -232,6 +232,7 @@ class CampaignDailyStatisticView(ListView):
     model = CreatedCampaign
     template_name = 'analytika_reklama/adv_campaign_daily_statistic.html'
     context_object_name = 'data'
+    object_list = None
 
     def __init__(self, *args, **kwargs):
         self.ur_lico = kwargs.pop('ur_lico', None)
@@ -243,14 +244,14 @@ class CampaignDailyStatisticView(ListView):
                         self).get_context_data(**kwargs)
         campaign_obj = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
-        # delete_data = DailyCampaignParameters.objects.filter(
-        #     statistic_date='2024-07-13 21:00:00+00:00')
-        # for i in delete_data:
-        #     i.delete()
         statistic_data = DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id']).order_by('-statistic_date')
+        total_clicks = statistic_data.aggregate(
+            total=Sum('clicks'), total_view=Sum('views'))
 
         context.update({
+            'views_amount': total_clicks['total_view'],
+            'clicks_amount': total_clicks['total'],
             'statistic_data': statistic_data,
             'campaign_obj': self.kwargs['id'],
             'campaign_data': campaign_obj,
@@ -259,6 +260,36 @@ class CampaignDailyStatisticView(ListView):
             'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        statistic_data = DailyCampaignParameters.objects.filter(
+            campaign=self.kwargs['id']).order_by('-statistic_date')
+        if request.POST:
+            if 'date_before' in request.POST:
+                date_start = request.POST.get('date_before')
+
+                statistic_data = statistic_data.filter(
+                    Q(statistic_date__gte=date_start))
+            if 'date_after' in request.POST:
+                date_finish = request.POST.get('date_after')
+                statistic_data = statistic_data.filter(
+                    Q(statistic_date__lt=date_finish))
+
+        campaign_obj = CreatedCampaign.objects.get(
+            id=self.kwargs['id'])
+        total_clicks = statistic_data.aggregate(
+            total=Sum('clicks'), total_view=Sum('views'))
+        context = {
+            'views_amount': total_clicks['total_view'],
+            'clicks_amount': total_clicks['total'],
+            'statistic_data': statistic_data,
+            'campaign_obj': self.kwargs['id'],
+            'campaign_data': campaign_obj,
+            'page_name': f"Статистика кампании {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",
+            'WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT': WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
+            'WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT': WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
+        }
+        return self.render_to_response(context)
 
     def get_queryset(self):
         return DailyCampaignParameters.objects.filter(

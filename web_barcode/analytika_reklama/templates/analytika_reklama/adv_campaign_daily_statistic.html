@@ -9,15 +9,30 @@
             <h1>{{ page_name }}</h1>
         </div>
 
-        
-
         {% if import_data %}
             <script>
                 alert("{{ import_data }}");
             </script>
         {% endif %}
         <div class='filter-data'>
-            
+          <form id="left-form" class="small-filter-form" method="POST">
+            {% csrf_token %}
+            <label for="date_before" class="rand">
+                <span>От</span><br>
+                <input type="date" id="date_before" name="date_before" class="input-field">
+            </label>
+            <label for="date_after" class="rand">
+              <span>До</span><br>
+              <input type="date" id="date_after" name="date_after" class="input-field">
+          </label>
+            <div class="inner-form-data">
+                <br>
+                <input type="Submit" id="filter" name="filter" value="Фильтровать"/>
+            </div>
+        </form>
+      </div>
+
+        <div class='filter-data'>
             <div style="display: flex; gap: 2rem;">
                 <div class="inner-form-data">
                     <br>
@@ -36,6 +51,12 @@
                 <a href="{% url 'adv_campaign_daily_statistic' campaign_obj %}">Ежедневная статистика</a>
             </div>
             </div>
+        </div>
+
+        <div>
+            <br>
+            <p>Итого показов: <b>{{ views_amount }}</b></p>
+            <p>Итого кликов: <b>{{ clicks_amount }}</b></p>
         </div>
 
         <div class="alert alert-warninng">
@@ -195,7 +216,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for el in data %}
+                {% for el in statistic_data %}
                 <tr>
                     <td>{{ el.statistic_date }}</td>
     
@@ -245,6 +266,42 @@
                 .forEach(tr => table.appendChild(tr) );
         })));
 
+        $(function() {
+            var dateFormat = "yy-mm-dd",
+                from = $("#start_date")
+                    .datepicker({
+                        defaultDate: "+1w",
+                        changeMonth: true,
+                        numberOfMonths: 2,
+                        onClose: function() {
+                            $("#end_date").datepicker("option", "minDate", getDate(this));
+                        }
+                    })
+                    .on("change", function() {
+                        $("#end_date").datepicker("option", "minDate", getDate(this));
+                    }),
+                to = $("#end_date").datepicker({
+                    defaultDate: "+1w",
+                    changeMonth: true,
+                    numberOfMonths: 2,
+                    onClose: function() {
+                        $("#start_date").datepicker("option", "maxDate", getDate(this));
+                    }
+                })
+                .on("change", function() {
+                    $("#start_date").datepicker("option", "maxDate", getDate(this));
+                });
+
+            function getDate(element) {
+                var date;
+                try {
+                    date = $.datepicker.parseDate(dateFormat, element.value);
+                } catch (error) {
+                    date = null;
+                }
+                return date;
+            }
+        });
        
     </script>
         
