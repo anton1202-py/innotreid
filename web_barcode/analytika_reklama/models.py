@@ -346,7 +346,7 @@ class DailyCampaignParameters(models.Model):
         blank=True,
         null=True
     )
-    statistic_date = models.DateTimeField(
+    statistic_date = models.DateField(
         verbose_name='Дата',
         blank=True,
         null=True
