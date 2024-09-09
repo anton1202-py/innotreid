@@ -76,32 +76,33 @@ def get_front_api_wb_info(nm_id, ur_lico, group_object):
     ur_lico - юр лицо, которому принадлежит артикул
     group_object - объект группы цен, в которой находится артикул
     """
-    url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
-    response = requests.request(
-        "GET", url)
-    data = json.loads(response.text)
-    price = ''
-    if data['data']['products']:
-        price = int(data['data']['products'][0]
-                                ['salePriceU'])//100
-        return price
-    else:
-        if response.status_code == 200:
-            try:
-                article_obj = Articles.objects.get(
-                    company=ur_lico, wb_nomenclature=nm_id)
-                ArticleGroup.objects.get(
-                    common_article=article_obj, group=group_object).delete()
-                ArticlesPrice.objects.filter(
-                    common_article=article_obj).delete()
-            except:
-                message = f'{ur_lico} Нашел много артикулов {nm_id} через фронт апи ВБ.'
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message, parse_mode='HTML')
-        message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
-                         text=message, parse_mode='HTML')
-        return 0
+    if nm_id:
+        url = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={nm_id}'
+        response = requests.request(
+            "GET", url)
+        data = json.loads(response.text)
+        price = ''
+        if data['data']['products']:
+            price = int(data['data']['products'][0]
+                                    ['salePriceU'])//100
+            return price
+        else:
+            if response.status_code == 200:
+                try:
+                    article_obj = Articles.objects.get(
+                        company=ur_lico, wb_nomenclature=nm_id)
+                    ArticleGroup.objects.get(
+                        common_article=article_obj, group=group_object).delete()
+                    ArticlesPrice.objects.filter(
+                        common_article=article_obj).delete()
+                except:
+                    message = f'{ur_lico} Нашел много артикулов {nm_id} через фронт апи ВБ.'
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                     text=message, parse_mode='HTML')
+            message = f'{ur_lico} Не смог определить цену артикула {nm_id} через фронт апи ВБ. Статус код {response.status_code}'
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message, parse_mode='HTML')
+            return 0
 
 
 @sender_error_to_tg

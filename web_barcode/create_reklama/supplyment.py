@@ -44,7 +44,7 @@ def check_data_for_create_adv_campaign(main_data):
     # Проверка артикулов на наличие в системе:
     for nmid in result_articles:
         if nmid not in articles_list:
-            error = f'Нет артикула {nmid} в на портале у {ur_lico}.'
+            error = f'Нет артикула {nmid} на портале у {ur_lico}.'
             bot.send_message(chat_id=user_chat_id,
                              text=error[:4000])
         else:
