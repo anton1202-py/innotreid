@@ -233,35 +233,37 @@ def transfer_article_to_designer_group():
             company=urlico_obj.ur_lice_name)
         group_name_list = []
         for article_obj in articles_data:
-            article_group = ArticleGroup.objects.get(
-                common_article=article_obj).group
-            if article_obj.copy_right == True:
-                if article_group:
-                    if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
-                        if 't' in article_obj.common_article and article_group.name != 'Лицензия':
+            if ArticleGroup.objects.filter(
+                    common_article=article_obj).exists():
+                article_group = ArticleGroup.objects.get(
+                    common_article=article_obj).group
+                if article_obj.copy_right == True:
+                    if article_group:
+                        if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
+                            if 't' in article_obj.common_article and article_group.name != 'Лицензия':
+                                article_group = Groups.objects.get(
+                                    company=urlico_obj.ur_lice_name, name='Лицензия')
+                            elif article_group.name != 'Авторские':
+                                article_group = Groups.objects.get(
+                                    company=urlico_obj.ur_lice_name, name='Авторские')
+                        if urlico_obj.ur_lice_name == 'ИП Караваев':
+                            if ArticleGroup.objects.get(common_article=article_obj).group.name != 'Ночник ИП авторский':
+                                article_group.name = 'Ночник ИП авторский'
+                                article_group = Groups.objects.get(
+                                    company=urlico_obj.ur_lice_name, name='Ночник ИП авторский')
+                    else:
+                        if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
+                            if 't' in article_obj.common_article:
+                                article_group = Groups.objects.get(
+                                    company='ООО Иннотрейд', name='Лицензия')
+                            else:
+                                article_group = Groups.objects.get(
+                                    company='ООО Иннотрейд', name='Авторские')
+                        if urlico_obj.ur_lice_name == 'ИП Караваев':
                             article_group = Groups.objects.get(
-                                company=urlico_obj.ur_lice_name, name='Лицензия')
-                        elif article_group.name != 'Авторские':
-                            article_group = Groups.objects.get(
-                                company=urlico_obj.ur_lice_name, name='Авторские')
-                    if urlico_obj.ur_lice_name == 'ИП Караваев':
-                        if ArticleGroup.objects.get(common_article=article_obj).group.name != 'Ночник ИП авторский':
-                            article_group.name = 'Ночник ИП авторский'
-                            article_group = Groups.objects.get(
-                                company=urlico_obj.ur_lice_name, name='Ночник ИП авторский')
-                else:
-                    if urlico_obj.ur_lice_name == 'ООО Иннотрейд':
-                        if 't' in article_obj.common_article:
-                            article_group = Groups.objects.get(
-                                company='ООО Иннотрейд', name='Лицензия')
-                        else:
-                            article_group = Groups.objects.get(
-                                company='ООО Иннотрейд', name='Авторские')
-                    if urlico_obj.ur_lice_name == 'ИП Караваев':
-                        article_group = Groups.objects.get(
-                            company='ИП Караваев', name='Ночник ИП авторский')
-                article_group.save()
-                group_name_list.append(article_group.name)
+                                company='ИП Караваев', name='Ночник ИП авторский')
+                    article_group.save()
+                    group_name_list.append(article_group.name)
 
         # Применяем цены на группу
         for group_name in group_name_list:
