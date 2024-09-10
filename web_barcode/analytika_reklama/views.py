@@ -247,9 +247,21 @@ class CampaignDailyStatisticView(ListView):
         statistic_data = DailyCampaignParameters.objects.filter(
             campaign=self.kwargs['id']).order_by('-statistic_date')
         total_clicks = statistic_data.aggregate(
-            total=Sum('clicks'), total_view=Sum('views'))
+            total=Sum('clicks'),
+            total_view=Sum('views'),
+            total_summ=Sum('summ'),
+            total_atbs=Sum('atbs'),
+            total_orders=Sum('orders'),
+            total_shks=Sum('shks'),
+            total_sum_price=Sum('sum_price'),
+        )
 
         context.update({
+            'summ_amount': total_clicks['total_summ'],
+            'atbs_amount': total_clicks['total_atbs'],
+            'orders_amount': total_clicks['total_orders'],
+            'shks_amount': total_clicks['total_shks'],
+            'views_sum_price': total_clicks['total_sum_price'],
             'views_amount': total_clicks['total_view'],
             'clicks_amount': total_clicks['total'],
             'statistic_data': statistic_data,
@@ -278,8 +290,20 @@ class CampaignDailyStatisticView(ListView):
         campaign_obj = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
         total_clicks = statistic_data.aggregate(
-            total=Sum('clicks'), total_view=Sum('views'))
+            total=Sum('clicks'),
+            total_view=Sum('views'),
+            total_summ=Sum('summ'),
+            total_atbs=Sum('atbs'),
+            total_orders=Sum('orders'),
+            total_shks=Sum('shks'),
+            total_sum_price=Sum('sum_price'),
+        )
         context = {
+            'summ_amount': total_clicks['total_summ'],
+            'atbs_amount': total_clicks['total_atbs'],
+            'orders_amount': total_clicks['total_orders'],
+            'shks_amount': total_clicks['total_shks'],
+            'views_sum_price': total_clicks['total_sum_price'],
             'views_amount': total_clicks['total_view'],
             'clicks_amount': total_clicks['total'],
             'statistic_data': statistic_data,
