@@ -44,10 +44,10 @@ def add_campaigns_statistic_to_db():
     for ur_lico_obj in ur_lico_data:
         main_data = CreatedCampaign.objects.filter(
             ur_lico=ur_lico_obj, campaign_status__in=[9, 11])
-        koef_product = math.ceil(len(main_data)/10)
+        koef_product = math.ceil(len(main_data)/100)
         for i in range(koef_product):
-            start_point = i*10
-            finish_point = (i+1)*10
+            start_point = i*100
+            finish_point = (i+1)*100
             adv_current_list = main_data[
                 start_point:finish_point]
             data_campaign_list = []
@@ -61,11 +61,12 @@ def add_campaigns_statistic_to_db():
                 }
                 data_campaign_list.append(inner_dict)
             header = header_wb_dict[ur_lico_obj.ur_lice_name]
+            print('data_campaign_list', data_campaign_list)
             main_adv_data = advertisment_statistic_info(
                 data_campaign_list, header)
-            if main_adv_data:
-                # Записываем/обновляем информацию о РК в базу данных
-                add_adv_statistic_to_db(ur_lico_obj, main_adv_data)
+            # if main_adv_data:
+            #     # Записываем/обновляем информацию о РК в базу данных
+            #     add_adv_statistic_to_db(ur_lico_obj, main_adv_data)
 
 
 @app.task
@@ -182,17 +183,20 @@ def get_auto_campaign_statistic_common_data():
         header = header_wb_dict[campaign_obj.ur_lico.ur_lice_name]
 
         campaign_statistic = statistic_keywords_auto_campaign(
-            header, int(campaign_obj.campaign_number))
+            header, int(campaign_obj.campaign_number))['keywords']
+        if not campaign_statistic:
+            print(campaign_obj.ur_lico.ur_lice_name,
+                  campaign_obj.campaign_number)
 
         if campaign_statistic:
             for data in campaign_statistic:
                 date_str = data['date']
-                date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
                 date = date_obj - timedelta(days=2)
                 today_date = datetime.now(date_obj.tzinfo).replace(
                     hour=0, minute=0, second=0, microsecond=0)
                 # if date.date() < today_date.date():
-                phrase_stat = data['stat']
+                phrase_stat = data['stats']
                 for phrase_data in phrase_stat:
                     phrase = phrase_data['keyword']
                     views = phrase_data['views']

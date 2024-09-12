@@ -85,7 +85,7 @@ app.conf.beat_schedule = {
         "task": "analytika_reklama.periodic_tasks.articles_excluded",
         "schedule": crontab(hour=18, minute=31)
     },
-    "analytika_reklama_keyword_statisric": {
+    "analytika_reklama_keyword_statistic": {
         "task": "analytika_reklama.periodic_tasks.get_auto_campaign_statistic_common_data",
         "schedule": crontab(hour=23, minute=10)
     },

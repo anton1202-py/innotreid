@@ -1,5 +1,6 @@
 import json
 import time
+from datetime import datetime, timedelta
 
 import requests
 from api_request.common_func import api_retry_decorator
@@ -352,8 +353,10 @@ def statistic_keywords_auto_campaign(header, campaign_number):
     Информация обновляется раз в 15 минут.
     Максимум — 4 запроса секунду.
     """
+    date_from = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')
+    date_to = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
     time.sleep(0.5)
-    url = f'https://advert-api.wildberries.ru/adv/v2/auto/daily-words?id={campaign_number}'
+    url = f'https://advert-api.wildberries.ru/adv/v0/stats/keywords?advert_id={campaign_number}&from={date_from}&to={date_to}'
     response = requests.request("GET", url, headers=header)
     return response
 

@@ -73,7 +73,8 @@ def type_adv_campaigns():
 def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
     """
     Записывает информацию в базу данных о всех входящих кампаний.
-    входящие данные:
+        
+    Входящие данные:
     ur_lico - юр. лицо
     campaign_data_list - данные для рекламных кампаний ur_lico юр. лица (макс 50 кампаний)
     """

@@ -45,6 +45,7 @@ from web_barcode.constants_file import (WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
 def main_adv_info(request):
     """Отображает общую информацию о кампании"""
     page_name = 'Инфо о рекламных кампаний'
+    add_campaigns_statistic_to_db()
     # keyword_for_articles()
     # add_campaigns_statistic_to_db()
     campaign_list = CreatedCampaign.objects.filter(
