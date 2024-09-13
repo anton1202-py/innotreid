@@ -377,8 +377,8 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
         if common_budget >= 1000:
             campaign_budget = common_budget
         else:
-            # Женя попросил безусловное пополнение ВС раз в день.
-            info_campaign_obj.virtual_budget = common_budget + 5
+            # Убрал безусловное пополнение по просьбе Жени от 09.09.2024
+            info_campaign_obj.virtual_budget = common_budget
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
             campaign_budget = common_budget

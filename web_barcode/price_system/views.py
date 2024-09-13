@@ -45,7 +45,6 @@ def article_compare(request, ur_lico: str):
     page_name = f'Таблица сопоставления артикулов {ur_lico}'
     data = Articles.objects.filter(
         company=ur_lico).order_by("common_article")
-
     if request.POST:
         if "compare" in request.POST:
             wb_matching_articles(ur_lico)
