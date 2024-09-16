@@ -245,8 +245,9 @@ class CampaignDailyStatisticView(ListView):
                         self).get_context_data(**kwargs)
         campaign_obj = CreatedCampaign.objects.get(
             id=self.kwargs['id'])
-        statistic_data = DailyCampaignParameters.objects.filter(
-            campaign=self.kwargs['id']).order_by('-statistic_date')
+        date_start = datetime.now() - timedelta(days=60)
+        statistic_data = DailyCampaignParameters.objects.filter(statistic_date__gte=date_start,
+                                                                campaign=self.kwargs['id']).order_by('statistic_date')
         total_clicks = statistic_data.aggregate(
             total=Sum('clicks'),
             total_view=Sum('views'),
@@ -276,7 +277,7 @@ class CampaignDailyStatisticView(ListView):
 
     def post(self, request, *args, **kwargs):
         statistic_data = DailyCampaignParameters.objects.filter(
-            campaign=self.kwargs['id']).order_by('-statistic_date')
+            campaign=self.kwargs['id']).order_by('statistic_date')
         if request.POST:
             if 'date_before' in request.POST:
                 date_start = request.POST.get('date_before')
