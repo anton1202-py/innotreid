@@ -208,6 +208,31 @@ class ProcentForAd(models.Model):
         verbose_name_plural = 'Процент для поплнения кампании'
 
 
+class VirtualBudgetForAd(models.Model):
+    """Статистика пополнения виртуального счета для рекламной кампании"""
+    campaign_number = models.ForeignKey(
+        CreatedCampaign,
+        on_delete=models.CASCADE,
+        verbose_name='Рекламная кампания',
+        related_name='virtual_budget_stat'
+    )
+    virtual_budget = models.IntegerField(
+        verbose_name='Виртуальный счет',
+        default=0
+    )
+    virtual_budget_date = models.DateTimeField(
+        verbose_name='Дата изменения виртуального счета',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.campaign_number.campaign_number
+    class Meta:
+        verbose_name = 'Статистика пополнения виртуального счета для рекламной кампании'
+        verbose_name_plural = 'Статистика пополнения виртуального счета для рекламной кампании'
+
+
 class AutoReplenish(models.Model):
     """Автопополнение кампаний"""
     campaign_number = models.ForeignKey(
