@@ -13,7 +13,7 @@ from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign,
                                    SenderStatisticDaysAmount,
-                                   StartPausaCampaign)
+                                   StartPausaCampaign, VirtualBudgetForAd)
 from create_reklama.periodic_tasks import (
     auto_replenish_budget_campaign, budget_working,
     set_up_minus_phrase_to_auto_campaigns, update_campaign_budget_and_cpm,
@@ -325,10 +325,28 @@ class CampaignReplenishStatisticView(ListView):
         context = super(CampaignReplenishStatisticView,
                         self).get_context_data(**kwargs)
         campaign_obj = CreatedCampaign.objects.get(id=self.kwargs['id'])
+        table_data = {}
         replenish_data = ReplenishWbCampaign.objects.filter(
             campaign_number=campaign_obj)
+        for data in replenish_data:
+            # Форматирование даты в нужный формат
+            formatted_date = data.replenish_date.strftime('%Y-%m-%d')
+            print(formatted_date)
+            table_data[formatted_date] = {1: data.sum}
+        
+        virtual_balance_data = VirtualBudgetForAd.objects.filter(
+            campaign_number=campaign_obj)
+        for data in virtual_balance_data:
+            formatted_date = data.virtual_budget_date.strftime('%Y-%m-%d')
+            if data.virtual_budget_date in table_data:
+                table_data[formatted_date][2] = data.virtual_budget
+            else:
+                table_data[formatted_date] = {2: data.virtual_budget}
+
         context.update({
+            'table_data': table_data,
             'replenish_data': replenish_data,
+            'virtual_balance_data': virtual_balance_data,
             'campaign_obj': self.kwargs['id'],
             'campaign_data': campaign_obj,
             'page_name': f"Статистика пополнения {campaign_obj.campaign_number}: {campaign_obj.campaign_name}",

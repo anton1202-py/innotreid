@@ -11,7 +11,7 @@ from api_request.wb_requests import (advertisment_campaign_list,
                                      get_budget_adv_campaign)
 from create_reklama.models import (CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign,
-                                   SenderStatisticDaysAmount)
+                                   SenderStatisticDaysAmount, VirtualBudgetForAd)
 from django.db.models import Sum
 # from celery_tasks.celery import app
 from dotenv import load_dotenv
@@ -381,6 +381,11 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
             info_campaign_obj.virtual_budget = common_budget
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
+            VirtualBudgetForAd(
+                campaign_number=campaign_obj,
+                virtual_budget=common_budget,
+                virtual_budget_date=now_date
+            ).save()
             campaign_budget = common_budget
 
     elif campaign_budget > 10000:
@@ -416,6 +421,11 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
             info_campaign_obj.campaign_budget_date = now_date
         else:
             info_campaign_obj.virtual_budget += campaign_budget
+            VirtualBudgetForAd(
+                campaign_number=campaign_obj,
+                virtual_budget=info_campaign_obj.virtual_budget,
+                virtual_budget_date=now_date
+            ).save()
         info_campaign_obj.virtual_budget_date = now_date
         info_campaign_obj.save()
 

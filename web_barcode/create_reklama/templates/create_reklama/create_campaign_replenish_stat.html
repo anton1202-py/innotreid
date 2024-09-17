@@ -102,17 +102,101 @@
                 </script>
               </div>
             </div>
+
+
+            <div class="charts_sales_by_week">
+              <div class='chart_sales_by_week'>
+                <canvas id="acquisitions_2" width="580" height="300"></canvas>
+                <script>
+                  function getGradient(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                        0,
+                        chartArea.bottom,
+                        0,
+                        chartArea.top
+                      );
+                      gradient.addColorStop(0.9, "rgba(115, 128, 236, 0.6)");
+                      gradient.addColorStop(0, "rgba(191, 198, 255, 0.6)");
+                      return gradient;
+                  }
+                  function getGradient2(ctx, chartArea) {
+                    let gradient = ctx.createLinearGradient(
+                      0,
+                      chartArea.bottom,
+                      0,
+                      chartArea.top
+                    );
+                    gradient.addColorStop(0.9, "rgba(255, 119, 130, 0.6)");
+                    gradient.addColorStop(0, "rgba(255, 179, 185, 0.6)");
+                    return gradient;
+                  }
+                  (async function() {
+                    new Chart(
+                      document.getElementById('acquisitions_2'),
+                      {
+                        type: 'line',
+                        data: {
+                          labels: [{% for date in virtual_balance_data %} '{{ date.virtual_budget_date}', {% endfor %}],
+                          datasets: [
+                            {
+                              label: 'Пополнение виртуального счета {{ campaign_data.campaign_name|safe }}',
+                              data: [{% for value in virtual_balance_data %} {{ value.virtual_budget }}, {% endfor %}],
+                              lineTension: 0.3,
+                              fill: true,
+                              backgroundColor: function (context) {
+                                const chart = context.chart;
+                                const { ctx, chartArea } = chart;
+                                // This case happens on initial chart load
+                                if (!chartArea) return;
+                                return getGradient2(ctx, chartArea);
+                              }
+                            },
+                          ]
+                        },
+                        options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: {
+                                  labels: {
+                                      // This more specific font property overrides the global property
+                                      font: {
+                                        size: 14,
+                                        family: "'Open Sans', 'Arial', 'sans-serif'"
+                                      }
+                                  }
+                              }
+                          }
+                        }
+                      }
+                    );
+                  })();
+                </script>
+              </div>
+            </div>
           </div>
 
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr>
                 <th>Дата</th>
-                <th>Пополнение</th>
+                <th>Пополнение ВС</th>
+                <th>Пополнение РК</th>
+
             </tr>
-            {% for el in replenish_data %}
+            {% for date, value in table_data.items %}
             <tr>
-                <td>{{ el.replenish_date }}</td>
-                <td>{{ el.sum }}</td> 
+              
+                <td>{{ date }}</td>
+                {% if value.2 %}
+                  <td>{{ value.2 }}</td> 
+                {% else %}
+                  <td> </td>
+                  {% endif %} 
+                {% if value.1 %}
+                  <td>{{ value.1 }}</td> 
+                {% else %}
+                  <td> </td>
+                {% endif %} 
             </tr>
             {% endfor %}
         </table>
