@@ -643,13 +643,15 @@ class JamMainArticleKeyWords(models.Model):
         null=True
     )
 
-    average_position = models.IntegerField(
+    average_position = models.CharField(
         verbose_name='Средняя позиция',
+        max_length=30,
         blank=True,
         null=True
     )
-    average_position_before = models.IntegerField(
+    average_position_before = models.CharField(
         verbose_name='Средняя позиция за предыдущий период',
+        max_length=30,
         blank=True,
         null=True
     )
