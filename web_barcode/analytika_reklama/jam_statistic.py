@@ -43,6 +43,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
         date_object = datetime.strptime(date_start, "%Y-%m-%d")
                 #     # Получение номера недели
         week_number = date_object.isocalendar()[1]
+        year = date_object.year
         df_statistic = pd.read_excel(
             xlsx_file, sheet_name='Детальная информация', header=1)
         excel_data = pd.DataFrame(df_statistic, columns=[
@@ -154,7 +155,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                 conversion_to_cart = conversion_to_cart_list[i]
                 conversion_to_cart_before = conversion_to_cart_before_list[i]
-                conversion_to_cart_before_than = conversion_to_cart_before_than_list[i]
+                conversion_to_cart_more_than = conversion_to_cart_before_than_list[i]
 
                 ordered = ordered_list[i]
                 ordered_before = ordered_before_list[i]
@@ -175,6 +176,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                             date_start=date_start,
                             date_finish=date_finish,
                             week_number=week_number,
+                            year=year,
 
                             settings_indicator=settings_indicator,
 
@@ -203,7 +205,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                             conversion_to_cart=conversion_to_cart,
                             conversion_to_cart_before=conversion_to_cart_before,
-                            conversion_to_cart_before_than=conversion_to_cart_before_than,
+                            conversion_to_cart_more_than=conversion_to_cart_more_than,
 
                             ordered=ordered,
                             ordered_before=ordered_before,
@@ -244,7 +246,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                             conversion_to_cart=conversion_to_cart,
                             conversion_to_cart_before=conversion_to_cart_before,
-                            conversion_to_cart_before_than=conversion_to_cart_before_than,
+                            conversion_to_cart_more_than=conversion_to_cart_more_than,
 
                             ordered=ordered,
                             ordered_before=ordered_before,
