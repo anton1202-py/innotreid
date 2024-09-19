@@ -593,53 +593,152 @@ class JamMainArticleKeyWords(models.Model):
         blank=True,
         null=True
     )
+    week_number = models.IntegerField(
+        verbose_name='Номер недели',
+        blank=True,
+        null=True
+    )
+    year = models.IntegerField(
+        verbose_name='Год',
+        blank=True,
+        null=True
+    )
+    settings_indicator = models.CharField(
+        verbose_name='Показывать запросы, по которым больше всего',
+        max_length=300
+    )
+
     frequency = models.IntegerField(
         verbose_name='Частота',
         blank=True,
         null=True
     )
+    frequency_before = models.IntegerField(
+        verbose_name='Частота за предыдущий период',
+        blank=True,
+        null=True
+    )
+
     visibility = models.IntegerField(
         verbose_name='Видимость',
         blank=True,
         null=True
     )
+    visibility_before = models.IntegerField(
+        verbose_name='Видимость за предыдущий период',
+        blank=True,
+        null=True
+    )
+
     views = models.IntegerField(
         verbose_name='Показы',
         blank=True,
         null=True
     )
+    views_before = models.IntegerField(
+        verbose_name='Показы за предыдущий период',
+        blank=True,
+        null=True
+    )
+
     average_position = models.IntegerField(
         verbose_name='Средняя позиция',
         blank=True,
         null=True
     )
+    average_before = models.IntegerField(
+        verbose_name='Средняя позиция за предыдущий период',
+        blank=True,
+        null=True
+    )
+
     median_position = models.IntegerField(
         verbose_name='Медианная позиция',
         blank=True,
         null=True
     )
+    median_position_before = models.IntegerField(
+        verbose_name='Медианная позиция за предыдущий период',
+        blank=True,
+        null=True
+    )
+
     go_to_card = models.IntegerField(
         verbose_name='Переходы в карточку',
         blank=True,
         null=True
     )
+    go_to_card_before = models.IntegerField(
+        verbose_name='Переходы в карточку за предыдущий период',
+        blank=True,
+        null=True
+    )
+    go_to_card_more_than = models.IntegerField(
+        verbose_name='Переходы в карточку больше, чем у конкурентов, %',
+        blank=True,
+        null=True
+    )
+
     added_to_cart = models.IntegerField(
         verbose_name='Положили в корзину',
         blank=True,
         null=True
     )
+    added_to_cart_before = models.IntegerField(
+        verbose_name='Положили в корзину за предыдущий период',
+        blank=True,
+        null=True
+    )
+    added_to_cart_more_than = models.IntegerField(
+        verbose_name='Положили в корзину больше, чем у конкурентов, %',
+        blank=True,
+        null=True
+    )
+
     conversion_to_cart = models.FloatField(
         verbose_name='Конверсия в корзину',
         blank=True,
         null=True
     )
+    conversion_to_cart_before = models.FloatField(
+        verbose_name='Конверсия в корзину в предыдущий период',
+        blank=True,
+        null=True
+    )
+    conversion_to_cart_more_than = models.FloatField(
+        verbose_name='Конверсия в корзину больше, чем у конкурентов, %',
+        blank=True,
+        null=True
+    )
+
     ordered = models.IntegerField(
         verbose_name='Заказали',
         blank=True,
         null=True
     )
+    ordered_before = models.IntegerField(
+        verbose_name='Заказали в предыдущий период',
+        blank=True,
+        null=True
+    )
+    ordered_more_than = models.IntegerField(
+        verbose_name='Заказали больше, чем у конкурентов, %',
+        blank=True,
+        null=True
+    )
+
     conversion_to_order = models.FloatField(
         verbose_name='Конверсия в заказ',
+        blank=True,
+        null=True
+    )
+    conversion_to_order_before = models.FloatField(
+        verbose_name='Конверсия в заказ в предыдущий период',
+        blank=True,
+        null=True
+    )
+    conversion_to_order_more_than = models.FloatField(
+        verbose_name='Конверсия в заказ больше, чем у конкурентов, %',
         blank=True,
         null=True
     )

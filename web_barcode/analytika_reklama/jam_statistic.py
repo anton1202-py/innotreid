@@ -38,40 +38,90 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
         dates = re.findall(date_pattern, selected_period_value)
         date_start = dates[0]
         date_finish = dates[1]
-
+        settings_indicator = df_info.loc[df_info.iloc[:, 0]
+                                            == 'Показывать запросы, по которым больше всего', df_info.columns[1]].values[0]
+        date_object = datetime.strptime(date_start, "%Y-%m-%d")
+                #     # Получение номера недели
+        week_number = date_object.isocalendar()[1]
         df_statistic = pd.read_excel(
             xlsx_file, sheet_name='Детальная информация', header=1)
         excel_data = pd.DataFrame(df_statistic, columns=[
                                   'Артикул продавца',
                                   'Номенклатура',
                                   'Поисковый запрос',
+
                                   'Частота, шт',
+                                  'Частота, шт (предыдущий период)',
+
                                   'Видимость, %',
+                                  'Видимость, % (предыдущий период)',
+
                                   'Средняя позиция',
+                                  'Средняя позиция (предыдущий период)',
+
                                   'Медианная позиция',
+                                  'Медианная позиция (предыдущий период)',
+
                                   'Переходы в карточку',
+                                  'Переходы в карточку (предыдущий период)',
+                                  'Переходы в карточку больше, чем у n% карточек конкурентов, %',
+                                  
                                   'Положили в корзину',
+                                  'Положили в корзину (предыдущий период)',
+                                  'Положили в корзину больше, чем n% карточек конкурентов, %',
+
                                   'Конверсия в корзину, %',
+                                  'Конверсия в корзину, % (предыдущий период)',
+                                  'Конверсия в корзину больше, чем у n% карточек конкурентов, %',
+
                                   'Заказали, шт',
-                                  'Конверсия в заказ, %'
+                                  'Заказали, шт (предыдущий период)',
+                                  'Заказали больше, чем n% карточек конкурентов, %',
+
+                                  'Конверсия в заказ, %',
+                                  'Конверсия в заказ, % (предыдущий период)',
+                                  'Конверсия в заказ больше, чем у n% карточек конкурентов, %',
                                   ])
         article_list = excel_data['Артикул продавца'].to_list()
         nom_list = excel_data['Номенклатура'].to_list()
         cluster_list = excel_data['Поисковый запрос'].to_list()
-        frequency_list = excel_data['Частота, шт'].to_list()
-        visibility_list = excel_data['Видимость, %'].to_list()
-        average_position_list = excel_data['Средняя позиция'].to_list()
-        median_position_list = excel_data['Медианная позиция'].to_list()
-        go_to_card_list = excel_data['Переходы в карточку'].to_list()
-        added_to_cart_list = excel_data['Положили в корзину'].to_list()
-        conversion_to_cart_list = excel_data['Конверсия в корзину, %'].to_list(
-        )
-        ordered_list = excel_data['Заказали, шт'].to_list()
-        conversion_to_order_list = excel_data['Конверсия в заказ, %'].to_list()
 
-        for i in range(len(article_list)):
+        frequency_list = excel_data['Частота, шт'].to_list()
+        frequency_before_list = excel_data['Частота, шт (предыдущий период)'].to_list()
+
+        visibility_list = excel_data['Видимость, %'].to_list()
+        visibility_before_list = excel_data['Видимость, % (предыдущий период)'].to_list()
+
+        average_position_list = excel_data['Средняя позиция'].to_list()
+        average_position_before_list = excel_data['Средняя позиция (предыдущий период)'].to_list()
+
+        median_position_list = excel_data['Медианная позиция'].to_list()
+        median_position_before_list = excel_data['Медианная позиция (предыдущий период)'].to_list()
+
+        go_to_card_list = excel_data['Переходы в карточку'].to_list()
+        go_to_card_before_list = excel_data['Переходы в карточку (предыдущий период)'].to_list()
+        go_to_card_more_than_list = excel_data['Переходы в карточку больше, чем у n% карточек конкурентов, %'].to_list()
+
+
+        added_to_cart_list = excel_data['Положили в корзину'].to_list()
+        added_to_cart_before_list = excel_data['Положили в корзину (предыдущий период)'].to_list()
+        added_to_cart_more_than_list = excel_data['Положили в корзину больше, чем n% карточек конкурентов, %'].to_list()
+        
+        conversion_to_cart_list = excel_data['Конверсия в корзину, %'].to_list()
+        conversion_to_cart_before_list = excel_data['Конверсия в корзину, % (предыдущий период)'].to_list()
+        conversion_to_cart_before_than_list = excel_data['Конверсия в корзину больше, чем у n% карточек конкурентов, %'].to_list()
+
+        ordered_list = excel_data['Заказали, шт'].to_list()
+        ordered_before_list = excel_data['Заказали, шт (предыдущий период)'].to_list()
+        ordered_more_than_list = excel_data['Заказали больше, чем n% карточек конкурентов, %'].to_list()
+
+        conversion_to_order_list = excel_data['Конверсия в заказ, %'].to_list()
+        conversion_to_order_before_list = excel_data['Конверсия в заказ, % (предыдущий период)'].to_list()
+        conversion_to_order_more_than_list = excel_data['Конверсия в заказ больше, чем у n% карточек конкурентов, %'].to_list()
+
+        for i in range(len(nom_list)):
             article_obj = Articles.objects.filter(
-                wb_seller_article=article_list[i])
+                wb_nomenclature=nom_list[i])
             cluser_obj = add_keyphrase_to_db(cluster_list[i])
             # article_obj = Articles.objects.filter(
             #     wb_seller_article=article_list[i])
@@ -79,54 +129,131 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
             #     print(article_obj, len(article_obj))
             if len(article_obj) == 0:
                 print(article_list[i])
-
-            cluster = cluser_obj
-            frequency = frequency_list[i]
-            visibility = visibility_list[i]
-            average_position = average_position_list[i]
-            median_position = median_position_list[i]
-            go_to_card = go_to_card_list[i]
-            added_to_cart = added_to_cart_list[i]
-            conversion_to_cart = conversion_to_cart_list[i]
-            ordered = ordered_list[i]
-            conversion_to_order = conversion_to_order_list[i]
             if article_obj.exists():
-                views = int(frequency) * int(visibility) / 100
-                if not JamMainArticleKeyWords.objects.filter(article=article_obj[0], cluster=cluster, date_start=date_start, date_finish=date_finish).exists():
-                    JamMainArticleKeyWords(
-                        article=article_obj[0],
-                        cluster=cluster,
-                        date_start=date_start,
-                        date_finish=date_finish,
-                        frequency=frequency,
-                        visibility=visibility,
-                        views=views,
-                        average_position=average_position,
-                        median_position=median_position,
-                        go_to_card=go_to_card,
-                        added_to_cart=added_to_cart,
-                        conversion_to_cart=conversion_to_cart,
-                        ordered=ordered,
-                        conversion_to_order=conversion_to_order
-                    ).save()
-                else:
-                    JamMainArticleKeyWords.objects.filter(
-                        article=article_obj[0],
-                        cluster=cluster,
-                        date_start=date_start,
-                        date_finish=date_finish).update(
+                cluster = cluser_obj
 
-                        frequency=frequency,
-                        visibility=visibility,
-                        views=views,
-                        average_position=average_position,
-                        median_position=median_position,
-                        go_to_card=go_to_card,
-                        added_to_cart=added_to_cart,
-                        conversion_to_cart=conversion_to_cart,
-                        ordered=ordered,
-                        conversion_to_order=conversion_to_order
-                    )
+                frequency = frequency_list[i]
+                frequency_before = frequency_before_list[i]
+
+                visibility = visibility_list[i]
+                visibility_before = visibility_before_list[i]
+
+                average_position = average_position_list[i]
+                average_position_before = average_position_before_list[i]
+
+                median_position = median_position_list[i]
+                median_position_before = median_position_before_list[i]
+
+                go_to_card = go_to_card_list[i]
+                go_to_card_before = go_to_card_before_list[i]
+                go_to_card_more_than = go_to_card_more_than_list[i]
+
+                added_to_cart = added_to_cart_list[i]
+                added_to_cart_before = added_to_cart_before_list[i]
+                added_to_cart_more_than = added_to_cart_more_than_list[i]
+
+                conversion_to_cart = conversion_to_cart_list[i]
+                conversion_to_cart_before = conversion_to_cart_before_list[i]
+                conversion_to_cart_before_than = conversion_to_cart_before_than_list[i]
+
+                ordered = ordered_list[i]
+                ordered_before = ordered_before_list[i]
+                ordered_more_than = ordered_more_than_list[i]
+
+                conversion_to_order = conversion_to_order_list[i]
+                conversion_to_order_before = conversion_to_order_before_list[i]
+                conversion_to_order_more_than = conversion_to_order_more_than_list[i]
+
+                if article_obj.exists():
+                    views = int(frequency) * int(visibility) / 100
+                    views_before = int(frequency_before) * int(visibility_before) / 100
+                    
+                    if not JamMainArticleKeyWords.objects.filter(article=article_obj[0], cluster=cluster, date_start=date_start, date_finish=date_finish).exists():
+                        JamMainArticleKeyWords(
+                            article=article_obj[0],
+                            cluster=cluster,
+                            date_start=date_start,
+                            date_finish=date_finish,
+                            week_number=week_number,
+
+                            settings_indicator=settings_indicator,
+
+                            frequency=frequency,
+                            frequency_before=frequency_before,
+
+                            visibility=visibility,
+                            visibility_before=visibility_before,
+
+                            views=views,
+                            views_before=views_before,
+
+                            average_position=average_position,
+                            average_position_before=average_position_before,
+
+                            median_position=median_position,
+                            median_position_before=median_position_before,
+
+                            go_to_card=go_to_card,
+                            go_to_card_before=go_to_card_before,
+                            go_to_card_more_than=go_to_card_more_than,
+
+                            added_to_cart=added_to_cart,
+                            added_to_cart_before=added_to_cart_before,
+                            added_to_cart_more_than=added_to_cart_more_than,
+
+                            conversion_to_cart=conversion_to_cart,
+                            conversion_to_cart_before=conversion_to_cart_before,
+                            conversion_to_cart_before_than=conversion_to_cart_before_than,
+
+                            ordered=ordered,
+                            ordered_before=ordered_before,
+                            ordered_more_than=ordered_more_than,
+
+                            conversion_to_order=conversion_to_order,
+                            conversion_to_order_before=conversion_to_order_before,
+                            conversion_to_order_more_than=conversion_to_order_more_than
+                        ).save()
+                    else:
+                        JamMainArticleKeyWords.objects.filter(
+                            article=article_obj[0],
+                            cluster=cluster,
+                            date_start=date_start,
+                            date_finish=date_finish,
+                            week_number=week_number,
+                            settings_indicator=settings_indicator).update(
+
+                            visibility=visibility,
+                            visibility_before=visibility_before,
+
+                            views=views,
+                            views_before=views_before,
+
+                            average_position=average_position,
+                            average_position_before=average_position_before,
+
+                            median_position=median_position,
+                            median_position_before=median_position_before,
+
+                            go_to_card=go_to_card,
+                            go_to_card_before=go_to_card_before,
+                            go_to_card_more_than=go_to_card_more_than,
+
+                            added_to_cart=added_to_cart,
+                            added_to_cart_before=added_to_cart_before,
+                            added_to_cart_more_than=added_to_cart_more_than,
+
+                            conversion_to_cart=conversion_to_cart,
+                            conversion_to_cart_before=conversion_to_cart_before,
+                            conversion_to_cart_before_than=conversion_to_cart_before_than,
+
+                            ordered=ordered,
+                            ordered_before=ordered_before,
+                            ordered_more_than=ordered_more_than,
+
+                            conversion_to_order=conversion_to_order,
+                            conversion_to_order_before=conversion_to_order_before,
+                            conversion_to_order_more_than=conversion_to_order_more_than
+                        )
 
         # article_obj = Articles.objects.all().values('wb_nomenclature')
         # for nm in article_obj:
