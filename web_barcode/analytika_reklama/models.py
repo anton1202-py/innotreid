@@ -605,7 +605,9 @@ class JamMainArticleKeyWords(models.Model):
     )
     settings_indicator = models.CharField(
         verbose_name='Показывать запросы, по которым больше всего',
-        max_length=300
+        max_length=300,
+        blank=True,
+        null=True
     )
 
     frequency = models.IntegerField(
