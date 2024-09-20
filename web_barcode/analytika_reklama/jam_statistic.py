@@ -121,6 +121,8 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
         conversion_to_order_more_than_list = excel_data['Конверсия в заказ больше, чем у n% карточек конкурентов, %'].to_list()
         update_list = []
         create_list = []
+        x = len(nom_list)
+        print(len(nom_list))
         for i in range(len(nom_list)):
             article_obj = Articles.objects.filter(
                 wb_nomenclature=nom_list[i])
@@ -249,6 +251,8 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                         jam_update_obj.conversion_to_order_before=conversion_to_order_before
                         jam_update_obj.conversion_to_order_more_than=conversion_to_order_more_than
                         update_list.append(jam_update_obj)
+            x -= 1
+            print(x)
         if update_list:
             JamMainArticleKeyWords.objects.bulk_update(
                 update_list, ['visibility', 
