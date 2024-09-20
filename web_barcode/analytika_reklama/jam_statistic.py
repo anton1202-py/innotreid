@@ -172,7 +172,12 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                     views = int(frequency) * int(visibility) / 100
                     views_before = int(frequency_before) * int(visibility_before) / 100
                     
-                    if not JamMainArticleKeyWords.objects.filter(article=article_obj[0], cluster=cluster, date_start=date_start, date_finish=date_finish).exists():
+                    if not JamMainArticleKeyWords.objects.filter(article=article_obj[0],
+                            cluster=cluster,
+                            date_start=date_start,
+                            date_finish=date_finish,
+                            week_number=week_number,
+                            settings_indicator=settings_indicator).exists():
                         jam_obj = JamMainArticleKeyWords(
                             article=article_obj[0],
                             cluster=cluster,
