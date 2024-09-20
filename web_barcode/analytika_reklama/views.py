@@ -342,7 +342,9 @@ def articles_words_main_info(request):
     errors_data = ''
     ok_answer = ''
     if request.POST:
+        print(request.FILES)
         if 'import_file' in request.FILES:
+          
             files = request.FILES['import_file']
             for file in files:
                 print(file)

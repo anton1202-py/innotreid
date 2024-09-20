@@ -22,7 +22,7 @@ ALLOWED_HOSTS = ['158.160.28.219', '127.0.0.1', 'masterchudes.ru']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'users',
+    
     'corsheaders',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
+    'users',
     'main',
     'analytika_reklama',
     'create_reklama',
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'price_control',
     'fbs_mode',
     'price_system',
+    
     'reklama',
     'celery_tasks',
     'celery_view',
