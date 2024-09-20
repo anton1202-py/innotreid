@@ -343,10 +343,12 @@ def articles_words_main_info(request):
     ok_answer = ''
     if request.POST:
         if 'import_file' in request.FILES:
-            errors_data = analytika_reklama_excel_with_jam_data(
-                request.FILES['import_file'])
-            if type(errors_data) != str:
-                ok_answer = f"Файл {request.FILES['import_file']} принят в работу"
+            files = request.FILES['import_file']
+            for file in files:
+                errors_data = analytika_reklama_excel_with_jam_data(
+                file)
+                if type(errors_data) != str:
+                    ok_answer = f"Файл {request.FILES['import_file']} принят в работу"
     context = {
         'page_name': page_name,
         'errors_data': errors_data,
