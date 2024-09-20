@@ -178,7 +178,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                             date_finish=date_finish,
                             week_number=week_number,
                             settings_indicator=settings_indicator).exists():
-                        jam_obj = JamMainArticleKeyWords(
+                        JamMainArticleKeyWords(
                             article=article_obj[0],
                             cluster=cluster,
                             date_start=date_start,
@@ -222,8 +222,8 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                             conversion_to_order=conversion_to_order,
                             conversion_to_order_before=conversion_to_order_before,
                             conversion_to_order_more_than=conversion_to_order_more_than
-                        )
-                        create_list.append(jam_obj)
+                        ).save()
+                        # create_list.append(jam_obj)
                     else:
                         jam_update_obj = JamMainArticleKeyWords.objects.get(
                             article=article_obj[0],
@@ -255,7 +255,8 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                         jam_update_obj.conversion_to_order=conversion_to_order
                         jam_update_obj.conversion_to_order_before=conversion_to_order_before
                         jam_update_obj.conversion_to_order_more_than=conversion_to_order_more_than
-                        update_list.append(jam_update_obj)
+                        jam_update_obj.save()
+                        # update_list.append(jam_update_obj)
             
         print(xlsx_file)
         if update_list:
