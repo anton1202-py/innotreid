@@ -345,6 +345,7 @@ def articles_words_main_info(request):
         if 'import_file' in request.FILES:
             files = request.FILES['import_file']
             for file in files:
+                print(file)
                 errors_data = analytika_reklama_excel_with_jam_data(
                 file)
                 if type(errors_data) != str:
