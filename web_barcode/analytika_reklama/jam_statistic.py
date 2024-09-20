@@ -257,7 +257,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                         jam_update_obj.conversion_to_order_more_than=conversion_to_order_more_than
                         update_list.append(jam_update_obj)
             x -= 1
-            print(x)
+            print(x, xlsx_file)
         if update_list:
             JamMainArticleKeyWords.objects.bulk_update(
                 update_list, ['visibility', 
