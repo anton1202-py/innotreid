@@ -344,7 +344,6 @@ def articles_words_main_info(request):
     if request.POST:
         print(request.FILES)
         if 'import_file' in request.FILES:
-          
             files = request.FILES.getlist('import_file')
             for file in files:
                 print(file)
