@@ -224,38 +224,38 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                             conversion_to_order_more_than=conversion_to_order_more_than
                         ).save()
                         # create_list.append(jam_obj)
-                    else:
-                        jam_update_obj = JamMainArticleKeyWords.objects.get(
-                            article=article_obj[0],
-                            cluster=cluster,
-                            date_start=date_start,
-                            date_finish=date_finish,
-                            week_number=week_number,
-                            settings_indicator=settings_indicator)
-                        jam_update_obj.visibility=visibility
-                        jam_update_obj.visibility_before=visibility_before
-                        jam_update_obj.views=views
-                        jam_update_obj.views_before=views_before
-                        jam_update_obj.average_position=average_position
-                        jam_update_obj.average_position_before=average_position_before
-                        jam_update_obj.median_position=median_position
-                        jam_update_obj.median_position_before=median_position_before
-                        jam_update_obj.go_to_card=go_to_card
-                        jam_update_obj.go_to_card_before=go_to_card_before
-                        jam_update_obj.go_to_card_more_than=go_to_card_more_than
-                        jam_update_obj.added_to_cart=added_to_cart
-                        jam_update_obj.added_to_cart_before=added_to_cart_before
-                        jam_update_obj.added_to_cart_more_than=added_to_cart_more_than
-                        jam_update_obj.conversion_to_cart=conversion_to_cart
-                        jam_update_obj.conversion_to_cart_before=conversion_to_cart_before
-                        jam_update_obj.conversion_to_cart_more_than=conversion_to_cart_more_than
-                        jam_update_obj.ordered=ordered
-                        jam_update_obj.ordered_before=ordered_before
-                        jam_update_obj.ordered_more_than=ordered_more_than
-                        jam_update_obj.conversion_to_order=conversion_to_order
-                        jam_update_obj.conversion_to_order_before=conversion_to_order_before
-                        jam_update_obj.conversion_to_order_more_than=conversion_to_order_more_than
-                        jam_update_obj.save()
+                    # else:
+                    #     jam_update_obj = JamMainArticleKeyWords.objects.get(
+                    #         article=article_obj[0],
+                    #         cluster=cluster,
+                    #         date_start=date_start,
+                    #         date_finish=date_finish,
+                    #         week_number=week_number,
+                    #         settings_indicator=settings_indicator)
+                    #     jam_update_obj.visibility=visibility
+                    #     jam_update_obj.visibility_before=visibility_before
+                    #     jam_update_obj.views=views
+                    #     jam_update_obj.views_before=views_before
+                    #     jam_update_obj.average_position=average_position
+                    #     jam_update_obj.average_position_before=average_position_before
+                    #     jam_update_obj.median_position=median_position
+                    #     jam_update_obj.median_position_before=median_position_before
+                    #     jam_update_obj.go_to_card=go_to_card
+                    #     jam_update_obj.go_to_card_before=go_to_card_before
+                    #     jam_update_obj.go_to_card_more_than=go_to_card_more_than
+                    #     jam_update_obj.added_to_cart=added_to_cart
+                    #     jam_update_obj.added_to_cart_before=added_to_cart_before
+                    #     jam_update_obj.added_to_cart_more_than=added_to_cart_more_than
+                    #     jam_update_obj.conversion_to_cart=conversion_to_cart
+                    #     jam_update_obj.conversion_to_cart_before=conversion_to_cart_before
+                    #     jam_update_obj.conversion_to_cart_more_than=conversion_to_cart_more_than
+                    #     jam_update_obj.ordered=ordered
+                    #     jam_update_obj.ordered_before=ordered_before
+                    #     jam_update_obj.ordered_more_than=ordered_more_than
+                    #     jam_update_obj.conversion_to_order=conversion_to_order
+                    #     jam_update_obj.conversion_to_order_before=conversion_to_order_before
+                    #     jam_update_obj.conversion_to_order_more_than=conversion_to_order_more_than
+                    #     jam_update_obj.save()
                         # update_list.append(jam_update_obj)
             
         print(xlsx_file)
