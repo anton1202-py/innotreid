@@ -345,10 +345,14 @@ def articles_words_main_info(request):
         print(request.FILES)
         if 'import_file' in request.FILES:
             files = request.FILES.getlist('import_file')
+            x = len(files)
             for file in files:
+                print(len(files))
                 print(file)
                 errors_data = analytika_reklama_excel_with_jam_data(
                 file)
+                x -= 1
+                print(x)
                 if type(errors_data) != str:
                     ok_answer = f"Файл {request.FILES['import_file']} принят в работу"
     context = {

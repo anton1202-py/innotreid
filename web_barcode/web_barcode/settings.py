@@ -18,7 +18,7 @@ API_KEY_WB_INNOTREID = os.getenv('API_KEY_WB_INNOTREID')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['158.160.28.219', '127.0.0.1', 'masterchudes.ru']
+ALLOWED_HOSTS = ['158.160.28.219', '127.0.0.1', 'masterchudes.ru', 'www.masterchudes.ru']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
