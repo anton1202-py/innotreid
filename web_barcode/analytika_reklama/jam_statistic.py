@@ -170,11 +170,11 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                 if article_obj.exists():
                     print(frequency_before, visibility_before)
-                    if frequency and visibility and str(frequency) != 'NaN' and str(visibility) != 'NaN':
+                    if frequency and visibility and str(frequency) != 'nan' and str(visibility) != 'nan':
                         views = int(frequency) * int(visibility) / 100
                     else:
                         views = None
-                    if frequency_before and visibility_before and str(frequency_before) != 'NaN' and str(visibility_before) != 'NaN':
+                    if frequency_before and visibility_before and str(frequency_before) != 'nan' and str(visibility_before) != 'nan':
                         
                         views_before = int(frequency_before) * int(visibility_before) / 100
                     else:
