@@ -780,7 +780,7 @@ class KeywordPhrase(models.Model):
     """
     Таблица с ключевыми фразами
     """
-    phrase = models.CharField(
+    phrase = models.TextField(
         verbose_name='Ключевая фраза',
         max_length=300
     )
