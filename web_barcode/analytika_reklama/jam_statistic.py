@@ -153,7 +153,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                 median_position = median_position_list[i]
                 median_position_before = median_position_before_list[i]
-                if str(median_position_before[i]) == 'nan':
+                if str(median_position_before) == 'nan':
                     median_position_before = None
 
                 go_to_card = go_to_card_list[i]
