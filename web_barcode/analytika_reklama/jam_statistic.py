@@ -138,35 +138,64 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
 
                 frequency = frequency_list[i]
                 frequency_before = frequency_before_list[i]
+                if str(frequency_before) == 'nan':
+                    frequency_before = None
 
                 visibility = visibility_list[i]
                 visibility_before = visibility_before_list[i]
+                if str(visibility_before) == 'nan':
+                    visibility_before = None
 
                 average_position = average_position_list[i]
                 average_position_before = average_position_before_list[i]
+                if str(average_position_before) == 'nan':
+                    average_position_before = None
 
                 median_position = median_position_list[i]
                 median_position_before = median_position_before_list[i]
+                if str(median_position_before[i]) == 'nan':
+                    median_position_before = None
 
                 go_to_card = go_to_card_list[i]
                 go_to_card_before = go_to_card_before_list[i]
+                if str(go_to_card_before) == 'nan':
+                    go_to_card_before = None
+
                 go_to_card_more_than = go_to_card_more_than_list[i]
+                if str(go_to_card_more_than) == 'nan':
+                    go_to_card_more_than = None
 
                 added_to_cart = added_to_cart_list[i]
                 added_to_cart_before = added_to_cart_before_list[i]
+                if str(added_to_cart_before) == 'nan':
+                    added_to_cart_before = None
                 added_to_cart_more_than = added_to_cart_more_than_list[i]
+                if str(added_to_cart_more_than) == 'nan':
+                    added_to_cart_more_than = None
 
                 conversion_to_cart = conversion_to_cart_list[i]
                 conversion_to_cart_before = conversion_to_cart_before_list[i]
+                if str(conversion_to_cart_before) == 'nan':
+                    conversion_to_cart_before = None
                 conversion_to_cart_more_than = conversion_to_cart_before_than_list[i]
+                if str(conversion_to_cart_more_than) == 'nan':
+                    conversion_to_cart_more_than = None
 
                 ordered = ordered_list[i]
                 ordered_before = ordered_before_list[i]
+                if str(ordered_before) == 'nan':
+                    ordered_before = None
                 ordered_more_than = ordered_more_than_list[i]
+                if str(ordered_more_than) == 'nan':
+                    ordered_more_than = None
 
                 conversion_to_order = conversion_to_order_list[i]
                 conversion_to_order_before = conversion_to_order_before_list[i]
+                if str(conversion_to_order_before) == 'nan':
+                    conversion_to_order_before = None
                 conversion_to_order_more_than = conversion_to_order_more_than_list[i]
+                if str(conversion_to_order_more_than) == 'nan':
+                    conversion_to_order_more_than = None
 
                 if article_obj.exists():
                     print(frequency_before, visibility_before)
