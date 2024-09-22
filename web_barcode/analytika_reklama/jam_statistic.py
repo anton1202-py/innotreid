@@ -169,6 +169,7 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                 conversion_to_order_more_than = conversion_to_order_more_than_list[i]
 
                 if article_obj.exists():
+                    print(frequency_before, visibility_before)
                     if frequency and visibility and str(frequency) != 'NaN' and str(visibility) != 'NaN':
                         views = int(frequency) * int(visibility) / 100
                     else:
