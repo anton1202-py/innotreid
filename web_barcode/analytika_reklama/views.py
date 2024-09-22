@@ -347,7 +347,6 @@ def articles_words_main_info(request):
             files = request.FILES.getlist('import_file')
             x = len(files)
             for file in files:
-                print(len(files))
                 print(file)
                 errors_data = analytika_reklama_excel_with_jam_data(
                 file)

@@ -169,8 +169,14 @@ def analytika_reklama_excel_with_jam_data(xlsx_file):
                 conversion_to_order_more_than = conversion_to_order_more_than_list[i]
 
                 if article_obj.exists():
-                    views = int(frequency) * int(visibility) / 100
-                    views_before = int(frequency_before) * int(visibility_before) / 100
+                    if frequency and visibility:
+                        views = int(frequency) * int(visibility) / 100
+                    else:
+                        views = None
+                    if frequency_before and visibility_before:
+                        views_before = int(frequency_before) * int(visibility_before) / 100
+                    else:
+                        views_before = None
                     
                     if not JamMainArticleKeyWords.objects.filter(article=article_obj[0],
                             cluster=cluster,
