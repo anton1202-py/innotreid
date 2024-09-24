@@ -139,10 +139,10 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
                         cr=cr
                     ).save()
 
-            if not DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=statistic_date).exists():
+            if not DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=formatted_date).exists():
                 DailyCampaignParameters(
                     campaign=campaign,
-                    statistic_date=statistic_date,
+                    statistic_date=formatted_date,
                     views=views,
                     clicks=clicks,
                     summ=summ,
@@ -154,7 +154,7 @@ def add_adv_statistic_to_db(ur_lico: str, campaign_data_list: list):
                     cr=cr
                 ).save()
             else:
-                DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=statistic_date).update(
+                DailyCampaignParameters.objects.filter(campaign=campaign, statistic_date=formatted_date).update(
                     views=views,
                     clicks=clicks,
                     summ=summ,
