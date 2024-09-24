@@ -35,6 +35,7 @@ from fbs_mode.task_nsk import action_wb
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
+from analytika_reklama.testing import read_excel_file
 from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
@@ -51,7 +52,7 @@ def create_campaign(request):
     # update_campaign_budget_and_cpm()
     # ProcentForAd.objects.filter(
     #     virtual_budget__gt=1020).update(virtual_budget=0)
-    # read_excel_file()
+    read_excel_file()
     # process_ozon_daily_orders()
     # budget_working()
     # print('Перед тестом')

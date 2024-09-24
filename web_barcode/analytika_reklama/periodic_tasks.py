@@ -64,9 +64,9 @@ def add_campaigns_statistic_to_db():
             print('data_campaign_list', data_campaign_list)
             main_adv_data = advertisment_statistic_info(
                 data_campaign_list, header)
-            # if main_adv_data:
-            #     # Записываем/обновляем информацию о РК в базу данных
-            #     add_adv_statistic_to_db(ur_lico_obj, main_adv_data)
+            if main_adv_data:
+                # Записываем/обновляем информацию о РК в базу данных
+                add_adv_statistic_to_db(ur_lico_obj, main_adv_data)
 
 
 @app.task
