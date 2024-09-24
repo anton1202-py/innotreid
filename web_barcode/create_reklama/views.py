@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 from analytika_reklama.periodic_tasks import \
-    get_auto_campaign_statistic_common_data
+    add_campaigns_statistic_to_db
 from api_request.wb_requests import (create_auto_advertisment_campaign,
                                      pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
@@ -52,7 +52,8 @@ def create_campaign(request):
     # update_campaign_budget_and_cpm()
     # ProcentForAd.objects.filter(
     #     virtual_budget__gt=1020).update(virtual_budget=0)
-    read_excel_file()
+    add_campaigns_statistic_to_db()
+    # read_excel_file()
     # process_ozon_daily_orders()
     # budget_working()
     # print('Перед тестом')

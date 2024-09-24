@@ -38,7 +38,7 @@ def add_campaigns_statistic_to_db():
     main_adv_data - данные для рекламных кампаний какого-то юр. лица (макс 50 кампаний)
     """
     ur_lico_data = UrLico.objects.all()
-    statistic_date_raw = datetime.now() - timedelta(days=16)
+    statistic_date_raw = datetime.now() - timedelta(days=9)
     statistic_date_finish = datetime.now().strftime('%Y-%m-%d')
     statistic_date_begin = statistic_date_raw.strftime('%Y-%m-%d')
     for ur_lico_obj in ur_lico_data:
@@ -61,7 +61,7 @@ def add_campaigns_statistic_to_db():
                 }
                 data_campaign_list.append(inner_dict)
             header = header_wb_dict[ur_lico_obj.ur_lice_name]
-            print('data_campaign_list', data_campaign_list)
+            # print('data_campaign_list', data_campaign_list)
             main_adv_data = advertisment_statistic_info(
                 data_campaign_list, header)
             if main_adv_data:

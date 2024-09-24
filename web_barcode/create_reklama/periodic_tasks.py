@@ -109,6 +109,7 @@ def update_campaign_status():
     """Обновляет статус кампаний"""
     ur_lico_data = UrLico.objects.all()
     answer_data = filter_campaigns_status_type()
+    print('answer_data', answer_data)
     for ur_lico_obj in ur_lico_data:
         answer_campaigns_info = answer_data[ur_lico_obj.ur_lice_name]
         for campaign_type, data in answer_campaigns_info.items():

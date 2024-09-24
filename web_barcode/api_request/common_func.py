@@ -55,7 +55,7 @@ def api_retry_decorator(func):
                                      text=message[:4000])
                     return
 
-            message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}.'
+            message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. {response.text}'
             if message:
                 bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=message[:4000])
