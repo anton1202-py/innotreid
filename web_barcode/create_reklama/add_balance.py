@@ -381,11 +381,12 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
             info_campaign_obj.virtual_budget = common_budget
             info_campaign_obj.virtual_budget_date = now_date
             info_campaign_obj.save()
-            VirtualBudgetForAd(
-                campaign_number=campaign_obj,
-                virtual_budget=common_budget,
-                virtual_budget_date=now_date
-            ).save()
+            if campaign_budget > 0:
+                VirtualBudgetForAd(
+                    campaign_number=campaign_obj,
+                    virtual_budget=campaign_budget,
+                    virtual_budget_date=now_date
+                ).save()
             campaign_budget = common_budget
 
     elif campaign_budget > 10000:
@@ -423,7 +424,7 @@ def replenish_campaign_budget(campaign, budget, header, campaign_obj):
             info_campaign_obj.virtual_budget += campaign_budget
             VirtualBudgetForAd(
                 campaign_number=campaign_obj,
-                virtual_budget=info_campaign_obj.virtual_budget,
+                virtual_budget=campaign_budget,
                 virtual_budget_date=now_date
             ).save()
         info_campaign_obj.virtual_budget_date = now_date
