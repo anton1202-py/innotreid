@@ -49,14 +49,25 @@ def check_data_for_create_adv_campaign(main_data):
                              text=error[:4000])
         else:
             mns_list.append(int(nmid))
+    campaigns_articles_list = []
 
+    data = CreatedCampaign.objects.all()
+    
+    for d in data:
+        name = d.campaign_name
+        art = name.split(' ')[0]
+        campaigns_articles_list.append(str(art))
+    
     for nm_id in mns_list:
-        if CreatedCampaign.objects.filter(ur_lico=ur_lico, articles_name=nm_id).exists():
-            exist_campaign_obj = CreatedCampaign.objects.filter(
-                ur_lico=ur_lico, articles_name=nm_id)[0]
-            error = f'Кампания с артикулом {nmid} уже есть у {ur_lico}. Ее номер: {exist_campaign_obj.campaign_number}, название: {exist_campaign_obj.campaign_name}'
-            bot.send_message(chat_id=user_chat_id,
+        if str(nm_id) in campaigns_articles_list:
+                error = f'Кампания с артикулом {nmid} уже есть у {ur_lico}.'
+                bot.send_message(chat_id=user_chat_id,
                              text=error[:4000])
+        if CreatedCampaign.objects.filter(ur_lico=ur_lico, articles_name=int(nm_id)).exists():
+            exist_campaign_obj = CreatedCampaign.objects.filter(
+                ur_lico=ur_lico, articles_name=int(nm_id))[0]
+            error = f'Кампания с артикулом {nmid} уже есть у {ur_lico}. Ее номер: {exist_campaign_obj.campaign_number}, название: {exist_campaign_obj.campaign_name}'
+            
         else:
             nm_id_for_request = [nm_id]
             article_name = Articles.objects.filter(
@@ -82,7 +93,7 @@ def check_data_for_create_adv_campaign(main_data):
                 'subject_id': int(main_data['select_subject']),
                 'cpm': int(main_data['cpm']),
                 'budget': int(main_data['budget']),
-                'article': nm_id
+                'article': int(nm_id)
             }
 
             add_created_campaign_data_to_database(saved_data)

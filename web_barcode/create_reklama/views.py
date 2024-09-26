@@ -48,16 +48,7 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
-    # get_auto_campaign_statistic_common_data()
-    # update_campaign_budget_and_cpm()
-    # ProcentForAd.objects.filter(
-    #     virtual_budget__gt=1020).update(virtual_budget=0)
-    # add_campaigns_statistic_to_db()
-    # read_excel_file()
-    # process_ozon_daily_orders()
-    # budget_working()
-    # print('Перед тестом')
-    # action_wb(file_add_name, wb_headers_ooo)
+    
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []
