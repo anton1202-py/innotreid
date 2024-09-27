@@ -36,6 +36,7 @@ from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
 from analytika_reklama.testing import read_excel_file
+from analytika_reklama.models import KeywordPhrase, StatisticCampaignKeywordPhrase
 from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
@@ -48,7 +49,11 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
-    
+    data = CreatedCampaign.objects.all()
+    for d in data:
+        if not ProcentForAd.objects.filter(
+        campaign_number=d).exists():
+            print(d.campaign_name, d.campaign_number)
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []

@@ -1,3 +1,10 @@
+"""
+Модули программы
+actions. Создан 27.09.2024.
+Для Синхронизации акций на различных маркетплейсах
+
+"""
+
 import os
 
 from dotenv import load_dotenv
@@ -31,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'users',
+    'actions',
     'main',
     'analytika_reklama',
     'create_reklama',
