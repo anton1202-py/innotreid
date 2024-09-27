@@ -7,9 +7,11 @@ class Action(models.Model):
     """Описывает акцию на маркетплейсе"""
 
     ur_lico = models.ForeignKey(UrLico, on_delete=models.SET_NULL,
-        verbose_name='Юр. лицо', related_name='actions')
+        verbose_name='Юр. лицо', related_name='actions', blank=True,
+        null=True)
     marketplace = models.ForeignKey(CodingMarketplaces, on_delete=models.SET_NULL,
-        verbose_name='Маркетплейс', related_name='actions')
+        verbose_name='Маркетплейс', related_name='actions', blank=True,
+        null=True)
     action_number = models.CharField(verbose_name='Номер акции', max_length=100)
     name = models.CharField(verbose_name='Название акции', max_length=255)
     description = models.TextField(verbose_name='Описание акции')
@@ -75,7 +77,8 @@ class ArticleInAction(models.Model):
     article = article = models.ForeignKey(Articles, on_delete=models.CASCADE,
         verbose_name='Артикул', related_name='in_action')
     action = models.ForeignKey(Action, on_delete=models.SET_NULL,
-        verbose_name='Акция', related_name='in_action')
+        verbose_name='Акция', related_name='in_action', blank=True,
+        null=True)
     date_start = models.DateTimeField(verbose_name='Дата захода в акцию')
     date_finish = models.DateTimeField(verbose_name='Дата выхода из акции')
 
