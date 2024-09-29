@@ -3,44 +3,33 @@ import json
 from datetime import datetime
 
 import pandas as pd
-from analytika_reklama.periodic_tasks import \
-    add_campaigns_statistic_to_db
-from api_request.wb_requests import (create_auto_advertisment_campaign,
-                                     pausa_advertisment_campaigns,
+from api_request.wb_requests import (pausa_advertisment_campaigns,
                                      start_advertisment_campaigns)
-from create_reklama.add_balance import ad_list, count_sum_orders
 from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    CreatedCampaign, ProcentForAd,
                                    ReplenishWbCampaign,
                                    SenderStatisticDaysAmount,
                                    StartPausaCampaign, VirtualBudgetForAd)
-from create_reklama.periodic_tasks import (
-    auto_replenish_budget_campaign, budget_working,
-    set_up_minus_phrase_to_auto_campaigns, update_campaign_budget_and_cpm,
+from create_reklama.periodic_tasks import (set_up_minus_phrase_to_auto_campaigns,
     update_campaign_status)
 from create_reklama.supplyment import (
-    add_created_campaign_data_to_database,
     check_data_create_adv_campaign_from_excel_file,
     check_data_for_create_adv_campaign,
     create_reklama_excel_with_campaign_data,
-    create_reklama_template_excel_file, filter_campaigns_status_only)
-from create_reklama.tests import camp_data
-from database.periodic_tasks import process_ozon_daily_orders
+    create_reklama_template_excel_file)
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView
-from fbs_mode.task_nsk import action_wb
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
-from analytika_reklama.testing import read_excel_file
-from analytika_reklama.models import KeywordPhrase, StatisticCampaignKeywordPhrase
-from web_barcode.constants_file import (CHAT_ID_ADMIN, SUBJECT_REKLAMA_ID_DICT,
+from actions.periodic_tasks import add_new_actions_wb_to_db
+from web_barcode.constants_file import (SUBJECT_REKLAMA_ID_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_dict, wb_headers_ooo)
+                                        bot, header_wb_dict)
 
 
 @login_required
@@ -50,14 +39,11 @@ def create_campaign(request):
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
     data = CreatedCampaign.objects.all()
-    for d in data:
-        if not ProcentForAd.objects.filter(
-        campaign_number=d).exists():
-            print(d.campaign_name, d.campaign_number)
     user_chat_id = request.user.tg_chat_id
     import_data = ''
     errors_list = []
     ok_answer = []
+    add_new_actions_wb_to_db()
     if request.POST:
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':

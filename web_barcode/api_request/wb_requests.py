@@ -388,8 +388,6 @@ def get_budget_adv_campaign(header, campaign_number):
 # =========== КОНЕЦ API ЗАПРОСЫ ПРОДВИЖЕНИЯ WILDBERRIES ========== #
 
 # =========== РЕЙТИНГ И ОТЗЫВЫ ========== #
-
-
 @api_retry_decorator
 def average_rating_feedbacks_amount(header, wb_nmid):
     """
@@ -422,3 +420,45 @@ def average_rating_feedbacks_amount(header, wb_nmid):
     response = requests.request("GET", url, headers=header)
     return response
 # =========== КОНЕЦ БЛОКА РЕЙТИНГ И ОТЗЫВЫ ========== #
+
+
+# =========== АКЦИИ ========== #
+@api_retry_decorator
+def wb_actions_first_list(header):
+    """
+    Возвращает список акций с датами и временем проведения
+    Максимум 10 запросов за 6 секунд
+    """
+    time.sleep(1)
+    start_date = datetime.now().strftime('%Y-%m-%d')
+    finish_date = (datetime.now() + timedelta(days=60)).strftime('%Y-%m-%d')
+    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions?allPromo=false&startDateTime={start_date}T00:00:00Z&endDateTime={finish_date}T23:59:59Z'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
+def wb_action_details_info(header, action_ids_list):
+    """
+    Возвращает список акций с датами и временем проведения
+    """
+    time.sleep(1)
+    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/details?{action_ids_list}'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
+def wb_articles_in_action(header, action_number):
+    """
+    Возвращает список товаров, подходящих для участия в акции.
+    Неприменимо для автоакций
+    """
+    time.sleep(1)
+    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/nomenclatures?promotionID={action_number}&inAction=false'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+
+# =========== КОНЕЦ АКЦИИ ========== #

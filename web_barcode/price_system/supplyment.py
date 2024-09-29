@@ -336,13 +336,17 @@ def yandex_matching_articles(ur_lico):
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
                 or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
                     or str(yandex_article.yandex_sku) != str(yandex_data[2]) and yandex_article.yandex_sku != None):
-                yandex_article.status = 'Не сопоставлено'
+                yandex_article.status = 'Cопоставлено'
+                yandex_article.yandex_seller_article = yandex_data[0]
+                yandex_article.yandex_barcode = yandex_data[1]
+                yandex_article.yandex_sku = yandex_data[2]
                 yandex_article.company = ur_lico
                 yandex_article.save()
                 message = (f'Проверьте артикул {common_article} на яндекс вручную. \
                             Barcode {yandex_article.yandex_barcode} - {yandex_data[1]}. \
                             SKU {yandex_article.yandex_sku} - {yandex_data[2]}. \
                             Не совпали данные')
+                time.sleep(0.5)
                 bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
             elif yandex_article.yandex_barcode == None:
                 yandex_article.status = 'Сопоставлено'
