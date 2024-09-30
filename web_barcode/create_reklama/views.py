@@ -44,7 +44,7 @@ def create_campaign(request):
     import_data = ''
     errors_list = []
     ok_answer = []
-    add_new_actions_ozon_to_db()
+    # add_new_actions_ozon_to_db()
     create_data_with_article_conditions()
     # add_new_actions_ozon_to_db()
     # add_new_actions_wb_to_db()

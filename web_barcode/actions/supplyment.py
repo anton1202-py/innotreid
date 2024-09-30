@@ -79,6 +79,6 @@ def create_data_with_article_conditions():
             possible_ozon_articles[data] = inner_possible_list
 
     
-    for wb_act_article, ozon_art_list in possible_ozon_articles:
+    for wb_act_article, ozon_art_list in possible_ozon_articles.items():
         for ozon_data in ozon_art_list:
             print(wb_act_article.action, wb_act_article.article, wb_act_article.action_price, ozon_data.action, ozon_data.article, ozon_data.action_price)

@@ -76,7 +76,7 @@ def add_new_actions_ozon_to_db():
         if actions_data:
             actions_info = actions_data['result']
             for action in actions_info:
-                # if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
+                if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
                     # message = (f"У Юр. лица {ur_lico_obj.ur_lice_name} появилась новая акция: "
                     #             f"{action['id']}: {action['name']}.\n"
                     #             f"Дата начала: {datetime.strptime(action['startDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.\n"
