@@ -32,7 +32,7 @@ from price_system.supplyment import sender_error_to_tg
 from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
-from actions.models import Action, ArticleMayBeInAction
+from actions.models import Action, ArticleInActionWithCondition, ArticleMayBeInAction
 from web_barcode.constants_file import (CHAT_ID_ADMIN, bot,
                                         actions_info_users_list,
                                         header_wb_dict)
@@ -87,5 +87,9 @@ def create_data_with_article_conditions():
     
     for wb_act_article, ozon_act_article in possible_ozon_articles.items():
         print(wb_act_article.action, wb_act_article.article, wb_act_article.action_price, ozon_act_article.action, ozon_act_article.article, ozon_act_article.action_price)
-    
+        ArticleInActionWithCondition(
+            article=wb_act_article.article,
+            wb_action=wb_act_article.action,
+            ozon_action_id=ozon_act_article.action,
+        )
     print(len(possible_ozon_articles.keys()))

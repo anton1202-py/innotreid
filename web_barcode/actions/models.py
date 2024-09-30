@@ -60,7 +60,7 @@ class ArticleInActionWithCondition(models.Model):
         verbose_name='Акция на ВБ', related_name='wb_maybe_in_action')
     ozon_action_id = models.ForeignKey(Action, on_delete=models.CASCADE,
         verbose_name='Акция на Озон', related_name='ozon_maybe_in_action')
-    go_to_action = models.BooleanField(verbose_name='Может участвовать в акции ВБ')
+    go_to_action = models.BooleanField(verbose_name='Может участвовать в акции ВБ', null=True, blank=True)
     reason_for_refusal = models.TextField(verbose_name='Причина отказа, если не может',
         null=True, blank=True)
     
