@@ -68,17 +68,24 @@ def create_data_with_article_conditions():
         wb_price = data.action_price
         ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
         inner_possible_list = []
+        ozon_art = ''
+        ozon_price = 10**6
         for ozon_article in ozon_variant:
 
             if ozon_article.action_price > wb_price:
                 differ = (ozon_article.action_price - wb_price) / wb_price * 100
                 if differ < 4:
-                    inner_possible_list.append(ozon_article)
+                    if ozon_article.action_price < ozon_price:
+                        ozon_price = ozon_article.action_price
+                        ozon_art = ozon_article
+
+                    # inner_possible_list.append(ozon_article)
             
-        if inner_possible_list:
-            possible_ozon_articles[data] = inner_possible_list
+        if ozon_art:
+            possible_ozon_articles[data] = ozon_art
 
     
-    for wb_act_article, ozon_art_list in possible_ozon_articles.items():
-        for ozon_data in ozon_art_list:
-            print(wb_act_article.action, wb_act_article.article, wb_act_article.action_price, ozon_data.action, ozon_data.article, ozon_data.action_price)
+    for wb_act_article, ozon_act_article in possible_ozon_articles.items():
+        print(wb_act_article.action, wb_act_article.article, wb_act_article.action_price, ozon_act_article.action, ozon_act_article.article, ozon_act_article.action_price)
+    
+    print(len(possible_ozon_articles.keys()))
