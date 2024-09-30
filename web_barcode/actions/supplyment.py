@@ -40,14 +40,10 @@ from database.models import CodingMarketplaces
 
 
 
-def add_article_may_be_in_action(ur_lico_obj, header, action_number):
+def add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj):
     """Описывает артикулы, которые могут быть в акции"""
-
-    article_action_data = wb_articles_in_action(header, action_number)
-    action_obj = Action.objects.get(ur_lico=ur_lico_obj, action_number=action_number)
     if article_action_data:
         for_create_list = []
-        print('len(article_action_data', len(article_action_data['data']['nomenclatures']))
         for data in article_action_data['data']['nomenclatures']:
             if Articles.objects.filter(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id']).exists():
                 article_obj = Articles.objects.get(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id'])
@@ -60,3 +56,29 @@ def add_article_may_be_in_action(ur_lico_obj, header, action_number):
                 for_create_list.append(maybe_obj)
         if for_create_list:
             ArticleMayBeInAction.objects.bulk_create(for_create_list)
+
+
+def create_data_with_article_conditions():
+    """Находим соответствующие акции Озон для Акции ВБ"""
+    main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action__date_finish__gt=datetime.now())
+    print(main_articles_data)
+    possible_ozon_articles = {}
+    for data in main_articles_data:
+        article = data.article
+        wb_price = data.action_price
+        ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
+        inner_possible_list = []
+        for ozon_article in ozon_variant:
+
+            if ozon_article.action_price > wb_price:
+                differ = (ozon_article.action_price - wb_price) / wb_price * 100
+                if differ < 4:
+                    inner_possible_list.append(ozon_article)
+            
+        if inner_possible_list:
+            possible_ozon_articles[data] = inner_possible_list
+
+    
+    for wb_act_article, ozon_art_list in possible_ozon_articles:
+        for ozon_data in ozon_art_list:
+            print(wb_act_article.action, wb_act_article.article, wb_act_article.action_price, ozon_data.action, ozon_data.article, ozon_data.action_price)

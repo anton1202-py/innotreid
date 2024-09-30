@@ -336,7 +336,14 @@ def yandex_matching_articles(ur_lico):
             if (yandex_article.yandex_seller_article != yandex_data[0] and yandex_article.yandex_seller_article != None
                 or str(yandex_article.yandex_barcode) != str(yandex_data[1]) and yandex_article.yandex_barcode != None
                     or str(yandex_article.yandex_sku) != str(yandex_data[2]) and yandex_article.yandex_sku != None):
+                
+                print(yandex_article.yandex_seller_article, yandex_data[0])
+                print(yandex_article.yandex_barcode, yandex_data[1], type(yandex_article.yandex_barcode), type(yandex_data[1]))
+                print(yandex_article.yandex_sku, yandex_data[2], type(yandex_article.yandex_sku), type(yandex_data[2]))
+                print('**********************')
+
                 yandex_article.status = 'Cопоставлено'
+
                 yandex_article.yandex_seller_article = yandex_data[0]
                 yandex_article.yandex_barcode = yandex_data[1]
                 yandex_article.yandex_sku = yandex_data[2]

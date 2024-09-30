@@ -25,7 +25,8 @@ from django.views.generic import ListView
 from price_system.models import Articles
 from reklama.models import DataOooWbArticle, UrLico
 
-from actions.periodic_tasks import add_new_actions_wb_to_db
+from actions.periodic_tasks import add_new_actions_ozon_to_db, add_new_actions_wb_to_db
+from actions.supplyment import create_data_with_article_conditions
 from web_barcode.constants_file import (SUBJECT_REKLAMA_ID_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
                                         WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
@@ -43,7 +44,10 @@ def create_campaign(request):
     import_data = ''
     errors_list = []
     ok_answer = []
-    add_new_actions_wb_to_db()
+    add_new_actions_ozon_to_db()
+    create_data_with_article_conditions()
+    # add_new_actions_ozon_to_db()
+    # add_new_actions_wb_to_db()
     if request.POST:
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
