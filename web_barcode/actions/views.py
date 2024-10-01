@@ -41,6 +41,7 @@ def actions_compare_data(request):
     
     ur_lico = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
     action_list = Action.objects.filter(ur_lico=ur_lico, marketplace__id=1)
+    action_obj = Action.objects.filter(ur_lico=ur_lico, date_finish__gt=datetime.now()).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico.ur_lice_name, wb_action__action_number=1)
   
     if request.POST:
@@ -62,6 +63,9 @@ def actions_compare_data(request):
         'ur_lico_data': ur_lico_data,
         'main_data': main_data,
         'action_list': action_list,
+        'accept_conditions': len(articles_data),
+        'common_amount': action_obj.articles_amount,
+        'date_finish': action_obj.date_finish,
        
     }
     return render(request, 'actions/action_list.html', context)
