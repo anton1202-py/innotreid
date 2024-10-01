@@ -451,6 +451,13 @@
                             {% endif %}
                         </ul>
                     </li>
+                    {% url 'actions_compare_data' as url_actions_compare_data %}
+                    <li>
+                        <a href="{{ url_actions_compare_data }}" {% if request.path == url_actions_compare_data %}class="active"{% endif %}>
+                            <span class="material-symbols-sharp">filter_list</span>
+                            <h3>Работа с акциями</h3>
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </nav>

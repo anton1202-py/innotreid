@@ -91,5 +91,5 @@ def create_data_with_article_conditions():
             article=wb_act_article.article,
             wb_action=wb_act_article.action,
             ozon_action_id=ozon_act_article.action,
-        )
+        ).save()
     print(len(possible_ozon_articles.keys()))

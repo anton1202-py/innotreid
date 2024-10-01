@@ -18,6 +18,7 @@ urlpatterns = [
     path('motivation/', include('motivation.urls')),
     path('analytika_reklama/', include('analytika_reklama.urls')),
     path('create_reklama/', include('create_reklama.urls')),
+    path('actions/', include('actions.urls')),
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

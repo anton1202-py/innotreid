@@ -1,0 +1,293 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+
+        
+        <div class='filter-data'>
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inner-form-data">
+                    <span>Акции</span><br>
+                    <select id="action-select" class="mySelect" name="action_select">
+                        {% for action in action_list %}
+                            <option value="{{ action.id }}">{{ action.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter_data" value="Фильтровать"/>
+                </div>
+            </form>
+        </div>
+
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr >
+                
+                <th>Артикул</th>
+                <th>Цена из акции ВБ</th>
+                <th>Акция Озон</th>
+                <th>Цена из акции Озон</th>
+            </tr>
+            {% for el in main_data %}
+            <tr >
+                <td>{{ el.0 }}</td>
+                <td>{{ el.1 }}</td>
+                <td>{{ el.2 }}</td>
+                <td>{{ el.3 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // ======== ДЛЯ ФИЛЬТРАЦИИ СПИСКА АКЦИЙ В ЗАВИСИМОСТИ ОТ ВЫБОРА ЮР ЛИЦА ========== //
+        $(document).ready(function() {
+            $('#ur-lico-select').change(function() {
+                var urLicoId = $(this).val();
+
+                $.ajax({
+                    url: '{% url "get_actions" %}',
+                    data: {
+                        'ur_lico_id': urLicoId
+                    },
+                    success: function(data) {
+                        $('#action-select').empty(); // Очистить предыдущие опции
+                        $.each(data, function(index, action) {
+                            $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
+                        });
+                    }
+                });
+            });
+        });
+        //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
+        function checkAllCheckboxes(mainCheckbox) {
+            var checkboxes = document.getElementsByClassName('input-field');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] !== mainCheckbox) {
+                    checkboxes[i].checked = mainCheckbox.checked;
+                }
+            }
+        }
+        //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
+        document.getElementById('startCampaignsBtn').addEventListener('click', function() {
+            sendCampaignData(this);
+        });
+
+        document.getElementById('pausaCampaignsBtn').addEventListener('click', function() {
+            sendCampaignData(this);
+        });
+
+        function sendCampaignData(button) {
+            var selectedArticles = [];
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            var formData = new FormData();
+        
+            var campaignData = {};
+        
+            checkboxes.forEach(function(checkbox) {
+                var row = checkbox.closest('tr');
+                var campaignNumber = row.getAttribute('data-campaign-number');
+                var urLico = row.getAttribute('data-ur-lico');
+            
+                selectedArticles.push({
+                    campaignNumber: urLico
+                });
+            
+                // Добавляем название кнопки к данным
+                campaignData[campaignNumber] = urLico
+
+            });
+            formData.append('campaignData', JSON.stringify(campaignData));
+            formData.append('button_name', button.id);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+            fetch('start_checked_campaigns', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+        
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+            const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            // do the work...
+            document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+                const table = th.closest('table');
+                Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.appendChild(tr) );
+            })));
+
+        // ========== ИЗМЕНЯЕТ % НАЧИСЛЕНИЯ НА РЕКЛАМУ В БАЗЕ ДАННЫХ ========= //
+        document.querySelectorAll('.procent_for_advert').forEach(select => {
+            select.addEventListener('input', function() {
+                var mainPercent = this.value;
+
+                var row = this.closest('tr');
+                var campaignNumber = row.getAttribute('data-campaign-id');
+                var urLico = row.getAttribute('data-ur-lico');
+                
+
+                var formData = new FormData();
+                formData.append('main_percent', mainPercent);
+                formData.append('campaign_number', campaignNumber);
+                formData.append('ur_lico', urLico);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                console.log('formData', formData)
+                fetch('change_percent_for_advert', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // ========== Обрабатывает выбор юр. лица из выпадающего списка ========= //
+        document.addEventListener('DOMContentLoaded', function() {
+            var mySelect = document.querySelector('.mySelect');
+    
+            mySelect.addEventListener('change', function() {
+                document.getElementById('centr-form').submit();
+            });
+        });
+
+        // ========== ИЗМЕНЯЕТ СУММУ АВТОПОПОЛНЕНИЯ ========= //
+        document.querySelectorAll('.auto_rep_sum_class').forEach(select => {
+            select.addEventListener('input', function() {
+                var replenishSum = this.value;
+                var row = this.closest('tr');
+                var campaignId = row.getAttribute('data-campaign-id');
+                var formData = new FormData();
+                formData.append('replenish_sum', replenishSum);
+                formData.append('campaign_id', campaignId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                fetch('update_auto_replenish_sum', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+        // ========== ЗАПИСЫВАЕТ В БАЗУ ДАННЫХ НАЖАТИЕ ЧКБОКСА ОБ АВТОПОПОЛНЕНИИ ========= //
+        document.querySelectorAll('.check_auto_rep_sum').forEach(select => {
+            select.addEventListener('change', function() {
+                var isChecked = this.checked;
+                console.log(isChecked)
+                var row = this.closest('tr');
+                var campaignId = row.getAttribute('data-campaign-id');
+
+                var formData = new FormData();
+                formData.append('is_checked', isChecked);
+                formData.append('campaign_id', campaignId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('update_checkbox_auto_replenish', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+
+    // РАБОТА С ВСПЛЫВАЮЩИМ ОКНОМ ФИЛЬТРОВ
+    const filterButton = document.getElementById('filterButton');
+    const popup = document.getElementById('popup');
+    const overlay = document.getElementById('overlay');
+
+    // Функция для открытия всплывающего окна
+    filterButton.addEventListener('click', () => {
+        popup.style.display = 'block';
+        overlay.style.display = 'block';
+    });
+
+    // Функция для закрытия всплывающего окна
+    overlay.addEventListener('click', () => {
+        popup.style.display = 'none';
+        overlay.style.display = 'none';
+    });
+
+    // =========== ОБНОВЛЯЕТ КОЛИЧЕСТВО ДНЕЙ ДЛЯ ОТПРАВКИ СТАТИСТИКИ ========== //
+    document.querySelectorAll('.statistic_days_sender').forEach(select => {
+            select.addEventListener('input', function() {
+                var days = this.value;
+                console.log(days)
+                
+                var formData = new FormData();
+                formData.append('days', days);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            
+                fetch('days_sender_statistic', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обработка успешного ответа от сервера
+                        // Например, обновление отображаемого значения фамилии в таблице
+                    } else {
+                        // Обработка ошибки
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+        
+{% endblock %}
