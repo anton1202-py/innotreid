@@ -63,7 +63,7 @@ def actions_compare_data(request):
         'ur_lico_data': ur_lico_data,
         'main_data': main_data,
         'action_list': action_list,
-        'accept_conditions': len(articles_data),
+        'accept_conditions': len(main_data),
         'common_amount': action_obj.articles_amount,
         'date_finish': action_obj.date_finish,
        
