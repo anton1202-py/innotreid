@@ -36,7 +36,7 @@ from web_barcode.constants_file import (SUBJECT_REKLAMA_ID_DICT,
 @login_required
 def actions_compare_data(request):
     """Отображает страницу создания кампании"""
-    page_name = 'Соответствие рекламных кампаний'
+    page_name = 'Соответствие акций'
     ur_lico_data = UrLico.objects.all()
     
     ur_lico = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
