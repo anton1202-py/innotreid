@@ -86,6 +86,8 @@ def get_minus_phrase_from_wb_search_catalog_campaigns(ur_lico, campaign_number):
 @sender_error_to_tg
 def get_minus_phrase_from_wb_auto_campaigns(ur_lico, campaign_number):
     """Получает минус слова из автоматической кампании"""
+    print('*************************')
+    print('ur_lico in get_minus_phrase_from_wb_auto_campaigns', ur_lico, campaign_number)
     header = header_wb_dict[ur_lico]
     campaigns_data = advertisment_campaign_clusters_statistic(
         header, campaign_number)
