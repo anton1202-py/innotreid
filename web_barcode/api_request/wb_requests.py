@@ -448,7 +448,7 @@ def wb_action_details_info(header, action_ids_list):
     return response
 
 
-@api_retry_decorator
+# @api_retry_decorator
 def wb_articles_in_action(header, action_number):
     """
     Возвращает список товаров, подходящих для участия в акции.
@@ -457,7 +457,12 @@ def wb_articles_in_action(header, action_number):
     time.sleep(1)
     url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/nomenclatures?promotionID={action_number}&inAction=false'
     response = requests.request("GET", url, headers=header)
-    return response
+    print('action_number', action_number)
+    print('response.status_code', response.status_code)
+    if response.status_code == 200:
+        return json.loads(response.text)
+    else:
+        return None
 
 
 

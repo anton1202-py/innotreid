@@ -28,7 +28,6 @@ def add_new_actions_wb_to_db():
         if actions_data:
             actions_info = actions_data['data']['promotions']
             for action in actions_info:
-                
                 if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
                     message = (f"У Юр. лица {ur_lico_obj.ur_lice_name} появилась новая акция ВБ: "
                                 f"{action['id']}: {action['name']}.\n"
@@ -44,23 +43,23 @@ def add_new_actions_wb_to_db():
             if actions_details and 'data' in actions_details:
                 for detail in actions_details['data']['promotions']:
                     # Получаем инормацию по артикулам, которые могут участвовать в акции
-                    article_action_data = wb_articles_in_action(header, action['id'])
+                    article_action_data = wb_articles_in_action(header, detail['id'])
                     articles_amount = 0
                     if article_action_data:
                         # Смотрим кол-во артикулов, которые могут участвовать в акции
                         articles_amount = len(article_action_data['data']['nomenclatures'])
                     # Сохраняем новую акцию в базу
-                    action_obj = Action(
-                        ur_lico=ur_lico_obj,
-                        marketplace=CodingMarketplaces.objects.get(marketpalce='Wildberries'),
-                        action_number = detail['id'],
-                        name = detail['name'],
-                        description = detail['description'],
-                        date_start = detail['startDateTime'],
-                        date_finish = detail['endDateTime'],
-                        action_type = detail['type'],
-                        articles_amount = articles_amount
-                    ).save()
+                    search_params = {'ur_lico': ur_lico_obj, 'marketplace': CodingMarketplaces.objects.get(marketpalce='Wildberries'), 'action_number': detail['id']}
+                    values_for_update = {
+                        'name': detail['name'],
+                        'description': detail['description'],
+                        'date_start': detail['startDateTime'],
+                        'date_finish': detail['endDateTime'],
+                        'articles_amount': articles_amount
+                    }
+                    action_obj, created = Action.objects.update_or_create(
+                                defaults=values_for_update, **search_params
+                            )
                     # Сохраняем артикулы, которые могут участвовать в акции
                     add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj)
                    

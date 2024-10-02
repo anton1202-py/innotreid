@@ -205,7 +205,7 @@ WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT = {
 
 
 campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
-actions_info_users_list = [CHAT_ID_ADMIN]
+actions_info_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
 SUBJECT_REKLAMA_ID_DICT = {
     'Ночник': 1673,

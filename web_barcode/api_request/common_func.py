@@ -50,10 +50,11 @@ def api_retry_decorator(func):
                     message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. Статус не изменился.'
                 else:
                     time.sleep(10)  # Ждем 1 секунду перед повторным запросом
+                
                 if message:
                     bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4000])
-                    return
+                    return []
 
             message = f'статус код {response.status_code}. {func.__name__}. {func.__doc__}. {response.text}'
             if message:
