@@ -152,6 +152,19 @@ def ozon_articles_in_action(header, action_number, limit=1000, offset=0, attempt
                          text=message_error[:4000])
 
 
-
+def add_ozon_articles_to_action(header, action_number, article_data_list):
+    """
+    Метод для получения списка товаров, которые могут 
+    участвовать в акции, по её идентификатору.
+    """
+    time.sleep(1)
+    url = f'https://api-seller.ozon.ru/v1/actions/candidates'
+    payload = json.dumps({
+        "action_id": action_number,
+        "products": article_data_list
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+    
 
 # =========== КОНЕЦ АКЦИИ ========== #
