@@ -34,6 +34,7 @@
                     <input type="Submit" id="filter" name="filter_data" value="Фильтровать"/>
                 </div>
             </form>
+            <button id="submitBtn">Загрузить в акцию</button>
         </div>
         <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
         <p>Удовлетворяют условиям: <b>{{ accept_conditions }}</b></p>
@@ -41,14 +42,19 @@
 
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr >
-                
+                <th>
+                    <input type="checkbox" id="main_input" name="main_input" class="input-field" checked>
+                </th>
                 <th>Артикул</th>
                 <th>Цена из акции ВБ</th>
                 <th>Акция Озон</th>
                 <th>Цена из акции Озон</th>
             </tr>
             {% for el in main_data %}
-            <tr >
+            <tr data-article-id="{{ el.0 }} {{ el.1 }} {{ el.2 }} {{ el.3 }}">
+                <td>
+                    <input type="checkbox" name="article_input" class="input-field" checked>
+                </td>
                 <td>{{ el.0 }}</td>
                 <td>{{ el.1 }}</td>
                 <td>{{ el.2 }}</td>
@@ -88,49 +94,44 @@
                 }
             }
         }
+
         //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
-        document.getElementById('startCampaignsBtn').addEventListener('click', function() {
-            sendCampaignData(this);
-        });
-
-        document.getElementById('pausaCampaignsBtn').addEventListener('click', function() {
-            sendCampaignData(this);
-        });
-
-        function sendCampaignData(button) {
-            var selectedArticles = [];
-            var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-            var formData = new FormData();
-        
-            var campaignData = {};
-        
-            checkboxes.forEach(function(checkbox) {
-                var row = checkbox.closest('tr');
-                var campaignNumber = row.getAttribute('data-campaign-number');
-                var urLico = row.getAttribute('data-ur-lico');
-            
-                selectedArticles.push({
-                    campaignNumber: urLico
+        document.addEventListener('DOMContentLoaded', function() {
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.addEventListener('click', function() {
+                var selectedArticles = [];
+                var checkboxes = document.querySelectorAll('.input-field:checked');
+                
+                checkboxes.forEach(function(checkbox) {
+                    var articleElement = checkbox.closest('tr');
+                    console.log('selectedArticles', checkbox.closest('tr'))
+                    
+                    var articleNumber = articleElement.getAttribute('data-article-id');
+                    console.log('articleNumber', articleNumber)
+                    selectedArticles.push(articleNumber);
+                    
                 });
-            
-                // Добавляем название кнопки к данным
-                campaignData[campaignNumber] = urLico
-
+                
+                var formData = new FormData();
+                formData.append('articles', selectedArticles);
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                // Отправка данных на сервер
+                fetch('add_to_action', {
+                    method: 'POST',
+                    body: formData,
+                })
+                
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Артикулы успешно отправлены на сервер');
+                        // Дополнительные действия при успешной отправке
+                    } else {
+                        console.error('Ошибка при отправке артикулов на сервер');
+                    }
+                })
+                .catch(error => console.error('Ошибка:', error));
             });
-            formData.append('campaignData', JSON.stringify(campaignData));
-            formData.append('button_name', button.id);
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        
-            fetch('start_checked_campaigns', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-        
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
+        });
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
             const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
@@ -145,152 +146,7 @@
                     .forEach(tr => table.appendChild(tr) );
             })));
 
-        // ========== ИЗМЕНЯЕТ % НАЧИСЛЕНИЯ НА РЕКЛАМУ В БАЗЕ ДАННЫХ ========= //
-        document.querySelectorAll('.procent_for_advert').forEach(select => {
-            select.addEventListener('input', function() {
-                var mainPercent = this.value;
-
-                var row = this.closest('tr');
-                var campaignNumber = row.getAttribute('data-campaign-id');
-                var urLico = row.getAttribute('data-ur-lico');
-                
-
-                var formData = new FormData();
-                formData.append('main_percent', mainPercent);
-                formData.append('campaign_number', campaignNumber);
-                formData.append('ur_lico', urLico);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-                console.log('formData', formData)
-                fetch('change_percent_for_advert', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-        // ========== Обрабатывает выбор юр. лица из выпадающего списка ========= //
-        document.addEventListener('DOMContentLoaded', function() {
-            var mySelect = document.querySelector('.mySelect');
-    
-            mySelect.addEventListener('change', function() {
-                document.getElementById('centr-form').submit();
-            });
-        });
-
-        // ========== ИЗМЕНЯЕТ СУММУ АВТОПОПОЛНЕНИЯ ========= //
-        document.querySelectorAll('.auto_rep_sum_class').forEach(select => {
-            select.addEventListener('input', function() {
-                var replenishSum = this.value;
-                var row = this.closest('tr');
-                var campaignId = row.getAttribute('data-campaign-id');
-                var formData = new FormData();
-                formData.append('replenish_sum', replenishSum);
-                formData.append('campaign_id', campaignId);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-                fetch('update_auto_replenish_sum', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-        // ========== ЗАПИСЫВАЕТ В БАЗУ ДАННЫХ НАЖАТИЕ ЧКБОКСА ОБ АВТОПОПОЛНЕНИИ ========= //
-        document.querySelectorAll('.check_auto_rep_sum').forEach(select => {
-            select.addEventListener('change', function() {
-                var isChecked = this.checked;
-                console.log(isChecked)
-                var row = this.closest('tr');
-                var campaignId = row.getAttribute('data-campaign-id');
-
-                var formData = new FormData();
-                formData.append('is_checked', isChecked);
-                formData.append('campaign_id', campaignId);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('update_checkbox_auto_replenish', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
-
-    // РАБОТА С ВСПЛЫВАЮЩИМ ОКНОМ ФИЛЬТРОВ
-    const filterButton = document.getElementById('filterButton');
-    const popup = document.getElementById('popup');
-    const overlay = document.getElementById('overlay');
-
-    // Функция для открытия всплывающего окна
-    filterButton.addEventListener('click', () => {
-        popup.style.display = 'block';
-        overlay.style.display = 'block';
-    });
-
-    // Функция для закрытия всплывающего окна
-    overlay.addEventListener('click', () => {
-        popup.style.display = 'none';
-        overlay.style.display = 'none';
-    });
-
-    // =========== ОБНОВЛЯЕТ КОЛИЧЕСТВО ДНЕЙ ДЛЯ ОТПРАВКИ СТАТИСТИКИ ========== //
-    document.querySelectorAll('.statistic_days_sender').forEach(select => {
-            select.addEventListener('input', function() {
-                var days = this.value;
-                console.log(days)
-                
-                var formData = new FormData();
-                formData.append('days', days);
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-            
-                fetch('days_sender_statistic', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Обработка успешного ответа от сервера
-                        // Например, обновление отображаемого значения фамилии в таблице
-                    } else {
-                        // Обработка ошибки
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        });
+       
     </script>
         
 {% endblock %}

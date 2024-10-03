@@ -79,3 +79,14 @@ def get_actions(request):
     actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1).values('id', 'name')  # замените 'name' на нужное поле
     actions_list = list(actions)
     return JsonResponse(actions_list, safe=False)
+
+
+def add_to_action(request):
+    """Для AJAX запроса. Добавляет выбранные артикулы в акции"""
+    if request.POST:
+        print(request.POST)
+        # raw_articles_list = request.POST.get('articles')
+        # article_list = raw_articles_list.split(',')
+        # for article in article_list:
+        #     Articles.objects.get(id=int(article)).delete()
+    return JsonResponse({'message': 'Value saved successfully.'})
