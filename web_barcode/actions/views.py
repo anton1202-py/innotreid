@@ -75,7 +75,7 @@ def add_to_action(request):
                     if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number].append(
                             {
-                                "action_price": article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
+                                "action_price": article_in_action_obj.article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
                                 "product_id": article_in_action_obj.article.ozon_product_id,
                                 "stock": 10
                             }
@@ -83,7 +83,7 @@ def add_to_action(request):
                     else:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number]= [
                             {
-                                "action_price": article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
+                                "action_price": article_in_action_obj.article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
                                 "product_id": article_in_action_obj.article.ozon_product_id,
                                 "stock": 10
                             }
