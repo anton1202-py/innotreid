@@ -64,6 +64,7 @@ def add_to_action(request):
         raw_articles_conditions = request.POST.get('articles')
         articles_conditions = raw_articles_conditions.split(',')
         wb_articles_list = []
+        ozon_actions_data = {}
         wb_action_number = 0
         if articles_conditions:
             for article in articles_conditions:
@@ -71,7 +72,22 @@ def add_to_action(request):
                     article_in_action_obj = ArticleInActionWithCondition.objects.get(id=int(article))
                     wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
                     wb_action_number = article_in_action_obj.wb_action.action_number
-                    print(wb_action_number)
-            print(wb_articles_list)
+                    if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
+                        ozon_actions_data[article_in_action_obj.ozon_action_id.action_number].append(
+                            {
+                                "action_price": article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
+                                "product_id": article_in_action_obj.article.ozon_product_id,
+                                "stock": 10
+                            }
+                        )
+                    else:
+                        ozon_actions_data[article_in_action_obj.ozon_action_id.action_number]= [
+                            {
+                                "action_price": article.maybe_in_action.filter(action=article_in_action_obj.ozon_action_id).first().action_price,
+                                "product_id": article_in_action_obj.article.ozon_product_id,
+                                "stock": 10
+                            }
+                        ]
+            print(ozon_actions_data)
             # add_wb_articles_to_action(header, wb_action_number, wb_articles_list)
     return JsonResponse({'message': 'Value saved successfully.'})
