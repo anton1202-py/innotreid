@@ -57,6 +57,7 @@ def actions_compare_data(request):
             inner_list.append(dat.article.maybe_in_action.filter(action=dat.wb_action).first().action_price)
             inner_list.append(dat.ozon_action_id.name)
             inner_list.append(dat.article.maybe_in_action.filter(action=dat.ozon_action_id).first().action_price)
+            inner_list.append(dat.id)
             main_data.append(inner_list)
     context = {
         'page_name': page_name,
