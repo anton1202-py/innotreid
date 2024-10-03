@@ -45,6 +45,7 @@ def actions_compare_data(request):
         'accept_conditions': len(main_data),
         'common_amount': action_obj.articles_amount,
         'date_finish': action_obj.date_finish,
+        'date_start': action_obj.date_start,
        
     }
     return render(request, 'actions/action_list.html', context)
