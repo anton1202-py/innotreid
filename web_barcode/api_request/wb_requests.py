@@ -465,5 +465,27 @@ def wb_articles_in_action(header, action_number):
         return None
 
 
+@api_retry_decorator
+def add_wb_articles_to_action(header, action_number, wb_nom_list):
+    """
+    Создаёт загрузку товара в акцию.
+    Состояние загрузки можно проверить с помощью отдельных методов.
+
+    Неприменимо для автоакций
+    """
+    time.sleep(1)
+    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/upload'
+    payload = json.dumps({
+        "data": {
+            "promotionID": action_number,
+            "uploadNow": False,
+            "nomenclatures": wb_nom_list
+        }
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+    
+
+
 
 # =========== КОНЕЦ АКЦИИ ========== #

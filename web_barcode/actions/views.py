@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from reklama.models import UrLico
 from actions.models import Action, ArticleInActionWithCondition
+from api_request.wb_requests import add_wb_articles_to_action
 
 
 @login_required
@@ -62,9 +63,15 @@ def add_to_action(request):
     if request.POST:
         raw_articles_conditions = request.POST.get('articles')
         articles_conditions = raw_articles_conditions.split(',')
+        wb_articles_list = []
+        wb_action_number = 0
         if articles_conditions:
             for article in articles_conditions:
                 if article:
                     article_in_action_obj = ArticleInActionWithCondition.objects.get(id=int(article))
-                    
+                    wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
+                    wb_action_number = article_in_action_obj.wb_action.action_number
+                    print(wb_action_number)
+            print(wb_articles_list)
+            # add_wb_articles_to_action(header, wb_action_number, wb_articles_list)
     return JsonResponse({'message': 'Value saved successfully.'})
