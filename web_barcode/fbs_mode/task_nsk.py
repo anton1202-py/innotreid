@@ -827,8 +827,11 @@ def nsk_fbs_task():
                          text=message_text, parse_mode='HTML')
     except:
         text = f'Приложение fbs_mode. Не сработала функция action_wb для ИП'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        try:
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
+        except:
+            print('Не сработала')
 
     try:
         time.sleep(60)
@@ -841,5 +844,8 @@ def nsk_fbs_task():
                          text=message_text, parse_mode='HTML')
     except:
         text = f'Приложение fbs_mode. Не сработала функция action_wb для ООО'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        try:
+            bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
+        except:
+            print('Не сработала')
