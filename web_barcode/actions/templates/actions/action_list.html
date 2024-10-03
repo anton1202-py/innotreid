@@ -41,7 +41,8 @@
         </div>
         <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
         <p>Удовлетворяют условиям: <b>{{ accept_conditions }}</b></p>
-        <p>Дата окончания: <b>{{ date_finish }}</b></p>
+        <p>Дата начала: <b>{{ date_start }}</b></p>
+        <p>Дата завершения: <b>{{ date_finish }}</b></p>
 
         <table style="overflow-x: scroll; display: block; width: 100%;">
             <tr >
@@ -114,7 +115,7 @@
                 
                 var formData = new FormData();
                 formData.append('articles', selectedArticles);
-                console.log('articles', selectedArticles)
+                formData.append("user_chat_id", "{{ user_chat_id }}");
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
                 // Отправка данных на сервер
                 fetch('add_to_action', {
