@@ -86,8 +86,9 @@ def add_to_action(request):
     """Для AJAX запроса. Добавляет выбранные артикулы в акции"""
     if request.POST:
         print(request.POST)
-        # raw_articles_list = request.POST.get('articles')
-        # article_list = raw_articles_list.split(',')
+        raw_articles_list = request.POST.get('articles')
+        article_list = raw_articles_list.split(',')
+        print(article_list)
         # for article in article_list:
         #     Articles.objects.get(id=int(article)).delete()
     return JsonResponse({'message': 'Value saved successfully.'})
