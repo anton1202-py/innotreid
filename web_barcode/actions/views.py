@@ -1,36 +1,11 @@
-import json
 from datetime import datetime
 
-import pandas as pd
-from api_request.wb_requests import (pausa_advertisment_campaigns,
-                                     start_advertisment_campaigns)
-from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
-                                   CreatedCampaign, ProcentForAd,
-                                   ReplenishWbCampaign,
-                                   SenderStatisticDaysAmount,
-                                   StartPausaCampaign, VirtualBudgetForAd)
-from create_reklama.periodic_tasks import (set_up_minus_phrase_to_auto_campaigns,
-    update_campaign_status)
-from create_reklama.supplyment import (
-    check_data_create_adv_campaign_from_excel_file,
-    check_data_for_create_adv_campaign,
-    create_reklama_excel_with_campaign_data,
-    create_reklama_template_excel_file)
 from django.contrib.auth.decorators import login_required
-from django.db.models import Max, Q
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
-from django.views.generic import ListView
-from price_system.models import Articles
-from reklama.models import DataOooWbArticle, UrLico
+from django.http import JsonResponse
+from django.shortcuts import render
 
-from actions.periodic_tasks import add_new_actions_ozon_to_db, add_new_actions_wb_to_db
-from actions.supplyment import create_data_with_article_conditions
+from reklama.models import UrLico
 from actions.models import Action, ArticleInActionWithCondition
-from web_barcode.constants_file import (SUBJECT_REKLAMA_ID_DICT,
-                                        WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT,
-                                        WB_ADVERTISMENT_CAMPAIGN_TYPE_DICT,
-                                        bot, header_wb_dict)
 
 
 @login_required
@@ -85,10 +60,11 @@ def get_actions(request):
 def add_to_action(request):
     """Для AJAX запроса. Добавляет выбранные артикулы в акции"""
     if request.POST:
-        print(request.POST)
-        raw_articles_list = request.POST.get('articles')
-        article_list = raw_articles_list.split(',')
-        print(article_list)
-        # for article in article_list:
-        #     Articles.objects.get(id=int(article)).delete()
+        raw_articles_conditions = request.POST.get('articles')
+        articles_conditions = raw_articles_conditions.split(',')
+        if articles_conditions:
+            for article in articles_conditions:
+                if article:
+                    article_in_action_obj = ArticleInActionWithCondition.objects.get(id=int(article))
+                    
     return JsonResponse({'message': 'Value saved successfully.'})
