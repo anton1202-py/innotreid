@@ -8,4 +8,5 @@ urlpatterns = [
         
     # ========== ДЛЯ AJAX ЗАПРОСОВ ========= #
     path('get-actions', views.get_actions, name='get_actions'),
+    path('add_to_action', views.add_to_action, name='add_to_action'),
 ]
