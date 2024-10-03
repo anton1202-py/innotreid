@@ -103,17 +103,15 @@
                 var checkboxes = document.querySelectorAll('.input-field:checked');
                 
                 checkboxes.forEach(function(checkbox) {
-                    var articleElement = checkbox.closest('tr');
-                    console.log('selectedArticles', checkbox.closest('tr'))
-                    
+                    var articleElement = checkbox.closest('tr');                    
                     var articleNumber = articleElement.getAttribute('data-article-id');
                     console.log('articleNumber', articleNumber)
                     selectedArticles.push(articleNumber);
-                    
                 });
                 
                 var formData = new FormData();
                 formData.append('articles', selectedArticles);
+                console.log('articles', selectedArticles)
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
                 // Отправка данных на сервер
                 fetch('add_to_action', {
