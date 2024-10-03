@@ -323,6 +323,7 @@ class WildberriesFbsMode():
             # print(response_data)
             self.supply_id = json.loads(response_data.text)['id']
         else:
+            time.sleep(0.5)
             text = f'Нет артикулов на WB для сборки {self.file_add_name}'
             bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
@@ -750,10 +751,13 @@ class WildberriesFbsMode():
                 bot.send_message(chat_id=chat_id, text=message)
         except Exception as e:
             # обработка ошибки и отправка сообщения через бота
-            message_text = error_message(
-                'sender_message_to_telegram', self.sender_message_to_telegram, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
-                             text=message_text, parse_mode='HTML')
+            try:
+                message_text = error_message(
+                    'sender_message_to_telegram', self.sender_message_to_telegram, e)
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                                 text=message_text, parse_mode='HTML')
+            except Exception as e:
+                print('Не смог отправить сообщение')
 
 # ========== ВЫЗЫВАЕМ ФУНКЦИИ ПО ОЧЕРЕДИ ========== #
 

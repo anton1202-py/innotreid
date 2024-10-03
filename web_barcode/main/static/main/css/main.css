@@ -400,13 +400,25 @@ form{
 }
 
 .custom-button-small {
-    padding: 5px;
+    /* padding: 5px; */
     margin: 0;
-    border-radius: 8px;
+    white-space: nowrap;
+    border-radius: 5px;
     border: none;
     color: var(--color-white);
     background: var(--color-primary);
     font-weight: 600;
+}
+.custom-button-small:hover {
+    /* padding: 5px; */
+    margin: 0;
+    white-space: nowrap;
+    border-radius: 5px;
+    border: none;
+    color: var(--color-white);
+    background: var(--color-dark);
+    font-weight: 600;
+    transition: all 300ms ease;
 }
 
 .custom-button-delete {

@@ -1,29 +1,16 @@
-import asyncio
 from datetime import datetime, timedelta
 
-from analytika_reklama.wb_supplyment import type_adv_campaigns
-from asgiref.sync import sync_to_async
 from django.db.models import Case, Count, IntegerField, Q, When
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.template.response import TemplateResponse
 from django.views.generic import ListView
 from ozon_system.supplyment import \
     delete_ozon_articles_with_low_price_current_ur_lico
-from price_system.spp_mode import article_spp_info, get_front_api_wb_info
-
-from web_barcode.constants_file import (CHAT_ID_ADMIN, TELEGRAM_TOKEN,
-                                        header_ozon_dict, header_wb_dict,
-                                        header_yandex_dict,
-                                        wb_headers_karavaev, wb_headers_ooo,
-                                        yandex_business_id_dict)
+from price_system.spp_mode import get_front_api_wb_info
 
 from .forms import FilterChooseGroupForm
 from .models import ArticleGroup, Articles, ArticlesPrice, Groups
-from .periodical_tasks import (check_articles_without_pricegroup,
-                               ozon_add_price_info,
-                               transfer_article_to_designer_group,
-                               wb_add_price_info, write_group_spp_data,
+from .periodical_tasks import (ozon_add_price_info, wb_add_price_info,
                                yandex_add_price_info)
 from .supplyment import (articles_price_discount,
                          excel_article_costprice_export, excel_compare_table,
@@ -31,10 +18,9 @@ from .supplyment import (articles_price_discount,
                          excel_import_article_costprice_data,
                          excel_import_data, excel_import_group_create_data,
                          excel_with_price_groups_creating_mod,
-                         ozon_articles_list, ozon_cleaning_articles,
                          ozon_matching_articles, ozon_price_change,
-                         wb_articles_list, wb_matching_articles,
-                         wilberries_price_change, yandex_articles_list,
+                         wb_matching_articles,
+                         wilberries_price_change, 
                          yandex_matching_articles, yandex_price_change)
 
 
