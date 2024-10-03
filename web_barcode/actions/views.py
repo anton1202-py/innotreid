@@ -7,14 +7,15 @@ from django.shortcuts import render
 from reklama.models import UrLico
 from actions.models import Action, ArticleInActionWithCondition
 from api_request.wb_requests import add_wb_articles_to_action
-
+from api_request.ozon_requests import add_ozon_articles_to_action
+from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
 
 @login_required
 def actions_compare_data(request):
     """Отображает страницу создания кампании"""
     page_name = 'Соответствие акций'
     ur_lico_data = UrLico.objects.all()
-    
+    user_chat_id = request.user.tg_chat_id
     ur_lico = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
     action_list = Action.objects.filter(ur_lico=ur_lico, marketplace__id=1)
     action_obj = Action.objects.filter(ur_lico=ur_lico, date_finish__gt=datetime.now()).order_by('-id').first()
@@ -36,6 +37,7 @@ def actions_compare_data(request):
             inner_list.append(dat.id)
             main_data.append(inner_list)
     context = {
+        'user_chat_id': user_chat_id,
         'page_name': page_name,
         'ur_lico_data': ur_lico_data,
         'main_data': main_data,
@@ -63,13 +65,18 @@ def add_to_action(request):
     if request.POST:
         raw_articles_conditions = request.POST.get('articles')
         articles_conditions = raw_articles_conditions.split(',')
+        user_chat_id = request.POST.get('user_chat_id')
         wb_articles_list = []
         ozon_actions_data = {}
         wb_action_number = 0
+        wb_action_name = ''
         if articles_conditions:
+            ur_lico = ''
             for article in articles_conditions:
                 if article:
                     article_in_action_obj = ArticleInActionWithCondition.objects.get(id=int(article))
+                    ur_lico = article_in_action_obj.article.company
+                    wb_action_name = article_in_action_obj.wb_action.name
                     wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
                     wb_action_number = article_in_action_obj.wb_action.action_number
                     if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
@@ -88,6 +95,12 @@ def add_to_action(request):
                                 "stock": 10
                             }
                         ]
-            print(ozon_actions_data)
-            # add_wb_articles_to_action(header, wb_action_number, wb_articles_list)
+            ozon_header = header_ozon_dict[ur_lico]
+            wb_header = header_wb_dict[ur_lico]
+            add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
+            for ozon_action, article_list in ozon_actions_data.items():
+                add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
+            message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
+            bot.send_message(chat_id=user_chat_id,
+                             text=message)
     return JsonResponse({'message': 'Value saved successfully.'})

@@ -44,11 +44,6 @@ def create_campaign(request):
     import_data = ''
     errors_list = []
     ok_answer = []
-    add_new_actions_wb_to_db()
-    # add_new_actions_ozon_to_db()
-    # create_data_with_article_conditions()
-    # add_new_actions_ozon_to_db()
-    # add_new_actions_wb_to_db()
     if request.POST:
         if 'export' in request.POST or 'import_file' in request.FILES:
             if request.POST.get('export') == 'create_file':
