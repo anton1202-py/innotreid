@@ -38,9 +38,12 @@ def sender_error_to_tg(func):
                              f'Функция выполняет: {func.__doc__}\n'
                              f'Ошибка\n: {e}\n\n'
                              f'Техническая информация:\n {tb_str}')
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              # text=message_error[:4000], parse_mode='HTML')
                              text=message_error[:4000])
+            except:
+                print('Не сработала отправка')
     return wrapper
 
 

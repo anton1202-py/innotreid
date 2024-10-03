@@ -397,8 +397,11 @@ class WildberriesFbsMode():
                     f"{folder_path}/{order} {self.selection_dict[order][-2]}.png")
         else:
             text = 'не сработала qrcode_order из за отсутвия self.supply_id'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def create_selection_list(self):
@@ -508,8 +511,11 @@ class WildberriesFbsMode():
 
         else:
             text = 'Не сработала create_selection_list потому что нет self.selection_dict'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def supply_to_delivery(self, numb=0):
@@ -532,8 +538,11 @@ class WildberriesFbsMode():
                                  text=text, parse_mode='HTML')
         else:
             text = 'Поставка не добавлена в доставку (supply_to_delivery), так как нет артикулов'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def qrcode_supply(self):
@@ -564,8 +573,11 @@ class WildberriesFbsMode():
                 f"{folder_path}/{self.supply_id}.png")
         else:
             text = 'Поставка не сформирована (qrcode_supply), так как нет артикулов'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def list_for_print_create(self):
@@ -649,8 +661,11 @@ class WildberriesFbsMode():
             self.files_for_send.append(file_name)
         else:
             text = 'не сработала list_for_print_create потому что нет данных'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def send_email(self):
@@ -729,8 +744,11 @@ class WildberriesFbsMode():
             # обработка ошибки и отправка сообщения через бота
             message_text = error_message(
                 'analyze_fbs_amount', self.analyze_fbs_amount, e)
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            try:
+                bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=message_text, parse_mode='HTML')
+            except:
+                print('Не сработала отправка')
 
     @sender_error_to_tg
     def sender_message_to_telegram(self):
@@ -754,8 +772,11 @@ class WildberriesFbsMode():
             try:
                 message_text = error_message(
                     'sender_message_to_telegram', self.sender_message_to_telegram, e)
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                try:
+                    bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=message_text, parse_mode='HTML')
+                except:
+                    print('Не сработала отправка')
             except Exception as e:
                 print('Не смог отправить сообщение')
 
