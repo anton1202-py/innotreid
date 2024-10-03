@@ -23,6 +23,7 @@ app = Celery('celery_tasks',
                       'fbs_mode.task_nsk',
                       'price_system.periodical_tasks',
                       'reklama.periodic_tasks',
+                      'actions.periodic_tasks',
                       ])
 app.config_from_object('celery_tasks.celeryconfig')
 
@@ -38,6 +39,16 @@ elif today.month == 12:
 penultimate_day_of_month = first_day_of_next_month - datetime.timedelta(days=2)
 
 app.conf.beat_schedule = {
+    # =========== ЗАДАЧИ РАЗДЕЛА АКЦИИ ========== #
+    "actions_add_new_actions_wb": {
+        "task": "actions.periodic_tasks.add_new_actions_wb_to_db",
+        "schedule": crontab(hour=11, minute=30)
+    },
+    "actions_add_new_actions_ozon": {
+        "task": "actions.periodic_tasks.add_new_actions_ozon_to_db",
+        "schedule": crontab(hour=11, minute=1)
+    },
+    # =========== КОНЕЦ РАЗДЕЛА АКЦИИ ========== #
     "database_wb_sales_every_day": {
         "task": "database.periodic_tasks.process_wb_sales_data",
         "schedule": crontab(hour=7, minute=20)

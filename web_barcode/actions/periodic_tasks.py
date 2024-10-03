@@ -92,7 +92,6 @@ def add_new_actions_ozon_to_db():
                         'date_finish': action['date_end'],
                         'articles_amount': action['potential_products_count']
                     }
-                    print(action['id'], ur_lico_obj)
                     Action.objects.update_or_create(
                                 defaults=values_for_update, **search_params
                             )
