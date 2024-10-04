@@ -8,6 +8,7 @@ from reklama.models import UrLico
 from actions.models import Action, ArticleInActionWithCondition
 from api_request.wb_requests import add_wb_articles_to_action
 from api_request.ozon_requests import add_ozon_articles_to_action
+from actions.supplyment import save_articles_added_to_action, sender_message_about_articles_in_action_already
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
 
 @login_required
@@ -68,9 +69,13 @@ def add_to_action(request):
         articles_conditions = raw_articles_conditions.split(',')
         user_chat_id = request.POST.get('user_chat_id')
         wb_articles_list = []
+        wb_article_obj_list = []
+        wb_action_obj = ''
         ozon_actions_data = {}
+        ozon_for_save_in_db_actions_data = {}
         wb_action_number = 0
         wb_action_name = ''
+        common_message = {}
         if articles_conditions:
             ur_lico = ''
             for article in articles_conditions:
@@ -79,6 +84,8 @@ def add_to_action(request):
                     ur_lico = article_in_action_obj.article.company
                     wb_action_name = article_in_action_obj.wb_action.name
                     wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
+                    wb_article_obj_list.append(article_in_action_obj.article)
+                    wb_action_obj = article_in_action_obj.wb_action
                     wb_action_number = article_in_action_obj.wb_action.action_number
                     if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number].append(
@@ -88,6 +95,7 @@ def add_to_action(request):
                                 "stock": 10
                             }
                         )
+                        ozon_for_save_in_db_actions_data[article_in_action_obj.ozon_action_id].append(article_in_action_obj.article)
                     else:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number]= [
                             {
@@ -96,12 +104,26 @@ def add_to_action(request):
                                 "stock": 10
                             }
                         ]
+                        ozon_for_save_in_db_actions_data[article_in_action_obj.ozon_action_id] = [article_in_action_obj.article]
             ozon_header = header_ozon_dict[ur_lico]
             wb_header = header_wb_dict[ur_lico]
+
+            # Сохраняем в нашу базу данных информацию какой артикул в какую акцию добавляется
+            # wb_message = save_articles_added_to_action(wb_article_obj_list, wb_action_obj)
+            # common_ozon_message = []
+            # for ozon_action, article_list in ozon_for_save_in_db_actions_data.items():
+            #     ozon_message = save_articles_added_to_action(ozon_action, article_list)
+            #     if ozon_message:
+            #         common_ozon_message.append(ozon_message)
+
+                
             add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
             for ozon_action, article_list in ozon_actions_data.items():
                 add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
             message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
             bot.send_message(chat_id=user_chat_id,
                              text=message)
+            # if wb_message and common_ozon_message:
+            #     common_message = {'wb': wb_message, 'ozon': common_ozon_message}
+            #     sender_message_about_articles_in_action_already(user_chat_id, common_message)
     return JsonResponse({'message': 'Value saved successfully.'})

@@ -32,7 +32,7 @@ from price_system.supplyment import sender_error_to_tg
 from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
-from actions.models import Action, ArticleInActionWithCondition, ArticleMayBeInAction
+from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
 from web_barcode.constants_file import (CHAT_ID_ADMIN, bot,
                                         actions_info_users_list,
                                         header_wb_dict)
@@ -85,3 +85,34 @@ def create_data_with_article_conditions():
             wb_action=wb_act_article.action,
             ozon_action_id=ozon_act_article.action,
         ).save()
+
+
+def save_articles_added_to_action(article_obj_list, action_obj):
+    """Добавляет данные в БД об артикулах, которые попали в акцию"""
+    existing_articles_in_action = {}
+    existing_articles_list = []
+    for article_obj in article_obj_list:
+        if not ArticleInAction.objects.filter(
+            article=article_obj,
+            action=action_obj).exists():
+            ArticleInAction(
+                article=article_obj,
+                action=action_obj,
+                date_start=datetime.now()
+            ).save()
+        else:
+            existing_articles_list.append(article_obj)
+    if existing_articles_list:
+        existing_articles_in_action[action_obj] = existing_articles_list
+        return existing_articles_in_action
+
+def sender_message_about_articles_in_action_already(user_chat_id, common_message):
+    """
+    Отправляет сообщение пользователю в ТГ, 
+    который нажал на кнопку ДОБАВИТЬ В АКЦИЮ
+    Если артикулы уже находятся в этой акции
+    """
+    # if common_message['wb']:
+        
+    # message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
+    # bot.send_message(chat_id=user_chat_id, text=message)

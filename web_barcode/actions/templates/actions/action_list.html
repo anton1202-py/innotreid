@@ -74,7 +74,6 @@
         $(document).ready(function() {
             $('#ur-lico-select').change(function() {
                 var urLicoId = $(this).val();
-
                 $.ajax({
                     url: '{% url "get_actions" %}',
                     data: {
@@ -126,6 +125,8 @@
                 .then(response => {
                     if (response.ok) {
                         console.log('Артикулы успешно отправлены на сервер');
+                        console.log(response);
+                        return response
                         // Дополнительные действия при успешной отправке
                     } else {
                         console.error('Ошибка при отправке артикулов на сервер');

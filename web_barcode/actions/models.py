@@ -74,7 +74,7 @@ class ArticleInActionWithCondition(models.Model):
 
 class ArticleInAction(models.Model):
     """Товар в акции"""
-    article = article = models.ForeignKey(Articles, on_delete=models.CASCADE,
+    article = models.ForeignKey(Articles, on_delete=models.CASCADE,
         verbose_name='Артикул', related_name='in_action')
     action = models.ForeignKey(Action, on_delete=models.SET_NULL,
         verbose_name='Акция', related_name='in_action', blank=True,
