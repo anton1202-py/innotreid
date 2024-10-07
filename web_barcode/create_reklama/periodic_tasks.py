@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 
 from api_request.wb_requests import (
-    advertisment_campaign_clusters_statistic, advertisment_campaign_list,
+    advertisment_balance_info, advertisment_campaign_clusters_statistic, advertisment_campaign_list, advertisment_campaigns_list_info,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
     get_del_minus_phrase_to_catalog_search_campaigns, get_front_api_wb_info,
     replenish_deposit_campaigns, start_advertisment_campaigns)
@@ -320,3 +320,31 @@ def wb_ooo_fbo_stock_count():
                 matching_data.save()
 
 # ========== КОНЕЦ СОПОСТАВЛЯЕТ КАКОЙ АРТИКУЛ В КАКОЙ РЕКЛАМНОЙ КАМПАНИИ НАХОДИТСЯ ========= #
+
+
+@app.task
+def check_replenish_adv_budget():
+    """
+    WILDBERRIES. Запускает РК, если еe баланс больше 0, 
+    а реклама не запущена. Проверка после пополнения бюджета
+    """    
+    ur_lico_data = UrLico.objects.all()
+    for ur_lico_obj in ur_lico_data:
+        campaigns_data = CreatedCampaign.objects.filter(ur_lico=ur_lico_obj).values('campaign_number')
+        campaigns_list = []
+        for data in campaigns_data:
+            campaigns_list.append(int(data['campaign_number']))
+        counter = math.ceil(len(campaigns_data)/50)
+        for i in range(counter):
+            start_data = i * 50
+            stop_data = (i + 1) * 50
+            request_list = campaigns_list[start_data:stop_data]
+            header = header_wb_dict[ur_lico_obj.ur_lice_name]
+            status_data = advertisment_campaigns_list_info(request_list, header)
+            for campaign in status_data:
+                if campaign['status'] == 11:
+                    adv_number = campaign['advertId']
+                    campaign_budget = advertisment_balance_info(header, adv_number)
+                    budget = campaign_budget['total']
+                    if budget > 0:
+                        start_advertisment_campaigns(header, adv_number)

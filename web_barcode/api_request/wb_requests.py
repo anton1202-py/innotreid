@@ -288,6 +288,15 @@ def advertisment_campaigns_list_info(adv_list: list, header: str):
 
 
 @api_retry_decorator
+def advertisment_balance_info(header: str, adv_number: int):
+    """Получает информацию о рекламных кампаниях"""
+    time.sleep(0.3)
+    url = f'https://advert-api.wildberries.ru/adv/v1/budget?id={adv_number}'
+    response = requests.request("GET", url, headers=header)
+    return response
+
+
+@api_retry_decorator
 def advertisment_statistic_info(adv_list: list, header: str):
     """
     Статистика рекламной кампании ВБ за все время существования

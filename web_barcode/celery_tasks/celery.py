@@ -148,6 +148,10 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.auto_replenish_budget_campaign",
         "schedule": crontab(hour=2, minute=0)
     },
+    "create_reklama_check_start_adv": {
+        "task": "create_reklama.periodic_tasks.check_replenish_adv_budget",
+        "schedule": crontab(hour=6, minute=0)
+    },
 
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 

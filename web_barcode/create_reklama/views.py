@@ -10,7 +10,7 @@ from create_reklama.models import (AllMinusWords, AutoReplenish, CpmWbCampaign,
                                    ReplenishWbCampaign,
                                    SenderStatisticDaysAmount,
                                    StartPausaCampaign, VirtualBudgetForAd)
-from create_reklama.periodic_tasks import (set_up_minus_phrase_to_auto_campaigns,
+from create_reklama.periodic_tasks import (check_replenish_adv_budget, set_up_minus_phrase_to_auto_campaigns,
     update_campaign_status)
 from create_reklama.supplyment import (
     check_data_create_adv_campaign_from_excel_file,
@@ -39,6 +39,7 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
+    check_replenish_adv_budget()
     data = CreatedCampaign.objects.all()
     user_chat_id = request.user.tg_chat_id
     import_data = ''
