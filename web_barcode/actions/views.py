@@ -18,7 +18,7 @@ def actions_compare_data(request):
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
     ur_lico = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico, marketplace__id=1)
+    action_list = Action.objects.filter(ur_lico=ur_lico, marketplace__id=1, date_finish__gt=datetime.now())
     action_obj = Action.objects.filter(ur_lico=ur_lico, date_finish__gt=datetime.now()).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico.ur_lice_name, wb_action__action_number=1)
   
