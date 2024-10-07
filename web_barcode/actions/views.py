@@ -57,7 +57,7 @@ def actions_compare_data(request):
 def get_actions(request):
     """Для AJAX запроса. Показывает список акций в зависимсоти от выбора Юр лица"""
     ur_lico_id = request.GET.get('ur_lico_id')
-    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1).values('id', 'name')  # замените 'name' на нужное поле
+    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=datetime.now()).values('id', 'name')  # замените 'name' на нужное поле
     actions_list = list(actions)
     return JsonResponse(actions_list, safe=False)
 
