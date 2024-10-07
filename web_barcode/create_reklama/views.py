@@ -39,7 +39,6 @@ def create_campaign(request):
     page_name = 'Создание рекламной кампании'
     ur_lico_data = UrLico.objects.all()
     file_add_name = 'OOO'
-    check_replenish_adv_budget()
     data = CreatedCampaign.objects.all()
     user_chat_id = request.user.tg_chat_id
     import_data = ''
