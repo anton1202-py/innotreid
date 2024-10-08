@@ -42,11 +42,11 @@ app.conf.beat_schedule = {
     # =========== ЗАДАЧИ РАЗДЕЛА АКЦИИ ========== #
     "actions_add_new_actions_wb": {
         "task": "actions.periodic_tasks.add_new_actions_wb_to_db",
-        "schedule": crontab(hour=11, minute=30)
+        "schedule": crontab(hour=4, minute=30)
     },
     "actions_add_new_actions_ozon": {
         "task": "actions.periodic_tasks.add_new_actions_ozon_to_db",
-        "schedule": crontab(hour=11, minute=1)
+        "schedule": crontab(hour=4, minute=1)
     },
     # =========== КОНЕЦ РАЗДЕЛА АКЦИИ ========== #
     "database_wb_sales_every_day": {

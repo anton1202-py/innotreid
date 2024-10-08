@@ -23,7 +23,8 @@
                 </div>
                 <div class="inner-form-data">
                     <span>Акции</span><br>
-                    <select id="action-select" class="mySelect" name="action_select">
+                    <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
+                        <option value=""></option>
                         {% for action in action_list %}
                             <option value="{{ action.id }}">{{ action.name }}</option>
                         {% endfor %}
@@ -38,6 +39,19 @@
                 <br>
                 <button id="submitBtn" class="custom-button-small">Загрузить в акцию</button>
             </div>
+            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <label for="import_data" title="Загрузка цен из Excel">
+                        <span class="material-symbols-outlined">
+                            ios_share
+                        </span>
+                    </label>
+                    <input type="hidden" id="action_obj" name="action_obj" value="{{ action.name }}">
+                    <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico }}">
+                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                </div>
+            </form>
         </div>
         <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
         <p>Удовлетворяют условиям: <b>{{ accept_conditions }}</b></p>
@@ -81,6 +95,7 @@
                     },
                     success: function(data) {
                         $('#action-select').empty(); // Очистить предыдущие опции
+                        $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
                         $.each(data, function(index, action) {
                             $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
                         });
@@ -88,6 +103,20 @@
                 });
             });
         });
+
+        function updateHiddenInput() {
+            var select = document.getElementById("action-select");
+            var selectedOption = select.options[select.selectedIndex].value; // Получаем текст выбранного элемента
+            console.log(selectedOption)
+            document.getElementById("action_obj").value = selectedOption; // Устанавливаем значение в скрытое поле
+
+            var selectUr = document.getElementById("ur-lico-select");
+            var selectedUrOption = selectUr.options[selectUr.selectedIndex].value; // Получаем текст выбранного элемента
+            console.log(selectedUrOption)
+            document.getElementById("ur_lico_obj").value = selectedUrOption; // Устанавливаем значение в скрытое поле
+        }
+
+
         //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
         function checkAllCheckboxes(mainCheckbox) {
             var checkboxes = document.getElementsByClassName('input-field');
@@ -148,6 +177,12 @@
                     .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                     .forEach(tr => table.appendChild(tr) );
             })));
+        
+
+        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+        function submitForm() {
+          document.getElementById('uploadForm').submit();
+        }
 
        
     </script>

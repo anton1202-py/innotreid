@@ -2,6 +2,8 @@ import math
 import time
 from datetime import datetime, timedelta
 
+import pandas as pd
+
 from api_request.wb_requests import (
     advertisment_campaign_clusters_statistic, advertisment_campaign_list,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
@@ -58,9 +60,9 @@ def add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj):
             ArticleMayBeInAction.objects.bulk_create(for_create_list)
 
 
-def create_data_with_article_conditions():
+def create_data_with_article_conditions(action_obj):
     """Находим соответствующие акции Озон для Акции ВБ"""
-    main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action__date_finish__gt=datetime.now())
+    main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
     for data in main_articles_data:
         article = data.article
@@ -105,6 +107,37 @@ def save_articles_added_to_action(article_obj_list, action_obj):
     if existing_articles_list:
         existing_articles_in_action[action_obj] = existing_articles_list
         return existing_articles_in_action
+
+
+def wb_auto_action_article_price_excel_import(xlsx_file, ur_lico, action_obj):
+    """Импортирует данные о ценах артикула в акции из Excel"""
+    excel_data_common = pd.read_excel(xlsx_file)
+    column_list = excel_data_common.columns.tolist()
+    if 'Артикул поставщика' in column_list and 'Плановая цена для акции' in column_list and 'Загружаемая скидка для участия в акции' in column_list:
+        excel_data = pd.DataFrame(excel_data_common, columns=[
+                                  'Артикул поставщика', 'Артикул WB', 'Плановая цена для акции',
+                                  'Текущая розничная цена', 'Текущая скидка на сайте, %'])
+        wb_article_list = excel_data['Артикул WB'].to_list()
+        action_price_list = excel_data['Плановая цена для акции'].to_list()
+        current_price_without_discount_list = excel_data['Текущая розничная цена'].to_list()
+        current_discount_list = excel_data['Текущая скидка на сайте, %'].to_list()
+        for i, article in enumerate(wb_article_list):
+            if Articles.objects.filter(
+                    company=ur_lico, wb_nomenclature=article).exists():
+                article_obj = Articles.objects.get(
+                    company=ur_lico, wb_nomenclature=article)
+                action_price = action_price_list[i]
+
+                current_seller_price = current_price_without_discount_list[i] * (1 - current_discount_list[i] / 100)
+                action_discount = (current_seller_price - action_price) / current_seller_price * 100
+                search_params = {'action': action_obj, 'article': article_obj}
+                defaults = {'action_price': action_price, 'action_discount': action_discount}
+                ArticleMayBeInAction.objects.update_or_create(
+                    defaults=defaults, **search_params
+                ) 
+    else:
+        return f'Вы пытались загрузить ошибочный файл {xlsx_file}.'
+    
 
 def sender_message_about_articles_in_action_already(user_chat_id, common_message):
     """

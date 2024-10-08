@@ -2,13 +2,13 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from reklama.models import UrLico
 from actions.models import Action, ArticleInActionWithCondition
 from api_request.wb_requests import add_wb_articles_to_action
 from api_request.ozon_requests import add_ozon_articles_to_action
-from actions.supplyment import save_articles_added_to_action, sender_message_about_articles_in_action_already
+from actions.supplyment import create_data_with_article_conditions, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
 
 @login_required
@@ -17,16 +17,27 @@ def actions_compare_data(request):
     page_name = 'Соответствие акций'
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
-    ur_lico = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico, marketplace__id=1, date_finish__gt=datetime.now())
-    action_obj = Action.objects.filter(ur_lico=ur_lico, date_finish__gt=datetime.now()).order_by('-id').first()
-    articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico.ur_lice_name, wb_action__action_number=1)
-  
+    ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
+    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
+    articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
+    import_data= ''
+    
     if request.POST:
+       
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
             articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
+        if 'import_file' in request.FILES:
+            print(request.POST)
+            ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_obj')))
+            action_obj = Action.objects.get(id=int(request.POST.get('action_obj')))
+            import_data = wb_auto_action_article_price_excel_import(
+                request.FILES['import_file'], ur_lico_obj.ur_lice_name, action_obj)
+            create_data_with_article_conditions(action_obj)
+            if type(import_data) != str:
+                return redirect('motivation_article_type')
     main_data = []
     if articles_data:
         for dat in articles_data:
@@ -57,7 +68,7 @@ def actions_compare_data(request):
 def get_actions(request):
     """Для AJAX запроса. Показывает список акций в зависимсоти от выбора Юр лица"""
     ur_lico_id = request.GET.get('ur_lico_id')
-    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=datetime.now()).values('id', 'name')  # замените 'name' на нужное поле
+    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=datetime.now()).values('id', 'name')
     actions_list = list(actions)
     return JsonResponse(actions_list, safe=False)
 
