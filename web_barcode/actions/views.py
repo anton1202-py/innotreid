@@ -35,9 +35,10 @@ def actions_compare_data(request):
             action_obj = Action.objects.get(id=int(request.POST.get('action_obj')))
             import_data = wb_auto_action_article_price_excel_import(
                 request.FILES['import_file'], ur_lico_obj.ur_lice_name, action_obj)
+            # Сопоставляем для акции ВБ товары из акций Озон.
             create_data_with_article_conditions(action_obj)
             if type(import_data) != str:
-                return redirect('motivation_article_type')
+                return redirect('actions_compare_data')
     main_data = []
     if articles_data:
         for dat in articles_data:
