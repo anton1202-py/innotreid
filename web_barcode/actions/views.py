@@ -56,6 +56,7 @@ def actions_compare_data(request):
         'main_data': main_data,
         'action_list': action_list,
         'accept_conditions': len(main_data),
+        'action_name': action_obj.name,
         'common_amount': action_obj.articles_amount,
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
