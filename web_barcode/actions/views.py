@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
 from reklama.models import UrLico
-from actions.models import Action, ArticleInActionWithCondition
+from actions.models import Action, ArticleInActionWithCondition, ArticleMayBeInAction
 from api_request.wb_requests import add_wb_articles_to_action
 from api_request.ozon_requests import add_ozon_articles_to_action
 from actions.supplyment import create_data_with_article_conditions, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
@@ -57,7 +57,7 @@ def actions_compare_data(request):
         'action_list': action_list,
         'accept_conditions': len(main_data),
         'action_name': action_obj.name,
-        'common_amount': action_obj.articles_amount,
+        'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
        
