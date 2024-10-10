@@ -99,12 +99,12 @@ def compare_action_articles_and_database(header, ur_lico):
     for action, action_articles in actions_data.items():
         inner_list = []
         for article, price in database_data.items():
+            print('article', article)
             if article in action_articles:
                 if action_articles[article] < database_data[article]:
                     inner_list.append(article)
         if inner_list:
             del_articles[action] = inner_list
-    print(del_articles)
     return del_articles
 
 

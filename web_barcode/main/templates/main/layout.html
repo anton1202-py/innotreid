@@ -451,12 +451,30 @@
                             {% endif %}
                         </ul>
                     </li>
-                    {% url 'actions_compare_data' as url_actions_compare_data %}
-                    <li>
-                        <a href="{{ url_actions_compare_data }}" {% if request.path == url_actions_compare_data %}class="active"{% endif %}>
-                            <span class="material-symbols-sharp">filter_list</span>
-                            <h3>Работа с акциями</h3>
-                        </a>
+                    <li class="parent">
+                        <span class="expanded">
+                            <span class="material-symbols-sharp">receipt_long</span>
+                            <h3>Акции</h3>
+                            <span class="material-symbols-outlined">
+                                chevron_right
+                            </span>
+                        </span>
+                        <ul class="submenu">
+                            {% url 'actions_compare_data' as url_actions %}
+                            <li>
+                                <a href="{{ url_actions }}" {% if request.path == url_actions %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Работа с акциями</h3>
+                                </a>
+                            </li>
+                            {% url 'article_in_actions' as url_actions %}
+                            <li>
+                                <a href="{{ url_actions }}" {% if request.path == url_actions %}class="active"{% endif %}>
+                                    <span class="material-symbols-sharp">filter_list</span>
+                                    <h3>Артикулы в акциях</h3>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 {% endif %}
             </ul>

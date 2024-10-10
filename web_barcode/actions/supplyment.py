@@ -30,7 +30,7 @@ from create_reklama.supplyment import (filter_campaigns_status_only,
 from django.db.models import Q
 from motivation.models import Selling
 from price_system.models import Articles
-from price_system.supplyment import sender_error_to_tg
+from price_system.supplyment import sender_error_to_tg, wilberries_price_change
 from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
@@ -166,3 +166,81 @@ def sender_message_about_articles_in_action_already(user_chat_id, common_message
         
     # message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
     # bot.send_message(chat_id=user_chat_id, text=message)
+
+
+def del_articles_from_wb_action(article_obj_list, user_chat_id):
+    """
+    Удаляем артикулы из акции ВБ. 
+    Для этого приводим цены к первоначальным значениям.
+    В нашей базе ставим дату завершения участия в акции.
+
+    Присутствуют переменные:
+        price_group_info_dict = {
+            group_obj: {
+                wb_price: старая_цена_в_группе, 
+                wb_discount: скидка_продавца,
+                article_list_from_group: список_актикулов_из_этой_группы
+            }
+        }
+
+    """
+    price_group_info_dict ={}
+    for article_obj in article_obj_list:
+        if article_obj.articlegroup.filter(common_article=article_obj).exists():
+            price_group = article_obj.articlegroup.get(common_article=article_obj).group
+            group_price = article_obj.articlegroup.get(common_article=article_obj).group.old_price
+            group_discount = article_obj.articlegroup.get(common_article=article_obj).group.wb_discount
+    
+            if price_group not in price_group_info_dict:
+                price_group_info_dict[price_group] = {
+                    'wb_price': group_price, 
+                    'wb_discount': group_discount,
+                    'article_list_from_group': [article_obj.wb_nomenclature]
+                }
+            else:
+                price_group_info_dict[price_group]['article_list_from_group'].append(article_obj.wb_nomenclature)
+        else:
+            message = f'У артикула {article_obj.common_article} не нашел ценовую группу. Не могу убрать его из акции ВБ'
+            bot.send_message(chat_id=user_chat_id, text=message)
+
+    # Вызываю функцию изменения цен у артикулов:
+    for group, info in price_group_info_dict.items():
+        ur_lico = group.company
+        try:
+            wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
+        except Exception as e:
+            message = f'Не удалось вывести из акции ВБ артикулы: {str(info["article_list_from_group"])[:2000]}. Произовшла ошибка: {e}'
+            bot.send_message(chat_id=user_chat_id, text=message[:4000])
+
+
+def del_articles_from_ozon_action(article_obj_list, user_chat_id):
+    """
+    Удаляем артикулы из акций ОЗОН. 
+    """
+    price_group_info_dict ={}
+    for article_obj in article_obj_list:
+        if article_obj.articlegroup.filter(common_article=article_obj).exists():
+            price_group = article_obj.articlegroup.get(common_article=article_obj).group
+            group_price = article_obj.articlegroup.get(common_article=article_obj).group.old_price
+            group_discount = article_obj.articlegroup.get(common_article=article_obj).group.wb_discount
+    
+            if price_group not in price_group_info_dict:
+                price_group_info_dict[price_group] = {
+                    'wb_price': group_price, 
+                    'wb_discount': group_discount,
+                    'article_list_from_group': [article_obj.wb_nomenclature]
+                }
+            else:
+                price_group_info_dict[price_group]['article_list_from_group'].append(article_obj.wb_nomenclature)
+        else:
+            message = f'У артикула {article_obj.common_article} не нашел ценовую группу. Не могу убрать его из акции ВБ'
+            bot.send_message(chat_id=user_chat_id, text=message)
+
+    # Вызываю функцию изменения цен у артикулов:
+    for group, info in price_group_info_dict.items():
+        ur_lico = group.company
+        try:
+            wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
+        except Exception as e:
+            message = f'Не удалось вывести из акции ВБ артикулы: {str(info["article_list_from_group"])[:2000]}. Произовшла ошибка: {e}'
+            bot.send_message(chat_id=user_chat_id, text=message[:4000])

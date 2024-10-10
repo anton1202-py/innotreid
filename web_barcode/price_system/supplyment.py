@@ -844,7 +844,6 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
     """Изменяет цену на артикулы Wildberries"""
     koef_articles = math.ceil(len(articles_list)/1000)
     header = header_wb_dict[ur_lico]
-    # print('header', header)
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -852,27 +851,13 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
         data_articles_list = articles_list[
             start_point:finish_point]
         for article in data_articles_list:
-            # print(article)
             if article != None:
                 inner_data_dict = {
                     "nmID": article,
                     "price": price,
                     "discount": discount
                 }
-                # price_u = 0
-                # URL = f'https://card.wb.ru/cards/detail?appType=0&curr=rub&dest=-446085&regions=80,83,38,4,64,33,68,70,30,40,86,75,69,1,66,110,22,48,31,71,112,114&spp=99&nm={article}'
-                # response = requests.request("GET", URL)
-                # priceu_raw = json.loads(response.text)['data']['products']
-                # if priceu_raw:
-                #     price_u = priceu_raw[0]["priceU"]/100
-
-                # if price_u != price and price_u != 0:
-                #     if inner_data_dict not in data_for_change:
                 data_for_change.append(inner_data_dict)
-                # else:
-                # print('price_u:', price_u, 'price:', price)
-                # print('****************************')
-
         wb_price_changer(header, data_for_change)
 
 

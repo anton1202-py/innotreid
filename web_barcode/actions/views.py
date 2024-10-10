@@ -5,11 +5,12 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
 from reklama.models import UrLico
-from actions.models import Action, ArticleInActionWithCondition, ArticleMayBeInAction
+from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
 from api_request.wb_requests import add_wb_articles_to_action
 from api_request.ozon_requests import add_ozon_articles_to_action
 from actions.supplyment import create_data_with_article_conditions, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
+from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
 
 @login_required
 def actions_compare_data(request):
@@ -22,7 +23,7 @@ def actions_compare_data(request):
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
     import_data= ''
-    
+    delete_ozon_articles_with_low_price_from_actions()
     if request.POST:
        
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
@@ -74,7 +75,7 @@ def article_in_actions(request):
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
     action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
-    articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
+    actions_data = ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
     import_data= ''
     
     if request.POST:
@@ -92,30 +93,20 @@ def article_in_actions(request):
             create_data_with_article_conditions(action_obj)
             if type(import_data) != str:
                 return redirect('actions_compare_data')
-    main_data = []
-    if articles_data:
-        for dat in articles_data:
-            inner_list = []
-            inner_list.append(dat.article.common_article)
-            inner_list.append(dat.article.maybe_in_action.filter(action=dat.wb_action).first().action_price)
-            inner_list.append(dat.ozon_action_id.name)
-            inner_list.append(dat.article.maybe_in_action.filter(action=dat.ozon_action_id).first().action_price)
-            inner_list.append(dat.id)
-            main_data.append(inner_list)
+    
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
+        'actions_data': actions_data,
         'ur_lico_data': ur_lico_data,
-        'main_data': main_data,
         'action_list': action_list,
-        'accept_conditions': len(main_data),
         'action_name': action_obj.name,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
        
     }
-    return render(request, 'actions/action_list.html', context)
+    return render(request, 'actions/article_in_actions.html', context)
 
 
 

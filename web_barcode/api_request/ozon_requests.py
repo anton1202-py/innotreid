@@ -167,4 +167,17 @@ def add_ozon_articles_to_action(header, action_number, article_data_list):
     return response
     
 
+def del_articles_from_action(header, action_number, article_list):
+    """
+    Метод для удаления товаров из акции.
+    """
+    time.sleep(1)
+    url = f'https://api-seller.ozon.ru/v1/actions/products/deactivate'
+    payload = json.dumps({
+        "action_id": action_number,
+        "product_ids": article_list
+    })
+    response = requests.request("POST", url, headers=header, data=payload)
+    return response
+    
 # =========== КОНЕЦ АКЦИИ ========== #

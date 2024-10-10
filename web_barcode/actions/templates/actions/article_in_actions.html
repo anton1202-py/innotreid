@@ -1,0 +1,192 @@
+{% extends 'main/layout.html' %}
+
+
+{% block title%}{{ page_name }}{% endblock %}
+{% load price_system_util %}
+{% block content%}
+    <div class="features">
+        <div class="top-befor-header">
+            <h1>{{ page_name }}</h1>
+        </div>
+
+        
+        <div class='filter-data'>
+            <form id="centr-form" class="small-filter-form" method="POST">
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <span>Юр. лицо</span><br>
+                    <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
+                        {% for ur_lico in ur_lico_data %}
+                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inner-form-data">
+                    <span>Акции</span><br>
+                    <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
+                        <option value=""></option>
+                        {% for action in action_list %}
+                            <option value="{{ action.id }}">{{ action.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="inner-form-data">
+                    <br>
+                    <input type="Submit" id="filter" name="filter_data" value="Фильтровать"/>
+                </div>
+            </form>
+            <div class="inner-form-data">
+                <br>
+                <button id="submitBtn" class="custom-button-small">Загрузить в акцию</button>
+            </div>
+            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
+                {% csrf_token %}
+                <div class="inner-form-data">
+                    <label for="import_data" title="Загрузка цен из Excel">
+                        <span class="material-symbols-outlined">
+                            ios_share
+                        </span>
+                    </label>
+                    <input type="hidden" id="action_obj" name="action_obj" value="{{ action.name }}">
+                    <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico }}">
+                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
+                </div>
+            </form>
+        </div>
+
+        <p>Название акции: <b>{{ action_name }}</b></p>
+        <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
+        <p title="(Цена в акции меньше основной цены менее, чем на 7% и цена в акции Озон больше, чем в акции ВБ, но не более, чем на 4%)">Удовлетворяют условиям *: <b>{{ accept_conditions }}</b></p>
+        <p>Дата начала: <b>{{ date_start }}</b></p>
+        <p>Дата завершения: <b>{{ date_finish }}</b></p>
+
+        <table style="overflow-x: scroll; display: block; width: 100%;">
+            <tr >
+                <th>
+                    <input type="checkbox" id="main_input" name="main_input" class="input-field" onchange="checkAllCheckboxes(this)" checked >
+                </th>
+                <th>Артикул</th>
+                <th>Цена из акции ВБ</th>
+                <th>Акция Озон</th>
+                <th>Цена из акции Озон</th>
+            </tr>
+            {% for el in main_data %}
+            <tr data-article-id="{{ el.4 }}">
+                <td>
+                    <input type="checkbox" name="article_input" class="input-field" checked>
+                </td>
+                <td>{{ el.0 }}</td>
+                <td>{{ el.1 }}</td>
+                <td>{{ el.2 }}</td>
+                <td>{{ el.3 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // ======== ДЛЯ ФИЛЬТРАЦИИ СПИСКА АКЦИЙ В ЗАВИСИМОСТИ ОТ ВЫБОРА ЮР ЛИЦА ========== //
+        $(document).ready(function() {
+            $('#ur-lico-select').change(function() {
+                var urLicoId = $(this).val();
+                $.ajax({
+                    url: '{% url "get_actions" %}',
+                    data: {
+                        'ur_lico_id': urLicoId
+                    },
+                    success: function(data) {
+                        $('#action-select').empty(); // Очистить предыдущие опции
+                        $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
+                        $.each(data, function(index, action) {
+                            $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
+                        });
+                    }
+                });
+            });
+        });
+
+        function updateHiddenInput() {
+            var select = document.getElementById("action-select");
+            var selectedOption = select.options[select.selectedIndex].value; // Получаем текст выбранного элемента
+            console.log(selectedOption)
+            document.getElementById("action_obj").value = selectedOption; // Устанавливаем значение в скрытое поле
+
+            var selectUr = document.getElementById("ur-lico-select");
+            var selectedUrOption = selectUr.options[selectUr.selectedIndex].value; // Получаем текст выбранного элемента
+            console.log(selectedUrOption)
+            document.getElementById("ur_lico_obj").value = selectedUrOption; // Устанавливаем значение в скрытое поле
+        }
+
+
+        //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
+        function checkAllCheckboxes(mainCheckbox) {
+            var checkboxes = document.getElementsByClassName('input-field');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] !== mainCheckbox) {
+                    checkboxes[i].checked = mainCheckbox.checked;
+                }
+            }
+        }
+
+        //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
+        document.addEventListener('DOMContentLoaded', function() {
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.addEventListener('click', function() {
+                var selectedArticles = [];
+                var checkboxes = document.querySelectorAll('.input-field:checked');
+                
+                checkboxes.forEach(function(checkbox) {
+                    var articleElement = checkbox.closest('tr');                    
+                    var articleNumber = articleElement.getAttribute('data-article-id');
+                    console.log('articleNumber', articleNumber)
+                    selectedArticles.push(articleNumber);
+                });
+                
+                var formData = new FormData();
+                formData.append('articles', selectedArticles);
+                formData.append("user_chat_id", "{{ user_chat_id }}");
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+                // Отправка данных на сервер
+                fetch('add_to_action', {
+                    method: 'POST',
+                    body: formData,
+                })
+                
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Артикулы успешно отправлены на сервер');
+                        console.log(response);
+                        return response
+                        // Дополнительные действия при успешной отправке
+                    } else {
+                        console.error('Ошибка при отправке артикулов на сервер');
+                    }
+                })
+                .catch(error => console.error('Ошибка:', error));
+            });
+        });
+        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
+            const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            // do the work...
+            document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+                const table = th.closest('table');
+                Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.appendChild(tr) );
+            })));
+        
+
+        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+        function submitForm() {
+          document.getElementById('uploadForm').submit();
+        }
+
+       
+    </script>
+        
+{% endblock %}
