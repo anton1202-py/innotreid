@@ -23,6 +23,7 @@ def actions_compare_data(request):
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
     import_data= ''
+    delete_ozon_articles_with_low_price_from_actions()
     if request.POST:
        
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
