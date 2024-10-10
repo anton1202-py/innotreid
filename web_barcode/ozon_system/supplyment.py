@@ -2,7 +2,7 @@ import json
 import time
 
 import requests
-from price_system.models import ArticleGroup
+from price_system.models import ArticleGroup, Articles
 from price_system.supplyment import sender_error_to_tg
 
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
@@ -37,7 +37,7 @@ def get_articles_data_from_database(ur_lico):
     # Словарь вида {product_id: минимальная_цена}
     campaign_min_price_dict = {}
     for campaign_data in data:
-        campaign_min_price_dict[campaign_data.common_article.ozon_product_id] = campaign_data.group.min_price
+        campaign_min_price_dict[campaign_data.common_article] = campaign_data.group.min_price
     return campaign_min_price_dict
 
 
@@ -97,11 +97,15 @@ def compare_action_articles_and_database(header, ur_lico):
     # Словарь для удаляемых артикулов ииз кампании
     del_articles = {}
     for action, action_articles in actions_data.items():
+        print('action', action)
+        print('action_articles', action_articles)
         inner_list = []
         for article, price in database_data.items():
-            print('article', article)
+            
+            # print('article', article)
+            article_obj = Articles.objects.filter(ozon_product_id=article).first()
             if article in action_articles:
-                if action_articles[article] < database_data[article]:
+                if action_articles[article.ozon_product_id] < database_data[article]:
                     inner_list.append(article)
         if inner_list:
             del_articles[action] = inner_list
