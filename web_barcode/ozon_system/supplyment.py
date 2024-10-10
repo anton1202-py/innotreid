@@ -103,7 +103,7 @@ def compare_action_articles_and_database(header, ur_lico):
         for article, price in database_data.items():
             
             # print('article', article)
-            article_obj = Articles.objects.filter(ozon_product_id=article).first()
+            # article_obj = Articles.objects.filter(ozon_product_id=article).first()
             if article in action_articles:
                 if action_articles[article.ozon_product_id] < database_data[article]:
                     inner_list.append(article)
