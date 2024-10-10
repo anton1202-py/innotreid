@@ -54,7 +54,7 @@ class ArticleInActionWithCondition(models.Model):
     Модель описывает товар, который можно поместить в акции,
     так как соблюдаются условия
     """
-    article = article = models.ForeignKey(Articles, on_delete=models.CASCADE,
+    article = models.ForeignKey(Articles, on_delete=models.CASCADE,
         verbose_name='Артикул', related_name='action_condition')
     wb_action = models.ForeignKey(Action, on_delete=models.CASCADE,
         verbose_name='Акция на ВБ', related_name='wb_maybe_in_action')

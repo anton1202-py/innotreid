@@ -30,7 +30,60 @@ def actions_compare_data(request):
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
             articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
         if 'import_file' in request.FILES:
-            print(request.POST)
+            ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_obj')))
+            action_obj = Action.objects.get(id=int(request.POST.get('action_obj')))
+            import_data = wb_auto_action_article_price_excel_import(
+                request.FILES['import_file'], ur_lico_obj.ur_lice_name, action_obj)
+            # Сопоставляем для акции ВБ товары из акций Озон.
+            create_data_with_article_conditions(action_obj)
+            if type(import_data) != str:
+                return redirect('actions_compare_data')
+    create_data_with_article_conditions(action_obj)
+    main_data = []
+    if articles_data:
+        for dat in articles_data:
+            inner_list = []
+            inner_list.append(dat.article.common_article)
+            inner_list.append(dat.article.maybe_in_action.filter(action=dat.wb_action).first().action_price)
+            inner_list.append(dat.ozon_action_id.name)
+            inner_list.append(dat.article.maybe_in_action.filter(action=dat.ozon_action_id).first().action_price)
+            inner_list.append(dat.id)
+            main_data.append(inner_list)
+    context = {
+        'user_chat_id': user_chat_id,
+        'page_name': page_name,
+        'ur_lico_data': ur_lico_data,
+        'main_data': main_data,
+        'action_list': action_list,
+        'accept_conditions': len(main_data),
+        'action_name': action_obj.name,
+        'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
+        'date_finish': action_obj.date_finish,
+        'date_start': action_obj.date_start,
+       
+    }
+    return render(request, 'actions/action_list.html', context)
+
+
+@login_required
+def article_in_actions(request):
+    """Отображает страницу товаров в акциях. Выход из акций."""
+    page_name = 'Товары в акциях'
+    ur_lico_data = UrLico.objects.all()
+    user_chat_id = request.user.tg_chat_id
+    ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
+    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
+    articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
+    import_data= ''
+    
+    if request.POST:
+       
+        if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
+            ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
+            action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
+            articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
+        if 'import_file' in request.FILES:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_obj')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_obj')))
             import_data = wb_auto_action_article_price_excel_import(
@@ -122,12 +175,12 @@ def add_to_action(request):
             wb_header = header_wb_dict[ur_lico]
 
             # Сохраняем в нашу базу данных информацию какой артикул в какую акцию добавляется
-            # wb_message = save_articles_added_to_action(wb_article_obj_list, wb_action_obj)
-            # common_ozon_message = []
-            # for ozon_action, article_list in ozon_for_save_in_db_actions_data.items():
-            #     ozon_message = save_articles_added_to_action(ozon_action, article_list)
-            #     if ozon_message:
-            #         common_ozon_message.append(ozon_message)
+            wb_message = save_articles_added_to_action(wb_article_obj_list, wb_action_obj)
+            common_ozon_message = []
+            for ozon_action, article_list in ozon_for_save_in_db_actions_data.items():
+                ozon_message = save_articles_added_to_action(ozon_action, article_list)
+                if ozon_message:
+                    common_ozon_message.append(ozon_message)
 
                 
             add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)

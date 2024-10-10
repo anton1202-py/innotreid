@@ -67,26 +67,32 @@ def create_data_with_article_conditions(action_obj):
     for data in main_articles_data:
         article = data.article
         wb_price = data.action_price
-        ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
-        ozon_art = ''
-        ozon_price = 10**6
-        for ozon_article in ozon_variant:
-            if ozon_article.action_price > wb_price:
-                differ = (ozon_article.action_price - wb_price) / wb_price * 100
-                if differ < 4:
-                    if ozon_article.action_price < ozon_price:
-                        ozon_price = ozon_article.action_price
-                        ozon_art = ozon_article
-            
-        if ozon_art:
-            possible_ozon_articles[data] = ozon_art
+        wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
 
-    for wb_act_article, ozon_act_article in possible_ozon_articles.items():
-        ArticleInActionWithCondition(
-            article=wb_act_article.article,
-            wb_action=wb_act_article.action,
-            ozon_action_id=ozon_act_article.action,
-        ).save()
+        wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
+        if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < 0.07:
+            print('wb_price_after_seller_discount', (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount)
+
+            ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
+            ozon_art = ''
+            ozon_price = 10**6
+            for ozon_article in ozon_variant:
+                if ozon_article.action_price > wb_price:
+                    differ = (ozon_article.action_price - wb_price) / wb_price * 100
+                    if differ < 4:
+                        if ozon_article.action_price < ozon_price:
+                            ozon_price = ozon_article.action_price
+                            ozon_art = ozon_article
+
+            if ozon_art:
+                possible_ozon_articles[data] = ozon_art
+
+    # for wb_act_article, ozon_act_article in possible_ozon_articles.items():
+    #     ArticleInActionWithCondition(
+    #         article=wb_act_article.article,
+    #         wb_action=wb_act_article.action,
+    #         ozon_action_id=ozon_act_article.action,
+    #     ).save()
 
 
 def save_articles_added_to_action(article_obj_list, action_obj):
