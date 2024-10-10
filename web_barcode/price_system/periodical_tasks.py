@@ -211,6 +211,13 @@ def check_articles_without_pricegroup():
     """Проверяет, чтобы не было артикулов без группы цен"""
     ur_lico_list = UrLico.objects.all()
 
+    articles_data = Articles.objects.all()
+    for article in articles_data:
+        if not ArticleGroup.objects.filter(common_article=article.pk).exists():
+            obj = ArticleGroup(
+                common_article=article)
+            obj.save()
+
     for urlico_obj in ur_lico_list:
         group_data = ArticleGroup.objects.filter(common_article__company=urlico_obj.ur_lice_name,
                                                  group__isnull=True)
