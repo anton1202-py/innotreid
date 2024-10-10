@@ -5,6 +5,7 @@ import requests
 from price_system.models import ArticleGroup, Articles
 from price_system.supplyment import sender_error_to_tg
 
+from actions.models import Action, ArticleInAction
 from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
                                         TELEGRAM_TOKEN, admins_chat_id_list,
                                         bot, header_ozon_dict, header_wb_dict,
@@ -104,9 +105,13 @@ def compare_action_articles_and_database(header, ur_lico):
             
             # print('article', article)
             # article_obj = Articles.objects.filter(ozon_product_id=article).first()
-            if article in action_articles:
-                if action_articles[article.ozon_product_id] < database_data[article]:
-                    inner_list.append(article)
+            if not ArticleInAction.objects.filter(
+                article=article, 
+                action=Action.objects.filter(ur_lico__ur_lice_name=ur_lico, action_number=action).first()).exists():
+                print('артикула нет в наших акциях', article)
+                if article.ozon_product_id in action_articles:
+                    if action_articles[article.ozon_product_id] < database_data[article]:
+                        inner_list.append(article)
         if inner_list:
             del_articles[action] = inner_list
     return del_articles
