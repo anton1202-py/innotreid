@@ -70,15 +70,15 @@
                 <th>Акция Озон</th>
                 <th>Цена из акции Озон</th>
             </tr>
-            {% for el in main_data %}
+            {% for el in articles_in_ozon_actions %}
             <tr data-article-id="{{ el.4 }}">
                 <td>
                     <input type="checkbox" name="article_input" class="input-field" checked>
                 </td>
-                <td>{{ el.0 }}</td>
-                <td>{{ el.1 }}</td>
-                <td>{{ el.2 }}</td>
-                <td>{{ el.3 }}</td>
+                <td>{{ el.article.common_article }}</td>
+                <td>{{ el.action.name }}</td>
+                <td>{{ el.date_start }}</td>
+                <td>{{ el.date_finish }}</td>
             </tr>
             {% endfor %}
         </table>

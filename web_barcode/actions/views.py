@@ -22,6 +22,8 @@ def actions_compare_data(request):
     action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
+    
+    
     import_data= ''
     if request.POST:
        
@@ -40,6 +42,8 @@ def actions_compare_data(request):
                 return redirect('actions_compare_data')
     # create_data_with_article_conditions(action_obj , user_chat_id)
     main_data = []
+    # actions_data = ArticleInActionWithCondition.objects.filter(wb_action=action_obj).values_list('article', flat=True)
+    # print('actions_data', actions_data)
     if articles_data:
         for dat in articles_data:
             inner_list = []
@@ -92,11 +96,14 @@ def article_in_actions(request):
             create_data_with_article_conditions(action_obj)
             if type(import_data) != str:
                 return redirect('actions_compare_data')
+    articles_list = list(ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action=action_obj).values_list('article', flat=True))
     
+    articles_in_ozon_actions = ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list).order_by('article__common_article')
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
         'actions_data': actions_data,
+        'articles_in_ozon_actions': articles_in_ozon_actions,
         'ur_lico_data': ur_lico_data,
         'action_list': action_list,
         'action_name': action_obj.name,
@@ -172,10 +179,11 @@ def add_to_action(request):
                 if ozon_message:
                     common_ozon_message.append(ozon_message)
 
-                
-            add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
-            for ozon_action, article_list in ozon_actions_data.items():
-                add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
+            # TODO размьютить код для добавления в акйию на МП   
+            # add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
+            # for ozon_action, article_list in ozon_actions_data.items():
+            #     add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
+
             message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
             bot.send_message(chat_id=user_chat_id,
                              text=message)

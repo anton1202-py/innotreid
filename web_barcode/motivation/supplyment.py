@@ -468,7 +468,6 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
         for i in range(len(article_list)):
             article_value_dict[article_list[i]] = [
                 designer_type_list[i], copyright_type_list[i]]
-
         for row in range(len(article_list)):
             if Articles.objects.filter(
                     company=ur_lico, common_article=article_list[row]).exists():
@@ -483,7 +482,6 @@ def motivation_article_type_excel_import(xlsx_file, ur_lico):
                 else:
                     article_obj.designer_article = False
                     article_obj.copy_right = False
-
                 new_objects.append(article_obj)
         Articles.objects.bulk_update(
             new_objects, ['designer_article', 'copy_right'])
