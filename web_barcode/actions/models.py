@@ -80,7 +80,8 @@ class ArticleInAction(models.Model):
         verbose_name='Акция', related_name='in_action', blank=True,
         null=True)
     date_start = models.DateTimeField(verbose_name='Дата захода в акцию')
-    date_finish = models.DateTimeField(verbose_name='Дата выхода из акции')
+    date_finish = models.DateTimeField(verbose_name='Дата выхода из акции', blank=True,
+        null=True)
 
     def __str__(self):
         return f'{self.article.common_article} {self.action.name}'
