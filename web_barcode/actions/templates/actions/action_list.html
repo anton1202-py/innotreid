@@ -56,7 +56,16 @@
 
         <p>Название акции: <b>{{ action_name }}</b></p>
         <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
-        <p title="(Цена в акции меньше основной цены менее, чем на 7% и цена в акции Озон больше, чем в акции ВБ, но не более, чем на 4%)">Удовлетворяют условиям *: <b>{{ accept_conditions }}</b></p>
+        <p title="(Цена в акции меньше основной цены менее, чем на 7% и цена в акции Озон больше, чем в акции ВБ, но не более, чем на 4%)">
+            Удовлетворяют условиям *: <b>{{ accept_conditions }}</b>
+            <form method="POST" id="percentForm" enctype="multipart/form-data" class="big-filter-form">
+                {% csrf_token %}
+                <input type="number"id="differrence_percent" name="differrence_percent" value="7">
+                <input type="hidden" id="percent_action" name="percent_action" value="{{ action.name }}">
+                <input type="hidden" id="percent_ur_lico" name="percent_ur_lico" value="{{ ur_lico }}">
+                <input type="submit" id="percent_submitBtn" name="percent_submitBtn" value="Пересчитать">
+            </form>
+        </p>
         <p>Дата начала: <b>{{ date_start }}</b></p>
         <p>Дата завершения: <b>{{ date_finish }}</b></p>
 
@@ -111,11 +120,13 @@
             var selectedOption = select.options[select.selectedIndex].value; // Получаем текст выбранного элемента
             console.log(selectedOption)
             document.getElementById("action_obj").value = selectedOption; // Устанавливаем значение в скрытое поле
+            document.getElementById("percent_action").value = selectedOption; // Устанавливаем значение в скрытое поле
 
             var selectUr = document.getElementById("ur-lico-select");
             var selectedUrOption = selectUr.options[selectUr.selectedIndex].value; // Получаем текст выбранного элемента
             console.log(selectedUrOption)
             document.getElementById("ur_lico_obj").value = selectedUrOption; // Устанавливаем значение в скрытое поле
+            document.getElementById("percent_ur_lico").value = selectedUrOption; // Устанавливаем значение в скрытое поле
         }
 
 

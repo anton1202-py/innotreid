@@ -54,7 +54,7 @@
             </form>
         </div>
 
-        <p>Название акции: <b>{{ action_name }}</b></p>
+        <p>Название акции: <b>{{ action_obj.name }}</b></p>
         <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
         <p title="(Цена в акции меньше основной цены менее, чем на 7% и цена в акции Озон больше, чем в акции ВБ, но не более, чем на 4%)">Удовлетворяют условиям *: <b>{{ accept_conditions }}</b></p>
         <p>Дата начала: <b>{{ date_start }}</b></p>
@@ -71,7 +71,7 @@
                 <th>Вышел из акции</th>
             </tr>
             {% for el in articles_in_ozon_actions %}
-            <tr data-article-id=" article: {{ el.article }}, action: {{ el.action.id }}">
+            <tr data-article-id="{'article': {{ el.article.id }}; 'action': {{ el.action.id }}}">
                 <td>
                     <input type="checkbox" name="article_input" class="input-field" checked>
                 </td>
@@ -143,12 +143,15 @@
                 checkboxes.forEach(function(checkbox) {
                     var articleElement = checkbox.closest('tr');                    
                     var articleNumber = articleElement.getAttribute('data-article-id');
+                    if (articleNumber){
                     console.log('articleNumber', articleNumber)
-                    selectedArticles.push(articleNumber);
+                    selectedArticles.push(articleNumber)};
                 });
                 
                 var formData = new FormData();
                 formData.append('articles', selectedArticles);
+                formData.append('wb_action', "{{action_obj.id}}");
+                formData.append('ur_lico_name', "{{ur_lico_obj.ur_lice_name}}");
                 formData.append("user_chat_id", "{{ user_chat_id }}");
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
                 // Отправка данных на сервер

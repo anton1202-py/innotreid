@@ -1,5 +1,5 @@
+import ast
 from datetime import datetime
-import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -7,11 +7,9 @@ from django.shortcuts import redirect, render
 
 from reklama.models import UrLico
 from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
-from api_request.wb_requests import add_wb_articles_to_action
-from api_request.ozon_requests import add_ozon_articles_to_action
-from actions.supplyment import create_data_with_article_conditions, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
+from actions.supplyment import create_data_with_article_conditions, del_articles_from_ozon_action, del_articles_from_wb_action, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
-from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
+from price_system.models import Articles
 
 @login_required
 def actions_compare_data(request):
@@ -41,6 +39,14 @@ def actions_compare_data(request):
             create_data_with_article_conditions(action_obj, user_chat_id)
             if type(import_data) != str:
                 return redirect('actions_compare_data')
+        if 'percent_submitBtn' in request.POST:
+            print(request.POST)
+            ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
+            action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
+            percent_condition = int(request.POST.get('differrence_percent'))
+            ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
+            create_data_with_article_conditions(action_obj, user_chat_id, percent_condition=percent_condition)
+            articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
     # create_data_with_article_conditions(action_obj , user_chat_id)
     main_data = []
     # actions_data = ArticleInActionWithCondition.objects.filter(wb_action=action_obj).values_list('article', flat=True)
@@ -83,7 +89,7 @@ def article_in_actions(request):
     import_data= ''
     
     if request.POST:
-       
+        print(request.POST)
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
@@ -97,17 +103,19 @@ def article_in_actions(request):
             create_data_with_article_conditions(action_obj)
             if type(import_data) != str:
                 return redirect('actions_compare_data')
+        
     articles_list = list(ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action=action_obj).values_list('article', flat=True))
     
     articles_in_ozon_actions = ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list).order_by('article__common_article')
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
+        'ur_lico_obj': ur_lico_obj,
         'actions_data': actions_data,
         'articles_in_ozon_actions': articles_in_ozon_actions,
         'ur_lico_data': ur_lico_data,
         'action_list': action_list,
-        'action_name': action_obj.name,
+        'action_obj': action_obj.id,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
@@ -199,8 +207,32 @@ def del_from_action(request):
 
     if request.POST:
         raw_articles_conditions = request.POST.get('articles')
+        article_in_ozon_actions_list = []
         articles_conditions = raw_articles_conditions.split(',')
+        for i in articles_conditions:
+            new_text = i.replace(';', ',')
+            dictionary = ast.literal_eval(new_text)
+            article_in_ozon_actions_list.append(dictionary)
         user_chat_id = request.POST.get('user_chat_id')
+        wb_action_id = request.POST.get('wb_action')
+        ur_lico_name = request.POST.get('ur_lico_name')
 
-        print(json.loads(str(request.POST)))
+        for_wb_exit_list = []
+        for_ozon_exit_dict = {}
+        for data in article_in_ozon_actions_list:
+            article_obj = Articles.objects.get(id=data['article'])
+            for_wb_exit_list.append(article_obj)
+
+            ozon_action_obj = Action.objects.get(id=data['action'])
+            if ozon_action_obj in for_ozon_exit_dict:
+                for_ozon_exit_dict[ozon_action_obj].append(article_obj.ozon_product_id)
+            else:
+                for_ozon_exit_dict[ozon_action_obj] = [article_obj.ozon_product_id]
+        
+        # Удаляем артикулы из акции ВБ
+        del_articles_from_wb_action(for_wb_exit_list, wb_action_id, user_chat_id)
+
+        # Удаляем артикулы из акции Озон
+        del_articles_from_ozon_action(for_ozon_exit_dict, ur_lico_name, user_chat_id)
+        
     return JsonResponse({'message': 'Value saved successfully.'})

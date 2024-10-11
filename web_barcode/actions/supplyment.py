@@ -35,7 +35,8 @@ from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
 from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
-from web_barcode.constants_file import (CHAT_ID_ADMIN, bot,
+from api_request.ozon_requests import del_articles_from_action
+from web_barcode.constants_file import (CHAT_ID_ADMIN, bot, header_ozon_dict,
                                         actions_info_users_list,
                                         header_wb_dict)
 from database.models import CodingMarketplaces
@@ -60,8 +61,10 @@ def add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj):
             ArticleMayBeInAction.objects.bulk_create(for_create_list)
 
 
-def create_data_with_article_conditions(action_obj, user_chat_id):
+def create_data_with_article_conditions(action_obj, user_chat_id, percent_condition=None):
     """Находим соответствующие акции Озон для Акции ВБ"""
+    if not percent_condition:
+        percent_condition = 7
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
     articles_without_price_group = []
@@ -71,7 +74,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id):
         try:
             wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
             wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
-            if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < 0.07:
+            if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
                 ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
                 ozon_art = ''
                 ozon_price = 10**6
@@ -168,11 +171,16 @@ def sender_message_about_articles_in_action_already(user_chat_id, common_message
     # bot.send_message(chat_id=user_chat_id, text=message)
 
 
-def del_articles_from_wb_action(article_obj_list, user_chat_id):
+def del_articles_from_wb_action(article_obj_list: list, wb_action_id: int, user_chat_id: int):
     """
     Удаляем артикулы из акции ВБ. 
     Для этого приводим цены к первоначальным значениям.
     В нашей базе ставим дату завершения участия в акции.
+
+    Входящие данные:
+        article_obj_list: список объектов артикулов, которые нужно удалить из акции
+        wb_action_id: id акции из нашей системы, из которой удаляем артикулы
+        user_chat_id: chat_id пользователя для ТГ, который нажимает кнопку
 
     Присутствуют переменные:
         price_group_info_dict = {
@@ -182,7 +190,6 @@ def del_articles_from_wb_action(article_obj_list, user_chat_id):
                 article_list_from_group: список_актикулов_из_этой_группы
             }
         }
-
     """
     price_group_info_dict ={}
     for article_obj in article_obj_list:
@@ -208,39 +215,33 @@ def del_articles_from_wb_action(article_obj_list, user_chat_id):
         ur_lico = group.company
         try:
             wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
+            ArticleInAction.objects.filter(action__id=wb_action_id).update(
+                date_finish=datetime.now()
+            )
         except Exception as e:
             message = f'Не удалось вывести из акции ВБ артикулы: {str(info["article_list_from_group"])[:2000]}. Произовшла ошибка: {e}'
             bot.send_message(chat_id=user_chat_id, text=message[:4000])
 
 
-def del_articles_from_ozon_action(article_obj_list, user_chat_id):
+def del_articles_from_ozon_action(for_ozon_exit_dict, ur_lico_name, user_chat_id):
     """
     Удаляем артикулы из акций ОЗОН. 
-    """
-    price_group_info_dict ={}
-    for article_obj in article_obj_list:
-        if article_obj.articlegroup.filter(common_article=article_obj).exists():
-            price_group = article_obj.articlegroup.get(common_article=article_obj).group
-            group_price = article_obj.articlegroup.get(common_article=article_obj).group.old_price
-            group_discount = article_obj.articlegroup.get(common_article=article_obj).group.wb_discount
-    
-            if price_group not in price_group_info_dict:
-                price_group_info_dict[price_group] = {
-                    'wb_price': group_price, 
-                    'wb_discount': group_discount,
-                    'article_list_from_group': [article_obj.wb_nomenclature]
-                }
-            else:
-                price_group_info_dict[price_group]['article_list_from_group'].append(article_obj.wb_nomenclature)
-        else:
-            message = f'У артикула {article_obj.common_article} не нашел ценовую группу. Не могу убрать его из акции ВБ'
-            bot.send_message(chat_id=user_chat_id, text=message)
 
-    # Вызываю функцию изменения цен у артикулов:
-    for group, info in price_group_info_dict.items():
-        ur_lico = group.company
-        try:
-            wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
-        except Exception as e:
-            message = f'Не удалось вывести из акции ВБ артикулы: {str(info["article_list_from_group"])[:2000]}. Произовшла ошибка: {e}'
-            bot.send_message(chat_id=user_chat_id, text=message[:4000])
+    Входящие данные:
+        for_ozon_exit_dict: словарь с данными акций и артикулов в них.
+            Вид словаря {ozon_action_object: [список ozon_product_id, которые участвуют в акции]}
+        ur_lico_name: Название юр лица к которому относится акция
+        user_chat_id: chat_id пользователя для ТГ, который нажимает кнопку
+    """
+    for ozon_action_number, article_list in for_ozon_exit_dict.items():
+            header = header_ozon_dict[ur_lico_name]
+            try:
+                del_articles_from_action(header, ozon_action_number.action_number, article_list)
+                ArticleInAction.objects.filter(
+                    action__ur_lico__ur_lice_name=ur_lico_name, 
+                    action__action_number=ozon_action_number).update(
+                    date_finish=datetime.now()
+                    )
+            except Exception as e:
+                message = f'Не удалось вывести из акции Озон {ozon_action_number.name} артикулы: {str(article_list)[:2000]}. Произовшла ошибка: {e}'
+                bot.send_message(chat_id=user_chat_id, text=message[:4000])
