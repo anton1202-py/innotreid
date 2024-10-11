@@ -78,7 +78,7 @@ def article_in_actions(request):
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
     action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
-    actions_data = ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
+    actions_data = ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action__action_number=1)
     import_data= ''
     
     if request.POST:
