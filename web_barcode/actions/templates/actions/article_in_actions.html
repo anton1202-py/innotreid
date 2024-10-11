@@ -71,7 +71,7 @@
                 <th>Вышел из акции</th>
             </tr>
             {% for el in articles_in_ozon_actions %}
-            <tr data-article-id="{{ el.4 }}">
+            <tr data-article-id="article: {{ el.article }}, action: {{ el.action }}">
                 <td>
                     <input type="checkbox" name="article_input" class="input-field" checked>
                 </td>

@@ -191,3 +191,14 @@ def add_to_action(request):
             #     common_message = {'wb': wb_message, 'ozon': common_ozon_message}
             #     sender_message_about_articles_in_action_already(user_chat_id, common_message)
     return JsonResponse({'message': 'Value saved successfully.'})
+
+
+def del_from_action(request):
+    """Для AJAX запроса. Удаляет выбранные артикулы из акций"""
+
+    if request.POST:
+        raw_articles_conditions = request.POST.get('articles')
+        articles_conditions = raw_articles_conditions.split(',')
+        user_chat_id = request.POST.get('user_chat_id')
+
+        print(request.POST)

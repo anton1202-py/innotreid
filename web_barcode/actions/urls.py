@@ -11,4 +11,5 @@ urlpatterns = [
     # ========== ДЛЯ AJAX ЗАПРОСОВ ========= #
     path('get-actions', views.get_actions, name='get_actions'),
     path('add_to_action', views.add_to_action, name='add_to_action'),
+    path('del_from_action', views.del_from_action, name='del_from_action'),
 ]
