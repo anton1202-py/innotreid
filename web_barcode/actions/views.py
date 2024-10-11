@@ -175,7 +175,7 @@ def add_to_action(request):
             wb_message = save_articles_added_to_action(wb_article_obj_list, wb_action_obj)
             common_ozon_message = []
             for ozon_action, article_list in ozon_for_save_in_db_actions_data.items():
-                ozon_message = save_articles_added_to_action(ozon_action, article_list)
+                ozon_message = save_articles_added_to_action(article_list, ozon_action)
                 if ozon_message:
                     common_ozon_message.append(ozon_message)
 
