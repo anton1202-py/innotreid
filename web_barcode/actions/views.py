@@ -202,5 +202,5 @@ def del_from_action(request):
         articles_conditions = raw_articles_conditions.split(',')
         user_chat_id = request.POST.get('user_chat_id')
 
-        print(json.load(request.POST))
+        print(json.load(str(request.POST)))
     return JsonResponse({'message': 'Value saved successfully.'})
