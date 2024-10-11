@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -201,4 +202,5 @@ def del_from_action(request):
         articles_conditions = raw_articles_conditions.split(',')
         user_chat_id = request.POST.get('user_chat_id')
 
-        print(request.POST)
+        print(json.load(request.POST))
+    return JsonResponse({'message': 'Value saved successfully.'})
