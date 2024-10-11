@@ -41,7 +41,9 @@ def actions_compare_data(request):
                 return redirect('actions_compare_data')
         if 'percent_submitBtn' in request.POST:
             print(request.POST)
+            print(request.POST.get('ur_lico_select'))
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
+            print()
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
             percent_condition = int(request.POST.get('differrence_percent'))
             ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
