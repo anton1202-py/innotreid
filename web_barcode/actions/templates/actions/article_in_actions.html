@@ -66,9 +66,9 @@
                     <input type="checkbox" id="main_input" name="main_input" class="input-field" onchange="checkAllCheckboxes(this)" checked >
                 </th>
                 <th>Артикул</th>
-                <th>Цена из акции ВБ</th>
                 <th>Акция Озон</th>
-                <th>Цена из акции Озон</th>
+                <th>В акции с </th>
+                <th>Вышел из акции</th>
             </tr>
             {% for el in articles_in_ozon_actions %}
             <tr data-article-id="{{ el.4 }}">
@@ -78,7 +78,11 @@
                 <td>{{ el.article.common_article }}</td>
                 <td>{{ el.action.name }}</td>
                 <td>{{ el.date_start }}</td>
-                <td>{{ el.date_finish }}</td>
+                {% if el.date_finish %}
+                    <td>{{ el.date_finish }}</td>
+                {% else %}
+                    <td></td>
+                {% endif %}
             </tr>
             {% endfor %}
         </table>
