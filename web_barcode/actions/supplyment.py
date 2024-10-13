@@ -226,6 +226,8 @@ def del_articles_from_wb_action(article_obj_list: list, wb_action_id: int, user_
         try:
             if info['article_list_from_group']:
                 wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
+            
+            print(wb_action_id)
             ArticleInAction.objects.filter(action__id=wb_action_id).update(
                 date_finish=timezone.make_aware(datetime.now())
             )
