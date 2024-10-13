@@ -252,13 +252,11 @@ def del_articles_from_ozon_action(for_ozon_exit_dict, ur_lico_name, user_chat_id
                 del_articles_from_action(header, ozon_action_number.action_number, article_list)
                 print(ozon_action_number, ur_lico_name)
                 ArticleInAction.objects.filter(
-                    action__ur_lico__ur_lice_name=ur_lico_name, 
-                    action__action_number=ozon_action_number).update(
+                    action=ozon_action_number).update(
                     date_finish=timezone.make_aware(datetime.now())
                     )
                 print(ArticleInAction.objects.filter(
-                    action__ur_lico__ur_lice_name=ur_lico_name, 
-                    action__action_number=ozon_action_number))
+                    action=ozon_action_number))
             except Exception as e:
                 message = f'Не удалось вывести из акции Озон {ozon_action_number.name} артикулы: {str(article_list)[:2000]}. Произовшла ошибка: {e}'
                 bot.send_message(chat_id=user_chat_id, text=message[:4000])
