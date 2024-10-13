@@ -842,6 +842,7 @@ def articles_price_discount(ur_lico):
 
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
     """Изменяет цену на артикулы Wildberries"""
+    print('article_list)', articles_list)
     koef_articles = math.ceil(len(articles_list)/1000)
     header = header_wb_dict[ur_lico]
     for i in range(koef_articles):
