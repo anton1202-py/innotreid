@@ -119,6 +119,7 @@ def article_in_actions(request):
         'ur_lico_data': ur_lico_data,
         'action_list': action_list,
         'action_obj': action_obj.id,
+        'action_name': action_obj.name,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
         'in_action_amount': len(ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list, date_finish__isnull=True)),
         'date_finish': action_obj.date_finish,
