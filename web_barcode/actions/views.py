@@ -49,7 +49,7 @@ def actions_compare_data(request):
             print()
             action_obj = Action.objects.get(id=int(request.POST.get('percent_action')))
             percent_condition = int(request.POST.get('differrence_percent'))
-            #ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
+            ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
             create_data_with_article_conditions(action_obj, user_chat_id, percent_condition=percent_condition)
             articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
     # create_data_with_article_conditions(action_obj , user_chat_id)
