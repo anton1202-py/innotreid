@@ -132,8 +132,16 @@ def save_articles_added_to_action(article_obj_list, action_obj):
                 action=action_obj,
                 date_start=datetime.now()
             ).save()
-        else:
+        elif ArticleInAction.objects.filter(
+            article=article_obj,
+            action=action_obj).exists() and not ArticleInAction.objects.filter(
+            article=article_obj,
+            action=action_obj).first().date_finish:
             existing_articles_list.append(article_obj)
+        else:
+            ArticleInAction.objects.filter(
+            article=article_obj,
+            action=action_obj).update(date_finish='', date_start=timezone.make_aware(datetime.now()))
     if existing_articles_list:
         existing_articles_in_action[action_obj] = existing_articles_list
         return existing_articles_in_action
