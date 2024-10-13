@@ -43,7 +43,7 @@ def actions_compare_data(request):
             if type(import_data) != str:
                 return redirect('actions_compare_data')
         if 'percent_submitBtn' in request.POST:
-            
+            print(request.POST)
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('percent_ur_lico')))
             action_obj = Action.objects.get(id=int(request.POST.get('percent_action')))
             percent_condition = int(request.POST.get('differrence_percent'))
@@ -69,6 +69,8 @@ def actions_compare_data(request):
         'ur_lico_data': ur_lico_data,
         'main_data': main_data,
         'action_list': action_list,
+        'action_obj': action_obj,
+        'ur_lico_obj': ur_lico_obj,
         'percent_condition': percent_condition,
         'accept_conditions': len(main_data),
         'action_name': action_obj.name,
@@ -211,6 +213,7 @@ def del_from_action(request):
     """Для AJAX запроса. Удаляет выбранные артикулы из акций"""
 
     if request.POST:
+        print(request.POST)
         raw_articles_conditions = request.POST.get('articles')
         article_in_ozon_actions_list = []
         articles_conditions = raw_articles_conditions.split(',')

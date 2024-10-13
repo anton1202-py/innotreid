@@ -24,7 +24,7 @@
                 <div class="inner-form-data">
                     <span>Акции</span><br>
                     <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
-                        <option value=""></option>
+                        <!-- <option value=""></option> -->
                         {% for action in action_list %}
                             <option value="{{ action.id }}">{{ action.name }}</option>
                         {% endfor %}
@@ -47,8 +47,8 @@
                             ios_share
                         </span>
                     </label>
-                    <input type="hidden" id="action_obj" name="action_obj" value="{{ action.name }}">
-                    <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico }}">
+                    <input type="hidden" id="action_obj" name="action_obj" value="{{ action_obj.id }}">
+                    <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico_obj.id }}">
                     <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
                 </div>
             </form>
@@ -61,8 +61,8 @@
             <form method="POST" id="percentForm" enctype="multipart/form-data" class="big-filter-form">
                 {% csrf_token %}
                 <input type="number"id="differrence_percent" name="differrence_percent" value="{{ percent_condition }}">
-                <input type="hidden" id="percent_action" name="percent_action" value="{{ action.name }}">
-                <input type="hidden" id="percent_ur_lico" name="percent_ur_lico" value="{{ ur_lico }}">
+                <input type="hidden" id="percent_action" name="percent_action" value="{{ action_obj.id }}">
+                <input type="hidden" id="percent_ur_lico" name="percent_ur_lico" value="{{ ur_lico_obj.id }}">
                 <input type="submit" id="percent_submitBtn" name="percent_submitBtn" value="Пересчитать">
             </form>
         </p>

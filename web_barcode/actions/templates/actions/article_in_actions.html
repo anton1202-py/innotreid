@@ -24,9 +24,9 @@
                 <div class="inner-form-data">
                     <span>Акции</span><br>
                     <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
-                        <option value=""></option>
+                        <!-- <option value=""></option> -->
                         {% for action in action_list %}
-                            <option value="{{ action.id }}">{{ action.name }}</option>
+                        <option value="{{ action.id }}" {% if action.id == action_obj %}selected{% endif %}>{{ action.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -47,7 +47,7 @@
                             ios_share
                         </span>
                     </label>
-                    <input type="hidden" id="action_obj" name="action_obj" value="{{ action.name }}">
+                    <input type="hidden" id="action_obj" name="action_obj" value="{{  action_obj }}">
                     <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico }}">
                     <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
                 </div>
@@ -101,7 +101,7 @@
                     },
                     success: function(data) {
                         $('#action-select').empty(); // Очистить предыдущие опции
-                        $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
+                        // $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
                         $.each(data, function(index, action) {
                             $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
                         });
