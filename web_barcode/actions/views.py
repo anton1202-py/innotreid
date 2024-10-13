@@ -27,13 +27,11 @@ def actions_compare_data(request):
     
     import_data= ''
     if request.POST:
-        print(request.POST)
+
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
             articles_data = ArticleInActionWithCondition.objects.filter(wb_action=action_obj)
-            
-            print('len(articles_data)', len(articles_data))
         
         if 'import_file' in request.FILES:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_obj')))
@@ -46,7 +44,6 @@ def actions_compare_data(request):
                 return redirect('actions_compare_data')
         if 'percent_submitBtn' in request.POST:
             
-            print(request.POST.get('percent_ur_lico'))
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('percent_ur_lico')))
             action_obj = Action.objects.get(id=int(request.POST.get('percent_action')))
             percent_condition = int(request.POST.get('differrence_percent'))
@@ -96,7 +93,6 @@ def article_in_actions(request):
     import_data= ''
     
     if request.POST:
-        print(request.POST)
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
@@ -124,6 +120,7 @@ def article_in_actions(request):
         'action_list': action_list,
         'action_obj': action_obj.id,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
+        'in_action_amount': len(articles_list),
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
        
