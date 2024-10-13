@@ -120,7 +120,7 @@ def article_in_actions(request):
         'action_list': action_list,
         'action_obj': action_obj.id,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
-        'in_action_amount': len(articles_list),
+        'in_action_amount': len(ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list, date_finish__isnull=True)),
         'date_finish': action_obj.date_finish,
         'date_start': action_obj.date_start,
        
@@ -210,8 +210,6 @@ def del_from_action(request):
     """Для AJAX запроса. Удаляет выбранные артикулы из акций"""
 
     if request.POST:
-        print(request.POST
-              )
         raw_articles_conditions = request.POST.get('articles')
         article_in_ozon_actions_list = []
         articles_conditions = raw_articles_conditions.split(',')
