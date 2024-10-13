@@ -828,28 +828,36 @@ def wb_price_changer(header, info_list: list):
 
 def articles_price_discount(ur_lico):
     """
-    ВОзвращает данные о цене и скидке на артикул
+    Функция возвращает данные по всем артикулам о текущей цене
+    после скидки продавца и текущей скидки продавца
+    {nm_id: {'price': price, 'discount': discount}}
+
     """
     from api_request.wb_requests import get_article_list_data
     header = header_wb_dict[ur_lico]
     main_data = get_article_list_data(header)
     returned_dict = {}
-    for data in main_data['data']['listGoods']:
-        # print(data)
+    for data in main_data:
         price = data['sizes'][0]['price']
         discount = data['discount']
         nm_id = data['nmID']
 
         returned_dict[nm_id] = {'price': price, 'discount': discount}
-    # print(returned_dict)
     return returned_dict
 
 
+
 def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: int):
-    """Изменяет цену на артикулы Wildberries"""
-    print('article_list)', articles_list)
+    """
+    Изменяет цену на артикулы Wildberries
+
+    current_price - словарь для проверки текущей цены со скидкой продавца.
+        Если текущая цена и скидка равна устанавливаемой, то товар не попадает на изменение цены
+        {nm_id: {'price': price, 'discount': discount}}
+    """
     koef_articles = math.ceil(len(articles_list)/1000)
     header = header_wb_dict[ur_lico]
+    current_price = articles_price_discount(ur_lico)
     for i in range(koef_articles):
         data_for_change = []
         start_point = i*1000
@@ -857,16 +865,16 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
         data_articles_list = articles_list[
             start_point:finish_point]
         for article in data_articles_list:
-            if article != None:
-                inner_data_dict = {
-                    "nmID": article,
-                    "price": price,
-                    "discount": discount
-                }
-                data_for_change.append(inner_data_dict)
-        print('==============================')
-        print('data_for_change', data_for_change)
-        print('==============================')
+            if article != None and article in current_price:
+                
+                if current_price[article]['discount'] != discount:
+                    inner_data_dict = {
+                        "nmID": article,
+                        "price": price,
+                        "discount": discount
+                    }
+                    data_for_change.append(inner_data_dict)
+        
         wb_price_changer(header, data_for_change)
 
 

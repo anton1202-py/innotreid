@@ -88,16 +88,27 @@ def wb_sales_statistic(header, check_date, attempt=0):
         bot.send_message(chat_id=CHAT_ID_ADMIN, text=message)
 
 
-@api_retry_decorator
-def get_article_list_data(header):
+
+def get_article_list_data(header, limit=1000, offset=0, articles_data=None, counter=0):
     """
     Возвращает информацию о товаре по его артикулу.
     Чтобы получить информацию обо всех товарах, оставьте артикул пустым
     """
+    if not articles_data:
+        articles_data = []
     time.sleep(0.8)
-    url = f'https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter?limit=1000'
+    url = f'https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter?limit={limit}&offset={offset}'
     response = requests.request("GET", url, headers=header)
-    return response
+    if response.status_code == 200:
+        main_data = json.loads(response.text)['data']['listGoods']
+        for data in main_data:
+            articles_data.append(data)
+        if len(main_data) == limit:
+            counter += 1
+            offset = limit * counter
+            return get_article_list_data(header, limit, offset, articles_data, counter)
+        else:
+            return articles_data
 
 
 @api_retry_decorator
