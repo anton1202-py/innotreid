@@ -141,7 +141,7 @@ def save_articles_added_to_action(article_obj_list, action_obj):
         else:
             ArticleInAction.objects.filter(
             article=article_obj,
-            action=action_obj).update(date_finish='', date_start=timezone.make_aware(datetime.now()))
+            action=action_obj).update(date_finish=None, date_start=timezone.make_aware(datetime.now()))
     if existing_articles_list:
         existing_articles_in_action[action_obj] = existing_articles_list
         return existing_articles_in_action
