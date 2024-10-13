@@ -491,6 +491,16 @@ def add_wb_articles_to_action(header, action_number, wb_nom_list):
             "nomenclatures": wb_nom_list
         }
     })
+
+    pl = {
+        "data": {
+            "promotionID": action_number,
+            "uploadNow": False,
+            "nomenclatures": wb_nom_list
+        }
+    }
+
+    print(pl)
     response = requests.request("POST", url, headers=header, data=payload)
     print('Участие в акции ВБ', response.status_code, response.text)
     return response
