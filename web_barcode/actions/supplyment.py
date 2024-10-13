@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 
 import pandas as pd
-
+from django.utils import timezone
 from api_request.wb_requests import (
     advertisment_campaign_clusters_statistic, advertisment_campaign_list,
     create_auto_advertisment_campaign, get_del_minus_phrase_to_auto_campaigns,
@@ -68,14 +68,20 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
     articles_without_price_group = []
+    x = len(main_articles_data)
+    print('len(main_articles_data)')
     for data in main_articles_data:
         article = data.article
         wb_price = data.action_price
         try:
             wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
             wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
+            
+            print((wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount, percent_condition/100)
+            x -= 1
+            print(x)
             if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
-                ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=datetime.now(), article=article)
+                ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
                 ozon_art = ''
                 ozon_price = 10**6
                 for ozon_article in ozon_variant:
@@ -95,18 +101,19 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
         message = f'Добавьте артикулам {articles_without_price_group} ценовую группу. Не могу рассчитать по ним условия участия в акции'
         bot.send_message(chat_id=user_chat_id, text=message)
 
-
+    print('possible_ozon_articles', possible_ozon_articles)
     for wb_act_article, ozon_act_article in possible_ozon_articles.items():
         if not ArticleInActionWithCondition.objects.filter(
             article=wb_act_article.article,
             wb_action=wb_act_article.action,
             ozon_action_id=ozon_act_article.action,
             ).exists:
-            ArticleInActionWithCondition(
+            with_con_obj = ArticleInActionWithCondition(
                 article=wb_act_article.article,
                 wb_action=wb_act_article.action,
                 ozon_action_id=ozon_act_article.action,
             ).save()
+            print('сохранил объект', with_con_obj)
 
 
 def save_articles_added_to_action(article_obj_list, action_obj):
