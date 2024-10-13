@@ -109,7 +109,7 @@ def article_in_actions(request):
         
     articles_list = list(ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action=action_obj).values_list('article', flat=True))
     
-    articles_in_ozon_actions = ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list).order_by('article__common_article')
+    articles_in_ozon_actions = ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list, date_finish__isnull=True).order_by('article__common_article')
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
