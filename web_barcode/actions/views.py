@@ -213,7 +213,8 @@ def del_from_action(request):
     """Для AJAX запроса. Удаляет выбранные артикулы из акций"""
 
     if request.POST:
-        print(request.POST)
+        print(request.POST
+              )
         raw_articles_conditions = request.POST.get('articles')
         article_in_ozon_actions_list = []
         articles_conditions = raw_articles_conditions.split(',')

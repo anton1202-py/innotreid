@@ -150,7 +150,7 @@
                 
                 var formData = new FormData();
                 formData.append('articles', selectedArticles);
-                formData.append('wb_action', "{{action_obj.id}}");
+                formData.append('wb_action', "{{action_obj}}");
                 formData.append('ur_lico_name', "{{ur_lico_obj.ur_lice_name}}");
                 formData.append("user_chat_id", "{{ user_chat_id }}");
                 formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
