@@ -819,11 +819,6 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
-    print(payload)
-    print('header', header)
-    print('info_list', info_list)
-    print(response_data.status_code)
-    print(response_data.text)
 
 
 def articles_price_discount(ur_lico):
@@ -866,7 +861,6 @@ def wilberries_price_change(ur_lico, articles_list: list, price: int, discount: 
             start_point:finish_point]
         for article in data_articles_list:
             if article != None and article in current_price:
-                
                 if current_price[article]['discount'] != discount:
                     inner_data_dict = {
                         "nmID": article,

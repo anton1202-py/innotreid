@@ -224,9 +224,8 @@ def del_articles_from_wb_action(article_obj_list: list, wb_action_id: int, user_
     for group, info in price_group_info_dict.items():
         ur_lico = group.company
         try:
-            print('**********************')
-            print("info['article_list_from_group']"), info['article_list_from_group']
-            wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
+            if info['article_list_from_group']:
+                wilberries_price_change(ur_lico, info['article_list_from_group'], info['wb_price'], info['wb_discount'])
             ArticleInAction.objects.filter(action__id=wb_action_id).update(
                 date_finish=timezone.make_aware(datetime.now())
             )

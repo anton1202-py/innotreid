@@ -236,6 +236,7 @@ def del_from_action(request):
             else:
                 for_ozon_exit_dict[ozon_action_obj] = [article_obj.ozon_product_id]
         print('for_wb_exit_list', for_wb_exit_list)
+        print('wb_action_id', wb_action_id)
         # Удаляем артикулы из акции ВБ
         del_articles_from_wb_action(for_wb_exit_list, wb_action_id, user_chat_id)
 
