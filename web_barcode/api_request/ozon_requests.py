@@ -178,6 +178,7 @@ def del_articles_from_action(header, action_number, article_list):
         "product_ids": article_list
     })
     response = requests.request("POST", url, headers=header, data=payload)
+    print(response.status_code)
     return response
     
 # =========== КОНЕЦ АКЦИИ ========== #
