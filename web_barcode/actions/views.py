@@ -165,7 +165,7 @@ def add_to_action(request):
                     wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
                     wb_article_obj_list.append(article_in_action_obj.article)
                     wb_action_obj = article_in_action_obj.wb_action
-                    wb_action_number = article_in_action_obj.wb_action.action_number
+                    wb_action_number = int(article_in_action_obj.wb_action.action_number)
                     if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number].append(
                             {
@@ -195,7 +195,7 @@ def add_to_action(request):
                 if ozon_message:
                     common_ozon_message.append(ozon_message)
 
-            # TODO размьютить код для добавления в акйию на МП   
+            # TODO размьютить код для добавления в акцию на МП   
             add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
             for ozon_action, article_list in ozon_actions_data.items():
                 add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
