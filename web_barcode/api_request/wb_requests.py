@@ -474,7 +474,7 @@ def wb_articles_in_action(header, action_number):
         return None
 
 
-@api_retry_decorator
+
 def add_wb_articles_to_action(header, action_number, wb_nom_list):
     """
     Создаёт загрузку товара в акцию.
