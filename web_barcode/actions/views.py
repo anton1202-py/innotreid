@@ -1,6 +1,6 @@
 import ast
 from datetime import datetime
-
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -8,6 +8,8 @@ from django.shortcuts import redirect, render
 from reklama.models import UrLico
 from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
 from actions.supplyment import create_data_with_article_conditions, del_articles_from_ozon_action, del_articles_from_wb_action, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
+from api_request.ozon_requests import add_ozon_articles_to_action
+from api_request.wb_requests import add_wb_articles_to_action
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
 from price_system.models import Articles
 
@@ -18,10 +20,10 @@ def actions_compare_data(request):
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
-    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
+    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=timezone.make_aware(datetime.now())).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
-    
+    percent_condition = 7
     
     import_data= ''
     if request.POST:
@@ -46,7 +48,6 @@ def actions_compare_data(request):
             
             print(request.POST.get('percent_ur_lico'))
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('percent_ur_lico')))
-            print()
             action_obj = Action.objects.get(id=int(request.POST.get('percent_action')))
             percent_condition = int(request.POST.get('differrence_percent'))
             ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
@@ -71,6 +72,7 @@ def actions_compare_data(request):
         'ur_lico_data': ur_lico_data,
         'main_data': main_data,
         'action_list': action_list,
+        'percent_condition': percent_condition,
         'accept_conditions': len(main_data),
         'action_name': action_obj.name,
         'common_amount': len(ArticleMayBeInAction.objects.filter(action=action_obj)),
@@ -88,8 +90,8 @@ def article_in_actions(request):
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=datetime.now())
-    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=datetime.now()).order_by('-id').first()
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
+    action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=timezone.make_aware(datetime.now())).order_by('-id').first()
     actions_data = ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action__action_number=1)
     import_data= ''
     
@@ -134,7 +136,7 @@ def article_in_actions(request):
 def get_actions(request):
     """Для AJAX запроса. Показывает список акций в зависимсоти от выбора Юр лица"""
     ur_lico_id = request.GET.get('ur_lico_id')
-    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=datetime.now()).values('id', 'name')
+    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now())).values('id', 'name')
     actions_list = list(actions)
     return JsonResponse(actions_list, safe=False)
 
@@ -194,16 +196,16 @@ def add_to_action(request):
                     common_ozon_message.append(ozon_message)
 
             # TODO размьютить код для добавления в акйию на МП   
-            # add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
-            # for ozon_action, article_list in ozon_actions_data.items():
-            #     add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
+            add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
+            for ozon_action, article_list in ozon_actions_data.items():
+                add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
 
             message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
             bot.send_message(chat_id=user_chat_id,
                              text=message)
-            # if wb_message and common_ozon_message:
-            #     common_message = {'wb': wb_message, 'ozon': common_ozon_message}
-            #     sender_message_about_articles_in_action_already(user_chat_id, common_message)
+            if wb_message and common_ozon_message:
+                common_message = {'wb': wb_message, 'ozon': common_ozon_message}
+                sender_message_about_articles_in_action_already(user_chat_id, common_message)
     return JsonResponse({'message': 'Value saved successfully.'})
 
 
