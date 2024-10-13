@@ -492,6 +492,7 @@ def add_wb_articles_to_action(header, action_number, wb_nom_list):
         }
     })
     response = requests.request("POST", url, headers=header, data=payload)
+    print('Участие в акции', response.status_code)
     return response
     
 
