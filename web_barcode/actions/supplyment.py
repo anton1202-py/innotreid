@@ -104,11 +104,12 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     print('possible_ozon_articles', possible_ozon_articles)
     for wb_act_article, ozon_act_article in possible_ozon_articles.items():
         print('Зашел в сохранение')
+        print()
         if not ArticleInActionWithCondition.objects.filter(
             article=wb_act_article.article,
             wb_action=wb_act_article.action,
             ozon_action_id=ozon_act_article.action,
-            ).exists:
+            ).exists():
             print('Не нашел объект. Должен сохранить')
             with_con_obj = ArticleInActionWithCondition(
                 article=wb_act_article.article,
