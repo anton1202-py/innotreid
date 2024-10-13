@@ -487,7 +487,7 @@ def add_wb_articles_to_action(header, action_number, wb_nom_list):
     payload = json.dumps({
         "data": {
             "promotionID": action_number,
-            "uploadNow": False,
+            "uploadNow": True,
             "nomenclatures": wb_nom_list
         }
     })
@@ -495,7 +495,7 @@ def add_wb_articles_to_action(header, action_number, wb_nom_list):
     pl = {
         "data": {
             "promotionID": action_number,
-            "uploadNow": False,
+            "uploadNow": True,
             "nomenclatures": wb_nom_list
         }
     }
