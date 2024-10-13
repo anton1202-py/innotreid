@@ -250,6 +250,7 @@ def del_articles_from_ozon_action(for_ozon_exit_dict, ur_lico_name, user_chat_id
             header = header_ozon_dict[ur_lico_name]
             try:
                 del_articles_from_action(header, ozon_action_number.action_number, article_list)
+                print(ozon_action_number, ur_lico_name)
                 ArticleInAction.objects.filter(
                     action__ur_lico__ur_lice_name=ur_lico_name, 
                     action__action_number=ozon_action_number).update(
