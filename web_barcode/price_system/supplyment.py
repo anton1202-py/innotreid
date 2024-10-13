@@ -819,6 +819,8 @@ def wb_price_changer(header, info_list: list):
     payload = json.dumps({"data": info_list})
     response_data = requests.request(
         "POST", url, headers=header, data=payload)
+    print('info_list', info_list)
+    print(response_data.status_code)
 
 
 def articles_price_discount(ur_lico):
