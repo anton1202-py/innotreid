@@ -821,6 +821,7 @@ def wb_price_changer(header, info_list: list):
         "POST", url, headers=header, data=payload)
     print('info_list', info_list)
     print(response_data.status_code)
+    print(response_data.text)
 
 
 def articles_price_discount(ur_lico):
