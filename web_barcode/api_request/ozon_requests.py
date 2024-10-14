@@ -158,7 +158,7 @@ def add_ozon_articles_to_action(header, action_number, article_data_list):
     участвовать в акции, по её идентификатору.
     """
     time.sleep(1)
-    url = f'https://api-seller.ozon.ru/v1/actions/candidates'
+    url = f'https://api-seller.ozon.ru/v1/actions/products/activate'
     payload = json.dumps({
         "action_id": action_number,
         "products": article_data_list
