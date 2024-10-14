@@ -49,7 +49,7 @@ WB_API_KEY_INNOTREID = os.getenv('API_KEY_WB_INNOTREID')
 API_KEY_WB_GRAMOTY = os.getenv('API_KEY_WB_GRAMOTY')
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-IMPORTANT_TELEGRAM_TOKEN = os.getenv('IMPORTANT_TELEGRAM_TOKEN')
+# IMPORTANT_TELEGRAM_TOKEN = os.getenv('IMPORTANT_TELEGRAM_TOKEN')
 CHAT_ID_ADMIN = os.getenv('CHAT_ID_ADMIN')
 CHAT_ID_MANAGER = os.getenv('CHAT_ID_MANAGER')
 CHAT_ID_EU = os.getenv('CHAT_ID_EU')
@@ -184,7 +184,7 @@ spp_group_list = [CHAT_ID_EU]
 ur_lico_list_for_yandex_fbs_balance = ['ООО Иннотрейд', 'ИП Караваев']
 admins_chat_id_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
-important_message_bot = telegram.Bot(token=IMPORTANT_TELEGRAM_TOKEN)
+# important_message_bot = telegram.Bot(token=IMPORTANT_TELEGRAM_TOKEN)
 
 WB_ADVERTISMENT_CAMPAIGN_STATUS_DICT = {
     -1: 'в процессе удаления',
