@@ -49,6 +49,10 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=4, minute=1)
     },
     # =========== КОНЕЦ РАЗДЕЛА АКЦИИ ========== #
+    "wb_token_expire_info": {
+        "task": "celery_tasks.tasks.check_wb_toket_expire",
+        "schedule": crontab(hour=8, minute=2)
+    },
     "database_wb_sales_every_day": {
         "task": "database.periodic_tasks.process_wb_sales_data",
         "schedule": crontab(hour=7, minute=20)
@@ -243,7 +247,7 @@ app.conf.beat_schedule = {
     },
     "price_system_compare_ip_articles": {
         "task": "price_system.periodical_tasks.write_group_spp_data",
-        "schedule": crontab(minute='*/60')
+        "schedule": crontab(minute='*/120')
     },
     "price_system_article_without_group": {
         "task": "price_system.periodical_tasks.check_articles_without_pricegroup",

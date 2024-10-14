@@ -18,7 +18,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import jwt
 import datetime
 from reklama.models import UrLico
-from web_barcode.constants_file import header_wb_dict
+from web_barcode.constants_file import header_wb_dict, important_message_bot, CHAT_ID_ADMIN
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ now_day = date.today()
 tg_users_list = [178932105]
 
 @app.task
-def check_toket_expire():
+def check_wb_toket_expire():
     """
     Проверяет срок годности токена.
     Если срок годности меньше 5 дней - отправляет сообщение в ТГ
@@ -38,6 +38,20 @@ def check_toket_expire():
 
     for ur_lico_obj in ur_lico_data:
         api_key = header_wb_dict[ur_lico_obj.ur_lice_name]['Authorization']
+        decoded = jwt.decode(api_key, options={"verify_signature": False})
+
+        timestamp = decoded['exp']
+        dt_object = datetime.datetime.fromtimestamp(timestamp)
+
+        # Форматирование в строку
+        delta_time = dt_object - datetime.datetime.now()
+        delta_days = delta_time.days
+        if delta_days < 5:
+            message = f'Токен ВБ юр. лица {ur_lico_obj.ur_lice_name} истекает через {delta_days} дней. Срочно обновите его'
+            important_message_bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message)
+       
+
 
 
 @app.task
