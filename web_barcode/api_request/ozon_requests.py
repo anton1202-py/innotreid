@@ -163,7 +163,11 @@ def add_ozon_articles_to_action(header, action_number, article_data_list):
         "action_id": action_number,
         "products": article_data_list
     })
+    
     response = requests.request("POST", url, headers=header, data=payload)
+    print(action_number, response.status_code)
+    print(action_number, response.text)
+
     return response
     
 

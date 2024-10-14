@@ -15,6 +15,10 @@ from celery_tasks.celery import app
 from dotenv import load_dotenv
 from psycopg2 import Error
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import jwt
+import datetime
+from reklama.models import UrLico
+from web_barcode.constants_file import header_wb_dict
 
 load_dotenv()
 
@@ -23,6 +27,17 @@ CHAT_ID = os.getenv('CHAT_ID')
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 now_day = date.today()
 tg_users_list = [178932105]
+
+@app.task
+def check_toket_expire():
+    """
+    Проверяет срок годности токена.
+    Если срок годности меньше 5 дней - отправляет сообщение в ТГ
+    """
+    ur_lico_data = UrLico.objects.all()
+
+    for ur_lico_obj in ur_lico_data:
+        api_key = header_wb_dict[ur_lico_obj.ur_lice_name]['Authorization']
 
 
 @app.task
