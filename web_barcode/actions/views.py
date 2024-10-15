@@ -20,7 +20,7 @@ def actions_compare_data(request):
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
+    
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=timezone.make_aware(datetime.now())).order_by('-id').first()
     articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action__action_number=1)
     percent_condition = 7
@@ -65,6 +65,7 @@ def actions_compare_data(request):
             inner_list.append(dat.article.maybe_in_action.filter(action=dat.ozon_action_id).first().action_price)
             inner_list.append(dat.id)
             main_data.append(inner_list)
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
