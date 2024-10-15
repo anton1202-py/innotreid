@@ -139,7 +139,8 @@ def article_in_actions(request):
 def get_actions(request):
     """Для AJAX запроса. Показывает список акций в зависимости от выбора Юр лица"""
     ur_lico_id = request.GET.get('ur_lico_id')
-    actions = Action.objects.filter(ur_lico_id=ur_lico_id, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now())).values('id', 'name')
+    print()
+    actions = Action.objects.filter(ur_lico__id=ur_lico_id, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now())).values('id', 'name')
     actions_list = list(actions)
     return JsonResponse(actions_list, safe=False)
 
