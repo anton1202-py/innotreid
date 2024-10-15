@@ -27,7 +27,7 @@ def actions_compare_data(request):
     
     import_data= ''
     if request.POST:
-
+        print(request.POST)
         if 'ur_lico_select' in request.POST and 'action_select' in request.POST:
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('ur_lico_select')))
             action_obj = Action.objects.get(id=int(request.POST.get('action_select')))
