@@ -17,7 +17,7 @@
                     <span>Юр. лицо</span><br>
                     <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
                         {% for ur_lico in ur_lico_data %}
-                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                        <option value="{{ ur_lico.id }}" {% if ur_lico.id == ur_lico_obj.id %}selected{% endif %}>{{ ur_lico.ur_lice_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -26,7 +26,7 @@
                     <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
                         <!-- <option value=""></option> -->
                         {% for action in action_list %}
-                            <option value="{{ action.id }}">{{ action.name }}</option>
+                        <option value="{{ action.id }}" {% if action.id == action_obj.id %}selected{% endif %}>{{ action.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -107,7 +107,6 @@
                     },
                     success: function(data) {
                         $('#action-select').empty(); // Очистить предыдущие опции
-                        $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
                         $.each(data, function(index, action) {
                             $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
                         });

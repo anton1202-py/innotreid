@@ -80,13 +80,11 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
                 ozon_price = 10**6
                 for ozon_article in ozon_variant:
                     if ozon_article.action_price > wb_price:
-
                         differ = (ozon_article.action_price - wb_price) / wb_price * 100
                         if differ < 4:
                             if ozon_article.action_price < ozon_price:
                                 ozon_price = ozon_article.action_price
                                 ozon_art = ozon_article
-
                 if ozon_art:
                     possible_ozon_articles[data] = ozon_art
         except:

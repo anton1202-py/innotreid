@@ -17,7 +17,8 @@
                     <span>Юр. лицо</span><br>
                     <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
                         {% for ur_lico in ur_lico_data %}
-                            <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option>
+                            <!-- <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option> -->
+                            <option value="{{ ur_lico.id }}" {% if ur_lico.id == ur_lico_obj.id %}selected{% endif %}>{{ ur_lico.ur_lice_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -39,19 +40,6 @@
                 <br>
                 <button id="submitBtn" class="custom-button-small-danger">Выйти из акций</button>
             </div>
-            <form method="POST" id="uploadForm" enctype="multipart/form-data" class="big-filter-form" >
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <label for="import_data" title="Загрузка цен из Excel">
-                        <span class="material-symbols-outlined">
-                            ios_share
-                        </span>
-                    </label>
-                    <input type="hidden" id="action_obj" name="action_obj" value="{{  action_obj }}">
-                    <input type="hidden" id="ur_lico_obj" name="ur_lico_obj" value="{{ ur_lico }}">
-                    <input type="file" id="import_data" name="import_file" class="input-file" onchange="submitForm()">
-                </div>
-            </form>
         </div>
 
         <p>Название акции: <b>{{ action_name }}</b></p>

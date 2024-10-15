@@ -35,14 +35,11 @@ def check_wb_toket_expire():
     Если срок годности меньше 5 дней - отправляет сообщение в ТГ
     """
     ur_lico_data = UrLico.objects.all()
-
     for ur_lico_obj in ur_lico_data:
         api_key = header_wb_dict[ur_lico_obj.ur_lice_name]['Authorization']
         decoded = jwt.decode(api_key, options={"verify_signature": False})
-
         timestamp = decoded['exp']
         dt_object = datetime.datetime.fromtimestamp(timestamp)
-
         # Форматирование в строку
         delta_time = dt_object - datetime.datetime.now()
         delta_days = delta_time.days
