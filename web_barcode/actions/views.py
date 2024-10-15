@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 
 from reklama.models import UrLico
 from actions.models import Action, ArticleInAction, ArticleInActionWithCondition, ArticleMayBeInAction
-from actions.supplyment import create_data_with_article_conditions, del_articles_from_ozon_action, del_articles_from_wb_action, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
+from actions.supplyment import add_articles_to_wb_action, create_data_with_article_conditions, del_articles_from_ozon_action, del_articles_from_wb_action, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
 from api_request.ozon_requests import add_ozon_articles_to_action
 from api_request.wb_requests import add_wb_articles_to_action
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
@@ -152,7 +152,7 @@ def add_to_action(request):
         raw_articles_conditions = request.POST.get('articles')
         articles_conditions = raw_articles_conditions.split(',')
         user_chat_id = request.POST.get('user_chat_id')
-        wb_articles_list = []
+        wb_articles_price_dict = {}
         wb_article_obj_list = []
         wb_action_obj = ''
         ozon_actions_data = {}
@@ -165,11 +165,14 @@ def add_to_action(request):
             for article in articles_conditions:
                 if article:
                     article_in_action_obj = ArticleInActionWithCondition.objects.get(id=int(article))
+                    wb_action_obj = article_in_action_obj.wb_action
+                    wb_price = article_in_action_obj.article.maybe_in_action.filter(action=wb_action_obj).first().action_price
                     ur_lico = article_in_action_obj.article.company
                     wb_action_name = article_in_action_obj.wb_action.name
-                    wb_articles_list.append(article_in_action_obj.article.wb_nomenclature)
+
+                    wb_articles_price_dict[article_in_action_obj.article] = wb_price
                     wb_article_obj_list.append(article_in_action_obj.article)
-                    wb_action_obj = article_in_action_obj.wb_action
+                    
                     wb_action_number = int(article_in_action_obj.wb_action.action_number)
                     if article_in_action_obj.ozon_action_id.action_number in ozon_actions_data:
                         ozon_actions_data[article_in_action_obj.ozon_action_id.action_number].append(
@@ -190,7 +193,7 @@ def add_to_action(request):
                         ]
                         ozon_for_save_in_db_actions_data[article_in_action_obj.ozon_action_id] = [article_in_action_obj.article]
             ozon_header = header_ozon_dict[ur_lico]
-            wb_header = header_wb_dict[ur_lico]
+            
 
             # Сохраняем в нашу базу данных информацию какой артикул в какую акцию добавляется
             wb_message = save_articles_added_to_action(wb_article_obj_list, wb_action_obj)
@@ -201,11 +204,11 @@ def add_to_action(request):
                     common_ozon_message.append(ozon_message)
 
             # TODO размьютить код для добавления в акцию на МП   
-            add_wb_articles_to_action(wb_header, wb_action_number, wb_articles_list)
+            add_articles_to_wb_action(ur_lico, wb_articles_price_dict)
             for ozon_action, article_list in ozon_actions_data.items():
                 add_ozon_articles_to_action(ozon_header, ozon_action, article_list)
 
-            message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_list)} артикулов'
+            message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_price_dict.keys())} артикулов'
             bot.send_message(chat_id=user_chat_id,
                              text=message)
             if wb_message and common_ozon_message:
