@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django.utils import timezone
 from api_request.wb_requests import (wb_action_details_info, wb_actions_first_list, wb_articles_in_action)
 from celery_tasks.celery import app
 
@@ -95,30 +95,26 @@ def add_new_actions_ozon_to_db():
                     Action.objects.update_or_create(
                                 defaults=values_for_update, **search_params
                             )
+        action_list = Action.objects.filter(marketplace=CodingMarketplaces.objects.get(marketpalce='Ozon'), date_finish__gt=timezone.make_aware(datetime.now()))
         
-        if new_action_list:
-            for action_number in new_action_list:
-                action_obj = Action.objects.get(
-                    ur_lico=ur_lico_obj, 
-                    marketplace=CodingMarketplaces.objects.get(marketpalce='Ozon'), 
-                    action_number=action_number)
-                articles_info = ozon_articles_in_action(header, action_number)
-                if articles_info:
-                    print('len(articles_info)', len(articles_info))
-                    for article in articles_info:
-                        if Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id']).exists():
-                            articles_obj = Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id'])
-                            if len(articles_obj) > 1:
-                                message = f"У артикулов {articles_obj}, совпдают product_id от Озона: {article['id']}"  
-                                bot.send_message(chat_id=CHAT_ID_ADMIN,
-                                 text=message[:4000])
-                            article_obj = Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id'])[0]
-                            action_discount = (article['price'] - article['max_action_price']) / article['price'] * 100
-                            search_params = {'action': action_obj, 'article': article_obj}
-                            values_for_update = {
-                                'action_price': article['max_action_price'],
-                                'action_discount': round(action_discount, 2)
-                            }
-                            ArticleMayBeInAction.objects.update_or_create(
-                                defaults=values_for_update, **search_params
-                            )
+        for action_obj in action_list:
+            articles_info = ozon_articles_in_action(header, action_obj.action_number)
+            if articles_info:
+                print('len(articles_info)', len(articles_info))
+                for article in articles_info:
+                    if Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id']).exists():
+                        articles_obj = Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id'])
+                        if len(articles_obj) > 1:
+                            message = f"У артикулов {articles_obj}, совпдают product_id от Озона: {article['id']}"  
+                            bot.send_message(chat_id=CHAT_ID_ADMIN,
+                             text=message[:4000])
+                        article_obj = Articles.objects.filter(company=ur_lico_obj.ur_lice_name, ozon_product_id=article['id'])[0]
+                        action_discount = (article['price'] - article['max_action_price']) / article['price'] * 100
+                        search_params = {'action': action_obj, 'article': article_obj}
+                        values_for_update = {
+                            'action_price': article['max_action_price'],
+                            'action_discount': round(action_discount, 2)
+                        }
+                        ArticleMayBeInAction.objects.update_or_create(
+                            defaults=values_for_update, **search_params
+                        )

@@ -10,12 +10,14 @@ from actions.models import Action, ArticleInAction, ArticleInActionWithCondition
 from actions.supplyment import add_articles_to_wb_action, create_data_with_article_conditions, del_articles_from_ozon_action, del_articles_from_wb_action, save_articles_added_to_action, sender_message_about_articles_in_action_already, wb_auto_action_article_price_excel_import
 from api_request.ozon_requests import add_ozon_articles_to_action
 from api_request.wb_requests import add_wb_articles_to_action
+from actions.periodic_tasks import add_new_actions_ozon_to_db
 from web_barcode.constants_file import header_wb_dict, header_ozon_dict, bot
 from price_system.models import Articles
 
 @login_required
 def actions_compare_data(request):
     """Отображает страницу создания кампании"""
+    add_new_actions_ozon_to_db()
     page_name = 'Соответствие акций'
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
@@ -211,7 +213,7 @@ def add_to_action(request):
 
             message = f'Добавил в акцию ВБ {wb_action_name}: {len(wb_articles_price_dict.keys())} артикулов'
             bot.send_message(chat_id=user_chat_id,
-                             text=message)
+                             text=message[:4000])
             if wb_message and common_ozon_message:
                 common_message = {'wb': wb_message, 'ozon': common_ozon_message}
                 sender_message_about_articles_in_action_already(user_chat_id, common_message)

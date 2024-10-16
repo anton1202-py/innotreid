@@ -66,32 +66,53 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     if not percent_condition:
         percent_condition = 7
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
+    print('общее количество', len(main_articles_data))
     possible_ozon_articles = {}
     articles_without_price_group = []
+    test_len = []
+    x = 0
+    m =0
     for data in main_articles_data:
         article = data.article
         wb_price = data.action_price
+
         try:
             wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
             wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
-            if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
-                ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
-                ozon_art = ''
-                ozon_price = 10**6
-                for ozon_article in ozon_variant:
-                    if ozon_article.action_price > wb_price:
-                        differ = (ozon_article.action_price - wb_price) / wb_price * 100
-                        if differ < 4:
-                            if ozon_article.action_price < ozon_price:
-                                ozon_price = ozon_article.action_price
-                                ozon_art = ozon_article
-                if ozon_art:
-                    possible_ozon_articles[data] = ozon_art
+            # if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < 7/100:
+            #     x+=1
+            #     print((wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount, percent_condition/100)
+            # else:
+            #     m+=1
+            #     print((wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount, percent_condition/100)
+            
+            # print((wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount)
+            # if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
+            ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__id=21, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+            ozon_art = ''
+            ozon_price_list = []
+            for ozon_article in ozon_variant:
+                # if ozon_article.action_price > wb_price:
+                differ = (ozon_article.action_price - wb_price) / wb_price * 100
+                # if differ < 4:
+                ozon_price_list.append(ozon_article.action_price)
+                ozon_art = ozon_article
+           
+            ozon_price = min(ozon_price_list)
+            if ozon_art:
+                # print(ozon_art, wb_price, ozon_article.action_price, differ)
+                
+                possible_ozon_articles[data] = ozon_art
+            print(article.common_article, wb_price, wb_price_after_seller_discount, (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount*100, ozon_price, (ozon_price-wb_price)/wb_price*100)
         except:
             articles_without_price_group.append(article.common_article)
     if articles_without_price_group:
         message = f'Добавьте артикулам {articles_without_price_group} ценовую группу. Не могу рассчитать по ним условия участия в акции'
         bot.send_message(chat_id=user_chat_id, text=message)
+    print('меньше 7%', x)
+    print('больше 7%', m)
+    
+    print('len(possible_ozon_articles.keys())', len(possible_ozon_articles.keys()))
     for wb_act_article, ozon_act_article in possible_ozon_articles.items():
         if not ArticleInActionWithCondition.objects.filter(
             article=wb_act_article.article,
