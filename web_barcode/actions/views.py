@@ -92,7 +92,7 @@ def article_in_actions(request):
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
     ur_lico_obj = UrLico.objects.get(ur_lice_name="ООО Иннотрейд")
-    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
+    
     action_obj = Action.objects.filter(ur_lico=ur_lico_obj, date_finish__gt=timezone.make_aware(datetime.now())).order_by('-id').first()
     actions_data = ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action__action_number=1)
     import_data= ''
@@ -116,6 +116,7 @@ def article_in_actions(request):
     articles_list = list(ArticleInAction.objects.filter(article__company=ur_lico_obj.ur_lice_name, action=action_obj).values_list('article', flat=True))
     
     articles_in_ozon_actions = ArticleInAction.objects.filter(action__marketplace=2, article__in=articles_list, date_finish__isnull=True).order_by('article__common_article')
+    action_list = Action.objects.filter(ur_lico=ur_lico_obj, marketplace__id=1, date_finish__gt=timezone.make_aware(datetime.now()))
     context = {
         'user_chat_id': user_chat_id,
         'page_name': page_name,
@@ -221,7 +222,6 @@ def del_from_action(request):
     """Для AJAX запроса. Удаляет выбранные артикулы из акций"""
 
     if request.POST:
-        print(request.POST)
         raw_articles_conditions = request.POST.get('articles')
         article_in_ozon_actions_list = []
         articles_conditions = raw_articles_conditions.split(',')
