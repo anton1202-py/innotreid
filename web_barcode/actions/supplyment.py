@@ -189,7 +189,7 @@ def add_articles_to_wb_action(ur_lico: str, article_price_dict: dict):
     for article_obj, price_in_action in article_price_dict.items():
         if article_obj.articlegroup.filter(common_article=article_obj):
             group_price = article_obj.articlegroup.get(common_article=article_obj).group.old_price
-            new_seller_discount = round((1 - price_in_action/group_price)*100, 0)
+            new_seller_discount = round(math.ceil((1 - price_in_action/group_price)*100), 0)
             if current_price[article_obj.wb_nomenclature]['discount'] != new_seller_discount:
                 data_for_new_price.append(
                     {
