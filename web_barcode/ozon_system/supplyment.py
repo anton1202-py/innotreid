@@ -107,7 +107,7 @@ def compare_action_articles_and_database(header, ur_lico):
                 action=Action.objects.filter(ur_lico__ur_lice_name=ur_lico, action_number=action).first()).exists():
                 if article.ozon_product_id in action_articles:
                     if action_articles[article.ozon_product_id] < database_data[article]:
-                        inner_list.append(article.article.ozon_product_id)
+                        inner_list.append(article.ozon_product_id)
         if inner_list:
             del_articles[action] = inner_list
     return del_articles
