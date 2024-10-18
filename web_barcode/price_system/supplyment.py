@@ -25,7 +25,7 @@ from .models import ArticleGroup, Articles, Groups
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 COLUMN_EXCEL_CREATING_GROUP_LIST = ['Название', 'Юр. лицо', 'Старая цена',
-                                    'WB скидка продавца', 'OZON стоимость', 'YANDEX стоимость', 'Минимальная цена']
+                                    'WB скидка продавца', 'Цена WB', 'Цена OZON', 'Цена YANDEX', 'Мин. цена']
 
 
 def sender_error_to_tg(func):
@@ -440,13 +440,16 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     ws = wb.active
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
+
+        wb_price = item.old_price * (100 - item.wb_discount) / 100
         ws.cell(row=row, column=1, value=str(item.name))
         ws.cell(row=row, column=2, value=str(item.company))
-        ws.cell(row=row, column=3, value=str(item.wb_price))
+        ws.cell(row=row, column=3, value=str(item.old_price))
         ws.cell(row=row, column=4, value=str(item.wb_discount))
-        ws.cell(row=row, column=5, value=str(item.ozon_price))
-        ws.cell(row=row, column=6, value=str(item.yandex_price))
-        ws.cell(row=row, column=7, value=str(item.min_price))
+        ws.cell(row=row, column=5, value=str(wb_price))
+        ws.cell(row=row, column=6, value=str(item.ozon_price))
+        ws.cell(row=row, column=7, value=str(item.yandex_price))
+        ws.cell(row=row, column=8, value=str(item.min_price))
         # ws.cell(row=row, column=8, value=str(item.old_price))
     # Устанавливаем заголовки столбцов
     for i in range(len(COLUMN_EXCEL_CREATING_GROUP_LIST)):
