@@ -24,6 +24,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
+from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
+
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
                     StocksForm)

@@ -98,9 +98,8 @@ def delete_ozon_articles_with_low_price_from_actions():
     Удаляет артикулы из акций ОЗОН,
     если цена в акции меньше, чем в базе даных
     """
-    for url_lico in list(header_ozon_dict.keys()):
-        header = header_ozon_dict[url_lico]
-        delete_articles_with_low_price(header, url_lico)
+    for ur_lico, header in header_ozon_dict.items():
+        delete_articles_with_low_price(header, ur_lico)
     text = 'Отработала функция ozon_system.tasks.delete_ozon_articles_with_low_price_from_actions'
     bot.send_message(chat_id=CHAT_ID_ADMIN,
                      text=text, parse_mode='HTML')

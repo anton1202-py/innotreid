@@ -94,7 +94,7 @@ def compare_action_articles_and_database(header, ur_lico):
     """Сравнивает артикулы из акций и из базы данных"""
     actions_data = get_articles_price_from_actions(header)
     database_data = get_articles_data_from_database(ur_lico)
-    # Словарь для удаляемых артикулов ииз кампании
+    # Словарь для удаляемых артикулов из кампании
     del_articles = {}
     for action, action_articles in actions_data.items():
         inner_list = []
@@ -107,7 +107,7 @@ def compare_action_articles_and_database(header, ur_lico):
                 action=Action.objects.filter(ur_lico__ur_lice_name=ur_lico, action_number=action).first()).exists():
                 if article.ozon_product_id in action_articles:
                     if action_articles[article.ozon_product_id] < database_data[article]:
-                        inner_list.append(article)
+                        inner_list.append(article.article.ozon_product_id)
         if inner_list:
             del_articles[action] = inner_list
     return del_articles
@@ -121,6 +121,7 @@ def del_articles_from_action(header, action_id, articles_list, ur_lico):
         "action_id": action_id,
         "product_ids": articles_list
     })
+    print(payload)
     response = requests.request("POST", url, headers=header, data=payload)
     if response.status_code == 200:
         text = f'{ur_lico}. Из акции {action_id} удалили артикулы: {articles_list}'

@@ -17,7 +17,6 @@ from price_system.models import Articles
 @login_required
 def actions_compare_data(request):
     """Отображает страницу создания кампании"""
-    add_new_actions_ozon_to_db()
     page_name = 'Соответствие акций'
     ur_lico_data = UrLico.objects.all()
     user_chat_id = request.user.tg_chat_id
