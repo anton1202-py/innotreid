@@ -441,7 +441,7 @@ def excel_with_price_groups_creating_mod(data, ur_lico):
     # Заполняем лист данными
     for row, item in enumerate(data, start=2):
 
-        wb_price = item.old_price * (100 - item.wb_discount) / 100
+        wb_price = round(item.old_price * (100 - item.wb_discount) / 100)
         ws.cell(row=row, column=1, value=str(item.name))
         ws.cell(row=row, column=2, value=str(item.company))
         ws.cell(row=row, column=3, value=str(item.old_price))
