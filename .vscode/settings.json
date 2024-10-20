@@ -1,11 +1,14 @@
 {
     "[python]": {
         "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
+            "source.organizeImports": true
         },
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "ms-python.autopep8"
     },
     "python.formatting.provider": "autopep8",
-    "python.terminal.activateEnvironment": true
+    "editor.formatOnSave": true,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.lintOnSave": true
 }

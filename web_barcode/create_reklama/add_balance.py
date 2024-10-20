@@ -5,7 +5,6 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-import telegram
 from analytika_reklama.models import DailyCampaignParameters
 from api_request.wb_requests import (advertisment_campaign_list,
                                      get_budget_adv_campaign)
