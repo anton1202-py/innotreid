@@ -53,7 +53,11 @@ def actions_compare_data(request):
             ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
             create_data_with_article_conditions(action_obj, user_chat_id, percent_condition=percent_condition)
             articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
+            
             print('articles_data', articles_data)
+            for i in articles_data:
+                print(i)
+            print(len(articles_data))
     # create_data_with_article_conditions(action_obj , user_chat_id)
     main_data = []
     # actions_data = ArticleInActionWithCondition.objects.filter(wb_action=action_obj).values_list('article', flat=True)
