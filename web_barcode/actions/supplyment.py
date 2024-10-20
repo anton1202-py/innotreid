@@ -66,7 +66,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     # if not percent_condition:
     #     percent_condition = 7
     print('percent_condition', percent_condition)
-    ur_lico = action_obj.ur_lico
+    ur_lico = action_obj.ur_lico.id
     print('type(ur_lico)', type(ur_lico))
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
@@ -84,7 +84,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
                 if article.id == 6310:
                     print('ozon_variant', ozon_variant)
         else:
-            ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+            ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico__id=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
             if article.id == 6310:
                 print('ozon_variant', ozon_variant)
         if ozon_variant:
