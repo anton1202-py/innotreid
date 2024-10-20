@@ -73,33 +73,32 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     for data in main_articles_data:
         article = data.article
         wb_price = data.action_price
-        try:
-            wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
-            wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
-
-            # Если пользователь задал условие сравнивать с введенным процентом отклонения цены в акции от обычной цены
-            if percent_condition:
-                if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
-                    ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
-                    if article.id == 6310:
-                        print('ozon_variant', ozon_variant)
-            else:
+        # try:
+        wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
+        wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
+        # Если пользователь задал условие сравнивать с введенным процентом отклонения цены в акции от обычной цены
+        if percent_condition:
+            if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
                 ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
                 if article.id == 6310:
                     print('ozon_variant', ozon_variant)
-            if ozon_variant:
-                ozon_art = ''
-                ozon_price_dict = {}
-                for ozon_article in ozon_variant:
-                    if ozon_article.action_price > wb_price:
-                        differ = (ozon_article.action_price - wb_price) / wb_price * 100
-                        if differ < 4:
-                            ozon_price_dict[ozon_article] = ozon_article.action_price
-                if ozon_price_dict:
-                    ozon_art = min(ozon_price_dict, key=ozon_price_dict.get)
-                    possible_ozon_articles[data] = ozon_art
-        except:
-            articles_without_price_group.append(article.common_article)
+        else:
+            ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+            if article.id == 6310:
+                print('ozon_variant', ozon_variant)
+        if ozon_variant:
+            ozon_art = ''
+            ozon_price_dict = {}
+            for ozon_article in ozon_variant:
+                if ozon_article.action_price > wb_price:
+                    differ = (ozon_article.action_price - wb_price) / wb_price * 100
+                    if differ < 4:
+                        ozon_price_dict[ozon_article] = ozon_article.action_price
+            if ozon_price_dict:
+                ozon_art = min(ozon_price_dict, key=ozon_price_dict.get)
+                possible_ozon_articles[data] = ozon_art
+        # except:
+        #     articles_without_price_group.append(article.common_article)
     if articles_without_price_group:
         message = f'Добавьте артикулам {articles_without_price_group} ценовую группу. Не могу рассчитать по ним условия участия в акции'
         bot.send_message(chat_id=user_chat_id, text=message[:4000])
