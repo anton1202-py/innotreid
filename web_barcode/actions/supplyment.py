@@ -66,6 +66,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     # if not percent_condition:
     #     percent_condition = 7
     print('percent_condition', percent_condition)
+    ur_lico = action_obj.ur_lico
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
     articles_without_price_group = []
@@ -79,9 +80,9 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
             # Если пользователь задал условие сравнивать с введенным процентом отклонения цены в акции от обычной цены
             if percent_condition:
                 if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
-                    ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+                    ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
             else:
-                ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+                ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
             
             if ozon_variant:
                 ozon_art = ''
