@@ -78,6 +78,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
         wb_discount = article.articlegroup.get(common_article=article).group.wb_discount/100
         wb_price_after_seller_discount = (1- wb_discount) * article.articlegroup.get(common_article=article).group.old_price
         # Если пользователь задал условие сравнивать с введенным процентом отклонения цены в акции от обычной цены
+        ozon_variant = ''
         if percent_condition:
             if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
                 ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__ur_lico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
