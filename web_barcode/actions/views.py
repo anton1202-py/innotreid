@@ -66,6 +66,7 @@ def actions_compare_data(request):
             inner_list.append(dat.article.common_article)
             inner_list.append(dat.article.maybe_in_action.filter(action=dat.wb_action).first().action_price)
             inner_list.append(dat.ozon_action_id.name)
+            print('dat.ozon_action_id', dat.ozon_action_id, dat)
             print('dat.article.maybe_in_action.filter(action=dat.ozon_action_id)', dat.article.maybe_in_action.filter(action=dat.ozon_action_id))
             inner_list.append(dat.article.maybe_in_action.filter(action=dat.ozon_action_id).first().action_price)
             inner_list.append(dat.id)
