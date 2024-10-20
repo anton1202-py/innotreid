@@ -44,15 +44,15 @@ def actions_compare_data(request):
             if type(import_data) != str:
                 return redirect('actions_compare_data')
         if 'percent_submitBtn' in request.POST:
-            print(request.POST)
             ur_lico_obj = UrLico.objects.get(id=int(request.POST.get('percent_ur_lico')))
             action_obj = Action.objects.get(id=int(request.POST.get('percent_action')))
-            percent_condition = int(request.POST.get('differrence_percent'))
+            if request.POST.get('differrence_percent'):
+                percent_condition = int(request.POST.get('differrence_percent'))
+            else:
+                percent_condition = None
             ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj).delete()
             create_data_with_article_conditions(action_obj, user_chat_id, percent_condition=percent_condition)
             articles_data = ArticleInActionWithCondition.objects.filter(article__company=ur_lico_obj.ur_lice_name, wb_action=action_obj)
-    print('action_obj',action_obj, action_obj.id)
-    print('ur_lico_obj', ur_lico_obj)
     # create_data_with_article_conditions(action_obj , user_chat_id)
     main_data = []
     # actions_data = ArticleInActionWithCondition.objects.filter(wb_action=action_obj).values_list('article', flat=True)
