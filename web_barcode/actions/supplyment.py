@@ -67,6 +67,7 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
     #     percent_condition = 7
     print('percent_condition', percent_condition)
     ur_lico = action_obj.ur_lico
+    print('type(ur_lico)', type(ur_lico))
     main_articles_data = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Wildberries', action=action_obj)
     possible_ozon_articles = {}
     articles_without_price_group = []
