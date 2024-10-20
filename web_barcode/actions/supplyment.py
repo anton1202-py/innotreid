@@ -81,9 +81,12 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
             if percent_condition:
                 if (wb_price_after_seller_discount - wb_price)/wb_price_after_seller_discount < percent_condition/100:
                     ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
+                    if article.id == 6310:
+                        print('ozon_variant', ozon_variant)
             else:
                 ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__urlico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
-            
+                if article.id == 6310:
+                    print('ozon_variant', ozon_variant)
             if ozon_variant:
                 ozon_art = ''
                 ozon_price_dict = {}
