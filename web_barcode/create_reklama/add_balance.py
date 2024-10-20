@@ -14,19 +14,15 @@ from create_reklama.models import (CreatedCampaign, ProcentForAd,
                                    SenderStatisticDaysAmount, VirtualBudgetForAd)
 from django.db.models import Sum
 # from celery_tasks.celery import app
-from dotenv import load_dotenv
 from price_system.models import Articles
 from price_system.supplyment import sender_error_to_tg
-from reklama.models import DataOooWbArticle, OooWbArticle, UrLico
+from reklama.models import DataOooWbArticle, UrLico
 
-from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU,
-                                        TELEGRAM_TOKEN, bot, header_ozon_dict,
-                                        header_wb_dict, header_yandex_dict,
+from web_barcode.constants_file import (CHAT_ID_ADMIN, CHAT_ID_EU, reklama_bot,
+                                        header_ozon_dict,
+                                        header_wb_dict,
                                         ozon_adv_client_access_id_dict,
-                                        ozon_adv_client_secret_dict,
-                                        ozon_api_token_dict,
-                                        wb_headers_karavaev, wb_headers_ooo,
-                                        yandex_business_id_dict)
+                                        ozon_adv_client_secret_dict)
 
 campaign_budget_users_list = [CHAT_ID_ADMIN, CHAT_ID_EU]
 
@@ -67,7 +63,7 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
     elif response.status_code == 404:
         text = f'Кампания {campaign_number} не найдена в списке кампаний ВБ. Удалите кампанию с сервера. Или проверьте правильно ли записан ее номер'
         for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
+            reklama_bot.send_message(chat_id=user,
                              text=text, parse_mode='HTML')
         return []
     else:
@@ -76,7 +72,7 @@ def get_wb_campaign_info(campaign_number, header, attempt=0):
             return get_wb_campaign_info(campaign_number, header, attempt)
         else:
             text = f'Данные кампании {campaign_number} были запрошены 50 раз. Статус код {response.status_code}'
-            bot.send_message(chat_id=CHAT_ID_ADMIN,
+            reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                              text=text, parse_mode='HTML')
             return []
 
@@ -132,7 +128,7 @@ def count_sum_orders_action(article_list, begin_date, end_date, header):
         return data_list
     else:
         text = f'count_sum_orders_action. response.status_code = {response.status_code}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
         time.sleep(25)
         return count_sum_orders_action(article_list, begin_date, end_date, header)
@@ -203,7 +199,7 @@ def wb_campaign_budget(campaign, header, counter=0):
         return wb_campaign_budget(campaign, header, counter)
     else:
         message = f'Статус код просмотра бюджета {response.status_code} - кампания {campaign}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
 
 
@@ -455,7 +451,7 @@ def check_status_campaign(campaign, header, counter=0):
         return check_status_campaign(campaign, header, counter)
     else:
         message = f"статус код на запрос статуса кампании {campaign} = {response.status_code}. Возвращаю статус код 11."
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=message, parse_mode='HTML')
         return 11
 
@@ -470,15 +466,15 @@ def campaing_current_budget(campaign, header):
         return budget
     elif response.status_code == 400:
         message = f"Просмотр бюджета кампании {campaign}.Ошибка 400 - ошибочный запрос"
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
         return 100
     elif response.status_code == 401:
         message = f"Просмотр бюджета кампании {campaign}.Ошибка 401 - пользователь не авторизован"
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
         return 0
     elif response.status_code == 404:
         message = f"Просмотр бюджета кампании {campaign}.Ошибка 404 - кампания не найдена"
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
         return 0
     else:
         return campaing_current_budget(campaign, header)
@@ -495,22 +491,22 @@ def start_add_campaign(campaign, header, counter=0):
         if status == 4 or status == 11:
             if budget > 0:
                 response = requests.request("GET", url, headers=header)
-                bot.send_message(chat_id=CHAT_ID_ADMIN,
+                reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                                  text=f'{campaign} {response.status_code}')
                 if response.status_code != 200 and response.status_code != 422:
                     start_add_campaign(campaign, header, counter)
                 elif response.status_code == 404:
                     message = f"РЕКЛАМА ВБ. Статус код при запуске кампании {campaign}: {response.status_code}. Кампания не найдена"
-                    bot.send_message(chat_id=CHAT_ID_ADMIN,
+                    reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                                      text=message[:4092])
 
         elif status != 4 and status != 11 and status != 9:
             message = f"статус кампании {campaign} = {status}. Не могу запустить кампанию"
-            bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+            reklama_bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
     else:
         response = requests.request("GET", url, headers=header)
         message = f"статус кампании {campaign} не пришел, но все равно пытаюсь ее запустить"
-        bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN, text=message[:4092])
 
 
 @sender_error_to_tg
@@ -551,7 +547,7 @@ def send_common_message(messages_list: list):
                 start_point:finish_point]
             time.sleep(1)
             for user in campaign_budget_users_list:
-                bot.send_message(chat_id=user,
+                reklama_bot.send_message(chat_id=user,
                                  text=message_for_send)
 
 
@@ -639,11 +635,11 @@ def get_wb_ooo_stock_data(header, info_list):
         return data_list
     elif response.status_code == 404:
         text = f'reklama.supplyment.get_wb_ooo_stock_data. Статус код = {response.status_code}. Какая-то серьезная ошибка'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
     else:
         text = f'reklama.supplyment.get_wb_ooo_stock_data. Статус код = {response.status_code}'
-        bot.send_message(chat_id=CHAT_ID_ADMIN,
+        reklama_bot.send_message(chat_id=CHAT_ID_ADMIN,
                          text=text, parse_mode='HTML')
         time.sleep(21)
         return get_wb_ooo_stock_data(header, info_list)

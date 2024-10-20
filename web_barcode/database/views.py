@@ -105,6 +105,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    test_email()
     data = Articles.objects.all()
     context = {
         'data': data,

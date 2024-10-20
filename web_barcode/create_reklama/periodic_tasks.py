@@ -32,7 +32,7 @@ from price_system.supplyment import sender_error_to_tg
 from reklama.models import DataOooWbArticle, UrLico
 from reklama.supplyment import ozon_adv_campaign_articles_name_data
 
-from web_barcode.constants_file import (CHAT_ID_ADMIN, bot,
+from web_barcode.constants_file import (reklama_bot,
                                         campaign_budget_users_list,
                                         header_wb_dict)
 
@@ -109,7 +109,6 @@ def update_campaign_status():
     """Обновляет статус кампаний"""
     ur_lico_data = UrLico.objects.all()
     answer_data = filter_campaigns_status_type()
-    print('answer_data', answer_data)
     for ur_lico_obj in ur_lico_data:
         answer_campaigns_info = answer_data[ur_lico_obj.ur_lice_name]
         for campaign_type, data in answer_campaigns_info.items():
@@ -217,7 +216,7 @@ def auto_replenish_budget_campaign():
     if raw_message:
         message = message + raw_message
         for user in campaign_budget_users_list:
-            bot.send_message(chat_id=user,
+            reklama_bot.send_message(chat_id=user,
                              text=message)
 
 
