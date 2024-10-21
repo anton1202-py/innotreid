@@ -47,7 +47,7 @@ def add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj):
     """Описывает артикулы, которые могут быть в акции"""
     if article_action_data:
         for_create_list = []
-        for data in article_action_data['data']['nomenclatures']:
+        for data in article_action_data:
             if Articles.objects.filter(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id']).exists():
                 article_obj = Articles.objects.get(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id'])
                 maybe_obj = ArticleMayBeInAction(
