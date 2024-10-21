@@ -469,18 +469,26 @@ def wb_action_details_info(header, action_ids_list):
 
 
 # @api_retry_decorator
-def wb_articles_in_action(header, action_number):
+def wb_articles_in_action(header, action_number, limit=1000, offset=0, counter=0, article_adv_data=None):
     """
     Возвращает список товаров, подходящих для участия в акции.
     Неприменимо для автоакций
     """
     time.sleep(1)
-    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/nomenclatures?promotionID={action_number}&inAction=false'
+    if not article_adv_data:
+        article_adv_data = []
+    url = f'https://dp-calendar-api.wildberries.ru/api/v1/calendar/promotions/nomenclatures?promotionID={action_number}&inAction=false&limit={limit}&offset={offset}'
     response = requests.request("GET", url, headers=header)
-    print('action_number', action_number)
-    print('response.status_code', response.status_code)
+    counter += 1
     if response.status_code == 200:
-        return json.loads(response.text)
+        articles_list = json.loads(response.text)['data']['nomenclatures']
+        for data in articles_list:
+                article_adv_data.append(data)
+        if len(articles_list) == limit:
+            offset = limit * counter
+            return wb_articles_in_action(header, action_number, limit, offset, counter, article_adv_data)
+        else:
+            return article_adv_data
     else:
         return None
 

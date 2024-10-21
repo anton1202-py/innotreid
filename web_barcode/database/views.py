@@ -25,12 +25,15 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
+from api_request.wb_requests import wb_articles_in_action
+from actions.periodic_tasks import add_new_actions_wb_to_db
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
                     StocksForm)
 from .models import (Articles, OrdersFbsInfo, Sales, ShelvingStocks, Stocks,
                      Stocks_wb_frontend, WildberriesStocks)
+from web_barcode.constants_file import wb_headers_ooo
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -105,6 +108,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    add_new_actions_wb_to_db()
     data = Articles.objects.all()
     context = {
         'data': data,
