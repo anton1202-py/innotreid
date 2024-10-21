@@ -26,7 +26,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
 from api_request.wb_requests import wb_articles_in_action
-from actions.periodic_tasks import add_new_actions_wb_to_db
+from actions.periodic_tasks import add_new_actions_ozon_to_db, add_new_actions_wb_to_db
+from actions.models import ArticleInActionWithCondition, ArticleMayBeInAction
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
@@ -108,7 +109,10 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    add_new_actions_wb_to_db()
+    # d =  ArticleMayBeInAction.objects.all().delete()
+    # x = ArticleInActionWithCondition.objects.all().delete()
+    # add_new_actions_wb_to_db()
+    add_new_actions_ozon_to_db()
     data = Articles.objects.all()
     context = {
         'data': data,
