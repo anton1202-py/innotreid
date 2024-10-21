@@ -50,12 +50,19 @@ def add_article_may_be_in_action(ur_lico_obj, article_action_data, action_obj):
         for data in article_action_data:
             if Articles.objects.filter(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id']).exists():
                 article_obj = Articles.objects.get(company=ur_lico_obj.ur_lice_name, wb_nomenclature=data['id'])
-                maybe_obj = ArticleMayBeInAction(
-                    action=action_obj,
-                    article=article_obj,
-                    action_price=data['planPrice'],
-                    action_discount=data['planDiscount']
-                )
+                if ArticleMayBeInAction.objects.filter(action=action_obj,
+                    article=article_obj).exists():
+                    ArticleMayBeInAction.objects.filter(action=action_obj,
+                    article=article_obj).update(
+                        action_price=data['planPrice'],
+                        action_discount=data['planDiscount'])
+                else:
+                    maybe_obj = ArticleMayBeInAction(
+                        action=action_obj,
+                        article=article_obj,
+                        action_price=data['planPrice'],
+                        action_discount=data['planDiscount']
+                    )
                 for_create_list.append(maybe_obj)
         if for_create_list:
             ArticleMayBeInAction.objects.bulk_create(for_create_list)
