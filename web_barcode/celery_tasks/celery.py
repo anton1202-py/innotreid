@@ -131,10 +131,12 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.update_campaign_budget_and_cpm",
         "schedule": crontab(minute='*/180')
     },
-    "create_reklama_add_balance": {
-        "task": "create_reklama.periodic_tasks.budget_working",
-        "schedule": crontab(hour=21, minute=1)
-    },
+
+    # TODO Разобраться, что с бюджетом, потом включить
+    # "create_reklama_add_balance": {
+    #     "task": "create_reklama.periodic_tasks.budget_working",
+    #     "schedule": crontab(hour=21, minute=1)
+    # },
 
     "create_reklama_wb_ooo_matching_article_campaign": {
         "task": "create_reklama.periodic_tasks.matching_wb_ooo_article_campaign",
@@ -148,14 +150,14 @@ app.conf.beat_schedule = {
         "task": "create_reklama.periodic_tasks.wb_ooo_fbo_stock_count",
         "schedule": crontab(hour=22, minute=20)
     },
-    "create_reklama_auto_replenish": {
-        "task": "create_reklama.periodic_tasks.auto_replenish_budget_campaign",
-        "schedule": crontab(hour=2, minute=0)
-    },
-    "create_reklama_check_start_adv": {
-        "task": "create_reklama.periodic_tasks.check_replenish_adv_budget",
-        "schedule": crontab(hour=6, minute=0)
-    },
+    # "create_reklama_auto_replenish": {
+    #     "task": "create_reklama.periodic_tasks.auto_replenish_budget_campaign",
+    #     "schedule": crontab(hour=2, minute=0)
+    # },
+    # "create_reklama_check_start_adv": {
+    #     "task": "create_reklama.periodic_tasks.check_replenish_adv_budget",
+    #     "schedule": crontab(hour=6, minute=0)
+    # },
 
     # =========== КОНЕЦ РАЗДЕЛА CREATE_REKLAMA ========== #
 

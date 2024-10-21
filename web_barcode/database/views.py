@@ -25,16 +25,19 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 from ozon_system.tasks import delete_ozon_articles_with_low_price_from_actions
-from api_request.wb_requests import wb_articles_in_action
+from api_request.wb_requests import pausa_advertisment_campaigns, wb_articles_in_action
 from actions.periodic_tasks import add_new_actions_ozon_to_db, add_new_actions_wb_to_db
 from actions.models import ArticleInActionWithCondition, ArticleMayBeInAction
+from analytika_reklama.testing import read_excel_file
+from create_reklama.models import CreatedCampaign
+from reklama.models import UrLico
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
                     StocksForm)
 from .models import (Articles, OrdersFbsInfo, Sales, ShelvingStocks, Stocks,
                      Stocks_wb_frontend, WildberriesStocks)
-from web_barcode.constants_file import wb_headers_ooo
+from web_barcode.constants_file import wb_headers_ooo, header_wb_dict
 
 DICT_FOR_STOCKS_WB = {
     "Товары в пути до клиента": 1,
@@ -109,6 +112,15 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    # read_excel_file()
+    # ur_lico_data = UrLico.objects.all()
+    # for ur_lico in ur_lico_data:
+    #     if ur_lico.id != 1:
+    #         x = CreatedCampaign.objects.filter(ur_lico=ur_lico)
+    #         for camp in x:
+    #             header = header_wb_dict[ur_lico.ur_lice_name]
+    #             campaign_number = camp.campaign_number
+    #             pausa_advertisment_campaigns(header, campaign_number)
     # d =  ArticleMayBeInAction.objects.all().delete()
     # x = ArticleInActionWithCondition.objects.all().delete()
     # add_new_actions_wb_to_db()
