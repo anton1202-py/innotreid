@@ -112,7 +112,7 @@ def database_home(request):
     # d =  ArticleMayBeInAction.objects.all().delete()
     # x = ArticleInActionWithCondition.objects.all().delete()
     # add_new_actions_wb_to_db()
-    add_new_actions_ozon_to_db()
+    # add_new_actions_ozon_to_db()
     data = Articles.objects.all()
     context = {
         'data': data,
