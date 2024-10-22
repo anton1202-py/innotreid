@@ -28,15 +28,15 @@ def add_new_actions_wb_to_db():
         if actions_data:
             actions_info = actions_data['data']['promotions']
             for action in actions_info:
-                # if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
-                message = (f"У Юр. лица {ur_lico_obj.ur_lice_name} появилась новая акция ВБ: "
-                            f"{action['id']}: {action['name']}.\n"
-                            f"Дата начала: {datetime.strptime(action['startDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.\n"
-                            f"Дата завершения {datetime.strptime(action['endDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.")
-                for chat_id in actions_info_users_list:
-                    bot.send_message(chat_id=chat_id,
-                         text=message)
-                actions_not_exist_str += f"promotionIDs={action['id']}&"
+                if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
+                    message = (f"У Юр. лица {ur_lico_obj.ur_lice_name} появилась новая акция ВБ: "
+                                f"{action['id']}: {action['name']}.\n"
+                                f"Дата начала: {datetime.strptime(action['startDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.\n"
+                                f"Дата завершения {datetime.strptime(action['endDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.")
+                    for chat_id in actions_info_users_list:
+                        bot.send_message(chat_id=chat_id,
+                             text=message)
+                    actions_not_exist_str += f"promotionIDs={action['id']}&"
         if actions_not_exist_str:
             # Получаем детальную информацию по новым акциям
             actions_details = wb_action_details_info(header, actions_not_exist_str)
@@ -76,13 +76,6 @@ def add_new_actions_ozon_to_db():
             actions_info = actions_data['result']
             for action in actions_info:
                 if not Action.objects.filter(ur_lico=ur_lico_obj, action_number=action['id']).exists():
-                    # message = (f"У Юр. лица {ur_lico_obj.ur_lice_name} появилась новая акция: "
-                    #             f"{action['id']}: {action['name']}.\n"
-                    #             f"Дата начала: {datetime.strptime(action['startDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.\n"
-                    #             f"Дата завершения {datetime.strptime(action['endDateTime'], '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')}.")
-                    # for chat_id in actions_info_users_list:
-                    #     bot.send_message(chat_id=chat_id,
-                    #          text=message)
                     new_action_list.append(action['id'])
 
                     search_params = {'ur_lico': ur_lico_obj, 'marketplace': CodingMarketplaces.objects.get(marketpalce='Ozon'), 'action_number': action['id']}

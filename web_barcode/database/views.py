@@ -31,6 +31,7 @@ from actions.models import ArticleInActionWithCondition, ArticleMayBeInAction
 from analytika_reklama.testing import read_excel_file
 from create_reklama.models import CreatedCampaign
 from reklama.models import UrLico
+from motivation.google_sheet_report import common_designer_sales_last_month_google_sheet
 
 from .forms import (ArticlesForm, LoginUserForm, SalesForm, SelectArticlesForm,
                     SelectDateForm, SelectDateStocksForm, ShelvingForm,
@@ -112,6 +113,7 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
+    common_designer_sales_last_month_google_sheet()
     # read_excel_file()
     # ur_lico_data = UrLico.objects.all()
     # for ur_lico in ur_lico_data:
