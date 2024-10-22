@@ -4,150 +4,154 @@
 {% block title%}{{ page_name }}{% endblock %}
 {% load price_system_util %}
 {% block content%}
-    <div class="features">
-        <div class="top-befor-header">
-            <h1>{{ page_name }}</h1>
-        </div>
+<div class="features">
+    <div class="top-befor-header">
+        <h1>{{ page_name }}</h1>
+    </div>
 
-        
-        <div class='filter-data'>
-            <form id="centr-form" class="small-filter-form" method="POST">
-                {% csrf_token %}
-                <div class="inner-form-data">
-                    <span>Юр. лицо</span><br>
-                    <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
-                        {% for ur_lico in ur_lico_data %}
-                            <!-- <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option> -->
-                            <option value="{{ ur_lico.id }}" {% if ur_lico.id == ur_lico_obj.id %}selected{% endif %}>{{ ur_lico.ur_lice_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="inner-form-data">
-                    <span>Акции</span><br>
-                    <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
-                        <!-- <option value=""></option> -->
-                        {% for action in action_list %}
-                        <option value="{{ action.id }}" {% if action.id == action_obj %}selected{% endif %}>{{ action.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="inner-form-data">
-                    <br>
-                    <input type="Submit" id="filter" name="filter_data" value="Фильтровать"/>
-                </div>
-            </form>
+
+    <div class='filter-data'>
+        <form id="centr-form" class="small-filter-form" method="POST">
+            {% csrf_token %}
+            <div class="inner-form-data">
+                <span>Юр. лицо</span><br>
+                <select id="ur-lico-select" class="mySelect" name="ur_lico_select">
+                    {% for ur_lico in ur_lico_data %}
+                    <!-- <option value="{{ ur_lico.id }}">{{ ur_lico.ur_lice_name }}</option> -->
+                    <option value="{{ ur_lico.id }}" {% if ur_lico.id==ur_lico_obj.id %}selected{% endif %}>{{
+                        ur_lico.ur_lice_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="inner-form-data">
+                <span>Акции</span><br>
+                <select id="action-select" class="mySelect" name="action_select" onchange="updateHiddenInput()">
+                    <!-- <option value=""></option> -->
+                    {% for action in action_list %}
+                    <option value="{{ action.id }}" {% if action.id==action_obj %}selected{% endif %}>{{ action.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="inner-form-data">
                 <br>
-                <button id="submitBtn" class="custom-button-small-danger">Выйти из акций</button>
+                <input type="Submit" id="filter" name="filter_data" value="Фильтровать" />
             </div>
+        </form>
+        <div class="inner-form-data">
+            <br>
+            <button id="submitBtn" class="custom-button-small-danger">Выйти из акций</button>
         </div>
+    </div>
 
-        <p>Название акции: <b>{{ action_name }}</b></p>
-        <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
-        <p>Участвуют: <b>{{ in_action_amount }}</b></p>
-        <p>Дата начала акции: <b>{{ date_start }}</b></p>
-        <p>Дата завершения акции: <b>{{ date_finish }}</b></p>
+    <p>Название акции: <b>{{ action_name }}</b></p>
+    <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
+    <p>Участвуют: <b>{{ in_action_amount }}</b></p>
+    <p>Дата начала акции: <b>{{ date_start }}</b></p>
+    <p>Дата завершения акции: <b>{{ date_finish }}</b></p>
 
-        <table style="overflow-x: scroll; display: block; width: 100%;">
-            <tr >
-                <th>
-                    <input type="checkbox" id="main_input" name="main_input" class="input-field" onchange="checkAllCheckboxes(this)" checked >
-                </th>
-                <th>Артикул</th>
-                <th>Акция Озон</th>
-                <th>В акции с </th>
-                <th>Вышел из акции</th>
-            </tr>
-            {% for el in articles_in_ozon_actions %}
-            <tr data-article-id="{'article': {{ el.article.id }}; 'action': {{ el.action.id }}}">
-                <td>
-                    <input type="checkbox" name="article_input" class="input-field" checked>
-                </td>
-                <td>{{ el.article.common_article }}</td>
-                <td>{{ el.action.name }}</td>
-                <td>{{ el.date_start }}</td>
-                {% if el.date_finish %}
-                    <td>{{ el.date_finish }}</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </table>
-    </div>  
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <table style="overflow-x: scroll; display: block; width: 100%;">
+        <tr>
+            <th>
+                <input type="checkbox" id="main_input" name="main_input" class="input-field"
+                    onchange="checkAllCheckboxes(this)" checked>
+            </th>
+            <th>Артикул</th>
+            <th>Акция Озон</th>
+            <th>В акции с </th>
+            <th>Вышел из акции</th>
+        </tr>
+        {% for el in articles_in_ozon_actions %}
+        <tr data-article-id="{'article': {{ el.article.id }}; 'action': {{ el.action.id }}}">
+            <td>
+                <input type="checkbox" name="article_input" class="input-field" checked>
+            </td>
+            <td>{{ el.article.common_article }}</td>
+            <td>{{ el.action.name }}</td>
+            <td>{{ el.date_start }}</td>
+            {% if el.date_finish %}
+            <td>{{ el.date_finish }}</td>
+            {% else %}
+            <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-        // ======== ДЛЯ ФИЛЬТРАЦИИ СПИСКА АКЦИЙ В ЗАВИСИМОСТИ ОТ ВЫБОРА ЮР ЛИЦА ========== //
-        $(document).ready(function() {
-            $('#ur-lico-select').change(function() {
-                var urLicoId = $(this).val();
-                $.ajax({
-                    url: '{% url "get_actions" %}',
-                    data: {
-                        'ur_lico_id': urLicoId
-                    },
-                    success: function(data) {
-                        $('#action-select').empty(); // Очистить предыдущие опции
-                        // $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
-                        $.each(data, function(index, action) {
-                            $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
-                        });
-                    }
-                });
+<script>
+    // ======== ДЛЯ ФИЛЬТРАЦИИ СПИСКА АКЦИЙ В ЗАВИСИМОСТИ ОТ ВЫБОРА ЮР ЛИЦА ========== //
+    $(document).ready(function () {
+        $('#ur-lico-select').change(function () {
+            var urLicoId = $(this).val();
+            $.ajax({
+                url: '{% url "get_actions" %}',
+                data: {
+                    'ur_lico_id': urLicoId
+                },
+                success: function (data) {
+                    $('#action-select').empty(); // Очистить предыдущие опции
+                    // $('#action-select').append('<option value=""></option>'); // Добавить начальную опцию
+                    $.each(data, function (index, action) {
+                        $('#action-select').append('<option value="' + action.id + '">' + action.name + '</option>');
+                    });
+                }
             });
         });
+    });
 
-        function updateHiddenInput() {
-            var select = document.getElementById("action-select");
-            var selectedOption = select.options[select.selectedIndex].value; // Получаем текст выбранного элемента
-            console.log(selectedOption)
-            document.getElementById("action_obj").value = selectedOption; // Устанавливаем значение в скрытое поле
+    function updateHiddenInput() {
+        var select = document.getElementById("action-select");
+        var selectedOption = select.options[select.selectedIndex].value; // Получаем текст выбранного элемента
+        console.log(selectedOption)
+        document.getElementById("action_obj").value = selectedOption; // Устанавливаем значение в скрытое поле
 
-            var selectUr = document.getElementById("ur-lico-select");
-            var selectedUrOption = selectUr.options[selectUr.selectedIndex].value; // Получаем текст выбранного элемента
-            console.log(selectedUrOption)
-            document.getElementById("ur_lico_obj").value = selectedUrOption; // Устанавливаем значение в скрытое поле
-        }
+        var selectUr = document.getElementById("ur-lico-select");
+        var selectedUrOption = selectUr.options[selectUr.selectedIndex].value; // Получаем текст выбранного элемента
+        console.log(selectedUrOption)
+        document.getElementById("ur_lico_obj").value = selectedUrOption; // Устанавливаем значение в скрытое поле
+    }
 
 
-        //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
-        function checkAllCheckboxes(mainCheckbox) {
-            var checkboxes = document.getElementsByClassName('input-field');
-            for (var i = 0; i < checkboxes.length; i++) {
-                if (checkboxes[i] !== mainCheckbox) {
-                    checkboxes[i].checked = mainCheckbox.checked;
-                }
+    //========== ЧЕКАЕТ ВСЕ ЧЕКБОКСЫ,ЕСЛИ НАЖМЕТ ГЛАВНЫЙ ==========//
+    function checkAllCheckboxes(mainCheckbox) {
+        var checkboxes = document.getElementsByClassName('input-field');
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i] !== mainCheckbox) {
+                checkboxes[i].checked = mainCheckbox.checked;
             }
         }
+    }
 
-        //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
-        document.addEventListener('DOMContentLoaded', function() {
-            var submitBtn = document.getElementById('submitBtn');
-            submitBtn.addEventListener('click', function() {
-                var selectedArticles = [];
-                var checkboxes = document.querySelectorAll('.input-field:checked');
-                
-                checkboxes.forEach(function(checkbox) {
-                    var articleElement = checkbox.closest('tr');                    
-                    var articleNumber = articleElement.getAttribute('data-article-id');
-                    if (articleNumber){
+    //========== ВЫБРАННЫЕ ЧЕКБОКСЫ ==========//
+    document.addEventListener('DOMContentLoaded', function () {
+        var submitBtn = document.getElementById('submitBtn');
+        submitBtn.addEventListener('click', function () {
+            var selectedArticles = [];
+            var checkboxes = document.querySelectorAll('.input-field:checked');
+
+            checkboxes.forEach(function (checkbox) {
+                var articleElement = checkbox.closest('tr');
+                var articleNumber = articleElement.getAttribute('data-article-id');
+                if (articleNumber) {
                     console.log('articleNumber', articleNumber)
-                    selectedArticles.push(articleNumber)};
-                });
-                
-                var formData = new FormData();
-                formData.append('articles', selectedArticles);
-                formData.append('wb_action', "{{action_obj}}");
-                formData.append('ur_lico_name', "{{ur_lico_obj.ur_lice_name}}");
-                formData.append("user_chat_id", "{{ user_chat_id }}");
-                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
-                // Отправка данных на сервер
-                fetch('del_from_action', {
-                    method: 'POST',
-                    body: formData,
-                })
-                
+                    selectedArticles.push(articleNumber)
+                };
+            });
+
+            var formData = new FormData();
+            formData.append('articles', selectedArticles);
+            formData.append('wb_action', "{{action_obj}}");
+            formData.append('ur_lico_name', "{{ur_lico_obj.ur_lice_name}}");
+            formData.append("user_chat_id", "{{ user_chat_id }}");
+            formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            // Отправка данных на сервер
+            fetch('del_from_action', {
+                method: 'POST',
+                body: formData,
+            })
+
                 .then(response => {
                     if (response.ok) {
                         console.log('Артикулы успешно отправлены на сервер');
@@ -159,29 +163,29 @@
                     }
                 })
                 .catch(error => console.error('Ошибка:', error));
-            });
         });
-        // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
-        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
-            const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
-                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
-                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+    });
+    // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+        v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
 
-            // do the work...
-            document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-                const table = th.closest('table');
-                Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
-                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
-                    .forEach(tr => table.appendChild(tr) );
-            })));
-        
+    // do the work...
+    document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+        const table = th.closest('table');
+        Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+            .forEach(tr => table.appendChild(tr));
+    })));
 
-        // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
-        function submitForm() {
-          document.getElementById('uploadForm').submit();
-        }
 
-       
-    </script>
-        
+    // ========== Обрабатывает нажати кнопки загрузить из файла ========= //
+    function submitForm() {
+        document.getElementById('uploadForm').submit();
+    }
+
+
+</script>
+
 {% endblock %}

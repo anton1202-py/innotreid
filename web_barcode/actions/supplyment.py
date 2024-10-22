@@ -87,7 +87,6 @@ def create_data_with_article_conditions(action_obj, user_chat_id, percent_condit
                     ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__ur_lico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
             else:
                 ozon_variant = ArticleMayBeInAction.objects.filter(action__marketplace__marketpalce='Ozon', action__ur_lico=ur_lico, action__date_finish__gt=timezone.make_aware(datetime.now()), article=article)
-                print(ozon_variant)
             if ozon_variant:
                 ozon_art = ''
                 ozon_price_dict = {}
