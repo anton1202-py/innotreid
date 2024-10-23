@@ -654,9 +654,9 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
         ur_lico_list = excel_data['Юр. лицо'].to_list()
         old_price_list = excel_data['Старая цена'].to_list()
         wb_sale_list = excel_data['WB скидка продавца'].to_list()
-        ozon_price_list = excel_data['OZON стоимость'].to_list()
-        yandex_price_list = excel_data['YANDEX стоимость'].to_list()
-        min_price_list = excel_data['Минимальная цена'].to_list()
+        ozon_price_list = excel_data['Цена OZON'].to_list()
+        yandex_price_list = excel_data['Цена YANDEX'].to_list()
+        min_price_list = excel_data['Мин. цена'].to_list()
 
         ur_lico_checker = check_ur_lico_in_file(
             ur_lico_list, ur_lico, xlsx_file)
@@ -667,9 +667,9 @@ def excel_import_group_create_data(xlsx_file, ur_lico):
                       'Юр. лицо': ur_lico_list,
                       'Старая цена': old_price_list,
                       'WB скидка продавца': wb_sale_list,
-                      'OZON стоимость': ozon_price_list,
-                      'YANDEX стоимость': yandex_price_list,
-                      'Минимальная цена': min_price_list}
+                      'Цена OZON': ozon_price_list,
+                      'Цена YANDEX': yandex_price_list,
+                      'Мин. цена': min_price_list}
         check_data_list = []
         for column_name, value_list in check_dict.items():
             if any('nan' in str(element) for element in value_list):

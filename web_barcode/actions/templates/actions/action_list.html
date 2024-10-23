@@ -58,13 +58,16 @@
     <p>Всего могут участвовать: <b>{{ common_amount }}</b></p>
     <p title="(Цена в акции Озон больше, чем в акции ВБ, но не более, чем на 4%)">
         Удовлетворяют условиям *: <b>{{ accept_conditions }}</b><br>
-        <!-- Введите % отличия нормальной цены от цены в акции ВБ<br> -->
+        
     <form method="POST" id="percentForm" enctype="multipart/form-data" class="big-filter-form">
         {% csrf_token %}
-        <input type="number" id="differrence_percent" name="differrence_percent" value="{{ percent_condition }}">
-        <input type="hidden" id="percent_action" name="percent_action" value="{{ action_obj.id }}">
-        <input type="hidden" id="percent_ur_lico" name="percent_ur_lico" value="{{ ur_lico_obj.id }}">
-        <input type="submit" id="percent_submitBtn" name="percent_submitBtn" value="Пересчитать">
+        <div>
+            Введите % отличия нормальной цены от цены в акции ВБ<br>
+            <input type="number" id="differrence_percent" name="differrence_percent" value="{{ percent_condition }}">
+            <input type="hidden" id="percent_action" name="percent_action" value="{{ action_obj.id }}">
+            <input type="hidden" id="percent_ur_lico" name="percent_ur_lico" value="{{ ur_lico_obj.id }}">
+            <input type="submit" id="percent_submitBtn" name="percent_submitBtn" value="Пересчитать">
+        </div>
     </form>
     </p>
     <p>% отличия нормальной цены от цены в акции: <b>{{ percent_condition }}</b></p>
