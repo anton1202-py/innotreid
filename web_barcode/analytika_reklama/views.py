@@ -485,9 +485,10 @@ class ArticleJamStatisticView(ListView):
                 data_dict[data['cluster_name']].append(
                     data['total_added_to_cart'])
                 data_dict[data['cluster_name']].append(data['total_ordered'])
+                data_dict[data['total_go_to_card']].append(data['total_go_to_card'])
             else:
                 data_dict[data['cluster_name']] = [data['total_frequency'],
-                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered']]
+                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered'], data['total_go_to_card']]
 
         context.update({
             'article_id': article_description.pk,
@@ -528,9 +529,10 @@ class ArticleJamStatisticView(ListView):
                 data_dict[data['cluster_name']].append(
                     data['total_added_to_cart'])
                 data_dict[data['cluster_name']].append(data['total_ordered'])
+                data_dict[data['total_go_to_card']].append(data['total_go_to_card'])
             else:
                 data_dict[data['cluster_name']] = [data['total_frequency'],
-                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered']]
+                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered'], data['total_go_to_card']]
         context = {
             'article_id': article_description.pk,
             'data_dict': data_dict,

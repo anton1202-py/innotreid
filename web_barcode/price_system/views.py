@@ -93,7 +93,6 @@ def groups_view(request, ur_lico):
     page_name = f'Ценовые группы {ur_lico}'
     data = Groups.objects.filter(company=ur_lico).order_by('old_price').annotate(
         article_count=Count('articlegroup'))
-    get_front_api_wb_info(None, ur_lico, 1)
     import_data_error_text = ''
     if request.POST:
         if request.POST.get('export') == 'create_file':
