@@ -470,7 +470,7 @@ class ArticleJamStatisticView(ListView):
             id=self.kwargs['id'])[0]
 
         jam_data = JamMainArticleKeyWords.objects.filter(
-            article=self.kwargs['id']).values('cluster').annotate(
+            article=self.kwargs['id'], settings_indicator='Заказывали').values('cluster').annotate(
                 cluster_name=F('cluster__phrase'),
                 total_frequency=Sum('frequency'),
                 total_views=Sum('views'),
@@ -501,7 +501,7 @@ class ArticleJamStatisticView(ListView):
             id=self.kwargs['id'])[0]
         data_dict = {}
         jam_data = JamMainArticleKeyWords.objects.filter(
-            article=self.kwargs['id'])
+            article=self.kwargs['id'], settings_indicator='Заказывали')
         if request.POST:
             if 'datestart' in request.POST and request.POST['datestart']:
                 date_start = request.POST.get('datestart')
