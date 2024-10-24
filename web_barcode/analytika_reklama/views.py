@@ -28,7 +28,8 @@ from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.db.models import (Case, Count, ExpressionWrapper, F, FloatField,
-                              OuterRef, Q, Subquery, Sum, When)
+                              OuterRef, Q, Subquery, Sum, When, Value)
+from django.db.models.functions import Cast, Round
 from django.db.models.functions import Coalesce, Round
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -478,7 +479,9 @@ class ArticleJamStatisticView(ListView):
                 total_added_to_cart=Sum('added_to_cart'),
                 total_ordered=Sum('ordered'),
                 total_conversion=Case(
-                    When(total_go_to_card__gt=0, then=F('total_ordered')*100/F('total_go_to_card')),
+                    When(total_go_to_card__gt=0, 
+                         then=Round(Cast(F('total_ordered') * 100 / F('total_go_to_card'), FloatField()), 2)),
+                    default=Value(0.0),
                     output_field=FloatField()
                 )
         )
@@ -531,8 +534,9 @@ class ArticleJamStatisticView(ListView):
             total_added_to_cart=Sum('added_to_cart'),
             total_ordered=Sum('ordered'),
             total_conversion=Case(
-                When(total_go_to_card__gt=0, then=F('total_ordered')*100/F('total_go_to_card')),
-                default=0.0,
+                When(total_go_to_card__gt=0, 
+                     then=Round(Cast(F('total_ordered') * 100 / F('total_go_to_card'), FloatField()), 2)),
+                default=Value(0.0),
                 output_field=FloatField()
             )
         )
