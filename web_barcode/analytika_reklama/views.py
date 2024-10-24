@@ -480,10 +480,11 @@ class ArticleJamStatisticView(ListView):
                 total_ordered=Sum('ordered'),
                 total_conversion=Case(
                     When(total_go_to_card__gt=0, 
-                         then=Round(Cast(F('total_ordered') * 100 / F('total_go_to_card'), FloatField()), 4)),
+                         then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4)),
                     output_field=FloatField()
                 )
         )
+        print(jam_data)
         for data in jam_data:
             if data['cluster_name'] in data_dict:
                 data_dict[data['cluster_name']].append(data['total_frequency'])
@@ -534,7 +535,7 @@ class ArticleJamStatisticView(ListView):
             total_ordered=Sum('ordered'),
             total_conversion=Case(
                 When(total_go_to_card__gt=0, 
-                     then=Round(Cast(F('total_ordered') * 100 / F('total_go_to_card'), FloatField()), 4)),
+                     then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4)),
                 output_field=FloatField()
             )
         )
