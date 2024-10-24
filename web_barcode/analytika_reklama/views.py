@@ -478,7 +478,7 @@ class ArticleJamStatisticView(ListView):
                 total_added_to_cart=Sum('added_to_cart'),
                 total_ordered=Sum('ordered'),
                 total_conversion=Case(
-                    When(total_ordered__gt=0, then=F('total_go_to_card') / F('total_ordered')),
+                    When(total_ordered__gt=0, then=F('total_ordered')/F('total_go_to_card')*100),
                     default=0.0,
                     output_field=FloatField()
                 )
@@ -532,7 +532,7 @@ class ArticleJamStatisticView(ListView):
             total_added_to_cart=Sum('added_to_cart'),
             total_ordered=Sum('ordered'),
             total_conversion=Case(
-                When(total_ordered__gt=0, then=F('total_go_to_card') / F('total_ordered')),
+                When(total_ordered__gt=0, then=F('total_ordered')/F('total_go_to_card')*100),
                 default=0.0,
                 output_field=FloatField()
             )
