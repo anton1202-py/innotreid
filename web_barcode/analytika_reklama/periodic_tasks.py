@@ -115,33 +115,32 @@ def get_searchcampaign_keywords_statistic():
 @app.task
 def keyword_for_articles():
     """Определяем артикулы, которым можем приписать кластеры и ключевые слова"""
-
-    campaign_with_one_article = MainCampaignClusters.objects.filter(
-        cluster__isnull=False)
-
-    for cluster_obj in campaign_with_one_article:
-        articles_name = 0
-        if cluster_obj.campaign:
-            if type(cluster_obj.campaign.articles_name) == int:
-                articles_name = cluster_obj.campaign.articles_name
-            elif (type(cluster_obj.campaign.articles_name)) == list:
-
-                articles_name = cluster_obj.campaign.articles_name[0]
-            if Articles.objects.filter(
-                company=cluster_obj.campaign.ur_lico.ur_lice_name,
-                wb_nomenclature=articles_name
-            ).exists():
-                article_obj = Articles.objects.filter(
-                    company=cluster_obj.campaign.ur_lico.ur_lice_name,
-                    wb_nomenclature=articles_name
-                )[0]
-                if not MainArticleKeyWords.objects.filter(
+    urlico_data = UrLico.objects.all()
+    for urlico_obj in urlico_data:
+        campaigns = CreatedCampaign.objects.filter(
+            ur_lico=urlico_obj)
+        header = header_wb_dict[urlico_obj.ur_lice_name]
+        for campaign_obj in campaigns:
+            campaign_number = campaign_obj.campaign_number
+            if type(campaign_obj.articles_name) == int:
+                article_obj = Articles.objects.get(company=urlico_obj.ur_lice_name, wb_nomenclature=campaign_obj.articles_name)
+                clusters_data = advertisment_campaign_clusters_statistic(header, campaign_number)
+                for cluster in clusters_data['clusters']:
+                    cluster_name = cluster['cluster']
+                    keyword_obj = KeywordPhrase.objects.get(phrase=cluster_name)
+                    if not MainArticleKeyWords.objects.filter(
                         article=article_obj,
-                        cluster=cluster_obj.cluster).exists():
-                    MainArticleKeyWords(
+                        cluster=keyword_obj).exists():
+                        MainArticleKeyWords(
+                            article=article_obj,
+                            cluster=keyword_obj,
+                            views=cluster['count']).save()
+                    else:
+                        MainArticleKeyWords.objects.filter(
                         article=article_obj,
-                        cluster=cluster_obj.cluster,
-                        views=cluster_obj.count).save()
+                        cluster=keyword_obj).update(
+                            views=cluster['count']
+                        )
 
 
 @app.task

@@ -189,7 +189,7 @@ def article_last_month_sales_google_sheet():
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets",
                  "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
         creds = ServiceAccountCredentials.from_json_keyfile_name(
-            'celery_tasks/innotreid-2c0a6335afd1.json', scope)
+            'celery_tasks/innotreid-a4b8ba01599c.json', scope)
         client = gspread.authorize(creds)
         # Open the Google Sheet using its name
         main_data = sale_article_per_month()
