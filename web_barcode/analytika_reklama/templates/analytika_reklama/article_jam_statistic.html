@@ -93,11 +93,18 @@
     <script>
         // ========== УПОРЯДОЧИВАЕТ ТАБЛИЦУ ПРИ НАЖАТИИ НА СТОЛБЕЦ ========= //
         const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent; 
-        const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
-            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
-            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
-            
-        // do the work...
+        function comparer(index, asc) {
+            return function(a, b) {
+                const valA = parseFloat(a.children[index].textContent.replace(',', '.')) || 0;
+                const valB = parseFloat(b.children[index].textContent.replace(',', '.')) || 0;
+                if (valA === valB) {
+                    return 0;
+                } else {
+                    return (asc ? (valA > valB) : (valA < valB)) ? 1 : -1;
+                }
+            };
+        }
+
         document.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
             const table = th.closest('table');
             Array.from(table.querySelectorAll('tr')).slice(1) // выбираем все строки, начиная со второй

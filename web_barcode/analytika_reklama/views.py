@@ -471,7 +471,7 @@ class ArticleJamStatisticView(ListView):
             id=self.kwargs['id'])[0]
 
         jam_data = JamMainArticleKeyWords.objects.filter(
-            article=self.kwargs['id'], settings_indicator='Заказывали').values('cluster').annotate(
+            article=self.kwargs['id'], settings_indicator='Заказывали', frequency__gt=1000).values('cluster').annotate(
                 cluster_name=F('cluster__phrase'),
                 total_frequency=Sum('frequency'),
                 total_views=Sum('views'),
@@ -480,11 +480,11 @@ class ArticleJamStatisticView(ListView):
                 total_ordered=Sum('ordered'),
                 total_conversion=Case(
                     When(total_go_to_card__gt=0, 
-                         then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4))/100,
+                         then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4)/100),
+                    default=Value(0.0),
                     output_field=FloatField()
                 )
         )
-        print(jam_data)
         for data in jam_data:
             if data['cluster_name'] in data_dict:
                 data_dict[data['cluster_name']].append(data['total_frequency'])
@@ -514,7 +514,7 @@ class ArticleJamStatisticView(ListView):
             id=self.kwargs['id'])[0]
         data_dict = {}
         jam_data = JamMainArticleKeyWords.objects.filter(
-            article=self.kwargs['id'], settings_indicator='Заказывали')
+            article=self.kwargs['id'], settings_indicator='Заказывали', frequency__gt=1000)
         if request.POST:
             if 'datestart' in request.POST and request.POST['datestart']:
                 date_start = request.POST.get('datestart')
@@ -535,7 +535,8 @@ class ArticleJamStatisticView(ListView):
             total_ordered=Sum('ordered'),
             total_conversion=Case(
                 When(total_go_to_card__gt=0, 
-                     then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4))/100,
+                     then=Round(Cast(F('total_ordered') * 10000 / F('total_go_to_card'), FloatField()), 4)/100),
+                default=Value(0.0),
                 output_field=FloatField()
             )
         )
