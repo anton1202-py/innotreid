@@ -114,9 +114,9 @@ START_LIST = [
 def database_home(request):
     if str(request.user) == 'AnonymousUser':
         return redirect('login')
-    print('Перед функцией')
-    keyword_for_articles()
-    print('После функцией')
+    # print('Перед функцией')
+    # keyword_for_articles()
+    # print('После функцией')
     # read_excel_file()
     # ur_lico_data = UrLico.objects.all()
     # for ur_lico in ur_lico_data:
