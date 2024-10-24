@@ -62,3 +62,7 @@ def float_number_filter(value):
 @register.filter
 def float_for_js(value):
     return str(value).replace(',', '.')
+
+@register.filter
+def short_text(value, short_int):
+    return value[:short_int]

@@ -127,18 +127,18 @@ def keyword_for_articles():
                 clusters_data = advertisment_campaign_clusters_statistic(header, campaign_number)
                 for cluster in clusters_data['clusters']:
                     cluster_name = cluster['cluster']
-                    keyword_obj = KeywordPhrase.objects.get(phrase=cluster_name)
+                    phrase_obj = add_keyphrase_to_db(cluster_name)
                     if not MainArticleKeyWords.objects.filter(
                         article=article_obj,
-                        cluster=keyword_obj).exists():
+                        cluster=phrase_obj).exists():
                         MainArticleKeyWords(
                             article=article_obj,
-                            cluster=keyword_obj,
+                            cluster=phrase_obj,
                             views=cluster['count']).save()
                     else:
                         MainArticleKeyWords.objects.filter(
                         article=article_obj,
-                        cluster=keyword_obj).update(
+                        cluster=phrase_obj).update(
                             views=cluster['count']
                         )
 
@@ -183,10 +183,6 @@ def get_auto_campaign_statistic_common_data():
 
         campaign_statistic = statistic_keywords_auto_campaign(
             header, int(campaign_obj.campaign_number))['keywords']
-        if not campaign_statistic:
-            print(campaign_obj.ur_lico.ur_lice_name,
-                  campaign_obj.campaign_number)
-
         if campaign_statistic:
             for data in campaign_statistic:
                 date_str = data['date']
