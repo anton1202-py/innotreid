@@ -476,7 +476,12 @@ class ArticleJamStatisticView(ListView):
                 total_views=Sum('views'),
                 total_go_to_card=Sum('go_to_card'),
                 total_added_to_cart=Sum('added_to_cart'),
-                total_ordered=Sum('ordered')
+                total_ordered=Sum('ordered'),
+                total_conversion=Case(
+                    When(Sum('ordered') > 0, then=Sum('go_to_card') / Sum('ordered')),
+                    default=0.0,
+                    output_field=FloatField()
+                )
         )
         for data in jam_data:
             if data['cluster_name'] in data_dict:
@@ -486,9 +491,14 @@ class ArticleJamStatisticView(ListView):
                     data['total_added_to_cart'])
                 data_dict[data['cluster_name']].append(data['total_ordered'])
                 data_dict[data['total_go_to_card']].append(data['total_go_to_card'])
+                data_dict[data['total_conversion']].append(data['total_conversion'])
             else:
                 data_dict[data['cluster_name']] = [data['total_frequency'],
-                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered'], data['total_go_to_card']]
+                                                   data['total_views'],
+                                                   data['total_added_to_cart'],
+                                                   data['total_ordered'],
+                                                   data['total_go_to_card'],
+                                                   data['total_conversion']]
 
         context.update({
             'article_id': article_description.pk,
@@ -520,7 +530,12 @@ class ArticleJamStatisticView(ListView):
             total_views=Sum('views'),
             total_go_to_card=Sum('go_to_card'),
             total_added_to_cart=Sum('added_to_cart'),
-            total_ordered=Sum('ordered')
+            total_ordered=Sum('ordered'),
+            total_conversion=Case(
+                When(Sum('ordered') > 0, then=Sum('go_to_card') / Sum('ordered')),
+                default=0.0,
+                output_field=FloatField()
+            )
         )
         for data in jam_data:
             if data['cluster_name'] in data_dict:
@@ -530,9 +545,14 @@ class ArticleJamStatisticView(ListView):
                     data['total_added_to_cart'])
                 data_dict[data['cluster_name']].append(data['total_ordered'])
                 data_dict[data['total_go_to_card']].append(data['total_go_to_card'])
+                data_dict[data['total_conversion']].append(data['total_conversion'])
             else:
                 data_dict[data['cluster_name']] = [data['total_frequency'],
-                                                   data['total_views'], data['total_added_to_cart'], data['total_ordered'], data['total_go_to_card']]
+                                                   data['total_views'], 
+                                                   data['total_added_to_cart'], 
+                                                   data['total_ordered'], 
+                                                   data['total_go_to_card'], 
+                                                   data['total_conversion']]
         context = {
             'article_id': article_description.pk,
             'data_dict': data_dict,
