@@ -47,7 +47,7 @@
             <tbody>
                 {% for cluster, data in data_dict.items %}
                 <tr>
-                    <td>{{ cluster }}</td>
+                    <td>{{ cluster|slice:":220" }}</td>
                     <td>{{ data.0 }}</td>
 
                     {% if data.1 %}
